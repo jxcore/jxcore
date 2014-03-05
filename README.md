@@ -1,2 +1,2 @@
-jxdocs
+JXcore 
 ======
