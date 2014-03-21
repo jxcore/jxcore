@@ -1,0 +1,17 @@
+{
+  "source": "doc/api/_toc.markdown",
+  "modules": [
+    {
+      "textRaw": "Native modules API",
+      "name": "Native modules API",
+      "type": "module",
+      "displayName": "Third party modules API"
+    },
+    {
+      "textRaw": "Third party modules API",
+      "name": "third_party_modules_api",
+      "type": "module",
+      "displayName": "Third party modules API"
+    }
+  ]
+}

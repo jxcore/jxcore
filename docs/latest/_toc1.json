@@ -1,0 +1,37 @@
+{
+  "source": "doc/api/_toc1.markdown",
+  "modules": [
+    {
+      "textRaw": "JXcore",
+      "name": "jxcore",
+      "modules": [
+        {
+          "textRaw": "By command-line calls",
+          "name": "By command-line calls",
+          "type": "module",
+          "displayName": "By modules"
+        },
+        {
+          "textRaw": "By modules",
+          "name": "by_modules",
+          "type": "module",
+          "displayName": "By modules"
+        }
+      ],
+      "type": "module",
+      "displayName": "JXcore"
+    },
+    {
+      "textRaw": "Native modules API",
+      "name": "Native modules API",
+      "type": "module",
+      "displayName": "Third party modules API"
+    },
+    {
+      "textRaw": "Third party modules API",
+      "name": "third_party_modules_api",
+      "type": "module",
+      "displayName": "Third party modules API"
+    }
+  ]
+}

@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Package Manager JXcore Manual &amp; Documentation</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/sh.css">
+</head>
+<body class="alt apidoc" id="api-section-jxcore-features-package-manager">
+
+    <div id="content" class="clearfix">
+
+        <div id="column2" class="interior">
+            <ul>
+                <li><a href="http://jxcore.com/" class="home">Home</a></li>
+                <li><a href="http://jxcore.com/downloads/" class="download">Download</a></li>
+                <li><a href="http://jxcore.com/what-is-jxcore/" class="docs current">Docs</a></li>
+                <li><a href="http://jxcore.com/blog" class="blog">Blog</a></li>
+            </ul>
+            <p class="twitter"><a href="https://twitter.com/nodejx">Follow us</a></p>
+        </div>
+
+        <div id="column1" class="interior">
+
+            <div id="intro" class="interior">
+                <a href="http://jxcore.com/" title="Go back to the home page">
+                    <img id="logo" src="assets/jxcore_logo.png" alt="jxcore">
+                </a>
+            </div>
+
+            <div class="intro_text">
+                JXcore is a Node.JS distribution with additional features (forked from v0.10).
+                <br/>
+                <strong>The Node.JS contents here is synced from Node.JS Github Repository.</strong>
+            </div>
+          <header>
+            <h1>JXcore Manual &amp; Documentation</h1>
+            <div id="gtoc">
+              <p>
+                <a href="index.html" name="toc">Index</a> |
+                <a href="all.html">View on single page</a> |
+                <a href="jxcore-features-package-manager.json">View as JSON</a>
+              </p>
+            </div>
+            <hr>
+          </header>
+
+          <div id="toc">
+            <h2>Table of Contents</h2>
+            <ul>
+<li><a href="#jxcore_features_package_manager_package_manager">Package Manager</a><ul>
+<li><a href="#jxcore_features_package_manager_command">Command</a><ul>
+<li><a href="#jxcore_features_package_manager_package">package</a></li>
+<li><a href="#jxcore_features_package_manager_compile">compile</a></li>
+</ul>
+</li>
+<li><a href="#jxcore_features_package_manager_hiding_body_of_functions">Hiding body of functions</a><ul>
+<li><a href="#jxcore_features_package_manager_utils_hidemethod_fn">utils.hideMethod(fn)</a></li>
+</ul>
+</li>
+<li><a href="#jxcore_features_package_manager_jx_package">JX package</a><ul>
+<li><a href="#jxcore_features_package_manager_about_jx_package_file">About JX package file</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+
+          <div id="apicontent">
+            <h1>Package Manager<span><a class="mark" href="#jxcore_features_package_manager_package_manager" id="jxcore_features_package_manager_package_manager">#</a></span></h1>
+<p>JXcore introduces a unique feature for packaging and encryption of source files and other assets into <code>JX</code> packages.
+
+</p>
+<p>Let’s assume you have a large project consisting of many files. This feature packs them all into a single file to simplify the distribution. It also protects your server side javascript code by encrypting all source files.
+
+</p>
+<p><code>JX</code> packages can be easily executed with JXcore, just like normal JavaScript applications:
+
+</p>
+<pre><code>jx helloworld.jx</code></pre>
+<p>instead of:
+
+</p>
+<pre><code>jx helloworld.js</code></pre>
+<h2>Command<span><a class="mark" href="#jxcore_features_package_manager_command" id="jxcore_features_package_manager_command">#</a></span></h2>
+<h3>package<span><a class="mark" href="#jxcore_features_package_manager_package" id="jxcore_features_package_manager_package">#</a></span></h3>
+<pre><code>jx package javascript_file name_of_the_package [-slim folder, folder2, ...]</code></pre>
+<p>This command recursively scans the current folder and generates a <code>JXP</code> package information file based on all the files in that directory.
+After that compiles the <code>JXP</code> file (by invoking <code>compile</code> command).
+
+</p>
+<ul>
+<li><code>javascript_file</code> - the main file, which will be executed when <code>JX</code> package will be launched with JXcore.</li>
+<li><code>name_of_the_package</code> - indicates the name of the package file. For example, giving the value <em>MyPackage</em>  will create <em>mypackage.jx</em> file.</li>
+<li><code>-slim</code> - this optional parameters followed by folder names separated with comma - prevents adding those folders into the final <code>JX</code> package.</li>
+</ul>
+<p>Suppose you have a simple <em>Hello_World</em> project, with just two files: <em>helloworld.js</em> and <em>index.html</em>. When you call:
+
+</p>
+<pre><code>jx package helloworld.js &quot;Hello World&quot;</code></pre>
+<p>initially, the tool generates <code>JXP</code> project file (<em>helloworld.jxp</em>). Then it is used as an input for <code>compile</code> command, which will create the output <code>JX</code> package <em>helloworld.jx</em>.
+
+</p>
+<h3>compile<span><a class="mark" href="#jxcore_features_package_manager_compile" id="jxcore_features_package_manager_compile">#</a></span></h3>
+<p>When you already have a <code>JXP</code> project file (either created with <code>package</code> command or manually), you can call <code>compile</code> for generating <code>JX</code> package.
+
+</p>
+<pre><code>jx compile project_file.jxp</code></pre>
+<h2>Hiding body of functions<span><a class="mark" href="#jxcore_features_package_manager_hiding_body_of_functions" id="jxcore_features_package_manager_hiding_body_of_functions">#</a></span></h2>
+<p>As you may already know, a javascript function (like everything in javascript – [www.w3schools]) is an object.
+To be more precise, it is an instance of the <code>Function</code> which inherits from the <code>Object</code>.
+And just because the <code>Object</code> has defined <code>toString()</code> method, you could also call it on some function,
+and the result will be a string containing function’s body.
+
+</p>
+<p>In JXcore Packaging &amp; Code Protection module we solved that problem.
+You can hide body of the function inside of a jx package, even if the function is exported out of the module.
+
+</p>
+<h3>utils.hideMethod(fn)<span><a class="mark" href="#jxcore_features_package_manager_utils_hidemethod_fn" id="jxcore_features_package_manager_utils_hidemethod_fn">#</a></span></h3>
+<div class="signature"><ul>
+<li><code>fn</code> <span class="type">Function</span></li>
+</div></ul>
+<p>Hides body of a given <code>fn</code> function. It will remain invokable inside, but
+
+</p>
+<p>Let’s discuss it by the example. We’ll create <em>hide_test.js</em> file with the following code:
+
+</p>
+<pre><code class="js">exports.myMethod = function (id1) {
+    return &quot;this is some function. It returns &quot; + id1;
+};</code></pre>
+<p>And compile it into JX package:
+
+</p>
+<pre><code>jx package hide_test.js &quot;HideTest&quot;</code></pre>
+<p>Now if we run it in the command window:
+
+</p>
+<pre><code>jx -e &#39;console.log(require(&quot;./hide_test.jx&quot;).myMethod.toString());&#39;</code></pre>
+<p>We’ll see the output:
+
+</p>
+<p>!(<a href="http://jxcore.com/wp-content/uploads/2014/02/jx_hiding_body1.gif">http://jxcore.com/wp-content/uploads/2014/02/jx_hiding_body1.gif</a>)
+
+</p>
+<p>As we can see, the whole content of <code>myMethod</code> is currently visible.
+But we don’t want it, especially when we talk about code protection.
+For this we implemented in JXcore mechanism to hide functions contents, but in the same time to have them still invokable.
+
+</p>
+<p>Just add the following line to the <em>hide_test.js</em>:
+
+</p>
+<pre><code class="js">jxcore.utils.hideMethod(exports.myMethod);</code></pre>
+<p>and when you run the package again (after recompiling), the output will be different:
+
+</p>
+<p>!(<a href="http://jxcore.com/wp-content/uploads/2014/02/jx_hiding_body2.gif">http://jxcore.com/wp-content/uploads/2014/02/jx_hiding_body2.gif</a>)
+
+</p>
+<p>We can still call the method itself:
+
+</p>
+<pre><code>jx -e &#39;console.log(require(&quot;./hide_test.jx&quot;).myMethod(&quot;an arg&quot;));&#39;</code></pre>
+<p>and it displays regular function’s result:
+
+</p>
+<p>!(<a href="http://jxcore.com/wp-content/uploads/2014/01/jx_hiding_body3.gif">http://jxcore.com/wp-content/uploads/2014/01/jx_hiding_body3.gif</a>)
+
+</p>
+<h2>JX package<span><a class="mark" href="#jxcore_features_package_manager_jx_package" id="jxcore_features_package_manager_jx_package">#</a></span></h2>
+<h3>About JX package file<span><a class="mark" href="#jxcore_features_package_manager_about_jx_package_file" id="jxcore_features_package_manager_about_jx_package_file">#</a></span></h3>
+<p>The <code>JX</code> package file is what you get as a result of compilation, packaging and encrypting of your project.
+It’s a binary file used only by <code>jx</code> executable.
+Contains all of the script files of your project, as well as assets, which can be considered as static resources.</p>
+
+          </div>
+        </div>
+    </div>
+    <div id="footer">
+        <a href="http://nubisa.com" class="nubisa">Nubisa</a>
+        <ul class="clearfix">
+            <li><a href="http://jxcore.com/" class="home">Home</a></li>
+            <li><a href="http://jxcore.com/downloads/" class="download">Download</a></li>
+            <li><a href="http://jxcore.com/what-is-jxcore/" class="docs current">Docs</a></li>
+            <li><a href="http://jxcore.com/blog" class="blog">Blog</a></li>
+            <li><a href="https://twitter.com/nodejx" class="twitter">Follow us on Twitter</a></li>
+        </ul>
+
+        <p>Copyright <a href="http://nubisa.com/">Nubisa, Inc.</a> 2014. View <a href="http://jxcore.com/document/eula/">license</a>.</p>
+    </div>
+
+  <script src="../sh_main.js"></script>
+  <script src="../sh_javascript.min.js"></script>
+  <script>highlight(undefined, undefined, 'pre');</script>
+  <!--<script>-->
+    <!--window._gaq = [['_setAccount', 'UA-10874194-2'], ['_trackPageview']];-->
+    <!--(function(d, t) {-->
+      <!--var g = d.createElement(t),-->
+          <!--s = d.getElementsByTagName(t)[0];-->
+      <!--g.src = '//www.google-analytics.com/ga.js';-->
+      <!--s.parentNode.insertBefore(g, s);-->
+    <!--}(document, 'script'));-->
+  <!--</script>-->
+
+    <script>
+        // window.onload = function() {
+        //var iframe = parent.document.getElementById("my_iframe");
+        //var iframe = window;
+        // iframe.height = iframe.clientHeight;
+        //}
+    </script>
+</body>
+</html>
+

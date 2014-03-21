@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>node-weak JXcore Manual &amp; Documentation</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/sh.css">
+</head>
+<body class="alt apidoc" id="api-section-jxcore-3rd-party-node-weak">
+    <div id="header_bar">
+        <div id="logo_bar">
+            <a href="http://jxcore.com/" title="Go back to the home page">
+                <img id="logo" src="assets/main-logo_white.png" alt="jxcore">
+            </a>
+        </div>
+    </div>
+    <div id="content" class="clearfix">
+
+        <div id="column2" class="interior">
+            <ul>
+                <li><a href="http://jxcore.com/" class="home">Home</a></li>
+                <li><a href="http://jxcore.com/downloads/" class="download">Download</a></li>
+                <li><a href="http://jxcore.com/what-is-jxcore/" class="docs current">Docs</a></li>
+                <li><a href="http://jxcore.com/blog" class="blog">Blog</a></li>
+            </ul>
+            <p class="twitter"><a href="https://twitter.com/nodejx">Follow us</a></p>
+        </div>
+
+        <div id="column1" class="interior">
+            <div class="intro_text">
+                JXcore is a multithreaded Node.JS distribution with additional features.
+                <br/>
+                <br/>
+                <strong>The Node.JS contents here is synced from Node.JS Github Repository.</strong>
+            </div>
+          <header>
+            <h1>JXcore Manual &amp; Documentation</h1>
+            <div id="gtoc">
+              <p>
+                <a href="index.html" name="toc">Index</a> |
+                <a href="all.html">View on single page</a> |
+                <a href="jxcore-3rd-party-node-weak.json">View as JSON</a>
+              </p>
+            </div>
+            <hr>
+          </header>
+
+          <div id="toc">
+            <h2>Table of Contents</h2>
+            <ul>
+<li><a href="#jxcore_3rd_party_node_weak_node_weak">node-weak</a><ul>
+<li><a href="#jxcore_3rd_party_node_weak_credits">Credits</a></li>
+<li><a href="#jxcore_3rd_party_node_weak_installation">Installation</a></li>
+<li><a href="#jxcore_3rd_party_node_weak_make_weak_references_to_javascript_objects">Make weak references to JavaScript Objects.</a></li>
+<li><a href="#jxcore_3rd_party_node_weak_example">Example</a></li>
+<li><a href="#jxcore_3rd_party_node_weak_weak_callback_function_best_practices">Weak Callback Function &quot;Best Practices&quot;</a></li>
+<li><a href="#jxcore_3rd_party_node_weak_api">API</a><ul>
+<li><a href="#jxcore_3rd_party_node_weak_weakref_weak_object_obj_function_callback">Weakref weak(Object obj [, Function callback])</a></li>
+<li><a href="#jxcore_3rd_party_node_weak_object_weak_get_weakref_ref">Object weak.get(Weakref ref)</a></li>
+<li><a href="#jxcore_3rd_party_node_weak_boolean_weak_isdead_weakref_ref">Boolean weak.isDead(Weakref ref)</a></li>
+<li><a href="#jxcore_3rd_party_node_weak_boolean_weak_isneardeath_weakref_ref">Boolean weak.isNearDeath(Weakref ref)</a></li>
+<li><a href="#jxcore_3rd_party_node_weak_boolean_weak_isweakref_object_obj">Boolean weak.isWeakRef(Object obj)</a></li>
+<li><a href="#jxcore_3rd_party_node_weak_undefined_weak_addcallback_weakref_ref_function_callback">undefined weak.addCallback(Weakref ref, Function callback)</a></li>
+<li><a href="#jxcore_3rd_party_node_weak_array_weak_callbacks_weakref_ref">Array weak.callbacks(Weakref ref)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+
+          <div id="apicontent">
+            <h1>node-weak<span><a class="mark" href="#jxcore_3rd_party_node_weak_node_weak" id="jxcore_3rd_party_node_weak_node_weak">#</a></span></h1>
+<h2>Credits<span><a class="mark" href="#jxcore_3rd_party_node_weak_credits" id="jxcore_3rd_party_node_weak_credits">#</a></span></h2>
+<ul>
+<li>Author: <a href="https://github.com/TooTallNate">Nathan Rajlich</a></li>
+<li>Source on git: <a href="https://github.com/TooTallNate/node-weak">node-weak</a></li>
+</ul>
+<h2>Installation<span><a class="mark" href="#jxcore_3rd_party_node_weak_installation" id="jxcore_3rd_party_node_weak_installation">#</a></span></h2>
+<p>No installation is needed, since this module is embedded inside JXcore.
+
+</p>
+<h2>Make weak references to JavaScript Objects.<span><a class="mark" href="#jxcore_3rd_party_node_weak_make_weak_references_to_javascript_objects" id="jxcore_3rd_party_node_weak_make_weak_references_to_javascript_objects">#</a></span></h2>
+<p><a href="https://travis-ci.org/TooTallNate/node-weak"><img src="https://travis-ci.org/TooTallNate/node-weak.png?branch=master" alt="Build Status"></a>
+
+</p>
+<p>On certain rarer occasions, you run into the need to be notified when a JavaScript
+object is going to be garbage collected. This feature is exposed to V8&#39;s C++ API,
+but not to JavaScript.
+
+</p>
+<p>That&#39;s where <code>node-weak</code> comes in! This module exports V8&#39;s <code>Persistent&lt;Object&gt;</code>
+functionality to JavaScript. This allows you to create weak references, and
+optionally attach a callback function to any arbitrary JS object. The callback
+function will be invoked right before the Object is garbage collected (i.e. after
+there are no more remaining references to the Object in JS-land).
+
+</p>
+<p>This module can, for example, be used for debugging; to determine whether or not
+an Object is being garbage collected as it should.
+Take a look at the example below for commented walkthrough scenario.
+
+</p>
+<h2>Example<span><a class="mark" href="#jxcore_3rd_party_node_weak_example" id="jxcore_3rd_party_node_weak_example">#</a></span></h2>
+<p>Here&#39;s an example of calling a <code>cleanup()</code> function on a Object before it gets
+garbage collected:
+
+</p>
+<pre><code class="js">var weak = require(&#39;weak&#39;)
+
+// we are going to &quot;monitor&quot; this Object and invoke &quot;cleanup&quot;
+// before the object is garbage collected
+var obj = {
+    a: true
+  , foo: &#39;bar&#39;
+}
+
+// The function to call before Garbage Collection.
+// Note that by the time this is called, &#39;obj&#39; has been set to `null`.
+function cleanup (o) {
+  delete o.a
+  delete o.foo
+}
+
+// Here&#39;s where we set up the weak reference
+var ref = weak(obj, function () {
+  // `this` inside the callback is the &#39;obj&#39;. DO NOT store any new references
+  // to the object, and DO NOT use the object in any async functions.
+  cleanup(this)
+})
+
+// While `obj` is alive, `ref` proxies everything to it, so:
+ref.a   === obj.a
+ref.foo === obj.foo
+
+// Clear out any references to the object, so that it will be GC&#39;d at some point...
+obj = null
+
+//
+//// Time passes, and the garbage collector is run
+//
+
+// `callback()` above is called, and `ref` now acts like an empty object.
+typeof ref.foo === &#39;undefined&#39;</code></pre>
+<h2>Weak Callback Function &quot;Best Practices&quot;<span><a class="mark" href="#jxcore_3rd_party_node_weak_weak_callback_function_best_practices" id="jxcore_3rd_party_node_weak_weak_callback_function_best_practices">#</a></span></h2>
+<p>It&#39;s important to be careful when using the &quot;callbacks&quot; feature of <code>node-weak</code>,
+otherwise you can end up in a situation where the watched object will never
+be garbage collected.
+
+</p>
+<p>You <em>should <strong>not</strong></em> define the callback function in the same scope as the
+object that is being watched. It&#39;s often best to define the callback function
+at the highest scope possible (top-level being the best). Named functions
+work really well for this:
+
+</p>
+<pre><code class="js">var http = require(&#39;http&#39;)
+  , weak = require(&#39;weak&#39;)
+
+http.createServer(function (req, res) {
+  weak(req, gcReq)
+  weak(res, gcRes)
+  res.end(&#39;Hello World\n&#39;)
+}).listen(3000)
+
+function gcReq () {
+  console.log(&#39;GC\&#39;d `req` object&#39;)
+}
+
+function gcRes () {
+  console.log(&#39;GC\&#39;d `res` object&#39;)
+}</code></pre>
+<h2>API<span><a class="mark" href="#jxcore_3rd_party_node_weak_api" id="jxcore_3rd_party_node_weak_api">#</a></span></h2>
+<h3>Weakref weak(Object obj [, Function callback])<span><a class="mark" href="#jxcore_3rd_party_node_weak_weakref_weak_object_obj_function_callback" id="jxcore_3rd_party_node_weak_weakref_weak_object_obj_function_callback">#</a></span></h3>
+<p>The main exports is the function that creates the weak reference.
+The first argument is the Object that should be monitored.
+The Object can be a regular Object, an Array, a Function, a RegExp, or any of
+the primitive types or constructor function created with <code>new</code>.
+Optionally, you can set a callback function to be invoked
+before the object is garbage collected.
+
+
+</p>
+<h3>Object weak.get(Weakref ref)<span><a class="mark" href="#jxcore_3rd_party_node_weak_object_weak_get_weakref_ref" id="jxcore_3rd_party_node_weak_object_weak_get_weakref_ref">#</a></span></h3>
+<p><code>get()</code> returns the actual reference to the Object that this weak reference was
+created with. If this is called with a dead reference, <code>undefined</code> is returned.
+
+
+</p>
+<h3>Boolean weak.isDead(Weakref ref)<span><a class="mark" href="#jxcore_3rd_party_node_weak_boolean_weak_isdead_weakref_ref" id="jxcore_3rd_party_node_weak_boolean_weak_isdead_weakref_ref">#</a></span></h3>
+<p>Checks to see if <code>ref</code> is a dead reference. Returns <code>true</code> if the original Object
+has already been GC&#39;d, <code>false</code> otherwise.
+
+
+</p>
+<h3>Boolean weak.isNearDeath(Weakref ref)<span><a class="mark" href="#jxcore_3rd_party_node_weak_boolean_weak_isneardeath_weakref_ref" id="jxcore_3rd_party_node_weak_boolean_weak_isneardeath_weakref_ref">#</a></span></h3>
+<p>Checks to see if <code>ref</code> is &quot;near death&quot;. This will be <code>true</code> exactly during the
+weak reference callback function, and <code>false</code> any other time.
+
+
+</p>
+<h3>Boolean weak.isWeakRef(Object obj)<span><a class="mark" href="#jxcore_3rd_party_node_weak_boolean_weak_isweakref_object_obj" id="jxcore_3rd_party_node_weak_boolean_weak_isweakref_object_obj">#</a></span></h3>
+<p>Checks to see if <code>obj</code> is &quot;weak reference&quot; instance. Returns <code>true</code> if the
+passed in object is a &quot;weak reference&quot;, <code>false</code> otherwise.
+
+
+</p>
+<h3>undefined weak.addCallback(Weakref ref, Function callback)<span><a class="mark" href="#jxcore_3rd_party_node_weak_undefined_weak_addcallback_weakref_ref_function_callback" id="jxcore_3rd_party_node_weak_undefined_weak_addcallback_weakref_ref_function_callback">#</a></span></h3>
+<p>Adds <code>callback</code> to the Array of callback functions that will be invoked before the
+Objects gets garbage collected. The callbacks get executed in the order that they
+are added.
+
+
+</p>
+<h3>Array weak.callbacks(Weakref ref)<span><a class="mark" href="#jxcore_3rd_party_node_weak_array_weak_callbacks_weakref_ref" id="jxcore_3rd_party_node_weak_array_weak_callbacks_weakref_ref">#</a></span></h3>
+<p>Returns the internal <code>Array</code> that <code>ref</code> iterates through to invoke the GC
+callbacks. The array can be <code>push()</code>ed or <code>unshift()</code>ed onto, to have more control
+over the execution order of the callbacks. This is similar in concept to JXcore
+<code>EventEmitter#listeners()</code> function.</p>
+
+          </div>
+        </div>
+    </div>
+    <div id="footer">
+        <a href="http://nubisa.com" class="nubisa">Nubisa</a>
+        <ul class="clearfix">
+            <li><a href="http://jxcore.com/" class="home">Home</a></li>
+            <li><a href="http://jxcore.com/downloads/" class="download">Download</a></li>
+            <li><a href="http://jxcore.com/what-is-jxcore/" class="docs current">Docs</a></li>
+            <li><a href="http://jxcore.com/blog" class="blog">Blog</a></li>
+            <li><a href="https://twitter.com/nodejx" class="twitter">Follow us on Twitter</a></li>
+        </ul>
+
+        <p>Copyright <a href="http://nubisa.com/">Nubisa, Inc.</a> 2014. View <a href="http://jxcore.com/document/eula/">license</a>.</p>
+    </div>
+
+  <script src="assets/sh_main.js"></script>
+  <script src="assets/sh_javascript.min.js"></script>
+  <script>highlight(undefined, undefined, 'pre');</script>
+</body>
+</html>
+

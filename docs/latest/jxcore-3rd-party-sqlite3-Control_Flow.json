@@ -1,0 +1,46 @@
+{
+  "source": "doc/api/jxcore-3rd-party-sqlite3-Control_Flow.markdown",
+  "modules": [
+    {
+      "textRaw": "Control Flow",
+      "name": "control_flow",
+      "desc": "<p><code>node-sqlite3</code> provides two functions to help controlling the execution flow of statements. The default mode is to execute statements in parallel. However, the <code>Database#close</code> method will always run in exclusive mode, meaning it waits until all previous queries have completed and <code>node-sqlite3</code> will not run any other queries while a close is pending.\n\n</p>\n",
+      "methods": [
+        {
+          "textRaw": "Database#serialize([callback])",
+          "type": "method",
+          "name": "Database#serialize",
+          "desc": "<p>Puts the execution mode into serialized. This means that at most one statement object can execute a query at a time. Other statements wait in a queue until the previous statements executed.\n\n</p>\n<p>If a callback is provided, it will be called immediately. All database queries scheduled in that callback will be serialized. After the function returns, the database is set back to its original mode again. Calling <code>Database#serialize()</code> with in nested functions is safe:\n\n</p>\n<pre><code class=\"js\">    // Queries scheduled here will run in parallel.\n\n    db.serialize(function() {\n      // Queries scheduled here will be serialized.\n      db.serialize(function() {\n        // Queries scheduled here will still be serialized.\n      });\n      // Queries scheduled here will still be serialized.\n    });\n\n    // Queries scheduled here will run in parallel again.</code></pre>\n<p>Note that queries scheduled not <em>directly</em> in the callback function are not necessarily serialized:\n\n</p>\n<pre><code class=\"js\">    db.serialize(function() {\n      // These two queries will run sequentially.\n      db.run(&quot;CREATE TABLE foo (num)&quot;);\n      db.run(&quot;INSERT INTO foo VALUES (?)&quot;, 1, function() {\n        // These queries will run in parallel and the second query will probably\n        // fail because the table might not exist yet.\n        db.run(&quot;CREATE TABLE bar (num)&quot;);\n        db.run(&quot;INSERT INTO bar VALUES (?)&quot;, 1);\n      });\n    });</code></pre>\n<p>If you call it without a function parameter, the execution mode setting is sticky and won&#39;t change until the next call to <code>Database#parallelize</code>.\n\n</p>\n",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "name": "callback",
+                  "optional": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "textRaw": "Database#parallelize([callback])",
+          "type": "method",
+          "name": "Database#parallelize",
+          "desc": "<p>Puts the execution mode into parallelized. This means that queries scheduled will be run in parallel.\n\n</p>\n<p>If a callback is provided, it will be called immediately. All database queries scheduled in that callback will run parallelized. After the function returns, the database is set back to its original mode again. Calling <code>Database#parallelize()</code> with in nested functions is safe:\n\n</p>\n<pre><code class=\"js\">    db.serialize(function() {\n       // Queries scheduled here will be serialized.\n       db.parallelize(function() {\n         // Queries scheduled here will run in parallel.\n       });\n       // Queries scheduled here will be serialized again.\n    });</code></pre>\n<p>If you call it without a function parameter, the execution mode setting is sticky and won&#39;t change until the next call to <code>Database#serialize</code>.\n</p>\n",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "name": "callback",
+                  "optional": true
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "type": "module",
+      "displayName": "Control Flow"
+    }
+  ]
+}

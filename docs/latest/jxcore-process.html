@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Subthreads API JXcore Manual &amp; Documentation</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/sh.css">
+</head>
+<body class="alt apidoc" id="api-section-jxcore-process">
+    <div id="intro" class="interior">
+        <a href="http://jxcore.com/" title="Go back to the home page">
+            <img id="logo" src="http://jxcore.com/wp-content/uploads/2014/02/jxcore_logo1.png" alt="jxcore">
+        </a>
+    </div>
+    <div id="content" class="clearfix">
+        <div id="column2" class="interior">
+            <ul>
+                <li><a href="http://jxcore.com/" class="home">Home</a></li>
+                <li><a href="http://jxcore.com/downloads/" class="download">Download</a></li>
+                <li><a href="http://jxcore.com/what-is-jxcore/" class="docs current">Docs</a></li>
+                <li><a href="http://jxcore.com/blog" class="blog">Blog</a></li>
+            </ul>
+            <p class="twitter"><a href="https://twitter.com/nodejx">Follow us</a></p>
+        </div>
+
+        <div id="column1" class="interior">
+            <div class="intro_text">
+                JXcore is a Node.JS distribution with additional features (forked from v0.12) - The Node.JS contents here are synced from Node.JS Github Repository.
+            </div>
+          <header>
+            <h1>JXcore Manual &amp; Documentation</h1>
+            <div id="gtoc">
+              <p>
+                <a href="index.html" name="toc">Index</a> |
+                <a href="all.html">View on single page</a> |
+                <a href="jxcore-process.json">View as JSON</a>
+              </p>
+            </div>
+            <hr>
+          </header>
+
+          <div id="toc">
+            <h2>Table of Contents</h2>
+            <ul>
+<li><a href="#jxcore_process_subthreads_api">Subthreads API</a><ul>
+<li><a href="#jxcore_process_events">Events</a><ul>
+<li><a href="#jxcore_process_event_restart">Event: &#39;restart&#39;</a></li>
+</ul>
+</li>
+<li><a href="#jxcore_process_process_keepalive_timeout">process.keepAlive(timeout)</a></li>
+<li><a href="#jxcore_process_process_release">process.release()</a></li>
+<li><a href="#jxcore_process_process_sendtomain_param">process.sendToMain(param)</a></li>
+<li><a href="#jxcore_process_process_subthread">process.subthread</a></li>
+<li><a href="#jxcore_process_process_threadid">process.threadId</a></li>
+<li><a href="#jxcore_process_process_unloadthread">process.unloadThread()</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+
+          <div id="apicontent">
+            <h1>Subthreads API<span><a class="mark" href="#jxcore_process_subthreads_api" id="jxcore_process_subthreads_api">#</a></span></h1>
+<p>Subthreads API is a collection of JXcore methods and properties for accessing from inside a subthread.
+
+</p>
+<p>All of the methods described here are accessible from global <code>process</code> object, for example:
+
+</p>
+<pre><code>process.keepAlive();</code></pre>
+<h2>Events<span><a class="mark" href="#jxcore_process_events" id="jxcore_process_events">#</a></span></h2>
+<h3>Event: &#39;restart&#39;<span><a class="mark" href="#jxcore_process_event_restart" id="jxcore_process_event_restart">#</a></span></h3>
+<p>Attaching any callback to this event inside a code running multithreaded enables internal thread recovery. So when an exception occurs inside the subthread, and callback is attached to this event, it is invoked and inside of this callback you may decide if to allow restart of the thread or not.
+Also this is a good opportunity to save some data used by this thread, because after it will crash, normally they would be lost.
+
+</p>
+<p>Callback for this event receives one parameter:
+
+</p>
+<ul>
+<li><code>restart_callback</code> - this is a function, which should be invoked if you want to allow for thread recovery. If you will not call it, the thread will die but not restart.
+Any tasks, that you want to perform, like saving some thread&#39;s data (objects, variables etc) into database or even shared memory store, must be done before calling <code>restart_callback()</code>.</li>
+</ul>
+<p>In the example below we are throwing an exception, which causes <code>restart</code> event to be fired. Also we are counting how many times thread was restarted, and based on that we decide if to allow for another restart or not.
+
+</p>
+<p>The code should be run with mt-keep parameter:
+
+</p>
+<pre><code>jx mt-keep sample.js</code></pre>
+<p>sample.js:
+
+</p>
+<pre><code>var shared = jxcore.store.shared;
+var sid = &quot;threadRestartCount_&quot; + process.threadId;
+
+var counter = 0;
+
+// this is just for storing thread&#39;s restart counter.
+// we use jxcore.store.shared here, because it is static (unrelated to the threads)
+if (shared.exists(sid)) {
+    counter = parseInt(shared.get(sid)) + 1;
+    console.log(&quot;Thread no %s restarted %d times.&quot;, process.threadId, counter);
+}
+shared.set(sid, counter);
+
+// attaching callback to this event enables the thread recovery,
+// but still you need to call restart_callback() explicitly to make a restart
+process.on(&#39;restart&#39;, function (restart_callback) {
+    if (counter &lt; 3) {
+        // we don&#39;t want to allow for infinitive restarts. 3 is enough.
+        console.log(&quot;Restarting thread no &quot; + process.threadId);
+        restart_callback();
+    } else {
+        console.log(&quot;Thread no %s was restarted %d times. We&#39;ll not restart any more.&quot;,
+            process.threadId, counter);
+        // releasing the thread allows main process to exit,
+        // when all the threads are released.
+        process.release();
+    }
+});
+
+// this loop is used to throw an exception inside a subthread
+setTimeout(function () {
+    throw &quot;Let&#39;s restart the thread!&quot;;
+}, 100 * counter * process.threadId);</code></pre>
+<p>Please note, that when any listener is attached with <code>process.on(&quot;uncaughtException&quot;)</code>, the thread recovery is not active, because it makes sense only for uncaught exceptions, which in this case are actually caught by <code>uncaughtException</code> event.
+
+</p>
+<h2>process.keepAlive(timeout)<span><a class="mark" href="#jxcore_process_process_keepalive_timeout" id="jxcore_process_process_keepalive_timeout">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>timeout</code> <span class="type">Number</span></li>
+</div></ul>
+<p>Marks the current task (from which the method was called) to be alive. This will inform the thread pool, that the task has an intention to continue working (probably by doing some delayed or async work).
+
+</p>
+<p>Normally the thread pool knows, that the task is working only until it returns from the task method. But if you would use in the task code e.g. delayed execution with <code>setTimeout()</code> or <code>setInterval()</code>, or any async call, the task method may return faster, before those delayed/async jobs will have chance to complete. This is a moment, when <code>process.keepAlive()</code> comes in handy. Later in the code, you can call <code>process.release()</code> to signal the main thread, that the task has completed.
+
+</p>
+<p>The <code>timeout</code> parameter specifies, how many milliseconds the task should be kept alive, before automatic release will happen. This parameter is optional, and if you don’t provide it, task will be alive forever, or until <code>process.release()</code> will be called.
+
+</p>
+<pre><code>var method = function (obj) {
+
+    setTimeout(function () {
+       console.log(&quot;I&#39;m here after 2000 ms. Can close now&quot;);
+       process.release();
+    }, 2000);
+
+    console.log(&quot;waiting for 2000 ms&quot;);
+
+    // without the line below, current task would return immediately
+    // and the method delayed with setTimeout() would not have chance to complete.
+    // try to comment the line below to test the behaviour, and you will see,
+    // that the application closes itself, since the task is not kept alive.
+    process.keepAlive();
+};
+
+jxcore.tasks.addTask(method);</code></pre>
+<h2>process.release()<span><a class="mark" href="#jxcore_process_process_release" id="jxcore_process_process_release">#</a></span></h2>
+<p>Unmarks the current task (from which the method was called) from being alive. You can use this method to inform the thread pool, that the task finished its work. If you will do this for all of the tasks, the main thread could freely exit then, and the application may close itself naturally with exit code = 0.
+
+</p>
+<p>Please refer to <code>process.keepAlive()</code> method for full example.
+
+</p>
+<pre><code>process.release();</code></pre>
+<h2>process.sendToMain(param)<span><a class="mark" href="#jxcore_process_process_sendtomain_param" id="jxcore_process_process_sendtomain_param">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>param</code> <span class="type">Object</span></li>
+</div></ul>
+<p>Sends a message to the main thread, and there it can be received by attaching to <a href="#tasks_event_message"><code>message</code></a> event. The <code>param</code> can be any value, for example string or json literal object.
+
+</p>
+<pre><code>process.sendToMain( { obj: &quot;something&quot; } );
+
+// now the main thread can receive the message like this:
+jxcore.tasks.on(&#39;message&#39;, function (threadId, param) {
+   console.log(&#39;Main thread received a message from subthread no &#39; + threadId +
+      &#39;. Message: &#39;, param);
+});</code></pre>
+<h2>process.subthread<span><a class="mark" href="#jxcore_process_process_subthread" id="jxcore_process_process_subthread">#</a></span></h2>
+<p>This property returns <code>true</code>, if the current code block runs under the subthread, or <code>false</code> otherwise.
+
+</p>
+<pre><code>if (process.subThread) {
+   console.log(&quot;we are in a subthread.&quot;);
+}</code></pre>
+<h2>process.threadId<span><a class="mark" href="#jxcore_process_process_threadid" id="jxcore_process_process_threadid">#</a></span></h2>
+<p>Returns the ID of the subthread. It is a number between 0 and 62 (because the maximum amount of subthreads is 63).
+You can also control the number of subthreads for your application, see here for more information: <a href="">Defaults</a>.
+
+</p>
+<p>Since one of the subthreads can have its index equal to 0, we should not test it with:
+
+</p>
+<pre><code>if (process.threadId) {
+    // do something
+}</code></pre>
+<h2>process.unloadThread()<span><a class="mark" href="#jxcore_process_process_unloadthread" id="jxcore_process_process_unloadthread">#</a></span></h2>
+<p>Marks the subthread to be removed from the thread pool and eventually removes it. The removal itself will happen as soon as the subthread finishes execution of its latest task.
+
+</p>
+<p>You may want to use this method to release subthread’s resources, if you don’t plan to use it soon. Adding any tasks later will create a fresh subthread automatically on demand.
+</p>
+
+          </div>
+        </div>
+    </div>
+    <div id="footer">
+        <a href="http://nubisa.com" class="nubisa">Nubisa</a>
+        <ul class="clearfix">
+            <li><a href="http://jxcore.com/" class="home">Home</a></li>
+            <li><a href="http://jxcore.com/downloads/" class="download">Download</a></li>
+            <li><a href="http://jxcore.com/what-is-jxcore/" class="docs current">Docs</a></li>
+            <li><a href="http://jxcore.com/blog" class="blog">Blog</a></li>
+            <li><a href="https://twitter.com/nodejx" class="twitter">Follow us on Twitter</a></li>
+        </ul>
+
+        <p>Copyright <a href="http://nubisa.com/">Nubisa, Inc.</a> 2014. View <a href="http://jxcore.com/document/eula/">license</a>.</p>
+    </div>
+
+  <script src="../sh_main.js"></script>
+  <script src="../sh_javascript.min.js"></script>
+  <script>highlight(undefined, undefined, 'pre');</script>
+  <!--<script>-->
+    <!--window._gaq = [['_setAccount', 'UA-10874194-2'], ['_trackPageview']];-->
+    <!--(function(d, t) {-->
+      <!--var g = d.createElement(t),-->
+          <!--s = d.getElementsByTagName(t)[0];-->
+      <!--g.src = '//www.google-analytics.com/ga.js';-->
+      <!--s.parentNode.insertBefore(g, s);-->
+    <!--}(document, 'script'));-->
+  <!--</script>-->
+
+    <script>
+        // window.onload = function() {
+        //var iframe = parent.document.getElementById("my_iframe");
+        //var iframe = window;
+        // iframe.height = iframe.clientHeight;
+        //}
+    </script>
+</body>
+</html>
+

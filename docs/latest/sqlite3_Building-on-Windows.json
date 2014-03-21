@@ -1,0 +1,42 @@
+{
+  "source": "doc/api/sqlite3_Building-on-Windows.markdown",
+  "modules": [
+    {
+      "textRaw": "Building on Windows",
+      "name": "building_on_windows",
+      "desc": "<p><strong>NOTE:</strong> Requires Visual Studio 2010. I didn&#39;t test with the Express version, but it <em>should</em> do.\n\n</p>\n",
+      "modules": [
+        {
+          "textRaw": "1. Install Visual Studio 2010 with C++ compiler",
+          "name": "1._install_visual_studio_2010_with_c++_compiler",
+          "desc": "<p><a href=\"http://www.microsoft.com/visualstudio/eng/products/visual-studio-express-products\">http://www.microsoft.com/visualstudio/eng/products/visual-studio-express-products</a>\n\n</p>\n<p>Note: Microsoft is always changing the names of things so it is hard to know exactly what is needed. If you get through these install steps successfully please edit this wiki with how you set up Visual Studio.\n\n</p>\n<p>Note: you may also need the Win SDK <a href=\"http://www.microsoft.com/en-us/download/details.aspx?displayLang=en&amp;id=8279\">http://www.microsoft.com/en-us/download/details.aspx?displayLang=en&amp;id=8279</a> and the\n\n</p>\n<p>Note: Another link to Visual Studio 2010 (<code>wdexpress_full.exe</code>) is <a href=\"http://go.microsoft.com/?linkid=9816758\">http://go.microsoft.com/?linkid=9816758</a>\n\n</p>\n",
+          "type": "module",
+          "displayName": "1. Install Visual Studio 2010 with C++ compiler"
+        },
+        {
+          "textRaw": "2. Install Node",
+          "name": "2._install_node",
+          "desc": "<p>Make sure you have the latest node - either v0.8.x or v0.10.x. v0.10.x is ideal since it will contain the latest <code>node-gyp</code>. <code>node-gyp</code> is critical for building <code>node-sqlite3</code>.\n\n</p>\n<p>You can use the precompiled binaries/easy installers or you can build node yourself. Just be aware that <code>node-gyp</code> prefers the precompiled installer the provides a stable release. If you build a development version of node from source <code>node-gyp</code> will complain about needing to know the path to the headers. \n\n</p>\n<p>NOTE: be aware of whether you installed the 32 bit or 64 bit version of Node.\n\n</p>\n",
+          "type": "module",
+          "displayName": "2. Install Node"
+        },
+        {
+          "textRaw": "3. Build the module",
+          "name": "3._build_the_module",
+          "desc": "<p>Type:\n\n</p>\n<pre><code>npm install sqlite</code></pre>\n<p>Or download the git repo and inside the repo type:\n\n</p>\n<pre><code>npm install</code></pre>\n<p>TIP: to avoid full recompiles you can install <code>node-gyp</code> globally and just do:\n\n</p>\n<pre><code>node-gyp configure build</code></pre>\n",
+          "type": "module",
+          "displayName": "3. Build the module"
+        },
+        {
+          "textRaw": "4. Troubleshooting",
+          "name": "4._troubleshooting",
+          "desc": "<p>Create an issue if you have trouble. Please provide as much detail about what versions you are using and the exact errors you encountered.\n</p>\n",
+          "type": "module",
+          "displayName": "4. Troubleshooting"
+        }
+      ],
+      "type": "module",
+      "displayName": "Building on Windows"
+    }
+  ]
+}

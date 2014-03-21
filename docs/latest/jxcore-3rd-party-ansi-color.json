@@ -1,0 +1,41 @@
+{
+  "source": "doc/api/jxcore-3rd-party-ansi-color.markdown",
+  "modules": [
+    {
+      "textRaw": "ANSI Color Code Output Support",
+      "name": "ansi_color_code_output_support",
+      "modules": [
+        {
+          "textRaw": "Credits",
+          "name": "Credits",
+          "desc": "<p>No installation is needed, since this module is embedded inside JXcore.\n\n</p>\n",
+          "type": "module",
+          "displayName": "Installation"
+        },
+        {
+          "textRaw": "Installation",
+          "name": "installation",
+          "desc": "<p>No installation is needed, since this module is embedded inside JXcore.\n\n</p>\n",
+          "type": "module",
+          "displayName": "Installation"
+        },
+        {
+          "textRaw": "Basic usage",
+          "name": "basic_usage",
+          "desc": "<p>This CommonJS module provides basic ANSI color code support, to allow you to\nformat your console output with foreground and background colors as well as\nproviding bold and underline support.\n\n</p>\n<p>This module does not modify any built-in object prototypes, and so is safe\nto use with other modules.\n\n</p>\n<p>Tested on JXcore and node.js.\n\n</p>\n<pre><code>// Load the module\nvar color = require(&quot;ansi-color&quot;).set;\n\n// Print the word &quot;Error&quot; to stdout in red\nconsole.log(color(&quot;Error&quot;, &quot;red&quot;));\n\n// Print the word &quot;Error&quot; in red and underlined\nconsole.log(color(&quot;Error&quot;, &quot;red+underline&quot;));\n\n// Print the word &quot;Success&quot; in bold green, followed by a message\nconsole.log(color(&quot;Success&quot;, &quot;green+bold&quot;), &quot;Something was successful!&quot;);</code></pre>\n",
+          "type": "module",
+          "displayName": "Basic usage"
+        },
+        {
+          "textRaw": "Supported Colors/Formats",
+          "name": "supported_colors/formats",
+          "desc": "<p>Note: Any of the below formatting strings can be combined together by joining\ntogether desired formats with a + symbol. Eg: bold+cyan+white_bg\n\n</p>\n<ul>\n<li>Bold Text: bold</li>\n<li>Underlined Text: underline</li>\n<li>Blinking Text: blink</li>\n<li>Black Text: black</li>\n<li>Red Text: red</li>\n<li>Green Text: green</li>\n<li>Yellow Text: yellow</li>\n<li>Blue Text: blue</li>\n<li>Magenta Text: magenta</li>\n<li>Cyan Text: cyan</li>\n<li>White Text: white</li>\n<li>Black Background: black_bg</li>\n<li>Red Background: red_bg</li>\n<li>Green Background: green_bg</li>\n<li>Yellow Background: yellow_bg</li>\n<li>Blue Background: blue_bg</li>\n<li>Magenta Background: magenta_bg</li>\n<li>Cyan Background: cyan_bg</li>\n<li>White Background: white_bg</li>\n</ul>\n",
+          "type": "module",
+          "displayName": "Supported Colors/Formats"
+        }
+      ],
+      "type": "module",
+      "displayName": "ANSI Color Code Output Support"
+    }
+  ]
+}

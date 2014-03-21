@@ -1,0 +1,43 @@
+{
+  "source": "doc/api/jxcore_environment.markdown",
+  "desc": [
+    {
+      "type": "space"
+    }
+  ],
+  "modules": [
+    {
+      "textRaw": "Environment API",
+      "name": "environment_api",
+      "desc": "<p>All methods described in this section are members of the global <code>jxcore.env</code> object.\n\n</p>\n",
+      "methods": [
+        {
+          "textRaw": "env.setThreadCount(value)",
+          "type": "method",
+          "name": "setThreadCount",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "`value` {Number} ",
+                  "name": "value",
+                  "type": "Number"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "value"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Sets the number of subthreads that you want to have in the thread pool for the application.\n\n</p>\n<p>Generally, there is no need to use this method as JXcore by default will create 2 subthreads. In some scenarios you may want to change this number, but if you do, you must call <code>env.setThreadCount()</code> before the first use of <code>jxcore.tasks</code> object. After that, any subsequent calls of this method will be simply ignored.\n\n</p>\n<p>The minimum, and default value is 2. The maximum value is 63, but keep in mind, that this amount of subthreads may not always bring performance benefits. In the contrary – in some cases may do even worse, depending on the task implementation, so make sure that you always do some proper testing. Setting value outside this range will raise an exception.\n\n</p>\n<pre><code>jxcore.env.setThreadCount(5);\nvar tasks = jxcore.tasks;\n\n// the call below will be ignored, since we have just referenced jxcore.tasks object\n// and the thread pool is already created.\njxcore.env.setThreadCount(10)</code></pre>\n"
+        }
+      ],
+      "type": "module",
+      "displayName": "Environment API"
+    }
+  ]
+}

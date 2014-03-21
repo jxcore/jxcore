@@ -1,0 +1,351 @@
+{
+  "source": "doc/api/jxcore_bignum.markdown",
+  "modules": [
+    {
+      "textRaw": "credits",
+      "name": "credits",
+      "desc": "<p>Arbitrary precision integral arithmetic for Node.js using\nOpenSSL.\n\n</p>\n<p>This library is based on\n<a href=\"https://github.com/substack/node-bigint\">node-bigint</a> by\n<a href=\"https://github.com/substack\">substack</a>, but instead of using libgmp,\nit uses the builtin bignum functionality provided by OpenSSL. The\nadvantage is that OpenSSL is already part of Node.js, so this\nlibrary does not add any external dependency whatsoever.\n\n</p>\n",
+      "type": "module",
+      "displayName": "description"
+    },
+    {
+      "textRaw": "description",
+      "name": "description",
+      "desc": "<p>Arbitrary precision integral arithmetic for Node.js using\nOpenSSL.\n\n</p>\n<p>This library is based on\n<a href=\"https://github.com/substack/node-bigint\">node-bigint</a> by\n<a href=\"https://github.com/substack\">substack</a>, but instead of using libgmp,\nit uses the builtin bignum functionality provided by OpenSSL. The\nadvantage is that OpenSSL is already part of Node.js, so this\nlibrary does not add any external dependency whatsoever.\n\n</p>\n",
+      "type": "module",
+      "displayName": "description"
+    },
+    {
+      "textRaw": "differences",
+      "name": "differences",
+      "desc": "<p>When switching from node-bigint to node-bignum, please be aware of\nthese differences:\n\n</p>\n<ul>\n<li>Bignum rounds towards zero for integer divisions, e.g. <code>10 / -3 = -3</code>, whereas bigint\nrounds towards negative infinity, e.g. <code>10 / -3 = -4</code>.</li>\n<li>Bitwise operations (and, or, xor) are implemented for positive numbers only.</li>\n<li>nextPrime() is not supported.</li>\n<li>sqrt() and root() are not supported.</li>\n</ul>\n<p>(Patches for the missing functionality are welcome.)\n\n</p>\n<h1>example</h1>\n",
+      "properties": [
+        {
+          "textRaw": "simple.js",
+          "name": "js",
+          "desc": "<pre><code>var bignum = require(&#39;bignum&#39;);\n\nvar b = bignum(&#39;782910138827292261791972728324982&#39;)\n    .sub(&#39;182373273283402171237474774728373&#39;)\n    .div(8)\n;\nconsole.log(b);</code></pre>\n<hr>\n<pre><code>$ node simple.js\n&lt;Bignum 75067108192986261319312244199576&gt;</code></pre>\n"
+        },
+        {
+          "textRaw": "perfect.js",
+          "name": "js",
+          "desc": "<p>Generate the perfect numbers:\n\n</p>\n<pre><code>// If 2**n-1 is prime, then (2**n-1) * 2**(n-1) is perfect.\nvar bignum = require(&#39;bignum&#39;);\n\nfor (var n = 0; n &lt; 100; n++) {\n    var p = bignum.pow(2, n).sub(1);\n    if (p.probPrime(50)) {\n        var perfect = p.mul(bignum.pow(2, n - 1));\n        console.log(perfect.toString());\n    }\n}</code></pre>\n<hr>\n<pre><code>6\n28\n496\n8128\n33550336\n8589869056\n137438691328\n2305843008139952128\n2658455991569831744654692615953842176\n191561942608236107294793378084303638130997321548169216</code></pre>\n"
+        }
+      ],
+      "type": "module",
+      "displayName": "differences"
+    },
+    {
+      "textRaw": "install",
+      "name": "install",
+      "desc": "<p>To compile the package, your system needs to be set up for building Node.js\nmodules.\n\n</p>\n<p>You can install node-bignum with <a href=\"http://npmjs.org\">npm</a>:\n\n</p>\n<pre><code>npm install bignum</code></pre>\n",
+      "type": "module",
+      "displayName": "install"
+    },
+    {
+      "textRaw": "develop",
+      "name": "develop",
+      "desc": "<p>You can clone the git repo and compile with\n\n</p>\n<pre><code>git clone git://github.com/justmoon/node-bignum.git\ncd node-bignum\nnpm install</code></pre>\n<p>Run the tests with\n\n</p>\n<pre><code>npm test</code></pre>\n",
+      "type": "module",
+      "displayName": "develop"
+    }
+  ],
+  "properties": [
+    {
+      "textRaw": "methods[0]",
+      "type": "property",
+      "name": "[0]",
+      "methods": [
+        {
+          "textRaw": "bignum(n, base=10)",
+          "type": "method",
+          "name": "bignum",
+          "desc": "<p>Create a new <code>bignum</code> from <code>n</code> and a base. <code>n</code> can be a string, integer, or\nanother <code>bignum</code>.\n\n</p>\n<p>If you pass in a string you can set the base that string is encoded in.\n\n</p>\n",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "name": "n"
+                },
+                {
+                  "name": "base",
+                  "default": "10"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "textRaw": "bignum.fromBuffer(buf, opts)",
+          "type": "method",
+          "name": "fromBuffer",
+          "desc": "<p>Create a new <code>bignum</code> from a <code>Buffer</code>.\n\n</p>\n<p>The default options are:\n\n</p>\n<pre><code>{\n    endian : &#39;big&#39;,\n    size : 1, // number of bytes in each word\n}</code></pre>\n<p>Note that endian doesn&#39;t matter when size = 1. If you wish to reverse the entire buffer byte by byte, pass size: &#39;auto&#39;.\n\n</p>\n",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "name": "buf"
+                },
+                {
+                  "name": "opts"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "textRaw": "bignum.prime(bits, safe=true)",
+          "type": "method",
+          "name": "prime",
+          "desc": "<p>Generate a probable prime of length <code>bits</code>. If <code>safe</code> is true, it will be a &quot;safe&quot; prime of the form p=2p&#39;+1 where p&#39; is also prime.\n\n</p>\n",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "name": "bits"
+                },
+                {
+                  "name": "safe",
+                  "default": "true"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "modules": [
+        {
+          "textRaw": ".toString(base=10)",
+          "name": ".tostring(base=10)",
+          "desc": "<p>Print out the <code>bignum</code> instance in the requested base as a string.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".toString(base=10)"
+        }
+      ]
+    },
+    {
+      "textRaw": "methods[1]",
+      "type": "property",
+      "name": "[1]",
+      "desc": "<p>For all of the instance methods below you can write either\n\n</p>\n<pre><code>bignum.method(x, y, z)</code></pre>\n<p>or if x is a <code>bignum</code> instance``\n\n</p>\n<pre><code>x.method(y, z)</code></pre>\n",
+      "modules": [
+        {
+          "textRaw": ".toNumber()",
+          "name": ".tonumber()",
+          "desc": "<p>Turn a <code>bignum</code> into a <code>Number</code>. If the <code>bignum</code> is too big you&#39;ll lose\nprecision or you&#39;ll get ±<code>Infinity</code>.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".toNumber()"
+        },
+        {
+          "textRaw": ".toBuffer(opts)",
+          "name": ".tobuffer(opts)",
+          "desc": "<p>Return a new <code>Buffer</code> with the data from the <code>bignum</code>.\n\n</p>\n<p>The default options are:\n\n</p>\n<pre><code>{\n    endian : &#39;big&#39;,\n    size : 1, // number of bytes in each word\n}</code></pre>\n<p>Note that endian doesn&#39;t matter when size = 1. If you wish to reverse the entire buffer byte by byte, pass size: &#39;auto&#39;.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".toBuffer(opts)"
+        },
+        {
+          "textRaw": ".add(n)",
+          "name": ".add(n)",
+          "desc": "<p>Return a new <code>bignum</code> containing the instance value plus <code>n</code>.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".add(n)"
+        },
+        {
+          "textRaw": ".sub(n)",
+          "name": ".sub(n)",
+          "desc": "<p>Return a new <code>bignum</code> containing the instance value minus <code>n</code>.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".sub(n)"
+        },
+        {
+          "textRaw": ".mul(n)",
+          "name": ".mul(n)",
+          "desc": "<p>Return a new <code>bignum</code> containing the instance value multiplied by <code>n</code>.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".mul(n)"
+        },
+        {
+          "textRaw": ".div(n)",
+          "name": ".div(n)",
+          "desc": "<p>Return a new <code>bignum</code> containing the instance value integrally divided by <code>n</code>.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".div(n)"
+        },
+        {
+          "textRaw": ".abs()",
+          "name": ".abs()",
+          "desc": "<p>Return a new <code>bignum</code> with the absolute value of the instance.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".abs()"
+        },
+        {
+          "textRaw": ".neg()",
+          "name": ".neg()",
+          "desc": "<p>Return a new <code>bignum</code> with the negative of the instance value.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".neg()"
+        },
+        {
+          "textRaw": ".cmp(n)",
+          "name": ".cmp(n)",
+          "desc": "<p>Compare the instance value to <code>n</code>. Return a positive integer if <code>&gt; n</code>, a\nnegative integer if <code>&lt; n</code>, and 0 if <code>== n</code>.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".cmp(n)"
+        },
+        {
+          "textRaw": ".gt(n)",
+          "name": ".gt(n)",
+          "desc": "<p>Return a boolean: whether the instance value is greater than n (<code>&gt; n</code>).\n\n</p>\n",
+          "type": "module",
+          "displayName": ".gt(n)"
+        },
+        {
+          "textRaw": ".ge(n)",
+          "name": ".ge(n)",
+          "desc": "<p>Return a boolean: whether the instance value is greater than or equal to n\n(<code>&gt;= n</code>).\n\n</p>\n",
+          "type": "module",
+          "displayName": ".ge(n)"
+        },
+        {
+          "textRaw": ".eq(n)",
+          "name": ".eq(n)",
+          "desc": "<p>Return a boolean: whether the instance value is equal to n (<code>== n</code>).\n\n</p>\n",
+          "type": "module",
+          "displayName": ".eq(n)"
+        },
+        {
+          "textRaw": ".lt(n)",
+          "name": ".lt(n)",
+          "desc": "<p>Return a boolean: whether the instance value is less than n (<code>&lt; n</code>).\n\n</p>\n",
+          "type": "module",
+          "displayName": ".lt(n)"
+        },
+        {
+          "textRaw": ".le(n)",
+          "name": ".le(n)",
+          "desc": "<p>Return a boolean: whether the instance value is less than or equal to n\n(<code>&lt;= n</code>).\n\n</p>\n",
+          "type": "module",
+          "displayName": ".le(n)"
+        },
+        {
+          "textRaw": ".and(n)",
+          "name": ".and(n)",
+          "desc": "<p>Return a new <code>bignum</code> with the instance value bitwise AND (&amp;)-ed with <code>n</code>.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".and(n)"
+        },
+        {
+          "textRaw": ".or(n)",
+          "name": ".or(n)",
+          "desc": "<p>Return a new <code>bignum</code> with the instance value bitwise inclusive-OR (|)-ed with\n<code>n</code>.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".or(n)"
+        },
+        {
+          "textRaw": ".xor(n)",
+          "name": ".xor(n)",
+          "desc": "<p>Return a new <code>bignum</code> with the instance value bitwise exclusive-OR (^)-ed with\n<code>n</code>.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".xor(n)"
+        },
+        {
+          "textRaw": ".mod(n)",
+          "name": ".mod(n)",
+          "desc": "<p>Return a new <code>bignum</code> with the instance value modulo <code>n</code>.\n\n</p>\n<p><code>m</code>.\n</p>\n",
+          "type": "module",
+          "displayName": ".mod(n)"
+        },
+        {
+          "textRaw": ".pow(n)",
+          "name": ".pow(n)",
+          "desc": "<p>Return a new <code>bignum</code> with the instance value raised to the <code>n</code>th power.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".pow(n)"
+        },
+        {
+          "textRaw": ".powm(n, m)",
+          "name": ".powm(n,_m)",
+          "desc": "<p>Return a new <code>bignum</code> with the instance value raised to the <code>n</code>th power modulo\n<code>m</code>.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".powm(n, m)"
+        },
+        {
+          "textRaw": ".invertm(m)",
+          "name": ".invertm(m)",
+          "desc": "<p>Compute the multiplicative inverse modulo <code>m</code>.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".invertm(m)"
+        },
+        {
+          "textRaw": ".rand()",
+          "name": ".rand()",
+          "desc": "<p>If <code>upperBound</code> is supplied, return a random <code>bignum</code> between the instance value\nand <code>upperBound - 1</code>, inclusive.\n\n</p>\n<p>Otherwise, return a random <code>bignum</code> between 0 and the instance value - 1,\ninclusive.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".rand(upperBound)"
+        },
+        {
+          "textRaw": ".rand(upperBound)",
+          "name": ".rand(upperbound)",
+          "desc": "<p>If <code>upperBound</code> is supplied, return a random <code>bignum</code> between the instance value\nand <code>upperBound - 1</code>, inclusive.\n\n</p>\n<p>Otherwise, return a random <code>bignum</code> between 0 and the instance value - 1,\ninclusive.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".rand(upperBound)"
+        },
+        {
+          "textRaw": ".probPrime()",
+          "name": ".probprime()",
+          "desc": "<p>Return whether the bignum is:\n\n</p>\n<ul>\n<li>certainly prime (true)</li>\n<li>probably prime (&#39;maybe&#39;)</li>\n<li>certainly composite (false)</li>\n</ul>\n<p>using <a href=\"http://www.openssl.org/docs/crypto/BN_generate_prime.html\">BN_is_prime_ex</a>.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".probPrime()"
+        },
+        {
+          "textRaw": ".sqrt()",
+          "name": ".sqrt()",
+          "desc": "<p>Return a new <code>bignum</code> that is the square root. This truncates.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".sqrt()"
+        },
+        {
+          "textRaw": ".root(n)",
+          "name": ".root(n)",
+          "desc": "<p>Return a new <code>bignum</code> that is the <code>nth</code> root. This truncates.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".root(n)"
+        },
+        {
+          "textRaw": ".shiftLeft(n)",
+          "name": ".shiftleft(n)",
+          "desc": "<p>Return a new <code>bignum</code> that is the <code>2^n</code> multiple. Equivalent of the <code>&lt;&lt;</code>\noperator.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".shiftLeft(n)"
+        },
+        {
+          "textRaw": ".shiftRight(n)",
+          "name": ".shiftright(n)",
+          "desc": "<p>Return a new <code>bignum</code> of the value integer divided by\n<code>2^n</code>. Equivalent of the <code>&gt;&gt;</code> operator.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".shiftRight(n)"
+        },
+        {
+          "textRaw": ".gcd(n)",
+          "name": ".gcd(n)",
+          "desc": "<p>Return the greatest common divisor of the current <code>bignum</code> with <code>n</code> as a new\n<code>bignum</code>.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".gcd(n)"
+        },
+        {
+          "textRaw": ".jacobi(n)",
+          "name": ".jacobi(n)",
+          "desc": "<p>Return the Jacobi symbol (or Legendre symbol if <code>n</code> is prime) of the current\n<code>bignum</code> (= a) over <code>n</code>. Note that <code>n</code> must be odd and &gt;= 3. 0 &lt;= a &lt; n.\n\n</p>\n<p>Returns -1 or 1 as an int (NOT a bignum). Throws an error on failure.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".jacobi(n)"
+        },
+        {
+          "textRaw": ".bitLength()",
+          "name": ".bitlength()",
+          "desc": "<p>Return the number of bits used to represent the current <code>bignum</code>.\n\n</p>\n",
+          "type": "module",
+          "displayName": ".bitLength()"
+        }
+      ]
+    }
+  ]
+}

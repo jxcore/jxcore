@@ -1,0 +1,75 @@
+# Process Monitor
+
+JXcore offers embedded process monitoring tool. It checks regularly whether monitored process/processes still exist and respawns them if needed.
+When the monitor is running, then your applications can subscribe to it and start being monitored.
+
+The Process Monitor is a global and can be referenced from anywhere:
+
+```js
+var mon = jxcore.monitor;
+```
+
+You can control monitor's process also from the [command line](jxcore-command-monitor.html).
+
+Apart from this feature, JXcore offers also [Internal Recovery](#jxcore_monitor_internal_recovery).
+
+## API
+
+### monitor.followMe(callback, waitCallback)
+
+* `callback` {Function}
+    * `error` {Boolean}
+    * `message` {String}
+* `waitCallback` {Function}
+    * `delay` {Number}
+
+When process monitor is already running (started from command line) you can subscribe your application for being monitored.
+The `callback` will be invoked when the operation completes, whether with success or failure.
+
+There is also another argument: `waitCallback`. It is invoked in the case, when subscription to the monitor is configured to be delayed
+(check `start_delay` in [Config file](jxcore-command-monitor.html#jxcore_command_monitor_config_file) section).
+In that case `waitCallback` will be called before the `callback` and it will receive one argument with value equal to `start_delay` param.
+Please note, that even if you didn't explicitly define this param in a *jx.config* file, the default value will be used.
+
+The following code tries to subscribe to the monitor:
+
+```js
+jxcore.monitor.followMe(function (err, txt) {
+    if (err) {
+        console.log("Did not subscribed to the monitor: ", txt);
+    } else {
+        console.log("Subscribed successfully: ", txt);
+    }
+}, function (delay) {
+    console.log("Subscribing is delayed by %d ms.", delay);
+});
+```
+
+Please note, that in this sample, the application does nothing else except for subscribing to the monitor, and after that - it just exists.
+There are few things to be explained here:
+
+1. The `start_delay` (see [Config file](jxcore-command-monitor.html#jxcore_command_monitor_config_file)) parameter is engaged.
+It waits for defined amount of time before really subscribing to the monitor.
+In this particular example, because the application ends before `start_delay` ellapses - it does not perform subscription for being monitored.
+
+2. Having said that, we can conclude, that there is no point to monitor such an application which is not designed for constant running.
+If purpose of that application is to just run a task and exit - the monitor unnecessarily would respawn it again and again.
+
+### monitor.leaveMe(callback)
+
+* `callback` {Function}
+    * `error` {Boolean}
+    * `message` {String}
+
+Unsubscribes the application from the process.monitor. The `callback` will be invoked when the operation completes, whether with success or failure.
+
+```js
+jxcore.monitor.leaveMe(function (err, txt) {
+    if (err) {
+        console.log("Could not unsubscribe from the monitor: ", txt);
+    } else {
+        console.log("Unsubscribed successfully: ", txt);
+    }
+});
+```
+

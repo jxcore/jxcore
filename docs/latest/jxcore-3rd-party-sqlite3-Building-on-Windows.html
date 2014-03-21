@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Building on Windows JXcore Manual &amp; Documentation</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/sh.css">
+</head>
+<body class="alt apidoc" id="api-section-jxcore-3rd-party-sqlite3-Building-on-Windows">
+    <div id="intro" class="interior">
+        <a href="http://jxcore.com/" title="Go back to the home page">
+            <img id="logo" src="http://jxcore.com/wp-content/uploads/2014/02/jxcore_logo1.png" alt="jxcore">
+        </a>
+    </div>
+    <div id="content" class="clearfix">
+        <div id="column2" class="interior">
+            <ul>
+                <li><a href="http://jxcore.com/" class="home">Home</a></li>
+                <li><a href="http://jxcore.com/downloads/" class="download">Download</a></li>
+                <li><a href="http://jxcore.com/what-is-jxcore/" class="docs current">Docs</a></li>
+                <li><a href="http://jxcore.com/blog" class="blog">Blog</a></li>
+            </ul>
+            <p class="twitter"><a href="https://twitter.com/nodejx">Follow us</a></p>
+        </div>
+
+        <div id="column1" class="interior">
+            <div class="intro_text">
+                JXcore is a Node.JS distribution with additional features (forked from v0.12) - The Node.JS contents here are synced from Node.JS Github Repository.
+            </div>
+          <header>
+            <h1>JXcore Manual &amp; Documentation</h1>
+            <div id="gtoc">
+              <p>
+                <a href="index.html" name="toc">Index</a> |
+                <a href="all.html">View on single page</a> |
+                <a href="jxcore-3rd-party-sqlite3-Building-on-Windows.json">View as JSON</a>
+              </p>
+            </div>
+            <hr>
+          </header>
+
+          <div id="toc">
+            <h2>Table of Contents</h2>
+            <ul>
+<li><a href="#jxcore_3rd_party_sqlite3_building_on_windows_building_on_windows">Building on Windows</a><ul>
+<li><a href="#jxcore_3rd_party_sqlite3_building_on_windows_1_install_visual_studio_2010_with_c_compiler">1. Install Visual Studio 2010 with C++ compiler</a></li>
+<li><a href="#jxcore_3rd_party_sqlite3_building_on_windows_2_install_node">2. Install Node</a></li>
+<li><a href="#jxcore_3rd_party_sqlite3_building_on_windows_3_build_the_module">3. Build the module</a></li>
+<li><a href="#jxcore_3rd_party_sqlite3_building_on_windows_4_troubleshooting">4. Troubleshooting</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+
+          <div id="apicontent">
+            <h1>Building on Windows<span><a class="mark" href="#jxcore_3rd_party_sqlite3_building_on_windows_building_on_windows" id="jxcore_3rd_party_sqlite3_building_on_windows_building_on_windows">#</a></span></h1>
+<p><strong>NOTE:</strong> Requires Visual Studio 2010. I didn&#39;t test with the Express version, but it <em>should</em> do.
+
+</p>
+<h2>1. Install Visual Studio 2010 with C++ compiler<span><a class="mark" href="#jxcore_3rd_party_sqlite3_building_on_windows_1_install_visual_studio_2010_with_c_compiler" id="jxcore_3rd_party_sqlite3_building_on_windows_1_install_visual_studio_2010_with_c_compiler">#</a></span></h2>
+<p><a href="http://www.microsoft.com/visualstudio/eng/products/visual-studio-express-products">http://www.microsoft.com/visualstudio/eng/products/visual-studio-express-products</a>
+
+</p>
+<p>Note: Microsoft is always changing the names of things so it is hard to know exactly what is needed. If you get through these install steps successfully please edit this wiki with how you set up Visual Studio.
+
+</p>
+<p>Note: you may also need the Win SDK <a href="http://www.microsoft.com/en-us/download/details.aspx?displayLang=en&amp;id=8279">http://www.microsoft.com/en-us/download/details.aspx?displayLang=en&amp;id=8279</a> and the
+
+</p>
+<p>Note: Another link to Visual Studio 2010 (<code>wdexpress_full.exe</code>) is <a href="http://go.microsoft.com/?linkid=9816758">http://go.microsoft.com/?linkid=9816758</a>
+
+</p>
+<h2>2. Install Node<span><a class="mark" href="#jxcore_3rd_party_sqlite3_building_on_windows_2_install_node" id="jxcore_3rd_party_sqlite3_building_on_windows_2_install_node">#</a></span></h2>
+<p>Make sure you have the latest node - either v0.8.x or v0.10.x. v0.10.x is ideal since it will contain the latest <code>node-gyp</code>. <code>node-gyp</code> is critical for building <code>node-sqlite3</code>.
+
+</p>
+<p>You can use the precompiled binaries/easy installers or you can build node yourself. Just be aware that <code>node-gyp</code> prefers the precompiled installer the provides a stable release. If you build a development version of node from source <code>node-gyp</code> will complain about needing to know the path to the headers. 
+
+</p>
+<p>NOTE: be aware of whether you installed the 32 bit or 64 bit version of Node.
+
+</p>
+<h2>3. Build the module<span><a class="mark" href="#jxcore_3rd_party_sqlite3_building_on_windows_3_build_the_module" id="jxcore_3rd_party_sqlite3_building_on_windows_3_build_the_module">#</a></span></h2>
+<p>Type:
+
+</p>
+<pre><code>npm install sqlite</code></pre>
+<p>Or download the git repo and inside the repo type:
+
+</p>
+<pre><code>npm install</code></pre>
+<p>TIP: to avoid full recompiles you can install <code>node-gyp</code> globally and just do:
+
+</p>
+<pre><code>node-gyp configure build</code></pre>
+<h2>4. Troubleshooting<span><a class="mark" href="#jxcore_3rd_party_sqlite3_building_on_windows_4_troubleshooting" id="jxcore_3rd_party_sqlite3_building_on_windows_4_troubleshooting">#</a></span></h2>
+<p>Create an issue if you have trouble. Please provide as much detail about what versions you are using and the exact errors you encountered.
+</p>
+
+          </div>
+        </div>
+    </div>
+    <div id="footer">
+        <a href="http://nubisa.com" class="nubisa">Nubisa</a>
+        <ul class="clearfix">
+            <li><a href="http://jxcore.com/" class="home">Home</a></li>
+            <li><a href="http://jxcore.com/downloads/" class="download">Download</a></li>
+            <li><a href="http://jxcore.com/what-is-jxcore/" class="docs current">Docs</a></li>
+            <li><a href="http://jxcore.com/blog" class="blog">Blog</a></li>
+            <li><a href="https://twitter.com/nodejx" class="twitter">Follow us on Twitter</a></li>
+        </ul>
+
+        <p>Copyright <a href="http://nubisa.com/">Nubisa, Inc.</a> 2014. View <a href="http://jxcore.com/document/eula/">license</a>.</p>
+    </div>
+
+  <script src="../sh_main.js"></script>
+  <script src="../sh_javascript.min.js"></script>
+  <script>highlight(undefined, undefined, 'pre');</script>
+  <!--<script>-->
+    <!--window._gaq = [['_setAccount', 'UA-10874194-2'], ['_trackPageview']];-->
+    <!--(function(d, t) {-->
+      <!--var g = d.createElement(t),-->
+          <!--s = d.getElementsByTagName(t)[0];-->
+      <!--g.src = '//www.google-analytics.com/ga.js';-->
+      <!--s.parentNode.insertBefore(g, s);-->
+    <!--}(document, 'script'));-->
+  <!--</script>-->
+
+    <script>
+        // window.onload = function() {
+        //var iframe = parent.document.getElementById("my_iframe");
+        //var iframe = window;
+        // iframe.height = iframe.clientHeight;
+        //}
+    </script>
+</body>
+</html>
+

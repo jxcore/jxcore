@@ -1,0 +1,935 @@
+{
+  "source": "doc/api/jxcore-messaging.markdown",
+  "modules": [
+    {
+      "textRaw": "Mesaging",
+      "name": "mesaging",
+      "desc": "<p>Using JXcore Messaging API, your clients can easily communicate with the server (backend service) as well as with other clients.\n\n</p>\n<p>Simply create a custom method. It can be invoked either by any of the clients or by the server itself.\n\n</p>\n<p>If you want to create an online game, chat application, or any other project for multiple users – JXcore Messaging API is for you.\n\n</p>\n<p>There are some tutorials for using Messaging API available here: <a href=\"http://jxcore.com/messaging-api/#post-652\">My first JXcore Messaging API Server</a>.\n\n</p>\n",
+      "type": "module",
+      "displayName": "Mesaging"
+    },
+    {
+      "textRaw": "API Server",
+      "name": "api_server",
+      "modules": [
+        {
+          "textRaw": "allowedResourceTypes",
+          "name": "allowedresourcetypes",
+          "desc": "<p>List of supported types for resource files.\n\n</p>\n<ul>\n<li><code>png</code> - image/png</li>\n<li><code>jpg</code> - image/jpeg</li>\n<li><code>jpeg</code> - image/jpeg</li>\n<li><code>gif</code> - image/gif</li>\n<li><code>html</code> - text/html</li>\n<li><code>css</code> - text/css</li>\n<li><code>js</code> - text/javascript</li>\n<li><code>woff</code> - application/octet-stream</li>\n<li><code>ttf</code> - application/octet-stream</li>\n<li><code>svg</code> - application/octet-stream</li>\n<li><code>otf</code> - application/octet-stream</li>\n<li><code>eot</code> - application/octet-stream</li>\n</ul>\n<p>If you want to add new <code>avi</code> type, you can do it like this:\n\n</p>\n<pre><code class=\"js\">server.allowedResourceTypes.avi = &quot;video/avi&quot;;</code></pre>\n<p>Or you can delete the existing one:\n\n</p>\n<pre><code class=\"js\">delete server.allowedResourceTypes.woff;</code></pre>\n",
+          "type": "module",
+          "displayName": "allowedResourceTypes"
+        }
+      ],
+      "methods": [
+        {
+          "textRaw": "addJSMethod(name, method)",
+          "type": "method",
+          "name": "addJSMethod",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "`name` {String} ",
+                  "name": "name",
+                  "type": "String"
+                },
+                {
+                  "textRaw": "`method` {Function} ",
+                  "name": "method",
+                  "type": "Function"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "name"
+                },
+                {
+                  "name": "method"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Adds custom method to the application. This method can be called from the client’s side.\n\n</p>\n<p>server-side (my_server.js):\n\n</p>\n<pre><code class=\"js\">server.addJSMethod(&quot;chatMessage&quot;, function (env, params) {\n    server.sendToAll(&quot;addText&quot;, params );\n});</code></pre>\n<p>client-side (index.html):\n\n</p>\n<pre><code class=\"html\">&lt;script type=&quot;text/javascript&quot;&gt;\n    jxcore.Call(&quot;chatMessage&quot;, &quot;hello&quot;);\n&lt;/script&gt;</code></pre>\n"
+        },
+        {
+          "textRaw": "getConfig(key)",
+          "type": "method",
+          "name": "getConfig",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "`key` {String} ",
+                  "name": "key",
+                  "type": "String"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "key"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Get value of application’s parameter.\n\n</p>\n"
+        },
+        {
+          "textRaw": "linkAssets(urlPath, JXP)",
+          "type": "method",
+          "name": "linkAssets",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "`urlPath` {String} ",
+                  "name": "urlPath",
+                  "type": "String"
+                },
+                {
+                  "textRaw": "`JXP` {Object} ",
+                  "name": "JXP",
+                  "type": "Object"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "urlPath"
+                },
+                {
+                  "name": "JXP"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Links assets embedded inside compiled JX file and defines them as static resource used by the application.\n\n</p>\n<p>For information, how to compile JX packages, see <a href=\"jxcore-feature-packaging-code-protection.html\">compile</a> command.\n\n</p>\n<p>The <code>urlPath</code> parameter is an url path, from which your application will access the asset files.\nPlease note, that it will be combined with <code>urlPath</code> provided in <code>setApplication()</code> method.\n\n</p>\n<p>The <code>JXP</code> refers to the object, which is embedded inside compiled JX file, and holds contents of JXP project file. You can access the JXP object by calling <code>exports.$JXP</code>.\n\n</p>\n<p>Let&#39;s assume, that your JXP file contains asset definition:\n\n</p>\n<pre><code class=\"js\">{\n    ...\n    ...\n    &quot;assets&quot;: [\n       &quot;README.txt&quot;,\n       &quot;Licence.txt&quot;\n    ],\n    ...\n}</code></pre>\n<p>Then you can link them to your application in a runtime:\n\n</p>\n<pre><code class=\"js\">server.linkAssets(&quot;/files&quot;, exports.$JXP);</code></pre>\n<p>Now, we could access it for example with a browser:\n\n</p>\n<pre><code>http://host:port/chat/files/README.txt</code></pre>\n<p>Please note, that &quot;/chat&quot; part is a root path for entire application (provided in <code>setApplication()</code>), while &quot;/files&quot; part is an argument from the <code>linkAssets()</code>.\nNow, the both combine into &quot;/chat/files&quot;.\n\n</p>\n"
+        },
+        {
+          "textRaw": "linkResource(urlPath, filePath)",
+          "type": "method",
+          "name": "linkResource",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "`urlPath` {String} ",
+                  "name": "urlPath",
+                  "type": "String"
+                },
+                {
+                  "textRaw": "`filePath` {String} ",
+                  "name": "filePath",
+                  "type": "String"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "urlPath"
+                },
+                {
+                  "name": "filePath"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Defines static resource file used by the application.\n\n</p>\n<p>The <code>urlPath</code> is a path, from which your application will access the resource file. Please note, that it will be combined with <code>urlPath</code> provided in <code>setApplication()</code> method.\n\n</p>\n<p>The <code>filePath</code> is server&#39;s filesystem path (relative or absolute) to the resource file.\n\n</p>\n<pre><code class=\"js\">server.linkResource(&quot;/app&quot;, [&quot;./index.html&quot;, &quot;text/html&quot; ]);</code></pre>\n<p>Now, we could access it for example with a browser:\n\n</p>\n<pre><code>http://host:port/chat/app</code></pre>\n<p>Please note, that &quot;/chat&quot; part is a root path for entire application (provided in <code>setApplication()</code>), while &quot;/app&quot; part is an argument from the <code>linkResource()</code>.\nNow, the both combine into &quot;/chat/app&quot;.\n\n</p>\n"
+        },
+        {
+          "textRaw": "linkResourcesFromPath(url, dir)",
+          "type": "method",
+          "name": "linkResourcesFromPath",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "`url` {String} ",
+                  "name": "url",
+                  "type": "String"
+                },
+                {
+                  "textRaw": "`dir` {String} ",
+                  "name": "dir",
+                  "type": "String"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "url"
+                },
+                {
+                  "name": "dir"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Allows linking multiple resources recursively from a given directory.\n\n</p>\n<p>Adding the whole ./assets directory (relative path from JXcore server&#39;s working directory).\n\n</p>\n<pre><code class=\"js\">server.linkResourcesFromPath(&quot;/assets/&quot;, &quot;./assets/&quot;);</code></pre>\n<p>Now, we could access it for example with a browser:\n\n</p>\n<pre><code>http://host:port/chat/assets</code></pre>\n<p>Please note, that &quot;/chat&quot; part is a root path for entire application (provided in <code>setApplication()</code>), while &quot;/assets&quot; part is an argument from the <code>linkResourcesFromPath()</code>.\nNow, the both combine into &quot;/chat/assets&quot;.\n\n</p>\n"
+        },
+        {
+          "textRaw": "sendCallBack(env, params)",
+          "type": "method",
+          "name": "sendCallBack",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "`env` {Object} ",
+                  "name": "env",
+                  "type": "Object"
+                },
+                {
+                  "textRaw": "`params` {Object} ",
+                  "name": "params",
+                  "type": "Object"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "env"
+                },
+                {
+                  "name": "params"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Calls the callback method at specific client. The <code>env</code> is the same parameter, which you received as argument for a custom method defined by you with <code>addJSMethod()</code>, while <code>params</code> is an argument for the callback. It can be anything – string, number or json literal object containing many values.\n\n</p>\n<pre><code class=\"js\">server.addJSMethod(&quot;serverMethod&quot;, function (env, params) {\n    // server responses to a client by calling it&#39;s callback\n    server.sendCallBack(env, params + &quot; World!&quot;);\n});</code></pre>\n"
+        },
+        {
+          "textRaw": "sendToGroup(groupName, methodName, params)",
+          "type": "method",
+          "name": "sendToGroup",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "`groupName` {String} ",
+                  "name": "groupName",
+                  "type": "String"
+                },
+                {
+                  "textRaw": "`methodName` {String} ",
+                  "name": "methodName",
+                  "type": "String"
+                },
+                {
+                  "textRaw": "`params` {Object} ",
+                  "name": "params",
+                  "type": "Object"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "groupName"
+                },
+                {
+                  "name": "methodName"
+                },
+                {
+                  "name": "params"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Sends message to a group of subscribers, currently connected to the application. The <code>methodName</code> is the name of the method invoked on the client&#39;s side (every subscriber of this group should has this method defined), while <code>params</code> is an argument for that method.\n\n</p>\n<p>Server can send message to group of subscribers, but they need to subscribe first. See <code>Subscribe()</code>.\n\n</p>\n<p>In the code below, whenever client will call server&#39;s <code>sendFromServer()</code> method with &quot;Hello&quot; as params argument, the server for each client subscribed to <em>programmers</em> channel, will invoke his <code>clientCustomMethod()</code> passing there &quot;Hello World!&quot; string.\n\n</p>\n<pre><code class=\"js\">server.addJSMethod(&quot;sendFromServer&quot;, function (env, params) {\n    server.sendToGroup(&quot;programmers&quot;, &quot;clientCustomMethod&quot;, params + &quot;World!&quot;);\n});</code></pre>\n"
+        },
+        {
+          "textRaw": "setApplication(applicationName, urlPath, secretKey)",
+          "type": "method",
+          "name": "setApplication",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "`applicationName` {String} ",
+                  "name": "applicationName",
+                  "type": "String"
+                },
+                {
+                  "textRaw": "`urlPath` {String} ",
+                  "name": "urlPath",
+                  "type": "String"
+                },
+                {
+                  "textRaw": "`secretKey` {String} ",
+                  "name": "secretKey",
+                  "type": "String"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "applicationName"
+                },
+                {
+                  "name": "urlPath"
+                },
+                {
+                  "name": "secretKey"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Defines new application with specified <code>applicationName</code> and default root <code>urlPath</code>. Every assets or resources added to this application will start from this path.\n\n</p>\n<p>The <code>secretKey</code> parameter is for encrypting the client locator and can be obtained from jxcore control panel.\n\n</p>\n<p>Server-side (<em>my_server.js</em>):\n\n</p>\n<pre><code class=\"js\">server.setApplication(&quot;ChatSample&quot;, &quot;/chat&quot;, &quot;NUBISA-STANDARD-KEY-CHANGE-THIS&quot;);</code></pre>\n<p>Client-side (<em>index.html</em>):\n\n</p>\n<pre><code class=\"html\">&lt;script src=&quot;/chat/jx?ms=connect&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;</code></pre>\n<p>Please note, that the &quot;/chat&quot; part in the url is the <code>urlPath</code> parameter described above.\n\n</p>\n"
+        },
+        {
+          "textRaw": "setConfig(key, value)",
+          "type": "method",
+          "name": "setConfig",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "`key` {String} ",
+                  "name": "key",
+                  "type": "String"
+                },
+                {
+                  "textRaw": "`value` {String} ",
+                  "name": "value",
+                  "type": "String"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "key"
+                },
+                {
+                  "name": "value"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Defines value for application’s parameter. Allows changing server configuration.\n\n</p>\n"
+        },
+        {
+          "textRaw": "sendToAll(methodName, params)",
+          "type": "method",
+          "name": "sendToAll",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "`methodName` {String} ",
+                  "name": "methodName",
+                  "type": "String"
+                },
+                {
+                  "textRaw": "`params` {Object} ",
+                  "name": "params",
+                  "type": "Object"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "methodName"
+                },
+                {
+                  "name": "params"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Send message to all of the clients connected currently to the application.\n\n</p>\n"
+        },
+        {
+          "textRaw": "setEngine(app)",
+          "type": "method",
+          "name": "setEngine",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "`app` {Object} ",
+                  "name": "app",
+                  "type": "Object"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "app"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Defines the server engine (like express)...\n\n</p>\n"
+        },
+        {
+          "textRaw": "start(options)",
+          "type": "method",
+          "name": "start",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "`options` {Object} ",
+                  "name": "options",
+                  "type": "Object"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "options"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Starts JXcore application with optional <code>options</code> for the server. Once started, it will be accessible to all clients.\n\n</p>\n"
+        }
+      ],
+      "type": "module",
+      "displayName": "API Server"
+    },
+    {
+      "textRaw": "API JavaScript Client",
+      "name": "api_javascript_client",
+      "events": [
+        {
+          "textRaw": "Event: 'document.onjxready'",
+          "type": "event",
+          "name": "document.onjxready",
+          "desc": "<p>There is a special event <code>document.onjxready</code>, which is called right after the JXcore script is loaded:\n\n</p>\n<pre><code class=\"html\">&lt;script src=&quot;/helloworld/jx?ms=connect&quot; type=&quot;text/javascript&quot;&gt;</code></pre>\n<p>Inside that event we can start to use jxcore object and for example we attach to the following events: <code>OnClose</code>, <code>OnError</code> and <code>Start()</code> method. The last one is the most important one for us. Please see the comments in the code above to catch the idea.\n\n</p>\n<pre><code class=\"js\">&lt;script type=&quot;text/javascript&quot;&gt;\n\n    document.onjxready = function () {\n\n        jxcore.Start(function (status) {\n\n            var send_button = document.getElementById(&#39;send_button&#39;);\n            // let&#39;s enable button, right now the script is loaded\n            send_button.disabled = &quot;&quot;;\n\n            var msg = document.getElementById(&#39;msg&#39;);\n            msg.innerHTML += &quot;Connected.&lt;BR&gt;&quot;;\n\n            var callback = function (s) {\n                msg.innerHTML += s + &quot;&lt;BR&gt;&quot;;\n            };\n\n            send_button.onclick = function () {\n                // let&#39;s call the server-side method &quot;serverMethod&quot; from the client!\n                // in turn, as a response, the backend service will invoke\n                // client&#39;s local &quot;callback&quot; defined above!\n                jxcore.Call(&quot;serverMethod&quot;, &quot;Hello&quot;, callback);\n            };\n        });\n\n        jxcore.OnClose = function (reconnecting) {\n            msg.innerHTML += &quot;Disconnected.&lt;BR&gt;&quot;;\n        };\n\n        jxcore.OnError = function (err) {\n            msg.innerHTML += err;\n        }\n    };\n&lt;/script&gt;</code></pre>\n",
+          "params": []
+        },
+        {
+          "textRaw": "Event: 'OnClose'",
+          "type": "event",
+          "name": "OnClose",
+          "params": [],
+          "desc": "<p>This event is fired every time, when the client loses connection with the server. The <code>reconnecting</code> parameter has a <code>true</code> value, if client already tries to reconnect.\n\n</p>\n<pre><code class=\"js\">jxcore.OnClose = function (reconnecting) {\n    msg.innerHTML += &quot;Disconnected.&lt;BR&gt;&quot;;\n};</code></pre>\n"
+        },
+        {
+          "textRaw": "Event: 'OnError'",
+          "type": "event",
+          "name": "OnError",
+          "params": [],
+          "desc": "<p>This event is emitted every time, the error occurs.\n\n</p>\n<pre><code class=\"js\">jxcore.OnError = function (err) {\n    msg.innerHTML += err;\n}</code></pre>\n"
+        }
+      ],
+      "methods": [
+        {
+          "textRaw": "jxcore.Call(methodName, json, cb)",
+          "type": "method",
+          "name": "Call",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "methodName {String} ",
+                  "name": "methodName",
+                  "type": "String"
+                },
+                {
+                  "textRaw": "json {Object} ",
+                  "name": "json",
+                  "type": "Object"
+                },
+                {
+                  "textRaw": "cb {Function} ",
+                  "name": "cb",
+                  "type": "Function"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "methodName"
+                },
+                {
+                  "name": "json"
+                },
+                {
+                  "name": "cb"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Invokes specific custom method named <code>methodName</code> defined on the server-side and passes to it one parameter <code>json</code>. The client&#39;s <code>cb</code> callback is optional, but when provided, it will be called after server completes invoking the method.\n\n</p>\n<p>In the example below we call the server-side method <em>serverMethod</em> from the client-side.\nIn turn, as a response, the backend service will invoke the client&#39;s local <em>callback</em> function:\n\n</p>\n<pre><code class=\"js\">var callback = function(param) {\n    alert(param);\n}\n\njxcore.Call(&quot;serverMethod&quot;, &quot;hello&quot;, callback);</code></pre>\n<p>or simply:\n\n</p>\n<pre><code class=\"js\">jxcore.Call(&quot;serverMethod&quot;, &quot;hello&quot;, function(param) {\n    alert(param);\n});</code></pre>\n"
+        },
+        {
+          "textRaw": "jxcore.Close(tx)",
+          "type": "method",
+          "name": "Close",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "tx {Boolean} ",
+                  "name": "tx",
+                  "type": "Boolean"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "tx"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Closes client and disconnects from server.\n\n</p>\n<p>The <code>tx</code> parameter is optional. If set to <code>false</code>, the <code>OnClose</code> event will also be invoked with <code>false</code> value as an argument: <code>OnClose(false)</code>. If <code>true</code> - <code>OnClose</code> event will not get invoked.\n\n</p>\n"
+        },
+        {
+          "textRaw": "jxcore.GetClientId()",
+          "type": "method",
+          "name": "GetClientId",
+          "desc": "<p>Gets the id of the client, which is an unique string value.\n\n</p>\n",
+          "signatures": [
+            {
+              "params": []
+            }
+          ]
+        },
+        {
+          "textRaw": "jxcore.ReConnect()",
+          "type": "method",
+          "name": "ReConnect",
+          "desc": "<p>Forces the client to reconnect to the server.\n\n</p>\n",
+          "signatures": [
+            {
+              "params": []
+            }
+          ]
+        },
+        {
+          "textRaw": "jxcore.SendToGroup(group, methodName, json)",
+          "type": "method",
+          "name": "SendToGroup",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "groupName {String} ",
+                  "name": "groupName",
+                  "type": "String"
+                },
+                {
+                  "textRaw": "methodName {String} ",
+                  "name": "methodName",
+                  "type": "String"
+                },
+                {
+                  "textRaw": "json {Object} ",
+                  "name": "json",
+                  "type": "Object"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "group"
+                },
+                {
+                  "name": "methodName"
+                },
+                {
+                  "name": "json"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Sends message to all clients, that have already subscribed to the specific <code>groupName</code>. The message is passed as <code>json</code> argument to the target&#39;s method named <code>methodName</code>.\nThe message can be any value, primitive (string, number, etc.) or json literal object.\n\n</p>\n<p>The <em>addText</em> method should be available on every client, which is subscribed to <em>programmers</em> group.\nWhile invoking the <em>addText</em> method at each client, the server will pass { obj : &quot;value&quot; } as an argument.\n\n</p>\n<pre><code class=\"js\">document.getElementById(&quot;btnSend&quot;).onclick = function(){\n    jxcore.SendToGroup(&quot;programmers&quot;, &quot;addText&quot;, { obj : &quot;value&quot; } );\n};</code></pre>\n"
+        },
+        {
+          "textRaw": "jxcore.Start(cb)",
+          "type": "method",
+          "name": "Start",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "cb {Function} ",
+                  "name": "cb",
+                  "type": "Function"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "cb"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Starts JXcore client. Connects to the server, and when it succeedes - the client’s callback <code>cb</code> is called.\n\n</p>\n<pre><code class=\"js\">document.onjxready = function () {\n    jxcore.Start(function (status) {\n\n        // here we are, after the client has connected to server\n        // we can enable the button now\n        var btnSend = document.getElementById(&#39;btnSend&#39;);\n        btnSend.disabled = &quot;&quot;;\n\n        // do anything else\n        // see tutorials for more usage\n    });\n};</code></pre>\n"
+        },
+        {
+          "textRaw": "jxcore.Subscribe(group, callback)",
+          "type": "method",
+          "name": "Subscribe",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "group {String} ",
+                  "name": "group",
+                  "type": "String"
+                },
+                {
+                  "textRaw": "callback {Function} ",
+                  "name": "callback",
+                  "type": "Function"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "group"
+                },
+                {
+                  "name": "callback"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Subscribes the client to a <code>group</code>, or channel. From now on, messages sent to that group by any other subscriber will be received by the client. Also the client can send messages to this group – see <code>jxcore.SendToGroup()</code> method.\nAfter the server will successfully subscribe the client to the <code>group</code>, the client&#39;s <code>callback</code> will be called.\n\n</p>\n<pre><code class=\"js\">jxcore.Subscribe(&quot;programmers&quot;, function() {\n    alert(&quot;subscribed&quot;);\n});</code></pre>\n"
+        },
+        {
+          "textRaw": "jxcore.Unsubscribe(group, callback)",
+          "type": "method",
+          "name": "Unsubscribe",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "group {String} ",
+                  "name": "group",
+                  "type": "String"
+                },
+                {
+                  "textRaw": "callback {Function} ",
+                  "name": "callback",
+                  "type": "Function"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "group"
+                },
+                {
+                  "name": "callback"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Unsubscribes the client from a <code>group</code>, or channel. From now on, messages sent to that group cannot be received by this client.\nAfter the server will successfully unsubscribe the client from the <code>group</code>, the client&#39;s <code>callback</code> will be called.\n\n</p>\n<pre><code class=\"js\">jxcore.Unsubscribe(&quot;programmers&quot;, function() {\n    alert(&quot;unsubscribed&quot;);\n});</code></pre>\n"
+        }
+      ],
+      "type": "module",
+      "displayName": "API JavaScript Client"
+    },
+    {
+      "textRaw": "API Java Client",
+      "name": "api_java_client",
+      "desc": "<p>There is a tutorial showing, how to consume JXcore Messaging API from a <a href=\"http://jxcore.com/messaging-api/#post-665\">Java Client</a>.\n\n</p>\n",
+      "modules": [
+        {
+          "textRaw": "Events",
+          "name": "events",
+          "desc": "<p>Messaging module for Java defines events in a separate class <code>jxcore.ClientEvents</code>. In order to listen for client&#39;s events, we need to instantiate this class and assign to <code>client.Events</code> property:\n\n</p>\n<pre><code class=\"java\">import jxcore.*;\n\njxcore.ClientEvents events = new ClientEvents(){\n    @Override public void OnErrorReceived(Client c, String Message) {\n        //Error received\n    }\n    @Override public void OnClientConnected(Client c) {\n        //Client is connected\n    }\n    @Override public void OnClientDisconnected(Client c) {\n        //Client is disconnected\n    }\n    @Override public void OnEventLog(Client c, String log, LogLevel level) {\n        //get the event log from here\n    }\n};\n//now we may define this listener into our Client instance\nclient.Events = event;</code></pre>\n",
+          "events": [
+            {
+              "textRaw": "Event: 'OnErrorReceived'",
+              "type": "event",
+              "name": "OnErrorReceived",
+              "params": [],
+              "desc": "<p>This event is emitted whenever an error occurs at the <code>client</code>.\n\n</p>\n"
+            },
+            {
+              "textRaw": "Event: 'OnClientConnected'",
+              "type": "event",
+              "name": "OnClientConnected",
+              "params": [],
+              "desc": "<p>This event is emitted after the <code>client</code> successfully connects to the server.\n\n</p>\n"
+            },
+            {
+              "textRaw": "Event: 'OnClientDisconnected'",
+              "type": "event",
+              "name": "OnClientDisconnected",
+              "params": [],
+              "desc": "<p>This event is emitted when the <code>client</code> loses its connection with the server.\n\n</p>\n"
+            },
+            {
+              "textRaw": "Event: 'OnEventLog'",
+              "type": "event",
+              "name": "OnEventLog",
+              "params": [],
+              "desc": "<p>This event is fired whenever the <code>client</code> logs an information <code>log</code> message. The <code>level</code> parameter is an enumeration value and can have one of the following: <em>Informative</em> or <em>Critical</em>.\n\n</p>\n"
+            }
+          ],
+          "type": "module",
+          "displayName": "Events"
+        }
+      ],
+      "ctors": [
+        {
+          "textRaw": "new Client(localTarget, appName, appKey, url, port, secure)",
+          "type": "ctor",
+          "name": "Client",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "localTarget {Object} ",
+                  "name": "localTarget",
+                  "type": "Object"
+                },
+                {
+                  "textRaw": "appName {String} ",
+                  "name": "appName",
+                  "type": "String"
+                },
+                {
+                  "textRaw": "appKey {String} ",
+                  "name": "appKey",
+                  "type": "String"
+                },
+                {
+                  "textRaw": "url {String} ",
+                  "name": "url",
+                  "type": "String"
+                },
+                {
+                  "textRaw": "port {int} ",
+                  "name": "port",
+                  "type": "int"
+                },
+                {
+                  "textRaw": "secure {boolean} ",
+                  "name": "secure",
+                  "type": "boolean"
+                },
+                {
+                  "textRaw": "resetUID {boolean} ",
+                  "name": "resetUID",
+                  "type": "boolean"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "localTarget"
+                },
+                {
+                  "name": "appName"
+                },
+                {
+                  "name": "appKey"
+                },
+                {
+                  "name": "url"
+                },
+                {
+                  "name": "port"
+                },
+                {
+                  "name": "secure"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Creates an instance of JXcore Java Client with specified application name <code>appName</code> and application key <code>appKey</code> (which is obtainable from web control panel).\nThe <code>url</code> parameter specifies JXcore server URL, e.g. <em>sampledomain.com</em> or <em>120.1.2.3</em>. You can also enable SSL support with <code>secure</code> parameter.\n\n</p>\n<p>Setting <code>resetUID</code> as <code>true</code> will reset the unique instance id (session id).\n\n</p>\n<p>The first argument <code>localTarget</code> is an instance of a local class, which will be answering the calls from server.\nIn that class you will specify client methods, which will be callable by other clients or the server itself.\n\n</p>\n<pre><code class=\"java\">import jxcore.*;\n\nClient client = new Client(new CustomMethods(), &quot;channels&quot;,\n    &quot;NUBISA-STANDARD-KEY-CHANGE-THIS&quot;, &quot;localhost&quot;, 8000, false, true);</code></pre>\n"
+        }
+      ],
+      "methods": [
+        {
+          "textRaw": "Call(methodName, params, callback)",
+          "type": "method",
+          "name": "Call",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "methodName {String} ",
+                  "name": "methodName",
+                  "type": "String"
+                },
+                {
+                  "textRaw": "params {Object} ",
+                  "name": "params",
+                  "type": "Object"
+                },
+                {
+                  "textRaw": "callback {jxcore.Callback} ",
+                  "name": "callback",
+                  "type": "jxcore.Callback"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "methodName"
+                },
+                {
+                  "name": "params"
+                },
+                {
+                  "name": "callback"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Invokes specific custom method <code>methodName</code> defined on the server-side and passes to it <code>params</code> value. The <code>methodName</code> should also contain the class name and the namespace, e.g. <em>com.example.MyClass.MyMethod</em>.\n\n</p>\n<p>The optional parameter <code>callback</code> is the client’s function, which will be called after server completes invoking the method.\n\n</p>\n<p>In the example below we call the server-side method <em>serverMethod</em> from the client-side.\nIn turn, as a response, the backend service will invoke the client&#39;s local <code>callback</code> function:\n\n</p>\n<pre><code class=\"java\">client.Call(&quot;serverMethod&quot;, &quot;Hello&quot;, callback);</code></pre>\n"
+        },
+        {
+          "textRaw": "Connect()",
+          "type": "method",
+          "name": "Connect",
+          "desc": "<p>Starts the client, connects to the server. Returns a boolean value based on the result.\n\n</p>\n<pre><code class=\"java\">if (client.Connect()) {\n    System.out.println(&quot;ready!&quot;);\n}</code></pre>\n",
+          "signatures": [
+            {
+              "params": []
+            }
+          ]
+        },
+        {
+          "textRaw": "getClientId()",
+          "type": "method",
+          "name": "getClientId",
+          "desc": "<p>Gets the string containing unique id of the client.\n\n</p>\n",
+          "signatures": [
+            {
+              "params": []
+            }
+          ]
+        },
+        {
+          "textRaw": "SendToGroup(String groupName, String methodName, Object params)",
+          "type": "method",
+          "name": "SendToGroup",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "groupName {String} ",
+                  "name": "groupName",
+                  "type": "String"
+                },
+                {
+                  "textRaw": "methodName {String} ",
+                  "name": "methodName",
+                  "type": "String"
+                },
+                {
+                  "textRaw": "params {Object} ",
+                  "name": "params",
+                  "type": "Object"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "String groupName"
+                },
+                {
+                  "name": "String methodName"
+                },
+                {
+                  "name": "Object params"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Sends message to all clients, that have already subscribed to the specific <code>groupName</code>. The message is passed as <code>params</code> argument to the target&#39;s method named <code>methodName</code>.\n\n</p>\n<p>The <em>addText</em> method should be available on every client, which is subscribed to <em>programmers</em> group.\nWhile invoking the <em>addText</em> method at each client, the server will pass &quot;Hello from client!&quot; as an argument.\n\n</p>\n<pre><code class=\"java\">client.SendToGroup(&quot;programmers&quot;, &quot;addText&quot;, &quot;Hello from client!&quot;);</code></pre>\n"
+        },
+        {
+          "textRaw": "Subscribe(group, callback)",
+          "type": "method",
+          "name": "Subscribe",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "group {String} ",
+                  "name": "group",
+                  "type": "String"
+                },
+                {
+                  "textRaw": "callback {jxcore.Callback} ",
+                  "name": "callback",
+                  "type": "jxcore.Callback"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "group"
+                },
+                {
+                  "name": "callback"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Subscribes the client to a <code>group</code>, or channel. From now on, messages sent to that group by any other subscriber will be received by the client. Also the client can send messages to this group – see <code>jxcore.SendToGroup()</code> method.\nAfter the server will successfully subscribe the client to the <code>group</code>, the client&#39;s <code>callback</code> will be called.\n\n</p>\n<pre><code class=\"java\">try {\n     client.Subscribe(&quot;programmers&quot;, new Callback() {\n         @Override\n         public void call(Object o) throws Exception {\n             System.out.println(&quot;Subscribed to &quot; + o.toString());\n             client.SendToGroup(&quot;programmers&quot;, &quot;clientMethod&quot;,\n             &quot;Hello from client!&quot;);\n         }\n     });\n} catch (Exception e) {\n     System.out.println(&quot;Cannot subscribe.&quot;);\n}</code></pre>\n"
+        },
+        {
+          "textRaw": "Unsubscribe(group, callback)",
+          "type": "method",
+          "name": "Unsubscribe",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "group {String} ",
+                  "name": "group",
+                  "type": "String"
+                },
+                {
+                  "textRaw": "callback {jxcore.Callback} ",
+                  "name": "callback",
+                  "type": "jxcore.Callback"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "group"
+                },
+                {
+                  "name": "callback"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Unsubscribes the client from a <code>group</code>, or channel. From now on, messages sent to that group cannot be received by this client.\nAfter the server will successfully unsubscribe the client from the <code>group</code>, the client&#39;s <code>callback</code> will be called.\n\n</p>\n<pre><code class=\"java\">try {\n     client.Unubscribe(&quot;programmers&quot;, new Callback() {\n         @Override\n         public void call(Object o) throws Exception {\n             System.out.println(&quot;Unubscribed from &quot; + o.toString());\n         }\n     });\n} catch (Exception e) {\n     System.out.println(&quot;Cannot unubscribe.&quot;);\n}</code></pre>\n"
+        }
+      ],
+      "type": "module",
+      "displayName": "API Java Client"
+    }
+  ]
+}

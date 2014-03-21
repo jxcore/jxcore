@@ -1,0 +1,235 @@
+{
+  "source": "doc/api/jxcore-tasks.markdown",
+  "modules": [
+    {
+      "textRaw": "Multithreaded Javascript Tasks",
+      "name": "multithreaded_javascript_tasks",
+      "desc": "<p>Another important feature introduced in JXcore is multithreading.\nIn a single-threaded project <code>setTimeout()</code> and <code>setInterval()</code> methods wait in a separate thread,\nbut the scheduled methods are still executed under the main application thread.\nSince the main thread eventually handles every single task, the application may lost its responsiveness under a load or queued heavy tasks.\nEven if the application works well in a testing environment, it could start slowing down under a massive load (increased number of clients).\n\n</p>\n",
+      "type": "module",
+      "displayName": "Multithreaded Javascript Tasks"
+    },
+    {
+      "textRaw": "Defaults",
+      "name": "defaults",
+      "desc": "<p>JXcore uses the following defaults for subthreads for multithreaded applications:\n\n</p>\n<ol>\n<li>minimum amount is set to 2. This is also the default value.</li>\n<li>maximum amount is set to 63.</li>\n</ol>\n<p>You can also control the number of subthreads and there are two ways you can do this, but that depends how you run the application.\n\n</p>\n<p>If you launch te code with mt/mt-keep command line parameter, you can set the threads count by applying a number after the colon, like:\n\n</p>\n<pre><code>&gt; jx mt:4 hello.js</code></pre>\n<p>Otherwise you can use <a href=\"\">jxcore.env.setThreadCount()</a> method. See also <a href=\"http://jxcore.com/multithreaded-javascript-tasks/#cat-69\">How to run multithreaded code?</a> for more information.\n\n</p>\n",
+      "type": "module",
+      "displayName": "Defaults"
+    },
+    {
+      "textRaw": "API",
+      "name": "api",
+      "events": [
+        {
+          "textRaw": "Event: 'emptyQueue'",
+          "type": "event",
+          "name": "emptyQueue",
+          "desc": "<p>This event fires when all of the added tasks have been processed.\n\n</p>\n<pre><code class=\"js\">// this event fires when all of the added tasks have been processed\njxcore.tasks.on(&#39;emptyQueue&#39;, function () {\n   console.log(&#39;all of the added tasks have been processed&#39;);\n});\n\n// please keep in mind, that if you plan to use some delayed/async work inside a task,\n// the emptyQueue event can be fired before they will have chance to complete.\n// refer to keepAlive() method for that matter.</code></pre>\n",
+          "params": []
+        },
+        {
+          "textRaw": "Event: 'message'",
+          "type": "event",
+          "name": "message",
+          "params": [],
+          "desc": "<p>This event fires every time, when the main process receives a message sent by a subthread with <code>process.sendToMain()</code> method.\n\n</p>\n<pre><code class=\"js\">var callback = function (threadId, params) {\n   console.log(&#39;Main thread received a message from subthread no &#39; + threadId\n      + &#39;. Message: &#39;, params);\n};\n\n// this event fires on the main thread, after it receives a message from a subthread\njxcore.tasks.on(&#39;message&#39;, callback);\n\n// a subthread sends the message with sendToMain().\n// see the Subthreads API for more information\nprocess.sendToMain( { obj: &quot;something&quot; } );</code></pre>\n"
+        }
+      ],
+      "methods": [
+        {
+          "textRaw": "tasks.addTask(method, param, callback, obj)",
+          "type": "method",
+          "name": "addTask",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "method {Function} ",
+                  "name": "method",
+                  "type": "Function"
+                },
+                {
+                  "textRaw": "param {Object} ",
+                  "name": "param",
+                  "type": "Object"
+                },
+                {
+                  "textRaw": "callback {Function} ",
+                  "name": "callback",
+                  "type": "Function"
+                },
+                {
+                  "textRaw": "obj {Object} ",
+                  "name": "obj",
+                  "type": "Object"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "method"
+                },
+                {
+                  "name": "param"
+                },
+                {
+                  "name": "callback"
+                },
+                {
+                  "name": "obj"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Adds new task <strong>as a method</strong> to be processed in a separate thread. The task will be processed as soon as possible.\nIf there is any idle subthread, it will be used to execute the task immediately. Otherwise it may wait until the other tasks will finish or some of the subthreads will become idle.\n\n</p>\n<p>The task is the function <code>method</code> with optional <code>param</code> as an argument. After the method completes, the <code>callback</code> will be invoked.\nIt can receive one or twe arguments, depending if <code>obj</code> is provided or not.\n\n</p>\n<p><code>obj</code> is a context object from the main thread and it can contain any value. If it’s not provided, then the <code>callback</code> method will have only one argument, and it will be the result from the task <code>method</code>.\nOtherwise, the <code>callback</code> will contain two arguments. The first one is the <code>obj</code> object which we are describing right now, while the second argument is the result from the task <code>method</code>.\n\n</p>\n<p>There are few principles regarding adding the tasks, that you should be aware of:\n\n</p>\n<ol>\n<li>You cannot specify, in which of the subthreads your task will run. The subthread will be chosen automatically. You can find out, which subthread is used for that task only from inside the task itself (see <code>threadId</code> property in Subthreads API).</li>\n<li>If for example on your system <code>getThreadCount()</code> returns 3, and you add 3 tasks one after another, there is no guarantee, that each of them will run in its own subthread, but still it is one of the possibilities. But things can go also in many other ways: all of the 3 tasks can run in the same subthread, or two of them in one subthread, and the third in another, etc.</li>\n<li>Do not assume the tasks will be executed in the order of which they were added.</li>\n<li>When the task <code>method</code> returns from its execution block (for example by calling return statement), it is considered as completed. This means, that if you use in the task code any delayed execution with <code>setTimeout()</code> or <code>setInterval()</code>, or async calls, the task method may return faster, before those delayed/async jobs will have chance to complete. For gaining control over task’s execution time, please use <code>process.keepAlive()</code> and <code>process.release()</code> methods from Subthreads API.</li>\n</ol>\n<p>Adding a task with one-argument callback:\n\n</p>\n<pre><code class=\"js\">var method = function (param) {\n   console.log(&quot;We are in a subthread now. Argument value is:&quot;, param);\n   return &quot;ok&quot;;\n};\n\njxcore.tasks.addTask(method, { str: &quot;hello&quot; }, function (result) {\n   console.log(&quot;This is result from subthreaded method:&quot;, result);\n   // should display &quot;ok&quot;\n});</code></pre>\n<p>Adding a task with two-argument callback:\n\n</p>\n<pre><code class=\"js\">// we&#39;re going to pass some object from the main thread to the callback\nvar mainThreadVariable = {\n    log : function(txt) {\n        console.log(txt);\n    }\n};\n\nvar callback = function (obj, result) {\n    // now we can access mainThreadVariable (by obj argument)\n    obj.log(result);\n};\n\njxcore.tasks.addTask(method, { str: &quot;hello&quot; }, callback, mainThreadVariable);</code></pre>\n"
+        },
+        {
+          "textRaw": "tasks.addTask(object, param)",
+          "type": "method",
+          "name": "addTask",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "object {Function} - this is the object containing *define() and/or logic()* methods, which will be executed in a subthread. ",
+                  "name": "object",
+                  "type": "Function",
+                  "desc": "this is the object containing *define() and/or logic()* methods, which will be executed in a subthread."
+                },
+                {
+                  "textRaw": "param {Object} - argument for `logic()` method ",
+                  "name": "param",
+                  "type": "Object",
+                  "desc": "argument for `logic()` method"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "object"
+                },
+                {
+                  "name": "param"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Adds new task <strong>as an object</strong> to be processed in a separate thread. The task will be processed as soon as possible.\nIf there is any idle subthread, it will be used to execute the task immediately. Otherwise it may wait until the other tasks will finish or some of the subthreads will become idle.\n\n</p>\n<p>As you already might know from previous part of the documentation, the subthreads are separated from the main thread as well as from each other. Moreover, tasks themselves are also separated from each other, even if they are running in the same subthread.\n\n</p>\n<p>There are however some scenarios, where it could be useful to share some data between the tasks being executed in the same thread\n\n</p>\n<p>For this case we implemented <em>define &amp; logic</em> approach.\n\n</p>\n<pre><code class=\"js\">var task = {};\ntask.define = function() {\n    // you may define here static variables, accessible to all tasks on this subthread\n    var x = 0;\n};\ntask.logic = function(param) {\n    // this method runs once per every task in the subthread\n    // variables declared in define() method are freely accessible from inside logic().\n    // you can also modify them\n    x = 10;\n};</code></pre>\n<p><strong>define()</strong>\n\n</p>\n<ul>\n<li>This method runs only once per whole subthread (at first <code>addTask()</code> invocation.)</li>\n<li>Purpose of this method is to declare variables, initialize objects, make some e.g. database connections, etc. All of them will be static and accessible to all tasks, which means any subsequent <code>logic()</code> invocations of this particular task object, running on this subthread.</li>\n<li>This is a required method which neither takes any parameters nor returns any values. Any parameters will be ignored.</li>\n</ul>\n<p><strong>logic(param)</strong>\n\n</p>\n<ul>\n<li>This is the actual task’s execution code.</li>\n<li>It may receive one argument and this can be any javascript object.</li>\n<li>Variables and objects declared in <code>define()</code> method are freely accessible from inside <code>logic()</code> method. You can also freely modify them, but please remember that since everything declared in <code>define()</code> is static, if you change some variable’s value in one task, it will have affect for all subsequent tasks which run in this subthread. Also do not assume the tasks will be executed in the order of which they were added.</li>\n<li>This method is optional which means that the entire task’s job should be embedded inside the <code>define()</code> method. As mentioned before, it will run only once per subthread, no matter how many times the task was added to the subthread’s queue.</li>\n</ul>\n<p>When adding a tasks with <em>define &amp; logic approach</em>, make sure to apply all of the principles for adding the tasks as methods – see <code>addTask(method, param, callback, obj)</code>.\n\n</p>\n<p>Keep in mind that only those two members of the task object (<code>define()</code> and <code>logic()</code> methods) are meaningful. Any other object members will be ignored. Moreover, we highly discourage adding any other members, especially if you plan to add massive amount of such tasks, because they can unnecessarily raise memory usage and may impact the performance.\n\n</p>\n<pre><code class=\"js\">// in this example we are adding two identical tasks.\n// the define() method will get called only once,\n// but the logic() will be executed twice, as separate tasks.\n\nvar task = {};\n\ntask.define = function () {\n    // static variables\n    var x = 0;\n    var bool = true;\n};\n\ntask.logic = function (param) {\n    console.log(&quot;Hello in &quot;, param);\n    // variables declared in define() method are freely accessible from inside logic().\n    // you can also modify them, but be careful: do not rely on order of the tasks.\n    // task1 doesn&#39;t have to be executed before task2!\n    bool = !bool;\n    console.log(&quot;Static variable bool:&quot;, bool);\n    console.log(&quot;Static variable x: &quot;, x++);\n};\n\njxcore.tasks.addTask(task, &quot;task1&quot;);\njxcore.tasks.addTask(task, &quot;task2&quot;);</code></pre>\n"
+        },
+        {
+          "textRaw": "tasks.forceGC()",
+          "type": "method",
+          "name": "forceGC",
+          "desc": "<p>Forces garbage collection on V8 heap. Please use it with caution. It may trigger the garbage collection process immediately, which may freeze the application for a while and stop taking the requests during this time.\n\n</p>\n",
+          "signatures": [
+            {
+              "params": []
+            }
+          ]
+        },
+        {
+          "textRaw": "tasks.getThreadCount()",
+          "type": "method",
+          "name": "getThreadCount",
+          "desc": "<p>Returns the number of subthreads currently used by application (size of the thread pool).\n\n</p>\n",
+          "signatures": [
+            {
+              "params": []
+            }
+          ]
+        },
+        {
+          "textRaw": "tasks.jobCount()",
+          "type": "method",
+          "name": "jobCount",
+          "desc": "<p>Returns number of tasks currently waiting in the queue.\n\n</p>\n",
+          "signatures": [
+            {
+              "params": []
+            }
+          ]
+        },
+        {
+          "textRaw": "tasks.runOnce(method, param, doNotRemember)",
+          "type": "method",
+          "name": "runOnce",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "method {Function} - This is the method, which will be executed once for every existing subthread (<em>getThreadCount()</em> times). ",
+                  "name": "method",
+                  "type": "Function",
+                  "desc": "This is the method, which will be executed once for every existing subthread (<em>getThreadCount()</em> times)."
+                },
+                {
+                  "textRaw": "param {Object} - Argument for that method. ",
+                  "name": "param",
+                  "type": "Object",
+                  "desc": "Argument for that method."
+                },
+                {
+                  "textRaw": "doNotRemember {Boolean} ",
+                  "name": "doNotRemember",
+                  "type": "Boolean"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "method"
+                },
+                {
+                  "name": "param"
+                },
+                {
+                  "name": "doNotRemember"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Adds new task (the <code>method</code> function with optional <code>param</code> argument) to be processed just once for every existing subthread. In other words, every subthread will call the task once.\nYou can get number of subthreads by calling <code>getThreadCount()</code> method. Every subthread will process its task as soon as possible. If there are no other tasks in the subthread’s queue, the task will be executed immediately. Otherwise it may wait until the other tasks in this subthread will finish.\n\n</p>\n<p>If you don&#39;t want the method definition to be remembered by future threads – use <code>doNotRemember</code>. It&#39;s <code>false</code> by default.\n\n</p>\n<p>Running tasks with <code>runOnce()</code> method will also get <code>emptyQueue</code> event fired.\n\n</p>\n<p>One of the cases for using <code>runOnce()</code> could be setting up a http server on each thread.\n\n</p>\n<pre><code class=\"js\">jxcore.tasks.runOnce( method, &quot;some parameter&quot;);</code></pre>\n"
+        },
+        {
+          "textRaw": "tasks.setThreadCount(value)",
+          "type": "method",
+          "name": "setThreadCount",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "`value` {Number} ",
+                  "name": "value",
+                  "type": "Number"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "value"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Sets the number of subthreads that you want to have in the thread pool for the application.\n\n</p>\n<p>Generally, there is no need to use this method as JXcore by default will create 2 subthreads. In some scenarios you may want to change this number, but if you do, you must call <code>env.setThreadCount()</code> before the first use of <code>jxcore.tasks</code> object. After that, any subsequent calls of this method will be simply ignored.\n\n</p>\n<p>The minimum, and default value is 2. The maximum value is 63, but keep in mind, that this amount of subthreads may not always bring performance benefits. In the contrary – in some cases may do even worse, depending on the task implementation, so make sure that you always do some proper testing. Setting value outside this range will raise an exception.\n\n</p>\n<pre><code class=\"js\">jxcore.env.setThreadCount(5);\nvar tasks = jxcore.tasks;\n\n// the call below will be ignored, since we have just referenced jxcore.tasks object\n// and the thread pool is already created.\njxcore.env.setThreadCount(10)</code></pre>\n"
+        },
+        {
+          "textRaw": "tasks.unloadThreads()",
+          "type": "method",
+          "name": "unloadThreads",
+          "desc": "<p>Marks all subthreads to be removed from the thread pool. If they are idle – the method removes them immediately. Otherwise it waits, until they finish their last tasks and removes them afterwards.\n</p>\n",
+          "signatures": [
+            {
+              "params": []
+            }
+          ]
+        }
+      ],
+      "type": "module",
+      "displayName": "API"
+    }
+  ]
+}

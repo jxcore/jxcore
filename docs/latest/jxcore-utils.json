@@ -1,0 +1,18 @@
+{
+  "source": "doc/api/jxcore-utils.markdown",
+  "modules": [
+    {
+      "textRaw": "utils",
+      "name": "utils",
+      "properties": [
+        {
+          "textRaw": "utils.safeBlockTimeout",
+          "name": "safeBlockTimeout",
+          "desc": "<p>Gets and sets the maximum time (milliseconds) during which the key in a <code>safeBlock</code> is locked. By default its value is 10000 milliseconds. When it elapses, JXcore automatically unlocks the key for other threads access.</p>\n"
+        }
+      ],
+      "type": "module",
+      "displayName": "utils"
+    }
+  ]
+}

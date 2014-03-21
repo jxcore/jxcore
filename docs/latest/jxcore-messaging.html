@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Mesaging JXcore Manual &amp; Documentation</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/sh.css">
+</head>
+<body class="alt apidoc" id="api-section-jxcore-messaging">
+    <div id="header_bar">
+        <div id="logo_bar">
+            <a href="http://jxcore.com/" title="Go back to the home page">
+                <img id="logo" src="assets/main-logo_white.png" alt="jxcore">
+            </a>
+        </div>
+    </div>
+    <div id="content" class="clearfix">
+
+        <div id="column2" class="interior">
+            <ul>
+                <li><a href="http://jxcore.com/" class="home">Home</a></li>
+                <li><a href="http://jxcore.com/downloads/" class="download">Download</a></li>
+                <li><a href="http://jxcore.com/what-is-jxcore/" class="docs current">Docs</a></li>
+                <li><a href="http://jxcore.com/blog" class="blog">Blog</a></li>
+            </ul>
+            <p class="twitter"><a href="https://twitter.com/nodejx">Follow us</a></p>
+        </div>
+
+        <div id="column1" class="interior">
+            <div class="intro_text">
+                JXcore is a multithreaded Node.JS distribution with additional features.
+                <br/>
+                <br/>
+                <strong>The Node.JS contents here is synced from Node.JS Github Repository.</strong>
+            </div>
+          <header>
+            <h1>JXcore Manual &amp; Documentation</h1>
+            <div id="gtoc">
+              <p>
+                <a href="index.html" name="toc">Index</a> |
+                <a href="all.html">View on single page</a> |
+                <a href="jxcore-messaging.json">View as JSON</a>
+              </p>
+            </div>
+            <hr>
+          </header>
+
+          <div id="toc">
+            <h2>Table of Contents</h2>
+            <ul>
+<li><a href="#jxcore_messaging_mesaging">Mesaging</a></li>
+<li><a href="#jxcore_messaging_api_server">API Server</a><ul>
+<li><a href="#jxcore_messaging_allowedresourcetypes">allowedResourceTypes</a></li>
+<li><a href="#jxcore_messaging_addjsmethod_name_method">addJSMethod(name, method)</a></li>
+<li><a href="#jxcore_messaging_getconfig_key">getConfig(key)</a></li>
+<li><a href="#jxcore_messaging_linkassets_urlpath_jxp">linkAssets(urlPath, JXP)</a></li>
+<li><a href="#jxcore_messaging_linkresource_urlpath_filepath">linkResource(urlPath, filePath)</a></li>
+<li><a href="#jxcore_messaging_linkresourcesfrompath_url_dir">linkResourcesFromPath(url, dir)</a></li>
+<li><a href="#jxcore_messaging_sendcallback_env_params">sendCallBack(env, params)</a></li>
+<li><a href="#jxcore_messaging_sendtogroup_groupname_methodname_params">sendToGroup(groupName, methodName, params)</a></li>
+<li><a href="#jxcore_messaging_setapplication_applicationname_urlpath_secretkey">setApplication(applicationName, urlPath, secretKey)</a></li>
+<li><a href="#jxcore_messaging_setconfig_key_value">setConfig(key, value)</a></li>
+<li><a href="#jxcore_messaging_sendtoall_methodname_params">sendToAll(methodName, params)</a></li>
+<li><a href="#jxcore_messaging_setengine_app">setEngine(app)</a></li>
+<li><a href="#jxcore_messaging_start_options">start(options)</a></li>
+</ul>
+</li>
+<li><a href="#jxcore_messaging_api_javascript_client">API JavaScript Client</a><ul>
+<li><a href="#jxcore_messaging_event_document_onjxready">Event: &#39;document.onjxready&#39;</a></li>
+<li><a href="#jxcore_messaging_event_onclose">Event: &#39;OnClose&#39;</a></li>
+<li><a href="#jxcore_messaging_event_onerror">Event: &#39;OnError&#39;</a></li>
+<li><a href="#jxcore_messaging_jxcore_call_methodname_json_cb">jxcore.Call(methodName, json, cb)</a></li>
+<li><a href="#jxcore_messaging_jxcore_close_tx">jxcore.Close(tx)</a></li>
+<li><a href="#jxcore_messaging_jxcore_getclientid">jxcore.GetClientId()</a></li>
+<li><a href="#jxcore_messaging_jxcore_reconnect">jxcore.ReConnect()</a></li>
+<li><a href="#jxcore_messaging_jxcore_sendtogroup_group_methodname_json">jxcore.SendToGroup(group, methodName, json)</a></li>
+<li><a href="#jxcore_messaging_jxcore_start_cb">jxcore.Start(cb)</a></li>
+<li><a href="#jxcore_messaging_jxcore_subscribe_group_callback">jxcore.Subscribe(group, callback)</a></li>
+<li><a href="#jxcore_messaging_jxcore_unsubscribe_group_callback">jxcore.Unsubscribe(group, callback)</a></li>
+</ul>
+</li>
+<li><a href="#jxcore_messaging_api_java_client">API Java Client</a><ul>
+<li><a href="#jxcore_messaging_events">Events</a><ul>
+<li><a href="#jxcore_messaging_event_onerrorreceived">Event: &#39;OnErrorReceived&#39;</a></li>
+<li><a href="#jxcore_messaging_event_onclientconnected">Event: &#39;OnClientConnected&#39;</a></li>
+<li><a href="#jxcore_messaging_event_onclientdisconnected">Event: &#39;OnClientDisconnected&#39;</a></li>
+<li><a href="#jxcore_messaging_event_oneventlog">Event: &#39;OnEventLog&#39;</a></li>
+</ul>
+</li>
+<li><a href="#jxcore_messaging_new_client_localtarget_appname_appkey_url_port_secure">new Client(localTarget, appName, appKey, url, port, secure)</a></li>
+<li><a href="#jxcore_messaging_call_methodname_params_callback">Call(methodName, params, callback)</a></li>
+<li><a href="#jxcore_messaging_connect">Connect()</a></li>
+<li><a href="#jxcore_messaging_getclientid">getClientId()</a></li>
+<li><a href="#jxcore_messaging_sendtogroup_string_groupname_string_methodname_object_params">SendToGroup(String groupName, String methodName, Object params)</a></li>
+<li><a href="#jxcore_messaging_subscribe_group_callback">Subscribe(group, callback)</a></li>
+<li><a href="#jxcore_messaging_unsubscribe_group_callback">Unsubscribe(group, callback)</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+
+          <div id="apicontent">
+            <h1>Mesaging<span><a class="mark" href="#jxcore_messaging_mesaging" id="jxcore_messaging_mesaging">#</a></span></h1>
+<p>Using JXcore Messaging API, your clients can easily communicate with the server (backend service) as well as with other clients.
+
+</p>
+<p>Simply create a custom method. It can be invoked either by any of the clients or by the server itself.
+
+</p>
+<p>If you want to create an online game, chat application, or any other project for multiple users – JXcore Messaging API is for you.
+
+</p>
+<p>There are some tutorials for using Messaging API available here: <a href="http://jxcore.com/messaging-api/#post-652">My first JXcore Messaging API Server</a>.
+
+</p>
+<h1>API Server<span><a class="mark" href="#jxcore_messaging_api_server" id="jxcore_messaging_api_server">#</a></span></h1>
+<h2>allowedResourceTypes<span><a class="mark" href="#jxcore_messaging_allowedresourcetypes" id="jxcore_messaging_allowedresourcetypes">#</a></span></h2>
+<p>List of supported types for resource files.
+
+</p>
+<ul>
+<li><code>png</code> - image/png</li>
+<li><code>jpg</code> - image/jpeg</li>
+<li><code>jpeg</code> - image/jpeg</li>
+<li><code>gif</code> - image/gif</li>
+<li><code>html</code> - text/html</li>
+<li><code>css</code> - text/css</li>
+<li><code>js</code> - text/javascript</li>
+<li><code>woff</code> - application/octet-stream</li>
+<li><code>ttf</code> - application/octet-stream</li>
+<li><code>svg</code> - application/octet-stream</li>
+<li><code>otf</code> - application/octet-stream</li>
+<li><code>eot</code> - application/octet-stream</li>
+</ul>
+<p>If you want to add new <code>avi</code> type, you can do it like this:
+
+</p>
+<pre><code class="js">server.allowedResourceTypes.avi = &quot;video/avi&quot;;</code></pre>
+<p>Or you can delete the existing one:
+
+</p>
+<pre><code class="js">delete server.allowedResourceTypes.woff;</code></pre>
+<h2>addJSMethod(name, method)<span><a class="mark" href="#jxcore_messaging_addjsmethod_name_method" id="jxcore_messaging_addjsmethod_name_method">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>name</code> <span class="type">String</span></li>
+<li><code>method</code> <span class="type">Function</span></li>
+</div></ul>
+<p>Adds custom method to the application. This method can be called from the client’s side.
+
+</p>
+<p>server-side (my_server.js):
+
+</p>
+<pre><code class="js">server.addJSMethod(&quot;chatMessage&quot;, function (env, params) {
+    server.sendToAll(&quot;addText&quot;, params );
+});</code></pre>
+<p>client-side (index.html):
+
+</p>
+<pre><code class="html">&lt;script type=&quot;text/javascript&quot;&gt;
+    jxcore.Call(&quot;chatMessage&quot;, &quot;hello&quot;);
+&lt;/script&gt;</code></pre>
+<h2>getConfig(key)<span><a class="mark" href="#jxcore_messaging_getconfig_key" id="jxcore_messaging_getconfig_key">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>key</code> <span class="type">String</span></li>
+</div></ul>
+<p>Get value of application’s parameter.
+
+</p>
+<h2>linkAssets(urlPath, JXP)<span><a class="mark" href="#jxcore_messaging_linkassets_urlpath_jxp" id="jxcore_messaging_linkassets_urlpath_jxp">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>urlPath</code> <span class="type">String</span></li>
+<li><code>JXP</code> <span class="type">Object</span></li>
+</div></ul>
+<p>Links assets embedded inside compiled JX file and defines them as static resource used by the application.
+
+</p>
+<p>For information, how to compile JX packages, see <a href="jxcore-feature-packaging-code-protection.html">compile</a> command.
+
+</p>
+<p>The <code>urlPath</code> parameter is an url path, from which your application will access the asset files.
+Please note, that it will be combined with <code>urlPath</code> provided in <code>setApplication()</code> method.
+
+</p>
+<p>The <code>JXP</code> refers to the object, which is embedded inside compiled JX file, and holds contents of JXP project file. You can access the JXP object by calling <code>exports.$JXP</code>.
+
+</p>
+<p>Let&#39;s assume, that your JXP file contains asset definition:
+
+</p>
+<pre><code class="js">{
+    ...
+    ...
+    &quot;assets&quot;: [
+       &quot;README.txt&quot;,
+       &quot;Licence.txt&quot;
+    ],
+    ...
+}</code></pre>
+<p>Then you can link them to your application in a runtime:
+
+</p>
+<pre><code class="js">server.linkAssets(&quot;/files&quot;, exports.$JXP);</code></pre>
+<p>Now, we could access it for example with a browser:
+
+</p>
+<pre><code>http://host:port/chat/files/README.txt</code></pre>
+<p>Please note, that &quot;/chat&quot; part is a root path for entire application (provided in <code>setApplication()</code>), while &quot;/files&quot; part is an argument from the <code>linkAssets()</code>.
+Now, the both combine into &quot;/chat/files&quot;.
+
+</p>
+<h2>linkResource(urlPath, filePath)<span><a class="mark" href="#jxcore_messaging_linkresource_urlpath_filepath" id="jxcore_messaging_linkresource_urlpath_filepath">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>urlPath</code> <span class="type">String</span></li>
+<li><code>filePath</code> <span class="type">String</span></li>
+</div></ul>
+<p>Defines static resource file used by the application.
+
+</p>
+<p>The <code>urlPath</code> is a path, from which your application will access the resource file. Please note, that it will be combined with <code>urlPath</code> provided in <code>setApplication()</code> method.
+
+</p>
+<p>The <code>filePath</code> is server&#39;s filesystem path (relative or absolute) to the resource file.
+
+</p>
+<pre><code class="js">server.linkResource(&quot;/app&quot;, [&quot;./index.html&quot;, &quot;text/html&quot; ]);</code></pre>
+<p>Now, we could access it for example with a browser:
+
+</p>
+<pre><code>http://host:port/chat/app</code></pre>
+<p>Please note, that &quot;/chat&quot; part is a root path for entire application (provided in <code>setApplication()</code>), while &quot;/app&quot; part is an argument from the <code>linkResource()</code>.
+Now, the both combine into &quot;/chat/app&quot;.
+
+</p>
+<h2>linkResourcesFromPath(url, dir)<span><a class="mark" href="#jxcore_messaging_linkresourcesfrompath_url_dir" id="jxcore_messaging_linkresourcesfrompath_url_dir">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>url</code> <span class="type">String</span></li>
+<li><code>dir</code> <span class="type">String</span></li>
+</div></ul>
+<p>Allows linking multiple resources recursively from a given directory.
+
+</p>
+<p>Adding the whole ./assets directory (relative path from JXcore server&#39;s working directory).
+
+</p>
+<pre><code class="js">server.linkResourcesFromPath(&quot;/assets/&quot;, &quot;./assets/&quot;);</code></pre>
+<p>Now, we could access it for example with a browser:
+
+</p>
+<pre><code>http://host:port/chat/assets</code></pre>
+<p>Please note, that &quot;/chat&quot; part is a root path for entire application (provided in <code>setApplication()</code>), while &quot;/assets&quot; part is an argument from the <code>linkResourcesFromPath()</code>.
+Now, the both combine into &quot;/chat/assets&quot;.
+
+</p>
+<h2>sendCallBack(env, params)<span><a class="mark" href="#jxcore_messaging_sendcallback_env_params" id="jxcore_messaging_sendcallback_env_params">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>env</code> <span class="type">Object</span></li>
+<li><code>params</code> <span class="type">Object</span></li>
+</div></ul>
+<p>Calls the callback method at specific client. The <code>env</code> is the same parameter, which you received as argument for a custom method defined by you with <code>addJSMethod()</code>, while <code>params</code> is an argument for the callback. It can be anything – string, number or json literal object containing many values.
+
+</p>
+<pre><code class="js">server.addJSMethod(&quot;serverMethod&quot;, function (env, params) {
+    // server responses to a client by calling it&#39;s callback
+    server.sendCallBack(env, params + &quot; World!&quot;);
+});</code></pre>
+<h2>sendToGroup(groupName, methodName, params)<span><a class="mark" href="#jxcore_messaging_sendtogroup_groupname_methodname_params" id="jxcore_messaging_sendtogroup_groupname_methodname_params">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>groupName</code> <span class="type">String</span></li>
+<li><code>methodName</code> <span class="type">String</span></li>
+<li><code>params</code> <span class="type">Object</span></li>
+</div></ul>
+<p>Sends message to a group of subscribers, currently connected to the application. The <code>methodName</code> is the name of the method invoked on the client&#39;s side (every subscriber of this group should has this method defined), while <code>params</code> is an argument for that method.
+
+</p>
+<p>Server can send message to group of subscribers, but they need to subscribe first. See <code>Subscribe()</code>.
+
+</p>
+<p>In the code below, whenever client will call server&#39;s <code>sendFromServer()</code> method with &quot;Hello&quot; as params argument, the server for each client subscribed to <em>programmers</em> channel, will invoke his <code>clientCustomMethod()</code> passing there &quot;Hello World!&quot; string.
+
+</p>
+<pre><code class="js">server.addJSMethod(&quot;sendFromServer&quot;, function (env, params) {
+    server.sendToGroup(&quot;programmers&quot;, &quot;clientCustomMethod&quot;, params + &quot;World!&quot;);
+});</code></pre>
+<h2>setApplication(applicationName, urlPath, secretKey)<span><a class="mark" href="#jxcore_messaging_setapplication_applicationname_urlpath_secretkey" id="jxcore_messaging_setapplication_applicationname_urlpath_secretkey">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>applicationName</code> <span class="type">String</span></li>
+<li><code>urlPath</code> <span class="type">String</span></li>
+<li><code>secretKey</code> <span class="type">String</span></li>
+</div></ul>
+<p>Defines new application with specified <code>applicationName</code> and default root <code>urlPath</code>. Every assets or resources added to this application will start from this path.
+
+</p>
+<p>The <code>secretKey</code> parameter is for encrypting the client locator and can be obtained from jxcore control panel.
+
+</p>
+<p>Server-side (<em>my_server.js</em>):
+
+</p>
+<pre><code class="js">server.setApplication(&quot;ChatSample&quot;, &quot;/chat&quot;, &quot;NUBISA-STANDARD-KEY-CHANGE-THIS&quot;);</code></pre>
+<p>Client-side (<em>index.html</em>):
+
+</p>
+<pre><code class="html">&lt;script src=&quot;/chat/jx?ms=connect&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;</code></pre>
+<p>Please note, that the &quot;/chat&quot; part in the url is the <code>urlPath</code> parameter described above.
+
+</p>
+<h2>setConfig(key, value)<span><a class="mark" href="#jxcore_messaging_setconfig_key_value" id="jxcore_messaging_setconfig_key_value">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>key</code> <span class="type">String</span></li>
+<li><code>value</code> <span class="type">String</span></li>
+</div></ul>
+<p>Defines value for application’s parameter. Allows changing server configuration.
+
+</p>
+<h2>sendToAll(methodName, params)<span><a class="mark" href="#jxcore_messaging_sendtoall_methodname_params" id="jxcore_messaging_sendtoall_methodname_params">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>methodName</code> <span class="type">String</span></li>
+<li><code>params</code> <span class="type">Object</span></li>
+</div></ul>
+<p>Send message to all of the clients connected currently to the application.
+
+</p>
+<h2>setEngine(app)<span><a class="mark" href="#jxcore_messaging_setengine_app" id="jxcore_messaging_setengine_app">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>app</code> <span class="type">Object</span></li>
+</div></ul>
+<p>Defines the server engine (like express)...
+
+</p>
+<h2>start(options)<span><a class="mark" href="#jxcore_messaging_start_options" id="jxcore_messaging_start_options">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>options</code> <span class="type">Object</span></li>
+</div></ul>
+<p>Starts JXcore application with optional <code>options</code> for the server. Once started, it will be accessible to all clients.
+
+</p>
+<h1>API JavaScript Client<span><a class="mark" href="#jxcore_messaging_api_javascript_client" id="jxcore_messaging_api_javascript_client">#</a></span></h1>
+<h2>Event: &#39;document.onjxready&#39;<span><a class="mark" href="#jxcore_messaging_event_document_onjxready" id="jxcore_messaging_event_document_onjxready">#</a></span></h2>
+<p>There is a special event <code>document.onjxready</code>, which is called right after the JXcore script is loaded:
+
+</p>
+<pre><code class="html">&lt;script src=&quot;/helloworld/jx?ms=connect&quot; type=&quot;text/javascript&quot;&gt;</code></pre>
+<p>Inside that event we can start to use jxcore object and for example we attach to the following events: <code>OnClose</code>, <code>OnError</code> and <code>Start()</code> method. The last one is the most important one for us. Please see the comments in the code above to catch the idea.
+
+</p>
+<pre><code class="js">&lt;script type=&quot;text/javascript&quot;&gt;
+
+    document.onjxready = function () {
+
+        jxcore.Start(function (status) {
+
+            var send_button = document.getElementById(&#39;send_button&#39;);
+            // let&#39;s enable button, right now the script is loaded
+            send_button.disabled = &quot;&quot;;
+
+            var msg = document.getElementById(&#39;msg&#39;);
+            msg.innerHTML += &quot;Connected.&lt;BR&gt;&quot;;
+
+            var callback = function (s) {
+                msg.innerHTML += s + &quot;&lt;BR&gt;&quot;;
+            };
+
+            send_button.onclick = function () {
+                // let&#39;s call the server-side method &quot;serverMethod&quot; from the client!
+                // in turn, as a response, the backend service will invoke
+                // client&#39;s local &quot;callback&quot; defined above!
+                jxcore.Call(&quot;serverMethod&quot;, &quot;Hello&quot;, callback);
+            };
+        });
+
+        jxcore.OnClose = function (reconnecting) {
+            msg.innerHTML += &quot;Disconnected.&lt;BR&gt;&quot;;
+        };
+
+        jxcore.OnError = function (err) {
+            msg.innerHTML += err;
+        }
+    };
+&lt;/script&gt;</code></pre>
+<h2>Event: &#39;OnClose&#39;<span><a class="mark" href="#jxcore_messaging_event_onclose" id="jxcore_messaging_event_onclose">#</a></span></h2>
+<div class="signature"><ul>
+<li>reconnecting <span class="type">Boolean</span></li>
+</div></ul>
+<p>This event is fired every time, when the client loses connection with the server. The <code>reconnecting</code> parameter has a <code>true</code> value, if client already tries to reconnect.
+
+</p>
+<pre><code class="js">jxcore.OnClose = function (reconnecting) {
+    msg.innerHTML += &quot;Disconnected.&lt;BR&gt;&quot;;
+};</code></pre>
+<h2>Event: &#39;OnError&#39;<span><a class="mark" href="#jxcore_messaging_event_onerror" id="jxcore_messaging_event_onerror">#</a></span></h2>
+<div class="signature"><ul>
+<li>err <span class="type">String</span></li>
+</div></ul>
+<p>This event is emitted every time, the error occurs.
+
+</p>
+<pre><code class="js">jxcore.OnError = function (err) {
+    msg.innerHTML += err;
+}</code></pre>
+<h2>jxcore.Call(methodName, json, cb)<span><a class="mark" href="#jxcore_messaging_jxcore_call_methodname_json_cb" id="jxcore_messaging_jxcore_call_methodname_json_cb">#</a></span></h2>
+<div class="signature"><ul>
+<li>methodName <span class="type">String</span></li>
+<li>json <span class="type">Object</span></li>
+<li>cb <span class="type">Function</span></li>
+</div></ul>
+<p>Invokes specific custom method named <code>methodName</code> defined on the server-side and passes to it one parameter <code>json</code>. The client&#39;s <code>cb</code> callback is optional, but when provided, it will be called after server completes invoking the method.
+
+</p>
+<p>In the example below we call the server-side method <em>serverMethod</em> from the client-side.
+In turn, as a response, the backend service will invoke the client&#39;s local <em>callback</em> function:
+
+</p>
+<pre><code class="js">var callback = function(param) {
+    alert(param);
+}
+
+jxcore.Call(&quot;serverMethod&quot;, &quot;hello&quot;, callback);</code></pre>
+<p>or simply:
+
+</p>
+<pre><code class="js">jxcore.Call(&quot;serverMethod&quot;, &quot;hello&quot;, function(param) {
+    alert(param);
+});</code></pre>
+<h2>jxcore.Close(tx)<span><a class="mark" href="#jxcore_messaging_jxcore_close_tx" id="jxcore_messaging_jxcore_close_tx">#</a></span></h2>
+<div class="signature"><ul>
+<li>tx <span class="type">Boolean</span></li>
+</div></ul>
+<p>Closes client and disconnects from server.
+
+</p>
+<p>The <code>tx</code> parameter is optional. If set to <code>false</code>, the <code>OnClose</code> event will also be invoked with <code>false</code> value as an argument: <code>OnClose(false)</code>. If <code>true</code> - <code>OnClose</code> event will not get invoked.
+
+</p>
+<h2>jxcore.GetClientId()<span><a class="mark" href="#jxcore_messaging_jxcore_getclientid" id="jxcore_messaging_jxcore_getclientid">#</a></span></h2>
+<p>Gets the id of the client, which is an unique string value.
+
+</p>
+<h2>jxcore.ReConnect()<span><a class="mark" href="#jxcore_messaging_jxcore_reconnect" id="jxcore_messaging_jxcore_reconnect">#</a></span></h2>
+<p>Forces the client to reconnect to the server.
+
+</p>
+<h2>jxcore.SendToGroup(group, methodName, json)<span><a class="mark" href="#jxcore_messaging_jxcore_sendtogroup_group_methodname_json" id="jxcore_messaging_jxcore_sendtogroup_group_methodname_json">#</a></span></h2>
+<div class="signature"><ul>
+<li>groupName <span class="type">String</span></li>
+<li>methodName <span class="type">String</span></li>
+<li>json <span class="type">Object</span></li>
+</div></ul>
+<p>Sends message to all clients, that have already subscribed to the specific <code>groupName</code>. The message is passed as <code>json</code> argument to the target&#39;s method named <code>methodName</code>.
+The message can be any value, primitive (string, number, etc.) or json literal object.
+
+</p>
+<p>The <em>addText</em> method should be available on every client, which is subscribed to <em>programmers</em> group.
+While invoking the <em>addText</em> method at each client, the server will pass { obj : &quot;value&quot; } as an argument.
+
+</p>
+<pre><code class="js">document.getElementById(&quot;btnSend&quot;).onclick = function(){
+    jxcore.SendToGroup(&quot;programmers&quot;, &quot;addText&quot;, { obj : &quot;value&quot; } );
+};</code></pre>
+<h2>jxcore.Start(cb)<span><a class="mark" href="#jxcore_messaging_jxcore_start_cb" id="jxcore_messaging_jxcore_start_cb">#</a></span></h2>
+<div class="signature"><ul>
+<li>cb <span class="type">Function</span></li>
+</div></ul>
+<p>Starts JXcore client. Connects to the server, and when it succeedes - the client’s callback <code>cb</code> is called.
+
+</p>
+<pre><code class="js">document.onjxready = function () {
+    jxcore.Start(function (status) {
+
+        // here we are, after the client has connected to server
+        // we can enable the button now
+        var btnSend = document.getElementById(&#39;btnSend&#39;);
+        btnSend.disabled = &quot;&quot;;
+
+        // do anything else
+        // see tutorials for more usage
+    });
+};</code></pre>
+<h2>jxcore.Subscribe(group, callback)<span><a class="mark" href="#jxcore_messaging_jxcore_subscribe_group_callback" id="jxcore_messaging_jxcore_subscribe_group_callback">#</a></span></h2>
+<div class="signature"><ul>
+<li>group <span class="type">String</span></li>
+<li>callback <span class="type">Function</span></li>
+</div></ul>
+<p>Subscribes the client to a <code>group</code>, or channel. From now on, messages sent to that group by any other subscriber will be received by the client. Also the client can send messages to this group – see <code>jxcore.SendToGroup()</code> method.
+After the server will successfully subscribe the client to the <code>group</code>, the client&#39;s <code>callback</code> will be called.
+
+</p>
+<pre><code class="js">jxcore.Subscribe(&quot;programmers&quot;, function() {
+    alert(&quot;subscribed&quot;);
+});</code></pre>
+<h2>jxcore.Unsubscribe(group, callback)<span><a class="mark" href="#jxcore_messaging_jxcore_unsubscribe_group_callback" id="jxcore_messaging_jxcore_unsubscribe_group_callback">#</a></span></h2>
+<div class="signature"><ul>
+<li>group <span class="type">String</span></li>
+<li>callback <span class="type">Function</span></li>
+</div></ul>
+<p>Unsubscribes the client from a <code>group</code>, or channel. From now on, messages sent to that group cannot be received by this client.
+After the server will successfully unsubscribe the client from the <code>group</code>, the client&#39;s <code>callback</code> will be called.
+
+</p>
+<pre><code class="js">jxcore.Unsubscribe(&quot;programmers&quot;, function() {
+    alert(&quot;unsubscribed&quot;);
+});</code></pre>
+<h1>API Java Client<span><a class="mark" href="#jxcore_messaging_api_java_client" id="jxcore_messaging_api_java_client">#</a></span></h1>
+<p>There is a tutorial showing, how to consume JXcore Messaging API from a <a href="http://jxcore.com/messaging-api/#post-665">Java Client</a>.
+
+</p>
+<h2>Events<span><a class="mark" href="#jxcore_messaging_events" id="jxcore_messaging_events">#</a></span></h2>
+<p>Messaging module for Java defines events in a separate class <code>jxcore.ClientEvents</code>. In order to listen for client&#39;s events, we need to instantiate this class and assign to <code>client.Events</code> property:
+
+</p>
+<pre><code class="java">import jxcore.*;
+
+jxcore.ClientEvents events = new ClientEvents(){
+    @Override public void OnErrorReceived(Client c, String Message) {
+        //Error received
+    }
+    @Override public void OnClientConnected(Client c) {
+        //Client is connected
+    }
+    @Override public void OnClientDisconnected(Client c) {
+        //Client is disconnected
+    }
+    @Override public void OnEventLog(Client c, String log, LogLevel level) {
+        //get the event log from here
+    }
+};
+//now we may define this listener into our Client instance
+client.Events = event;</code></pre>
+<h3>Event: &#39;OnErrorReceived&#39;<span><a class="mark" href="#jxcore_messaging_event_onerrorreceived" id="jxcore_messaging_event_onerrorreceived">#</a></span></h3>
+<div class="signature"><ul>
+<li>client <span class="type">jxcore.Client</span></li>
+<li>message <span class="type">String</span></li>
+</div></ul>
+<p>This event is emitted whenever an error occurs at the <code>client</code>.
+
+</p>
+<h3>Event: &#39;OnClientConnected&#39;<span><a class="mark" href="#jxcore_messaging_event_onclientconnected" id="jxcore_messaging_event_onclientconnected">#</a></span></h3>
+<div class="signature"><ul>
+<li>client <span class="type">jxcore.Client</span></li>
+</div></ul>
+<p>This event is emitted after the <code>client</code> successfully connects to the server.
+
+</p>
+<h3>Event: &#39;OnClientDisconnected&#39;<span><a class="mark" href="#jxcore_messaging_event_onclientdisconnected" id="jxcore_messaging_event_onclientdisconnected">#</a></span></h3>
+<div class="signature"><ul>
+<li>client <span class="type">jxcore.Client</span></li>
+</div></ul>
+<p>This event is emitted when the <code>client</code> loses its connection with the server.
+
+</p>
+<h3>Event: &#39;OnEventLog&#39;<span><a class="mark" href="#jxcore_messaging_event_oneventlog" id="jxcore_messaging_event_oneventlog">#</a></span></h3>
+<div class="signature"><ul>
+<li>client <span class="type">jxcore.Client</span></li>
+<li>log <span class="type">String</span></li>
+<li>level <span class="type">jxcore.LogLevel</span></li>
+</div></ul>
+<p>This event is fired whenever the <code>client</code> logs an information <code>log</code> message. The <code>level</code> parameter is an enumeration value and can have one of the following: <em>Informative</em> or <em>Critical</em>.
+
+</p>
+<h2>new Client(localTarget, appName, appKey, url, port, secure)<span><a class="mark" href="#jxcore_messaging_new_client_localtarget_appname_appkey_url_port_secure" id="jxcore_messaging_new_client_localtarget_appname_appkey_url_port_secure">#</a></span></h2>
+<div class="signature"><ul>
+<li>localTarget <span class="type">Object</span></li>
+<li>appName <span class="type">String</span></li>
+<li>appKey <span class="type">String</span></li>
+<li>url <span class="type">String</span></li>
+<li>port <span class="type">int</span></li>
+<li>secure <span class="type">boolean</span></li>
+<li>resetUID <span class="type">boolean</span></li>
+</div></ul>
+<p>Creates an instance of JXcore Java Client with specified application name <code>appName</code> and application key <code>appKey</code> (which is obtainable from web control panel).
+The <code>url</code> parameter specifies JXcore server URL, e.g. <em>sampledomain.com</em> or <em>120.1.2.3</em>. You can also enable SSL support with <code>secure</code> parameter.
+
+</p>
+<p>Setting <code>resetUID</code> as <code>true</code> will reset the unique instance id (session id).
+
+</p>
+<p>The first argument <code>localTarget</code> is an instance of a local class, which will be answering the calls from server.
+In that class you will specify client methods, which will be callable by other clients or the server itself.
+
+</p>
+<pre><code class="java">import jxcore.*;
+
+Client client = new Client(new CustomMethods(), &quot;channels&quot;,
+    &quot;NUBISA-STANDARD-KEY-CHANGE-THIS&quot;, &quot;localhost&quot;, 8000, false, true);</code></pre>
+<h2>Call(methodName, params, callback)<span><a class="mark" href="#jxcore_messaging_call_methodname_params_callback" id="jxcore_messaging_call_methodname_params_callback">#</a></span></h2>
+<div class="signature"><ul>
+<li>methodName <span class="type">String</span></li>
+<li>params <span class="type">Object</span></li>
+<li>callback <span class="type">jxcore.Callback</span></li>
+</div></ul>
+<p>Invokes specific custom method <code>methodName</code> defined on the server-side and passes to it <code>params</code> value. The <code>methodName</code> should also contain the class name and the namespace, e.g. <em>com.example.MyClass.MyMethod</em>.
+
+</p>
+<p>The optional parameter <code>callback</code> is the client’s function, which will be called after server completes invoking the method.
+
+</p>
+<p>In the example below we call the server-side method <em>serverMethod</em> from the client-side.
+In turn, as a response, the backend service will invoke the client&#39;s local <code>callback</code> function:
+
+</p>
+<pre><code class="java">client.Call(&quot;serverMethod&quot;, &quot;Hello&quot;, callback);</code></pre>
+<h2>Connect()<span><a class="mark" href="#jxcore_messaging_connect" id="jxcore_messaging_connect">#</a></span></h2>
+<p>Starts the client, connects to the server. Returns a boolean value based on the result.
+
+</p>
+<pre><code class="java">if (client.Connect()) {
+    System.out.println(&quot;ready!&quot;);
+}</code></pre>
+<h2>getClientId()<span><a class="mark" href="#jxcore_messaging_getclientid" id="jxcore_messaging_getclientid">#</a></span></h2>
+<p>Gets the string containing unique id of the client.
+
+</p>
+<h2>SendToGroup(String groupName, String methodName, Object params)<span><a class="mark" href="#jxcore_messaging_sendtogroup_string_groupname_string_methodname_object_params" id="jxcore_messaging_sendtogroup_string_groupname_string_methodname_object_params">#</a></span></h2>
+<div class="signature"><ul>
+<li>groupName <span class="type">String</span></li>
+<li>methodName <span class="type">String</span></li>
+<li>params <span class="type">Object</span></li>
+</div></ul>
+<p>Sends message to all clients, that have already subscribed to the specific <code>groupName</code>. The message is passed as <code>params</code> argument to the target&#39;s method named <code>methodName</code>.
+
+</p>
+<p>The <em>addText</em> method should be available on every client, which is subscribed to <em>programmers</em> group.
+While invoking the <em>addText</em> method at each client, the server will pass &quot;Hello from client!&quot; as an argument.
+
+</p>
+<pre><code class="java">client.SendToGroup(&quot;programmers&quot;, &quot;addText&quot;, &quot;Hello from client!&quot;);</code></pre>
+<h2>Subscribe(group, callback)<span><a class="mark" href="#jxcore_messaging_subscribe_group_callback" id="jxcore_messaging_subscribe_group_callback">#</a></span></h2>
+<div class="signature"><ul>
+<li>group <span class="type">String</span></li>
+<li>callback <span class="type">jxcore.Callback</span></li>
+</div></ul>
+<p>Subscribes the client to a <code>group</code>, or channel. From now on, messages sent to that group by any other subscriber will be received by the client. Also the client can send messages to this group – see <code>jxcore.SendToGroup()</code> method.
+After the server will successfully subscribe the client to the <code>group</code>, the client&#39;s <code>callback</code> will be called.
+
+</p>
+<pre><code class="java">try {
+     client.Subscribe(&quot;programmers&quot;, new Callback() {
+         @Override
+         public void call(Object o) throws Exception {
+             System.out.println(&quot;Subscribed to &quot; + o.toString());
+             client.SendToGroup(&quot;programmers&quot;, &quot;clientMethod&quot;,
+             &quot;Hello from client!&quot;);
+         }
+     });
+} catch (Exception e) {
+     System.out.println(&quot;Cannot subscribe.&quot;);
+}</code></pre>
+<h2>Unsubscribe(group, callback)<span><a class="mark" href="#jxcore_messaging_unsubscribe_group_callback" id="jxcore_messaging_unsubscribe_group_callback">#</a></span></h2>
+<div class="signature"><ul>
+<li>group <span class="type">String</span></li>
+<li>callback <span class="type">jxcore.Callback</span></li>
+</div></ul>
+<p>Unsubscribes the client from a <code>group</code>, or channel. From now on, messages sent to that group cannot be received by this client.
+After the server will successfully unsubscribe the client from the <code>group</code>, the client&#39;s <code>callback</code> will be called.
+
+</p>
+<pre><code class="java">try {
+     client.Unubscribe(&quot;programmers&quot;, new Callback() {
+         @Override
+         public void call(Object o) throws Exception {
+             System.out.println(&quot;Unubscribed from &quot; + o.toString());
+         }
+     });
+} catch (Exception e) {
+     System.out.println(&quot;Cannot unubscribe.&quot;);
+}</code></pre>
+
+          </div>
+        </div>
+    </div>
+    <div id="footer">
+        <a href="http://nubisa.com" class="nubisa">Nubisa</a>
+        <ul class="clearfix">
+            <li><a href="http://jxcore.com/" class="home">Home</a></li>
+            <li><a href="http://jxcore.com/downloads/" class="download">Download</a></li>
+            <li><a href="http://jxcore.com/what-is-jxcore/" class="docs current">Docs</a></li>
+            <li><a href="http://jxcore.com/blog" class="blog">Blog</a></li>
+            <li><a href="https://twitter.com/nodejx" class="twitter">Follow us on Twitter</a></li>
+        </ul>
+
+        <p>Copyright <a href="http://nubisa.com/">Nubisa, Inc.</a> 2014. View <a href="http://jxcore.com/document/eula/">license</a>.</p>
+    </div>
+
+  <script src="assets/sh_main.js"></script>
+  <script src="assets/sh_javascript.min.js"></script>
+  <script>highlight(undefined, undefined, 'pre');</script>
+</body>
+</html>
+

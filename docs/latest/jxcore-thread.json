@@ -1,0 +1,105 @@
+{
+  "source": "doc/api/jxcore-thread.markdown",
+  "modules": [
+    {
+      "textRaw": "Process",
+      "name": "process",
+      "desc": "<p>This API is a collection of JXcore methods and properties for accessing from both mainthread and a subthread.\n\n</p>\n<p>All of the methods described here are accessible from global <code>process</code> object, for example:\n\n</p>\n<pre><code class=\"js\">process.keepAlive();</code></pre>\n",
+      "events": [
+        {
+          "textRaw": "Event: 'restart'",
+          "type": "event",
+          "name": "restart",
+          "desc": "<p>Attaching any callback to <code>restart</code> event, depending on the context in which it is performed, enables internal process or thread recovery.\n\n</p>\n<p>Internal Recovery is a separate section described <a href=\"jxcore-monitor.html#jxcore_monitor_internal_recovery\">here</a>.\n\n</p>\n",
+          "params": []
+        }
+      ],
+      "methods": [
+        {
+          "textRaw": "process.keepAlive(timeout)",
+          "type": "method",
+          "name": "keepAlive",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "`timeout` {Number} ",
+                  "name": "timeout",
+                  "type": "Number"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "timeout"
+                }
+              ]
+            }
+          ],
+          "desc": "<blockquote>\n<p>This method is implemented only in the subthread context. When called from a main thread it does nothing.\n\n</p>\n</blockquote>\n<p>Marks the current thread (from which the <code>keepAlive()</code> method was called) to be alive. This will inform the thread pool,\nthat the task has an intention to continue working (probably by doing some delayed or async work).\n\n</p>\n<p>Normally the thread pool knows, that the task is working only until it returns from the task method.\nBut if you would use in the task code e.g. delayed execution with <code>setTimeout()</code> or <code>setInterval()</code>, or any async call,\nthe task method may return faster, before those delayed/async jobs will have chance to complete.\nThis is a moment, when <code>keepAlive()</code> comes in handy. Later in the code, you can call <code>release()</code> to signal the main thread, that the task has completed.\n\n</p>\n<p>The <code>timeout</code> parameter specifies, how many milliseconds the task should be kept alive, before automatic release will happen. This parameter is optional, and if you don’t provide it, task will be alive forever, or until <code>process.release()</code> will be called.\n\n</p>\n<pre><code class=\"js\">var method = function (obj) {\n\n    setTimeout(function () {\n       console.log(&quot;I&#39;m here after 2000 ms. Can close now&quot;);\n       process.release();\n    }, 2000);\n\n    console.log(&quot;waiting for 2000 ms&quot;);\n\n    // without the line below, current task would return immediately\n    // and the method delayed with setTimeout() would not have chance to complete.\n    // try to comment the line below to test the behaviour, and you will see,\n    // that the application closes itself, since the task is not kept alive.\n    process.keepAlive();\n};\n\njxcore.tasks.addTask(method);</code></pre>\n"
+        },
+        {
+          "textRaw": "process.release()",
+          "type": "method",
+          "name": "release",
+          "desc": "<blockquote>\n<p>This method is implemented only in the subthread context. When called from a main thread it does nothing.\n\n</p>\n</blockquote>\n<p>Unmarks the current task (from which the method was called) from being alive. You can use this method to inform the thread pool, that the task finished its work. If you will do this for all of the tasks, the main thread could freely exit then, and the application may close itself naturally with exit code = 0.\n\n</p>\n<p>Please refer to <code>process.keepAlive()</code> method for full example.\n\n</p>\n<pre><code class=\"js\">process.release();</code></pre>\n",
+          "signatures": [
+            {
+              "params": []
+            }
+          ]
+        },
+        {
+          "textRaw": "process.sendToMain(param)",
+          "type": "method",
+          "name": "sendToMain",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "`param` {Object} ",
+                  "name": "param",
+                  "type": "Object"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "param"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Sends a message to the main thread, and there it can be received by attaching to <a href=\"jxcore-tasks.html#jxcore_tasks_event_message\"><code>message</code></a> event. The <code>param</code> can be any value, for example string or json literal object.\n\n</p>\n<pre><code class=\"js\">process.sendToMain( { obj: &quot;something&quot; } );\n\n// now the main thread can receive the message like this:\njxcore.tasks.on(&#39;message&#39;, function (threadId, param) {\n   console.log(&#39;Main thread received a message from subthread no &#39; + threadId +\n      &#39;. Message: &#39;, param);\n});</code></pre>\n"
+        },
+        {
+          "textRaw": "process.unloadThread()",
+          "type": "method",
+          "name": "unloadThread",
+          "desc": "<blockquote>\n<p>This method is implemented only in the subthread context. When called from a main thread it does nothing.\n\n</p>\n</blockquote>\n<p>This method marks the subthread to be removed from the thread pool and eventually removes it.\nThe removal itself will happen as soon as the subthread finishes execution of its latest task.\n\n</p>\n<p>You may want to use this method to release subthread’s resources, if you don’t plan to use it soon.\nAdding any tasks later will create a fresh subthread automatically on demand.\n</p>\n",
+          "signatures": [
+            {
+              "params": []
+            }
+          ]
+        }
+      ],
+      "properties": [
+        {
+          "textRaw": "process.subthread",
+          "name": "subthread",
+          "desc": "<p>This property returns <code>true</code>, if the current code block runs under the subthread, or <code>false</code> otherwise.\n\n</p>\n<pre><code class=\"js\">if (process.subThread) {\n   console.log(&quot;we are in a subthread.&quot;);\n}</code></pre>\n"
+        },
+        {
+          "textRaw": "process.threadId",
+          "name": "threadId",
+          "desc": "<p>Returns the ID of the subthread. For multithreaded application it is a number between 0 and 62 (because the maximum amount of subthreads is 63).\nYou can also control the number of subthreads for your application, see here for more information: <a href=\"\">Defaults</a>.\n\n</p>\n<p>Since one of the subthreads can have its index equal to 0, we should not test it with:\n\n</p>\n<pre><code>if (process.threadId) {\n    // do something\n}</code></pre>\n<p>For a main thread, <code>threadId</code> always returns -1.\n\n</p>\n"
+        }
+      ],
+      "type": "module",
+      "displayName": "Process"
+    }
+  ]
+}

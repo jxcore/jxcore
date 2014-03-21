@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>bignum JXcore Manual &amp; Documentation</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/sh.css">
+</head>
+<body class="alt apidoc" id="api-section-jxcore_bignum">
+    <div id="intro" class="interior">
+        <a href="http://jxcore.com/" title="Go back to the home page">
+            <img id="logo" src="http://jxcore.com/wp-content/uploads/2014/02/jxcore_logo1.png" alt="jxcore">
+        </a>
+    </div>
+    <div id="content" class="clearfix">
+        <div id="column2" class="interior">
+            <ul>
+                <li><a href="http://jxcore.com/" class="home">Home</a></li>
+                <li><a href="http://jxcore.com/downloads/" class="download">Download</a></li>
+                <li><a href="http://jxcore.com/what-is-jxcore/" class="docs current">Docs</a></li>
+                <li><a href="http://jxcore.com/blog" class="blog">Blog</a></li>
+            </ul>
+            <p class="twitter"><a href="https://twitter.com/nodejx">Follow us</a></p>
+        </div>
+
+        <div id="column1" class="interior">
+            <div class="intro_text">
+                JXcore is a Node.JS distribution with additional features (forked from v0.12) - The Node.JS contents here are synced from Node.JS Github Repository.
+            </div>
+          <header>
+            <h1>JXcore Manual &amp; Documentation</h1>
+            <div id="gtoc">
+              <p>
+                <a href="index.html" name="toc">Index</a> |
+                <a href="all.html">View on single page</a> |
+                <a href="jxcore_bignum.json">View as JSON</a>
+              </p>
+            </div>
+            <hr>
+          </header>
+
+          <div id="toc">
+            <h2>Table of Contents</h2>
+            <ul>
+<li><a href="#jxcore_bignum_bignum">bignum</a></li>
+<li><a href="#jxcore_bignum_credits">credits</a></li>
+<li><a href="#jxcore_bignum_description">description</a></li>
+<li><a href="#jxcore_bignum_differences">differences</a></li>
+<li><a href="#jxcore_bignum_example">example</a><ul>
+<li><a href="#jxcore_bignum_simple_js">simple.js</a></li>
+<li><a href="#jxcore_bignum_perfect_js">perfect.js</a></li>
+</ul>
+</li>
+<li><a href="#jxcore_bignum_methods_0">methods[0]</a><ul>
+<li><a href="#jxcore_bignum_bignum_n_base_10">bignum(n, base=10)</a></li>
+<li><a href="#jxcore_bignum_tostring_base_10">.toString(base=10)</a></li>
+<li><a href="#jxcore_bignum_bignum_frombuffer_buf_opts">bignum.fromBuffer(buf, opts)</a></li>
+<li><a href="#jxcore_bignum_bignum_prime_bits_safe_true">bignum.prime(bits, safe=true)</a></li>
+</ul>
+</li>
+<li><a href="#jxcore_bignum_methods_1">methods[1]</a><ul>
+<li><a href="#jxcore_bignum_tonumber">.toNumber()</a></li>
+<li><a href="#jxcore_bignum_tobuffer_opts">.toBuffer(opts)</a></li>
+<li><a href="#jxcore_bignum_add_n">.add(n)</a></li>
+<li><a href="#jxcore_bignum_sub_n">.sub(n)</a></li>
+<li><a href="#jxcore_bignum_mul_n">.mul(n)</a></li>
+<li><a href="#jxcore_bignum_div_n">.div(n)</a></li>
+<li><a href="#jxcore_bignum_abs">.abs()</a></li>
+<li><a href="#jxcore_bignum_neg">.neg()</a></li>
+<li><a href="#jxcore_bignum_cmp_n">.cmp(n)</a></li>
+<li><a href="#jxcore_bignum_gt_n">.gt(n)</a></li>
+<li><a href="#jxcore_bignum_ge_n">.ge(n)</a></li>
+<li><a href="#jxcore_bignum_eq_n">.eq(n)</a></li>
+<li><a href="#jxcore_bignum_lt_n">.lt(n)</a></li>
+<li><a href="#jxcore_bignum_le_n">.le(n)</a></li>
+<li><a href="#jxcore_bignum_and_n">.and(n)</a></li>
+<li><a href="#jxcore_bignum_or_n">.or(n)</a></li>
+<li><a href="#jxcore_bignum_xor_n">.xor(n)</a></li>
+<li><a href="#jxcore_bignum_mod_n">.mod(n)</a></li>
+<li><a href="#jxcore_bignum_pow_n">.pow(n)</a></li>
+<li><a href="#jxcore_bignum_powm_n_m">.powm(n, m)</a></li>
+<li><a href="#jxcore_bignum_invertm_m">.invertm(m)</a></li>
+<li><a href="#jxcore_bignum_rand">.rand()</a></li>
+<li><a href="#jxcore_bignum_rand_upperbound">.rand(upperBound)</a></li>
+<li><a href="#jxcore_bignum_probprime">.probPrime()</a></li>
+<li><a href="#jxcore_bignum_sqrt">.sqrt()</a></li>
+<li><a href="#jxcore_bignum_root_n">.root(n)</a></li>
+<li><a href="#jxcore_bignum_shiftleft_n">.shiftLeft(n)</a></li>
+<li><a href="#jxcore_bignum_shiftright_n">.shiftRight(n)</a></li>
+<li><a href="#jxcore_bignum_gcd_n">.gcd(n)</a></li>
+<li><a href="#jxcore_bignum_jacobi_n">.jacobi(n)</a></li>
+<li><a href="#jxcore_bignum_bitlength">.bitLength()</a></li>
+</ul>
+</li>
+<li><a href="#jxcore_bignum_install">install</a></li>
+<li><a href="#jxcore_bignum_develop">develop</a></li>
+</ul>
+
+          </div>
+
+          <div id="apicontent">
+            <h1>bignum<span><a class="mark" href="#jxcore_bignum_bignum" id="jxcore_bignum_bignum">#</a></span></h1>
+<h1>credits<span><a class="mark" href="#jxcore_bignum_credits" id="jxcore_bignum_credits">#</a></span></h1>
+<ul>
+<li>Author: <a href="https://github.com/justmoon">Stefan Thomas</a></li>
+<li>Source on git: <a href="https://github.com/justmoon/node-bignum">node-bignum</a></li>
+</ul>
+<h1>description<span><a class="mark" href="#jxcore_bignum_description" id="jxcore_bignum_description">#</a></span></h1>
+<p>Arbitrary precision integral arithmetic for Node.js using
+OpenSSL.
+
+</p>
+<p>This library is based on
+<a href="https://github.com/substack/node-bigint">node-bigint</a> by
+<a href="https://github.com/substack">substack</a>, but instead of using libgmp,
+it uses the builtin bignum functionality provided by OpenSSL. The
+advantage is that OpenSSL is already part of Node.js, so this
+library does not add any external dependency whatsoever.
+
+</p>
+<h1>differences<span><a class="mark" href="#jxcore_bignum_differences" id="jxcore_bignum_differences">#</a></span></h1>
+<p>When switching from node-bigint to node-bignum, please be aware of
+these differences:
+
+</p>
+<ul>
+<li>Bignum rounds towards zero for integer divisions, e.g. <code>10 / -3 = -3</code>, whereas bigint
+rounds towards negative infinity, e.g. <code>10 / -3 = -4</code>.</li>
+<li>Bitwise operations (and, or, xor) are implemented for positive numbers only.</li>
+<li>nextPrime() is not supported.</li>
+<li>sqrt() and root() are not supported.</li>
+</ul>
+<p>(Patches for the missing functionality are welcome.)
+
+</p>
+<h1>example<span><a class="mark" href="#jxcore_bignum_example" id="jxcore_bignum_example">#</a></span></h1>
+<h2>simple.js<span><a class="mark" href="#jxcore_bignum_simple_js" id="jxcore_bignum_simple_js">#</a></span></h2>
+<pre><code>var bignum = require(&#39;bignum&#39;);
+
+var b = bignum(&#39;782910138827292261791972728324982&#39;)
+    .sub(&#39;182373273283402171237474774728373&#39;)
+    .div(8)
+;
+console.log(b);</code></pre>
+<hr>
+<pre><code>$ node simple.js
+&lt;Bignum 75067108192986261319312244199576&gt;</code></pre>
+<h2>perfect.js<span><a class="mark" href="#jxcore_bignum_perfect_js" id="jxcore_bignum_perfect_js">#</a></span></h2>
+<p>Generate the perfect numbers:
+
+</p>
+<pre><code>// If 2**n-1 is prime, then (2**n-1) * 2**(n-1) is perfect.
+var bignum = require(&#39;bignum&#39;);
+
+for (var n = 0; n &lt; 100; n++) {
+    var p = bignum.pow(2, n).sub(1);
+    if (p.probPrime(50)) {
+        var perfect = p.mul(bignum.pow(2, n - 1));
+        console.log(perfect.toString());
+    }
+}</code></pre>
+<hr>
+<pre><code>6
+28
+496
+8128
+33550336
+8589869056
+137438691328
+2305843008139952128
+2658455991569831744654692615953842176
+191561942608236107294793378084303638130997321548169216</code></pre>
+<h1>methods[0]<span><a class="mark" href="#jxcore_bignum_methods_0" id="jxcore_bignum_methods_0">#</a></span></h1>
+<h2>bignum(n, base=10)<span><a class="mark" href="#jxcore_bignum_bignum_n_base_10" id="jxcore_bignum_bignum_n_base_10">#</a></span></h2>
+<p>Create a new <code>bignum</code> from <code>n</code> and a base. <code>n</code> can be a string, integer, or
+another <code>bignum</code>.
+
+</p>
+<p>If you pass in a string you can set the base that string is encoded in.
+
+</p>
+<h2>.toString(base=10)<span><a class="mark" href="#jxcore_bignum_tostring_base_10" id="jxcore_bignum_tostring_base_10">#</a></span></h2>
+<p>Print out the <code>bignum</code> instance in the requested base as a string.
+
+</p>
+<h2>bignum.fromBuffer(buf, opts)<span><a class="mark" href="#jxcore_bignum_bignum_frombuffer_buf_opts" id="jxcore_bignum_bignum_frombuffer_buf_opts">#</a></span></h2>
+<p>Create a new <code>bignum</code> from a <code>Buffer</code>.
+
+</p>
+<p>The default options are:
+
+</p>
+<pre><code>{
+    endian : &#39;big&#39;,
+    size : 1, // number of bytes in each word
+}</code></pre>
+<p>Note that endian doesn&#39;t matter when size = 1. If you wish to reverse the entire buffer byte by byte, pass size: &#39;auto&#39;.
+
+</p>
+<h2>bignum.prime(bits, safe=true)<span><a class="mark" href="#jxcore_bignum_bignum_prime_bits_safe_true" id="jxcore_bignum_bignum_prime_bits_safe_true">#</a></span></h2>
+<p>Generate a probable prime of length <code>bits</code>. If <code>safe</code> is true, it will be a &quot;safe&quot; prime of the form p=2p&#39;+1 where p&#39; is also prime.
+
+</p>
+<h1>methods[1]<span><a class="mark" href="#jxcore_bignum_methods_1" id="jxcore_bignum_methods_1">#</a></span></h1>
+<p>For all of the instance methods below you can write either
+
+</p>
+<pre><code>bignum.method(x, y, z)</code></pre>
+<p>or if x is a <code>bignum</code> instance``
+
+</p>
+<pre><code>x.method(y, z)</code></pre>
+<h2>.toNumber()<span><a class="mark" href="#jxcore_bignum_tonumber" id="jxcore_bignum_tonumber">#</a></span></h2>
+<p>Turn a <code>bignum</code> into a <code>Number</code>. If the <code>bignum</code> is too big you&#39;ll lose
+precision or you&#39;ll get ±<code>Infinity</code>.
+
+</p>
+<h2>.toBuffer(opts)<span><a class="mark" href="#jxcore_bignum_tobuffer_opts" id="jxcore_bignum_tobuffer_opts">#</a></span></h2>
+<p>Return a new <code>Buffer</code> with the data from the <code>bignum</code>.
+
+</p>
+<p>The default options are:
+
+</p>
+<pre><code>{
+    endian : &#39;big&#39;,
+    size : 1, // number of bytes in each word
+}</code></pre>
+<p>Note that endian doesn&#39;t matter when size = 1. If you wish to reverse the entire buffer byte by byte, pass size: &#39;auto&#39;.
+
+</p>
+<h2>.add(n)<span><a class="mark" href="#jxcore_bignum_add_n" id="jxcore_bignum_add_n">#</a></span></h2>
+<p>Return a new <code>bignum</code> containing the instance value plus <code>n</code>.
+
+</p>
+<h2>.sub(n)<span><a class="mark" href="#jxcore_bignum_sub_n" id="jxcore_bignum_sub_n">#</a></span></h2>
+<p>Return a new <code>bignum</code> containing the instance value minus <code>n</code>.
+
+</p>
+<h2>.mul(n)<span><a class="mark" href="#jxcore_bignum_mul_n" id="jxcore_bignum_mul_n">#</a></span></h2>
+<p>Return a new <code>bignum</code> containing the instance value multiplied by <code>n</code>.
+
+</p>
+<h2>.div(n)<span><a class="mark" href="#jxcore_bignum_div_n" id="jxcore_bignum_div_n">#</a></span></h2>
+<p>Return a new <code>bignum</code> containing the instance value integrally divided by <code>n</code>.
+
+</p>
+<h2>.abs()<span><a class="mark" href="#jxcore_bignum_abs" id="jxcore_bignum_abs">#</a></span></h2>
+<p>Return a new <code>bignum</code> with the absolute value of the instance.
+
+</p>
+<h2>.neg()<span><a class="mark" href="#jxcore_bignum_neg" id="jxcore_bignum_neg">#</a></span></h2>
+<p>Return a new <code>bignum</code> with the negative of the instance value.
+
+</p>
+<h2>.cmp(n)<span><a class="mark" href="#jxcore_bignum_cmp_n" id="jxcore_bignum_cmp_n">#</a></span></h2>
+<p>Compare the instance value to <code>n</code>. Return a positive integer if <code>&gt; n</code>, a
+negative integer if <code>&lt; n</code>, and 0 if <code>== n</code>.
+
+</p>
+<h2>.gt(n)<span><a class="mark" href="#jxcore_bignum_gt_n" id="jxcore_bignum_gt_n">#</a></span></h2>
+<p>Return a boolean: whether the instance value is greater than n (<code>&gt; n</code>).
+
+</p>
+<h2>.ge(n)<span><a class="mark" href="#jxcore_bignum_ge_n" id="jxcore_bignum_ge_n">#</a></span></h2>
+<p>Return a boolean: whether the instance value is greater than or equal to n
+(<code>&gt;= n</code>).
+
+</p>
+<h2>.eq(n)<span><a class="mark" href="#jxcore_bignum_eq_n" id="jxcore_bignum_eq_n">#</a></span></h2>
+<p>Return a boolean: whether the instance value is equal to n (<code>== n</code>).
+
+</p>
+<h2>.lt(n)<span><a class="mark" href="#jxcore_bignum_lt_n" id="jxcore_bignum_lt_n">#</a></span></h2>
+<p>Return a boolean: whether the instance value is less than n (<code>&lt; n</code>).
+
+</p>
+<h2>.le(n)<span><a class="mark" href="#jxcore_bignum_le_n" id="jxcore_bignum_le_n">#</a></span></h2>
+<p>Return a boolean: whether the instance value is less than or equal to n
+(<code>&lt;= n</code>).
+
+</p>
+<h2>.and(n)<span><a class="mark" href="#jxcore_bignum_and_n" id="jxcore_bignum_and_n">#</a></span></h2>
+<p>Return a new <code>bignum</code> with the instance value bitwise AND (&amp;)-ed with <code>n</code>.
+
+</p>
+<h2>.or(n)<span><a class="mark" href="#jxcore_bignum_or_n" id="jxcore_bignum_or_n">#</a></span></h2>
+<p>Return a new <code>bignum</code> with the instance value bitwise inclusive-OR (|)-ed with
+<code>n</code>.
+
+</p>
+<h2>.xor(n)<span><a class="mark" href="#jxcore_bignum_xor_n" id="jxcore_bignum_xor_n">#</a></span></h2>
+<p>Return a new <code>bignum</code> with the instance value bitwise exclusive-OR (^)-ed with
+<code>n</code>.
+
+</p>
+<h2>.mod(n)<span><a class="mark" href="#jxcore_bignum_mod_n" id="jxcore_bignum_mod_n">#</a></span></h2>
+<p>Return a new <code>bignum</code> with the instance value modulo <code>n</code>.
+
+</p>
+<p><code>m</code>.
+</p>
+<h2>.pow(n)<span><a class="mark" href="#jxcore_bignum_pow_n" id="jxcore_bignum_pow_n">#</a></span></h2>
+<p>Return a new <code>bignum</code> with the instance value raised to the <code>n</code>th power.
+
+</p>
+<h2>.powm(n, m)<span><a class="mark" href="#jxcore_bignum_powm_n_m" id="jxcore_bignum_powm_n_m">#</a></span></h2>
+<p>Return a new <code>bignum</code> with the instance value raised to the <code>n</code>th power modulo
+<code>m</code>.
+
+</p>
+<h2>.invertm(m)<span><a class="mark" href="#jxcore_bignum_invertm_m" id="jxcore_bignum_invertm_m">#</a></span></h2>
+<p>Compute the multiplicative inverse modulo <code>m</code>.
+
+</p>
+<h2>.rand()<span><a class="mark" href="#jxcore_bignum_rand" id="jxcore_bignum_rand">#</a></span></h2>
+<h2>.rand(upperBound)<span><a class="mark" href="#jxcore_bignum_rand_upperbound" id="jxcore_bignum_rand_upperbound">#</a></span></h2>
+<p>If <code>upperBound</code> is supplied, return a random <code>bignum</code> between the instance value
+and <code>upperBound - 1</code>, inclusive.
+
+</p>
+<p>Otherwise, return a random <code>bignum</code> between 0 and the instance value - 1,
+inclusive.
+
+</p>
+<h2>.probPrime()<span><a class="mark" href="#jxcore_bignum_probprime" id="jxcore_bignum_probprime">#</a></span></h2>
+<p>Return whether the bignum is:
+
+</p>
+<ul>
+<li>certainly prime (true)</li>
+<li>probably prime (&#39;maybe&#39;)</li>
+<li>certainly composite (false)</li>
+</ul>
+<p>using <a href="http://www.openssl.org/docs/crypto/BN_generate_prime.html">BN_is_prime_ex</a>.
+
+</p>
+<h2>.sqrt()<span><a class="mark" href="#jxcore_bignum_sqrt" id="jxcore_bignum_sqrt">#</a></span></h2>
+<p>Return a new <code>bignum</code> that is the square root. This truncates.
+
+</p>
+<h2>.root(n)<span><a class="mark" href="#jxcore_bignum_root_n" id="jxcore_bignum_root_n">#</a></span></h2>
+<p>Return a new <code>bignum</code> that is the <code>nth</code> root. This truncates.
+
+</p>
+<h2>.shiftLeft(n)<span><a class="mark" href="#jxcore_bignum_shiftleft_n" id="jxcore_bignum_shiftleft_n">#</a></span></h2>
+<p>Return a new <code>bignum</code> that is the <code>2^n</code> multiple. Equivalent of the <code>&lt;&lt;</code>
+operator.
+
+</p>
+<h2>.shiftRight(n)<span><a class="mark" href="#jxcore_bignum_shiftright_n" id="jxcore_bignum_shiftright_n">#</a></span></h2>
+<p>Return a new <code>bignum</code> of the value integer divided by
+<code>2^n</code>. Equivalent of the <code>&gt;&gt;</code> operator.
+
+</p>
+<h2>.gcd(n)<span><a class="mark" href="#jxcore_bignum_gcd_n" id="jxcore_bignum_gcd_n">#</a></span></h2>
+<p>Return the greatest common divisor of the current <code>bignum</code> with <code>n</code> as a new
+<code>bignum</code>.
+
+</p>
+<h2>.jacobi(n)<span><a class="mark" href="#jxcore_bignum_jacobi_n" id="jxcore_bignum_jacobi_n">#</a></span></h2>
+<p>Return the Jacobi symbol (or Legendre symbol if <code>n</code> is prime) of the current
+<code>bignum</code> (= a) over <code>n</code>. Note that <code>n</code> must be odd and &gt;= 3. 0 &lt;= a &lt; n.
+
+</p>
+<p>Returns -1 or 1 as an int (NOT a bignum). Throws an error on failure.
+
+</p>
+<h2>.bitLength()<span><a class="mark" href="#jxcore_bignum_bitlength" id="jxcore_bignum_bitlength">#</a></span></h2>
+<p>Return the number of bits used to represent the current <code>bignum</code>.
+
+</p>
+<h1>install<span><a class="mark" href="#jxcore_bignum_install" id="jxcore_bignum_install">#</a></span></h1>
+<p>To compile the package, your system needs to be set up for building Node.js
+modules.
+
+</p>
+<p>You can install node-bignum with <a href="http://npmjs.org">npm</a>:
+
+</p>
+<pre><code>npm install bignum</code></pre>
+<h1>develop<span><a class="mark" href="#jxcore_bignum_develop" id="jxcore_bignum_develop">#</a></span></h1>
+<p>You can clone the git repo and compile with
+
+</p>
+<pre><code>git clone git://github.com/justmoon/node-bignum.git
+cd node-bignum
+npm install</code></pre>
+<p>Run the tests with
+
+</p>
+<pre><code>npm test</code></pre>
+
+          </div>
+        </div>
+    </div>
+    <div id="footer">
+        <a href="http://nubisa.com" class="nubisa">Nubisa</a>
+        <ul class="clearfix">
+            <li><a href="http://jxcore.com/" class="home">Home</a></li>
+            <li><a href="http://jxcore.com/downloads/" class="download">Download</a></li>
+            <li><a href="http://jxcore.com/what-is-jxcore/" class="docs current">Docs</a></li>
+            <li><a href="http://jxcore.com/blog" class="blog">Blog</a></li>
+            <li><a href="https://twitter.com/nodejx" class="twitter">Follow us on Twitter</a></li>
+        </ul>
+
+        <p>Copyright <a href="http://nubisa.com/">Nubisa, Inc.</a> 2014. View <a href="http://jxcore.com/document/eula/">license</a>.</p>
+    </div>
+
+  <script src="../sh_main.js"></script>
+  <script src="../sh_javascript.min.js"></script>
+  <script>highlight(undefined, undefined, 'pre');</script>
+  <!--<script>-->
+    <!--window._gaq = [['_setAccount', 'UA-10874194-2'], ['_trackPageview']];-->
+    <!--(function(d, t) {-->
+      <!--var g = d.createElement(t),-->
+          <!--s = d.getElementsByTagName(t)[0];-->
+      <!--g.src = '//www.google-analytics.com/ga.js';-->
+      <!--s.parentNode.insertBefore(g, s);-->
+    <!--}(document, 'script'));-->
+  <!--</script>-->
+
+    <script>
+        // window.onload = function() {
+        //var iframe = parent.document.getElementById("my_iframe");
+        //var iframe = window;
+        // iframe.height = iframe.clientHeight;
+        //}
+    </script>
+</body>
+</html>
+
