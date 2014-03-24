@@ -60,6 +60,7 @@
 </li>
 <li><a href="#jxcore_store_jxcore_store_shared">jxcore.store.shared</a><ul>
 <li><a href="#jxcore_store_store_shared_exists_key_element">store.shared.exists(key, element)</a></li>
+<li><a href="#jxcore_store_store_shared_expires_key_timeout">store.shared.expires(key, timeout)</a></li>
 <li><a href="#jxcore_store_store_shared_get_key">store.shared.get(key)</a></li>
 <li><a href="#jxcore_store_store_shared_getblocktimeout">store.shared.getBlockTimeout()</a></li>
 <li><a href="#jxcore_store_store_shared_read_key">store.shared.read(key)</a></li>
@@ -202,6 +203,40 @@ Also, when different threads are simultaneously writing/modifying value of the s
 <p>See <code>store.exists(key, element)</code>.
 
 </p>
+<h3>store.shared.expires(key, timeout)<span><a class="mark" href="#jxcore_store_store_shared_expires_key_timeout" id="jxcore_store_store_shared_expires_key_timeout">#</a></span></h3>
+<div class="signature"><ul>
+<li><code>key</code> <span class="type">String</span></li>
+<li><code>timeout</code> <span class="type">Number</span></li>
+</div></ul>
+<p>Sets an expiration <code>timeout</code> (milliseconds) for specified <code>key</code>.
+If there is no <code>read()</code>, <code>get()</code> or <code>set()</code> method called on this <code>key </code>within the <code>timeout</code> period (after <code>expires()</code> has been called),
+the <code>key</code> and it&#39;s value are automatically removed from the shared.store.
+Otherwise, whenever one of those methods are invoked for this <code>key</code> before the <code>timeout</code> elapses,
+JXcore invokes again the <code>expires()</code> method with the same parameters, so at that moment the <code>timeout</code> counter starts from zero.
+
+</p>
+<p>Precision of <code>key</code> expiration is +/- 10 milliseconds, which means, that if you set the <code>timeout</code> to e.g. 510 ms,
+the expiration may occur in a range between 500 and 520 ms.
+
+</p>
+<pre><code class="js">var mem = jxcore.store.shared;
+
+mem.set(&quot;key&quot;, &quot;Hello&quot;);
+mem.expires(&quot;key&quot;, 350);
+
+setTimeout(function(){
+    // the key still exists in the shared store
+    // mem.read(&quot;key&quot;) will will rewind the timeout counter to the start
+    // so it will expire after another 350 ms
+    console.log(&quot;data&quot;, mem.read(&quot;key&quot;));
+},300);
+
+setTimeout(function(){
+    // right now the timeout is expired
+    // and the key is already removed from the store.
+    // the return value of mem.read(&quot;key&quot;) will be undefined
+    console.log(&quot;data&quot;, mem.read(&quot;key&quot;));
+},900);</code></pre>
 <h3>store.shared.get(key)<span><a class="mark" href="#jxcore_store_store_shared_get_key" id="jxcore_store_store_shared_get_key">#</a></span></h3>
 <p>See <code>store.get(key)</code>.
 

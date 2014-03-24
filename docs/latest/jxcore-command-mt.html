@@ -63,7 +63,7 @@
           <div id="apicontent">
             <h1>Multithreading from the command line<span><a class="mark" href="#jxcore_command_mt_multithreading_from_the_command_line" id="jxcore_command_mt_multithreading_from_the_command_line">#</a></span></h1>
 <p>Generally, there are two ways of executing your JavaScript code in multiple threads with JXcore.
-You can read about both of them here: <a href="jxcore-feature-multithreading.html#how_to_run_multithreaded_code">How to run multithreaded code?</a>,
+You can read about both of them here: <a href="jxcore-feature-multithreading.html#jxcore_feature_multithreading_how_to_run_multithreaded_code">How to run multithreaded code?</a>,
 but right now we will focus only on running multithreaded code from the command line.
 
 </p>
@@ -99,7 +99,24 @@ console.log(&quot;I&#39;m here immediately.&quot;);</code></pre>
 
 </p>
 <pre><code>&gt; jx mt test.js</code></pre>
-<p>the process will not last for 20 seconds, because it will end after the last line of the code executes. Too keep the process alive and waiting for any delayed tasks, you can use <code>mt-keep</code> command.
+<p>the process will not last for 20 seconds, because it will end after the last line of the code executes.
+
+</p>
+<p>To keep the process alive and waiting for any delayed tasks, you have two options:
+
+</p>
+<p>1) call <a href="jxcore-process.html#jxcore_process_process_keepalive_timeout"><code>process.keepAlive()</code></a> in the code above (but then at some point also <a href="jxcore-process.html#jxcore_process_process_release"><code>process.release()</code></a> if you want to release the application&#39;s process), like:
+
+</p>
+<pre><code class="js">process.keepAlive();
+
+setTimeout(function() {
+    console.log(&quot;I&#39;m here after 20 secs.&quot;);
+    process.release();
+}, 20000);
+
+console.log(&quot;I&#39;m here immediately.&quot;);</code></pre>
+<p>2) or run the code with <code>mt-keep</code> command.
 
 </p>
 <h3>mt-keep[:number]<span><a class="mark" href="#jxcore_command_mt_mt_keep_number" id="jxcore_command_mt_mt_keep_number">#</a></span></h3>
@@ -108,7 +125,8 @@ console.log(&quot;I&#39;m here immediately.&quot;);</code></pre>
 
 </p>
 <pre><code>&gt; jx mt-keep:7 file.js</code></pre>
-<p>Does exactly the same thing as <code>mt</code> command, except that keeps each of the threads alive. It means, that the whole application won&#39;t exit, unless you call <a href="jxcore-process.html#jxcore_process_process_release"><code>process.release()</code></a> for each thread.
+<p>Does exactly the same thing as <code>mt</code> command, except that internally calls <a href="jxcore-process.html#jxcore_process_process_keepalive_timeout"><code>process.keepAlive()</code></a> for each of the threads.
+It means, that the whole application won&#39;t exit, unless for each of those threads you won&#39;t call  <a href="jxcore-process.html#jxcore_process_process_release"><code>process.release()</code></a>.
 
 </p>
 <pre><code class="js">var delay = 1000 * (process.threadId + 1 );
@@ -131,7 +149,6 @@ console.log(&quot;I&#39;m here immediately. ThreadID: &quot; + process.threadId)
 // I&#39;m here after 1 secs. ThreadID: 0
 // I&#39;m here after 2 secs. ThreadID: 1</code></pre>
 <p>As you can see, we have released each thread individually (at different delay), and when the last thread becomes released, the main application&#39;s thread exits.
-
 </p>
 
           </div>

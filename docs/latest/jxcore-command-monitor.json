@@ -4,7 +4,7 @@
     {
       "textRaw": "Process Monitor",
       "name": "process_monitor",
-      "desc": "<p>JXcore offers embedded process monitoring tool. It checks regularly whether monitored process/processes still exist and respawns them if needed.\nWhen the monitor is running, then your applications can subscribe to it and start being monitored.\n\n</p>\n<p>Apart from this feature, JXcore offers also <a href=\"jxcore-monitor.html#jxcore_monitor_internal_recovery\">Internal Recovery</a>.\nPlease refer there for complementary information.\n\n</p>\n",
+      "desc": "<p>JXcore offers embedded process monitoring tool. It checks regularly whether monitored process/processes still exist and respawns them if needed.\nWhen the monitor is running, then your applications can subscribe to it and start being monitored.\n\n</p>\n<p>Apart from this feature, JXcore offers also <a href=\"jxcore-feature-internal-recovery.html\">Internal Recovery</a>.\nPlease refer there for complementary information.\n\n</p>\n",
       "modules": [
         {
           "textRaw": "Commands",

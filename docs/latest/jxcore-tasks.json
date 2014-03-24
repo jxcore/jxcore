@@ -11,7 +11,7 @@
     {
       "textRaw": "Defaults",
       "name": "defaults",
-      "desc": "<p>JXcore uses the following defaults for subthreads for multithreaded applications:\n\n</p>\n<ol>\n<li>minimum amount is set to 2. This is also the default value.</li>\n<li>maximum amount is set to 63.</li>\n</ol>\n<p>You can also control the number of subthreads and there are two ways you can do this, but that depends how you run the application.\n\n</p>\n<p>If you launch te code with mt/mt-keep command line parameter, you can set the threads count by applying a number after the colon, like:\n\n</p>\n<pre><code>&gt; jx mt:4 hello.js</code></pre>\n<p>Otherwise you can use <a href=\"\">jxcore.env.setThreadCount()</a> method. See also <a href=\"jxcore-feature-multithreading.html#how_to_run_multithreaded_code\">How to run multithreaded code?</a> for more information.\n\n</p>\n",
+      "desc": "<p>JXcore uses the following defaults for subthreads for multithreaded applications:\n\n</p>\n<ol>\n<li>minimum amount is set to 2. This is also the default value.</li>\n<li>maximum amount is set to 63.</li>\n</ol>\n<p>You can also control the number of subthreads and there are two ways you can do this, but that depends how you run the application.\n\n</p>\n<p>If you launch te code with mt/mt-keep command line parameter, you can set the threads count by applying a number after the colon, like:\n\n</p>\n<pre><code>&gt; jx mt:4 hello.js</code></pre>\n<p>Otherwise you can use <code>setThreadCount()</code> method. See also <a href=\"jxcore-feature-multithreading.html#jxcore_feature_multithreading_how_to_run_multithreaded_code\">How to run multithreaded code?</a> for more information.\n\n</p>\n",
       "type": "module",
       "displayName": "Defaults"
     },

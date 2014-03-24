@@ -1275,6 +1275,7 @@
 </li>
 <li><a href="#all_jxcore_store_shared">jxcore.store.shared</a><ul>
 <li><a href="#all_store_shared_exists_key_element">store.shared.exists(key, element)</a></li>
+<li><a href="#all_store_shared_expires_key_timeout">store.shared.expires(key, timeout)</a></li>
 <li><a href="#all_store_shared_get_key">store.shared.get(key)</a></li>
 <li><a href="#all_store_shared_getblocktimeout">store.shared.getBlockTimeout()</a></li>
 <li><a href="#all_store_shared_read_key">store.shared.read(key)</a></li>
@@ -15093,7 +15094,7 @@ etc.</code></pre>
 When the monitor is running, then your applications can subscribe to it and start being monitored.
 
 </p>
-<p>Apart from this feature, JXcore offers also <a href="jxcore-monitor.html#jxcore_monitor_internal_recovery">Internal Recovery</a>.
+<p>Apart from this feature, JXcore offers also <a href="jxcore-feature-internal-recovery.html">Internal Recovery</a>.
 Please refer there for complementary information.
 
 </p>
@@ -15154,7 +15155,7 @@ You can use some predefined tags inside the log_path. Supported tags are [WEEKOF
 </ul>
 <h1>Multithreading from the command line<span><a class="mark" href="#all_multithreading_from_the_command_line" id="all_multithreading_from_the_command_line">#</a></span></h1>
 <p>Generally, there are two ways of executing your JavaScript code in multiple threads with JXcore.
-You can read about both of them here: <a href="jxcore-feature-multithreading.html#how_to_run_multithreaded_code">How to run multithreaded code?</a>,
+You can read about both of them here: <a href="jxcore-feature-multithreading.html#jxcore_feature_multithreading_how_to_run_multithreaded_code">How to run multithreaded code?</a>,
 but right now we will focus only on running multithreaded code from the command line.
 
 </p>
@@ -15190,7 +15191,24 @@ console.log(&quot;I&#39;m here immediately.&quot;);</code></pre>
 
 </p>
 <pre><code>&gt; jx mt test.js</code></pre>
-<p>the process will not last for 20 seconds, because it will end after the last line of the code executes. Too keep the process alive and waiting for any delayed tasks, you can use <code>mt-keep</code> command.
+<p>the process will not last for 20 seconds, because it will end after the last line of the code executes.
+
+</p>
+<p>To keep the process alive and waiting for any delayed tasks, you have two options:
+
+</p>
+<p>1) call <a href="jxcore-process.html#jxcore_process_process_keepalive_timeout"><code>process.keepAlive()</code></a> in the code above (but then at some point also <a href="jxcore-process.html#jxcore_process_process_release"><code>process.release()</code></a> if you want to release the application&#39;s process), like:
+
+</p>
+<pre><code class="js">process.keepAlive();
+
+setTimeout(function() {
+    console.log(&quot;I&#39;m here after 20 secs.&quot;);
+    process.release();
+}, 20000);
+
+console.log(&quot;I&#39;m here immediately.&quot;);</code></pre>
+<p>2) or run the code with <code>mt-keep</code> command.
 
 </p>
 <h3>mt-keep[:number]<span><a class="mark" href="#all_mt_keep_number" id="all_mt_keep_number">#</a></span></h3>
@@ -15199,7 +15217,8 @@ console.log(&quot;I&#39;m here immediately.&quot;);</code></pre>
 
 </p>
 <pre><code>&gt; jx mt-keep:7 file.js</code></pre>
-<p>Does exactly the same thing as <code>mt</code> command, except that keeps each of the threads alive. It means, that the whole application won&#39;t exit, unless you call <a href="jxcore-process.html#jxcore_process_process_release"><code>process.release()</code></a> for each thread.
+<p>Does exactly the same thing as <code>mt</code> command, except that internally calls <a href="jxcore-process.html#jxcore_process_process_keepalive_timeout"><code>process.keepAlive()</code></a> for each of the threads.
+It means, that the whole application won&#39;t exit, unless for each of those threads you won&#39;t call  <a href="jxcore-process.html#jxcore_process_process_release"><code>process.release()</code></a>.
 
 </p>
 <pre><code class="js">var delay = 1000 * (process.threadId + 1 );
@@ -15222,7 +15241,6 @@ console.log(&quot;I&#39;m here immediately. ThreadID: &quot; + process.threadId)
 // I&#39;m here after 1 secs. ThreadID: 0
 // I&#39;m here after 2 secs. ThreadID: 1</code></pre>
 <p>As you can see, we have released each thread individually (at different delay), and when the last thread becomes released, the main application&#39;s thread exits.
-
 
 </p>
 <h1>Internal Recovery<span><a class="mark" href="#all_internal_recovery" id="all_internal_recovery">#</a></span></h1>
@@ -15427,7 +15445,7 @@ Thus, there is no use for any global variable defined in a main thread – the s
 </p>
 <pre><code>&gt; jx mt:4 hello.js</code></pre>
 <p>Otherwise you can use <a href="jxcore-tasks.html#jxcore_tasks_tasks_setthreadcount_value"><code>tasks.setThreadCount()</code></a> method.
-See also <a href="jxcore-feature-multithreading.html#how_to_run_multithreaded_code">How to run multithreaded code?</a> for more information.
+See also <a href="jxcore-feature-multithreading.html#jxcore_feature_multithreading_how_to_run_multithreaded_code">How to run multithreaded code?</a> for more information.
 
 </p>
 <h3>Memory management<span><a class="mark" href="#all_memory_management" id="all_memory_management">#</a></span></h3>
@@ -15484,6 +15502,7 @@ See the API for reference.
 </p>
 <h3>Multithreaded Javascript Tasks<span><a class="mark" href="#all_multithreaded_javascript_tasks" id="all_multithreaded_javascript_tasks">#</a></span></h3>
 <p>This topic is fully described here: <a href="jxcore-tasks.html">Tasks</a>
+
 </p>
 <h1>Packaging &amp; Code Protection<span><a class="mark" href="#all_packaging_code_protection" id="all_packaging_code_protection">#</a></span></h1>
 <p>JXcore introduces a unique feature for packaging and encryption of source files and other assets into <code>JX</code> packages.
@@ -15525,7 +15544,7 @@ After that compiles the <code>JXP</code> file (by invoking <code>compile</code> 
 </p>
 <pre><code>&gt; jx compile project_file.jxp</code></pre>
 <h2>Hiding body of functions<span><a class="mark" href="#all_hiding_body_of_functions" id="all_hiding_body_of_functions">#</a></span></h2>
-<p>As you may already know, a javascript function (like everything in javascript – [www.w3schools]) is an object.
+<p>As you may already know, a javascript function (like everything in javascript – <a href="http://www.w3schools.com">w3schools</a>) is an object.
 To be more precise, it is an instance of the <code>Function</code> which inherits from the <code>Object</code>.
 And just because the <code>Object</code> has defined <code>toString()</code> method, you could also call it on some function,
 and the result will be a string containing function’s body.
@@ -16303,7 +16322,7 @@ When the monitor is running, then your applications can subscribe to it and star
 <p>You can control monitor&#39;s process also from the <a href="jxcore-command-monitor.html">command line</a>.
 
 </p>
-<p>Apart from this feature, JXcore offers also <a href="#jxcore_monitor_internal_recovery">Internal Recovery</a>.
+<p>Apart from this feature, JXcore offers also <a href="jxcore-feature-internal-recovery.html">Internal Recovery</a>.
 
 </p>
 <h2>API<span><a class="mark" href="#all_api_3" id="all_api_3">#</a></span></h2>
@@ -16495,6 +16514,40 @@ Also, when different threads are simultaneously writing/modifying value of the s
 <p>See <code>store.exists(key, element)</code>.
 
 </p>
+<h3>store.shared.expires(key, timeout)<span><a class="mark" href="#all_store_shared_expires_key_timeout" id="all_store_shared_expires_key_timeout">#</a></span></h3>
+<div class="signature"><ul>
+<li><code>key</code> <span class="type">String</span></li>
+<li><code>timeout</code> <span class="type">Number</span></li>
+</div></ul>
+<p>Sets an expiration <code>timeout</code> (milliseconds) for specified <code>key</code>.
+If there is no <code>read()</code>, <code>get()</code> or <code>set()</code> method called on this <code>key </code>within the <code>timeout</code> period (after <code>expires()</code> has been called),
+the <code>key</code> and it&#39;s value are automatically removed from the shared.store.
+Otherwise, whenever one of those methods are invoked for this <code>key</code> before the <code>timeout</code> elapses,
+JXcore invokes again the <code>expires()</code> method with the same parameters, so at that moment the <code>timeout</code> counter starts from zero.
+
+</p>
+<p>Precision of <code>key</code> expiration is +/- 10 milliseconds, which means, that if you set the <code>timeout</code> to e.g. 510 ms,
+the expiration may occur in a range between 500 and 520 ms.
+
+</p>
+<pre><code class="js">var mem = jxcore.store.shared;
+
+mem.set(&quot;key&quot;, &quot;Hello&quot;);
+mem.expires(&quot;key&quot;, 350);
+
+setTimeout(function(){
+    // the key still exists in the shared store
+    // mem.read(&quot;key&quot;) will will rewind the timeout counter to the start
+    // so it will expire after another 350 ms
+    console.log(&quot;data&quot;, mem.read(&quot;key&quot;));
+},300);
+
+setTimeout(function(){
+    // right now the timeout is expired
+    // and the key is already removed from the store.
+    // the return value of mem.read(&quot;key&quot;) will be undefined
+    console.log(&quot;data&quot;, mem.read(&quot;key&quot;));
+},900);</code></pre>
 <h3>store.shared.get(key)<span><a class="mark" href="#all_store_shared_get_key" id="all_store_shared_get_key">#</a></span></h3>
 <p>See <code>store.get(key)</code>.
 
@@ -16628,7 +16681,7 @@ Even if the application works well in a testing environment, it could start slow
 
 </p>
 <pre><code>&gt; jx mt:4 hello.js</code></pre>
-<p>Otherwise you can use <a href="">jxcore.env.setThreadCount()</a> method. See also <a href="jxcore-feature-multithreading.html#how_to_run_multithreaded_code">How to run multithreaded code?</a> for more information.
+<p>Otherwise you can use <code>setThreadCount()</code> method. See also <a href="jxcore-feature-multithreading.html#jxcore_feature_multithreading_how_to_run_multithreaded_code">How to run multithreaded code?</a> for more information.
 
 </p>
 <h1>API<span><a class="mark" href="#all_api_5" id="all_api_5">#</a></span></h1>

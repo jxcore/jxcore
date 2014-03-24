@@ -14261,7 +14261,7 @@
     {
       "textRaw": "Process Monitor",
       "name": "process_monitor",
-      "desc": "<p>JXcore offers embedded process monitoring tool. It checks regularly whether monitored process/processes still exist and respawns them if needed.\nWhen the monitor is running, then your applications can subscribe to it and start being monitored.\n\n</p>\n<p>Apart from this feature, JXcore offers also <a href=\"jxcore-monitor.html#jxcore_monitor_internal_recovery\">Internal Recovery</a>.\nPlease refer there for complementary information.\n\n</p>\n",
+      "desc": "<p>JXcore offers embedded process monitoring tool. It checks regularly whether monitored process/processes still exist and respawns them if needed.\nWhen the monitor is running, then your applications can subscribe to it and start being monitored.\n\n</p>\n<p>Apart from this feature, JXcore offers also <a href=\"jxcore-feature-internal-recovery.html\">Internal Recovery</a>.\nPlease refer there for complementary information.\n\n</p>\n",
       "modules": [
         {
           "textRaw": "Commands",
@@ -14321,7 +14321,7 @@
     {
       "textRaw": "Multithreading from the command line",
       "name": "multithreading_from_the_command_line",
-      "desc": "<p>Generally, there are two ways of executing your JavaScript code in multiple threads with JXcore.\nYou can read about both of them here: <a href=\"jxcore-feature-multithreading.html#how_to_run_multithreaded_code\">How to run multithreaded code?</a>,\nbut right now we will focus only on running multithreaded code from the command line.\n\n</p>\n",
+      "desc": "<p>Generally, there are two ways of executing your JavaScript code in multiple threads with JXcore.\nYou can read about both of them here: <a href=\"jxcore-feature-multithreading.html#jxcore_feature_multithreading_how_to_run_multithreaded_code\">How to run multithreaded code?</a>,\nbut right now we will focus only on running multithreaded code from the command line.\n\n</p>\n",
       "modules": [
         {
           "textRaw": "Commands",
@@ -14330,12 +14330,12 @@
             {
               "textRaw": "mt[:number]",
               "name": "[:number]",
-              "desc": "<pre><code>&gt; jx mt file.js</code></pre>\n<p>or\n\n</p>\n<pre><code>&gt; jx mt file.jx</code></pre>\n<p>Runs the code in multiple threads. Each thread executes the code independently.\n\n</p>\n<p>JXcore by default will create 2 threads in the pool for that application, however you can change this value by supplying desired <code>number</code> of threads after the colon, like:\n\n</p>\n<pre><code>&gt; jx mt:4 file.js</code></pre>\n<p>It this case four threads will be created.\n\n</p>\n<p>Using the <code>mt</code> command suits the best, if your code does not execute any delayed or async jobs, otherwise the application may exit, before those jobs will have chance to complete.\n\n</p>\n<p>Let&#39;s consider the following example (<em>test.js</em>):\n\n</p>\n<pre><code class=\"js\">setTimeout(function() {\n    console.log(&quot;I&#39;m here after 20 secs.&quot;);\n}, 20000);\n\nconsole.log(&quot;I&#39;m here immediately.&quot;);</code></pre>\n<p>When we&#39;ll run it with:\n\n</p>\n<pre><code>&gt; jx mt test.js</code></pre>\n<p>the process will not last for 20 seconds, because it will end after the last line of the code executes. Too keep the process alive and waiting for any delayed tasks, you can use <code>mt-keep</code> command.\n\n</p>\n"
+              "desc": "<pre><code>&gt; jx mt file.js</code></pre>\n<p>or\n\n</p>\n<pre><code>&gt; jx mt file.jx</code></pre>\n<p>Runs the code in multiple threads. Each thread executes the code independently.\n\n</p>\n<p>JXcore by default will create 2 threads in the pool for that application, however you can change this value by supplying desired <code>number</code> of threads after the colon, like:\n\n</p>\n<pre><code>&gt; jx mt:4 file.js</code></pre>\n<p>It this case four threads will be created.\n\n</p>\n<p>Using the <code>mt</code> command suits the best, if your code does not execute any delayed or async jobs, otherwise the application may exit, before those jobs will have chance to complete.\n\n</p>\n<p>Let&#39;s consider the following example (<em>test.js</em>):\n\n</p>\n<pre><code class=\"js\">setTimeout(function() {\n    console.log(&quot;I&#39;m here after 20 secs.&quot;);\n}, 20000);\n\nconsole.log(&quot;I&#39;m here immediately.&quot;);</code></pre>\n<p>When we&#39;ll run it with:\n\n</p>\n<pre><code>&gt; jx mt test.js</code></pre>\n<p>the process will not last for 20 seconds, because it will end after the last line of the code executes.\n\n</p>\n<p>To keep the process alive and waiting for any delayed tasks, you have two options:\n\n</p>\n<p>1) call <a href=\"jxcore-process.html#jxcore_process_process_keepalive_timeout\"><code>process.keepAlive()</code></a> in the code above (but then at some point also <a href=\"jxcore-process.html#jxcore_process_process_release\"><code>process.release()</code></a> if you want to release the application&#39;s process), like:\n\n</p>\n<pre><code class=\"js\">process.keepAlive();\n\nsetTimeout(function() {\n    console.log(&quot;I&#39;m here after 20 secs.&quot;);\n    process.release();\n}, 20000);\n\nconsole.log(&quot;I&#39;m here immediately.&quot;);</code></pre>\n<p>2) or run the code with <code>mt-keep</code> command.\n\n</p>\n"
             },
             {
               "textRaw": "mt-keep[:number]",
               "name": "[:number]",
-              "desc": "<pre><code>&gt; jx mt-keep file.js</code></pre>\n<p>or\n\n</p>\n<pre><code>&gt; jx mt-keep:7 file.js</code></pre>\n<p>Does exactly the same thing as <code>mt</code> command, except that keeps each of the threads alive. It means, that the whole application won&#39;t exit, unless you call <a href=\"jxcore-process.html#jxcore_process_process_release\"><code>process.release()</code></a> for each thread.\n\n</p>\n<pre><code class=\"js\">var delay = 1000 * (process.threadId + 1 );\n\nsetTimeout(function () {\n    console.log(&quot;I&#39;m here after &quot; + (delay / 1000) +\n        &quot; secs. ThreadId: &quot;, process.threadId);\n    process.release();\n}, delay);\n\nconsole.log(&quot;I&#39;m here immediately. ThreadID: &quot; + process.threadId);</code></pre>\n<p>When we&#39;ll run it with:\n\n</p>\n<pre><code>&gt; jx mt-keep:2 file.js\n\n// output:\n// I&#39;m here immediately. ThreadID: 0\n// I&#39;m here immediately. ThreadID: 1\n// I&#39;m here after 1 secs. ThreadID: 0\n// I&#39;m here after 2 secs. ThreadID: 1</code></pre>\n<p>As you can see, we have released each thread individually (at different delay), and when the last thread becomes released, the main application&#39;s thread exits.\n\n\n</p>\n"
+              "desc": "<pre><code>&gt; jx mt-keep file.js</code></pre>\n<p>or\n\n</p>\n<pre><code>&gt; jx mt-keep:7 file.js</code></pre>\n<p>Does exactly the same thing as <code>mt</code> command, except that internally calls <a href=\"jxcore-process.html#jxcore_process_process_keepalive_timeout\"><code>process.keepAlive()</code></a> for each of the threads.\nIt means, that the whole application won&#39;t exit, unless for each of those threads you won&#39;t call  <a href=\"jxcore-process.html#jxcore_process_process_release\"><code>process.release()</code></a>.\n\n</p>\n<pre><code class=\"js\">var delay = 1000 * (process.threadId + 1 );\n\nsetTimeout(function () {\n    console.log(&quot;I&#39;m here after &quot; + (delay / 1000) +\n        &quot; secs. ThreadId: &quot;, process.threadId);\n    process.release();\n}, delay);\n\nconsole.log(&quot;I&#39;m here immediately. ThreadID: &quot; + process.threadId);</code></pre>\n<p>When we&#39;ll run it with:\n\n</p>\n<pre><code>&gt; jx mt-keep:2 file.js\n\n// output:\n// I&#39;m here immediately. ThreadID: 0\n// I&#39;m here immediately. ThreadID: 1\n// I&#39;m here after 1 secs. ThreadID: 0\n// I&#39;m here after 2 secs. ThreadID: 1</code></pre>\n<p>As you can see, we have released each thread individually (at different delay), and when the last thread becomes released, the main application&#39;s thread exits.\n\n</p>\n"
             }
           ],
           "type": "module",
@@ -14394,7 +14394,7 @@
             {
               "textRaw": "Defaults",
               "name": "defaults",
-              "desc": "<p>JXcore uses the following defaults for subthreads for multithreaded applications:\n\n</p>\n<ol>\n<li>minimum amount is set to 2. This is also the default value.</li>\n<li>maximum amount is set to 63.</li>\n</ol>\n<p>You can also control the number of subthreads and there are two ways you can do this, but that depends how you run the application.\n\n</p>\n<p>If you launch te code with mt/mt-keep command line parameter, you can set the threads count by applying a number after the colon, like:\n\n</p>\n<pre><code>&gt; jx mt:4 hello.js</code></pre>\n<p>Otherwise you can use <a href=\"jxcore-tasks.html#jxcore_tasks_tasks_setthreadcount_value\"><code>tasks.setThreadCount()</code></a> method.\nSee also <a href=\"jxcore-feature-multithreading.html#how_to_run_multithreaded_code\">How to run multithreaded code?</a> for more information.\n\n</p>\n",
+              "desc": "<p>JXcore uses the following defaults for subthreads for multithreaded applications:\n\n</p>\n<ol>\n<li>minimum amount is set to 2. This is also the default value.</li>\n<li>maximum amount is set to 63.</li>\n</ol>\n<p>You can also control the number of subthreads and there are two ways you can do this, but that depends how you run the application.\n\n</p>\n<p>If you launch te code with mt/mt-keep command line parameter, you can set the threads count by applying a number after the colon, like:\n\n</p>\n<pre><code>&gt; jx mt:4 hello.js</code></pre>\n<p>Otherwise you can use <a href=\"jxcore-tasks.html#jxcore_tasks_tasks_setthreadcount_value\"><code>tasks.setThreadCount()</code></a> method.\nSee also <a href=\"jxcore-feature-multithreading.html#jxcore_feature_multithreading_how_to_run_multithreaded_code\">How to run multithreaded code?</a> for more information.\n\n</p>\n",
               "type": "module",
               "displayName": "Defaults"
             },
@@ -14431,7 +14431,7 @@
             {
               "textRaw": "Multithreaded Javascript Tasks",
               "name": "multithreaded_javascript_tasks",
-              "desc": "<p>This topic is fully described here: <a href=\"jxcore-tasks.html\">Tasks</a>\n</p>\n",
+              "desc": "<p>This topic is fully described here: <a href=\"jxcore-tasks.html\">Tasks</a>\n\n</p>\n",
               "type": "module",
               "displayName": "Multithreaded Javascript Tasks"
             }
@@ -14473,7 +14473,7 @@
         {
           "textRaw": "Hiding body of functions",
           "name": "hiding_body_of_functions",
-          "desc": "<p>As you may already know, a javascript function (like everything in javascript – [www.w3schools]) is an object.\nTo be more precise, it is an instance of the <code>Function</code> which inherits from the <code>Object</code>.\nAnd just because the <code>Object</code> has defined <code>toString()</code> method, you could also call it on some function,\nand the result will be a string containing function’s body.\n\n</p>\n<p>In JXcore Packaging &amp; Code Protection module we solved that problem.\nYou can hide body of the function inside of a jx package, even if the function is exported out of the module.\n\n</p>\n",
+          "desc": "<p>As you may already know, a javascript function (like everything in javascript – <a href=\"http://www.w3schools.com\">w3schools</a>) is an object.\nTo be more precise, it is an instance of the <code>Function</code> which inherits from the <code>Object</code>.\nAnd just because the <code>Object</code> has defined <code>toString()</code> method, you could also call it on some function,\nand the result will be a string containing function’s body.\n\n</p>\n<p>In JXcore Packaging &amp; Code Protection module we solved that problem.\nYou can hide body of the function inside of a jx package, even if the function is exported out of the module.\n\n</p>\n",
           "methods": [
             {
               "textRaw": "utils.hideMethod(fn)",
@@ -15492,7 +15492,7 @@
     {
       "textRaw": "Process Monitor",
       "name": "process_monitor",
-      "desc": "<p>JXcore offers embedded process monitoring tool. It checks regularly whether monitored process/processes still exist and respawns them if needed.\nWhen the monitor is running, then your applications can subscribe to it and start being monitored.\n\n</p>\n<p>The Process Monitor is a global and can be referenced from anywhere:\n\n</p>\n<pre><code class=\"js\">var mon = jxcore.monitor;</code></pre>\n<p>You can control monitor&#39;s process also from the <a href=\"jxcore-command-monitor.html\">command line</a>.\n\n</p>\n<p>Apart from this feature, JXcore offers also <a href=\"#jxcore_monitor_internal_recovery\">Internal Recovery</a>.\n\n</p>\n",
+      "desc": "<p>JXcore offers embedded process monitoring tool. It checks regularly whether monitored process/processes still exist and respawns them if needed.\nWhen the monitor is running, then your applications can subscribe to it and start being monitored.\n\n</p>\n<p>The Process Monitor is a global and can be referenced from anywhere:\n\n</p>\n<pre><code class=\"js\">var mon = jxcore.monitor;</code></pre>\n<p>You can control monitor&#39;s process also from the <a href=\"jxcore-command-monitor.html\">command line</a>.\n\n</p>\n<p>Apart from this feature, JXcore offers also <a href=\"jxcore-feature-internal-recovery.html\">Internal Recovery</a>.\n\n</p>\n",
       "modules": [
         {
           "textRaw": "API",
@@ -15762,6 +15762,13 @@
               "displayName": "store.shared.exists(key, element)"
             },
             {
+              "textRaw": "store.shared.expires(key, timeout)",
+              "name": "store.shared.expires(key,_timeout)",
+              "desc": "<p>Sets an expiration <code>timeout</code> (milliseconds) for specified <code>key</code>.\nIf there is no <code>read()</code>, <code>get()</code> or <code>set()</code> method called on this <code>key </code>within the <code>timeout</code> period (after <code>expires()</code> has been called),\nthe <code>key</code> and it&#39;s value are automatically removed from the shared.store.\nOtherwise, whenever one of those methods are invoked for this <code>key</code> before the <code>timeout</code> elapses,\nJXcore invokes again the <code>expires()</code> method with the same parameters, so at that moment the <code>timeout</code> counter starts from zero.\n\n</p>\n<p>Precision of <code>key</code> expiration is +/- 10 milliseconds, which means, that if you set the <code>timeout</code> to e.g. 510 ms,\nthe expiration may occur in a range between 500 and 520 ms.\n\n</p>\n<pre><code class=\"js\">var mem = jxcore.store.shared;\n\nmem.set(&quot;key&quot;, &quot;Hello&quot;);\nmem.expires(&quot;key&quot;, 350);\n\nsetTimeout(function(){\n    // the key still exists in the shared store\n    // mem.read(&quot;key&quot;) will will rewind the timeout counter to the start\n    // so it will expire after another 350 ms\n    console.log(&quot;data&quot;, mem.read(&quot;key&quot;));\n},300);\n\nsetTimeout(function(){\n    // right now the timeout is expired\n    // and the key is already removed from the store.\n    // the return value of mem.read(&quot;key&quot;) will be undefined\n    console.log(&quot;data&quot;, mem.read(&quot;key&quot;));\n},900);</code></pre>\n",
+              "type": "module",
+              "displayName": "store.shared.expires(key, timeout)"
+            },
+            {
               "textRaw": "store.shared.get(key)",
               "name": "store.shared.get(key)",
               "desc": "<p>See <code>store.get(key)</code>.\n\n</p>\n",
@@ -15849,7 +15856,7 @@
     {
       "textRaw": "Defaults",
       "name": "defaults",
-      "desc": "<p>JXcore uses the following defaults for subthreads for multithreaded applications:\n\n</p>\n<ol>\n<li>minimum amount is set to 2. This is also the default value.</li>\n<li>maximum amount is set to 63.</li>\n</ol>\n<p>You can also control the number of subthreads and there are two ways you can do this, but that depends how you run the application.\n\n</p>\n<p>If you launch te code with mt/mt-keep command line parameter, you can set the threads count by applying a number after the colon, like:\n\n</p>\n<pre><code>&gt; jx mt:4 hello.js</code></pre>\n<p>Otherwise you can use <a href=\"\">jxcore.env.setThreadCount()</a> method. See also <a href=\"jxcore-feature-multithreading.html#how_to_run_multithreaded_code\">How to run multithreaded code?</a> for more information.\n\n</p>\n",
+      "desc": "<p>JXcore uses the following defaults for subthreads for multithreaded applications:\n\n</p>\n<ol>\n<li>minimum amount is set to 2. This is also the default value.</li>\n<li>maximum amount is set to 63.</li>\n</ol>\n<p>You can also control the number of subthreads and there are two ways you can do this, but that depends how you run the application.\n\n</p>\n<p>If you launch te code with mt/mt-keep command line parameter, you can set the threads count by applying a number after the colon, like:\n\n</p>\n<pre><code>&gt; jx mt:4 hello.js</code></pre>\n<p>Otherwise you can use <code>setThreadCount()</code> method. See also <a href=\"jxcore-feature-multithreading.html#jxcore_feature_multithreading_how_to_run_multithreaded_code\">How to run multithreaded code?</a> for more information.\n\n</p>\n",
       "type": "module",
       "displayName": "Defaults"
     },

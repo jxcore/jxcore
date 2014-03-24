@@ -31,7 +31,7 @@
         {
           "textRaw": "Hiding body of functions",
           "name": "hiding_body_of_functions",
-          "desc": "<p>As you may already know, a javascript function (like everything in javascript – [www.w3schools]) is an object.\nTo be more precise, it is an instance of the <code>Function</code> which inherits from the <code>Object</code>.\nAnd just because the <code>Object</code> has defined <code>toString()</code> method, you could also call it on some function,\nand the result will be a string containing function’s body.\n\n</p>\n<p>In JXcore Packaging &amp; Code Protection module we solved that problem.\nYou can hide body of the function inside of a jx package, even if the function is exported out of the module.\n\n</p>\n",
+          "desc": "<p>As you may already know, a javascript function (like everything in javascript – <a href=\"http://www.w3schools.com\">w3schools</a>) is an object.\nTo be more precise, it is an instance of the <code>Function</code> which inherits from the <code>Object</code>.\nAnd just because the <code>Object</code> has defined <code>toString()</code> method, you could also call it on some function,\nand the result will be a string containing function’s body.\n\n</p>\n<p>In JXcore Packaging &amp; Code Protection module we solved that problem.\nYou can hide body of the function inside of a jx package, even if the function is exported out of the module.\n\n</p>\n",
           "methods": [
             {
               "textRaw": "utils.hideMethod(fn)",

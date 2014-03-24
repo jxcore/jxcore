@@ -75,7 +75,7 @@
 <p>Attaching any callback to <code>restart</code> event, depending on the context in which it is performed, enables internal process or thread recovery.
 
 </p>
-<p>Internal Recovery is a separate section described <a href="jxcore-monitor.html#jxcore_monitor_internal_recovery">here</a>.
+<p>Internal Recovery is a separate section described <a href="jxcore-feature-internal-recovery.html">here</a>.
 
 </p>
 <h2>process.keepAlive(timeout)<span><a class="mark" href="#jxcore_thread_process_keepalive_timeout" id="jxcore_thread_process_keepalive_timeout">#</a></span></h2>
@@ -87,7 +87,7 @@
 
 </p>
 </blockquote>
-<p>Marks the current thread (from which the <code>keepAlive()</code> method was called) to be alive. This will inform the thread pool,
+<p>Marks the main process to be alive. This will inform the thread pool,
 that the task has an intention to continue working (probably by doing some delayed or async work).
 
 </p>
@@ -117,6 +117,14 @@ This is a moment, when <code>keepAlive()</code> comes in handy. Later in the cod
 };
 
 jxcore.tasks.addTask(method);</code></pre>
+<p>The <code>keepAlive()</code> method even if is callable only from a subthread, does not really keep the subthread alive, but the main thread.
+
+</p>
+<p>Internally, it increments a counter. On the other hand, every <code>process.release()</code> invocation - decrements it.
+So when you want to end the application - you should call the <code>release()</code> method the same amount of times as you have called <code>keepAlive()</code>.
+When that counter is zero - the main process may exit now.
+
+</p>
 <h2>process.release()<span><a class="mark" href="#jxcore_thread_process_release" id="jxcore_thread_process_release">#</a></span></h2>
 <blockquote>
 <p>This method is implemented only in the subthread context. When called from a main thread it does nothing.
@@ -153,7 +161,7 @@ jxcore.tasks.on(&#39;message&#39;, function (threadId, param) {
 }</code></pre>
 <h2>process.threadId<span><a class="mark" href="#jxcore_thread_process_threadid" id="jxcore_thread_process_threadid">#</a></span></h2>
 <p>Returns the ID of the subthread. For multithreaded application it is a number between 0 and 62 (because the maximum amount of subthreads is 63).
-You can also control the number of subthreads for your application, see here for more information: <a href="">Defaults</a>.
+You can also control the number of subthreads for your application, see here for more information: <a href="jxcore-feature-multithreading.html#defaults">Defaults</a>.
 
 </p>
 <p>Since one of the subthreads can have its index equal to 0, we should not test it with:

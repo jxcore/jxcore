@@ -170,6 +170,13 @@
               "displayName": "store.shared.exists(key, element)"
             },
             {
+              "textRaw": "store.shared.expires(key, timeout)",
+              "name": "store.shared.expires(key,_timeout)",
+              "desc": "<p>Sets an expiration <code>timeout</code> (milliseconds) for specified <code>key</code>.\nIf there is no <code>read()</code>, <code>get()</code> or <code>set()</code> method called on this <code>key </code>within the <code>timeout</code> period (after <code>expires()</code> has been called),\nthe <code>key</code> and it&#39;s value are automatically removed from the shared.store.\nOtherwise, whenever one of those methods are invoked for this <code>key</code> before the <code>timeout</code> elapses,\nJXcore invokes again the <code>expires()</code> method with the same parameters, so at that moment the <code>timeout</code> counter starts from zero.\n\n</p>\n<p>Precision of <code>key</code> expiration is +/- 10 milliseconds, which means, that if you set the <code>timeout</code> to e.g. 510 ms,\nthe expiration may occur in a range between 500 and 520 ms.\n\n</p>\n<pre><code class=\"js\">var mem = jxcore.store.shared;\n\nmem.set(&quot;key&quot;, &quot;Hello&quot;);\nmem.expires(&quot;key&quot;, 350);\n\nsetTimeout(function(){\n    // the key still exists in the shared store\n    // mem.read(&quot;key&quot;) will will rewind the timeout counter to the start\n    // so it will expire after another 350 ms\n    console.log(&quot;data&quot;, mem.read(&quot;key&quot;));\n},300);\n\nsetTimeout(function(){\n    // right now the timeout is expired\n    // and the key is already removed from the store.\n    // the return value of mem.read(&quot;key&quot;) will be undefined\n    console.log(&quot;data&quot;, mem.read(&quot;key&quot;));\n},900);</code></pre>\n",
+              "type": "module",
+              "displayName": "store.shared.expires(key, timeout)"
+            },
+            {
               "textRaw": "store.shared.get(key)",
               "name": "store.shared.get(key)",
               "desc": "<p>See <code>store.get(key)</code>.\n\n</p>\n",
