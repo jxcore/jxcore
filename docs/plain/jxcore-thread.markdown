@@ -20,7 +20,7 @@ Internal Recovery is a separate section described [here](jxcore-feature-internal
 
 > This method is implemented only in the subthread context. When called from a main thread it does nothing.
 
-Marks the current thread (from which the `keepAlive()` method was called) to be alive. This will inform the thread pool,
+Marks the main process to be alive. This will inform the thread pool,
 that the task has an intention to continue working (probably by doing some delayed or async work).
 
 Normally the thread pool knows, that the task is working only until it returns from the task method.
@@ -49,6 +49,12 @@ var method = function (obj) {
 
 jxcore.tasks.addTask(method);
 ```
+
+The `keepAlive()` method even if is callable only from a subthread, does not really keep the subthread alive, but the main thread.
+
+Internally, it increments a counter. On the other hand, every `process.release()` invocation - decrements it.
+So when you want to end the application - you should call the `release()` method the same amount of times as you have called `keepAlive()`.
+When that counter is zero - the main process may exit now.
 
 ## process.release()
 

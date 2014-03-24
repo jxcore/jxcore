@@ -39,7 +39,24 @@ When we'll run it with:
 
     > jx mt test.js
 
-the process will not last for 20 seconds, because it will end after the last line of the code executes. Too keep the process alive and waiting for any delayed tasks, you can use `mt-keep` command.
+the process will not last for 20 seconds, because it will end after the last line of the code executes.
+
+To keep the process alive and waiting for any delayed tasks, you have two options:
+
+1) call [`process.keepAlive()`](jxcore-process.markdown#jxcore-process-process-keepalive-timeout) in the code above (but then at some point also [`process.release()`](jxcore-process.markdown#jxcore-process-process-release) if you want to release the application's process), like:
+
+```js
+process.keepAlive();
+
+setTimeout(function() {
+    console.log("I'm here after 20 secs.");
+    process.release();
+}, 20000);
+
+console.log("I'm here immediately.");
+```
+
+2) or run the code with `mt-keep` command.
 
 ### mt-keep[:number]
 
@@ -49,7 +66,8 @@ or
 
     > jx mt-keep:7 file.js
 
-Does exactly the same thing as `mt` command, except that keeps each of the threads alive. It means, that the whole application won't exit, unless you call [`process.release()`](jxcore-process.markdown#jxcore-process-process-release) for each thread.
+Does exactly the same thing as `mt` command, except that internally calls [`process.keepAlive()`](jxcore-process.markdown#jxcore-process-process-keepalive-timeout) for each of the threads.
+It means, that the whole application won't exit, unless for each of those threads you won't call  [`process.release()`](jxcore-process.markdown#jxcore-process-process-release).
 
 ```js
 var delay = 1000 * (process.threadId + 1 );
@@ -74,4 +92,3 @@ When we'll run it with:
     // I'm here after 2 secs. ThreadID: 1
 
 As you can see, we have released each thread individually (at different delay), and when the last thread becomes released, the main application's thread exits.
-
