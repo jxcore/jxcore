@@ -217,7 +217,7 @@ This can be used to restart the worker by calling `.fork()` again.
       cluster.fork();
     });
 
-See [child_process event: 'exit'](child_process.html#child_process_event_exit).
+See [child_process event: 'exit'](child_process.markdown#event-exit).
 
 ## Event: 'setup'
 
@@ -410,7 +410,7 @@ Causes `.suicide` to be set.
 This method is aliased as `worker.destroy()` for backwards compatibility.
 
 Note that in a worker, `process.kill()` exists, but it is not this function,
-it is [kill](process.html#process_process_kill_pid_signal).
+it is [kill](process.markdown#process-kill-pid-signal).
 
 ### worker.disconnect()
 
@@ -425,7 +425,7 @@ Causes `.suicide` to be set.
 Note that after a server is closed, it will no longer accept new connections,
 but connections may be accepted by any other listening worker. Existing
 connections will be allowed to close as usual. When no more connections exist,
-see [server.close()](net.html#net_event_close), the IPC channel to the worker
+see [server.close()](net.markdown#event-close), the IPC channel to the worker
 will close allowing it to die gracefully.
 
 The above applies *only* to server connections, client connections are not
@@ -433,7 +433,7 @@ automatically closed by workers, and disconnect does not wait for them to close
 before exiting.
 
 Note that in a worker, `process.disconnect` exists, but it is not this function,
-it is [disconnect](child_process.html#child_process_child_disconnect).
+it is [disconnect](child_process.markdown#child-disconnect).
 
 Because long living server connections may block workers from disconnecting, it
 may be useful to send a message, so application specific actions may be taken to

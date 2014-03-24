@@ -89,7 +89,7 @@ Example: this program that takes the sha1 sum of a file
 
 The class for creating hash digests of data.
 
-It is a [stream](stream.html) that is both readable and writable.  The
+It is a [stream](stream.markdown) that is both readable and writable.  The
 written data is used to compute the hash.  Once the writable side of
 the stream is ended, use the `read()` method to get the computed hash
 digest.  The legacy `update` and `digest` methods are also supported.
@@ -121,7 +121,7 @@ called.
 Creates and returns a hmac object, a cryptographic hmac with the given
 algorithm and key.
 
-It is a [stream](stream.html) that is both readable and writable.  The
+It is a [stream](stream.markdown) that is both readable and writable.  The
 written data is used to compute the hmac.  Once the writable side of
 the stream is ended, use the `read()` method to get the computed
 digest.  The legacy `update` and `digest` methods are also supported.
@@ -158,9 +158,9 @@ password.
 `algorithm` is dependent on OpenSSL, examples are `'aes192'`, etc.  On
 recent releases, `openssl list-cipher-algorithms` will display the
 available cipher algorithms.  `password` is used to derive key and IV,
-which must be a `'binary'` encoded string or a [buffer](buffer.html).
+which must be a `'binary'` encoded string or a [buffer](buffer.markdown).
 
-It is a [stream](stream.html) that is both readable and writable.  The
+It is a [stream](stream.markdown) that is both readable and writable.  The
 written data is used to compute the hash.  Once the writable side of
 the stream is ended, use the `read()` method to get the computed hash
 digest.  The legacy `update` and `digest` methods are also supported.
@@ -175,7 +175,7 @@ the raw key used by the algorithm.  `iv` is an [initialization
 vector](http://en.wikipedia.org/wiki/Initialization_vector).
 
 `key` and `iv` must be `'binary'` encoded strings or
-[buffers](buffer.html).
+[buffers](buffer.markdown).
 
 ## Class: Cipher
 
@@ -183,7 +183,7 @@ Class for encrypting data.
 
 Returned by `crypto.createCipher` and `crypto.createCipheriv`.
 
-Cipher objects are [streams](stream.html) that are both readable and
+Cipher objects are [streams](stream.markdown) that are both readable and
 writable.  The written plain text data is used to produce the
 encrypted data on the readable side.  The legacy `update` and `final`
 methods are also supported.
@@ -236,7 +236,7 @@ Class for decrypting data.
 
 Returned by `crypto.createDecipher` and `crypto.createDecipheriv`.
 
-Decipher objects are [streams](stream.html) that are both readable and
+Decipher objects are [streams](stream.markdown) that are both readable and
 writable.  The written enciphered data is used to produce the
 plain-text data on the the readable side.  The legacy `update` and
 `final` methods are also supported.
@@ -281,7 +281,7 @@ Class for generating signatures.
 
 Returned by `crypto.createSign`.
 
-Sign objects are writable [streams](stream.html).  The written data is
+Sign objects are writable [streams](stream.markdown).  The written data is
 used to generate the signature.  Once all of the data has been
 written, the `sign` method will return the signature.  The legacy
 `update` method is also supported.
@@ -315,7 +315,7 @@ Class for verifying signatures.
 
 Returned by `crypto.createVerify`.
 
-Verify objects are writable [streams](stream.html).  The written data
+Verify objects are writable [streams](stream.markdown).  The written data
 is used to validate against the supplied signature.  Once all of the
 data has been written, the `verify` method will return true if the
 supplied signature is valid.  The legacy `update` method is also

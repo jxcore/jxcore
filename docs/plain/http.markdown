@@ -176,8 +176,8 @@ already been bound to a port or domain socket.
 Listening on a file descriptor is not supported on Windows.
 
 This function is asynchronous. The last parameter `callback` will be added as
-a listener for the ['listening'](net.html#event_listening_) event.
-See also [net.Server.listen()](net.html#net_server_listen_handle_callback).
+a listener for the ['listening'](net.markdown#event-listening-) event.
+See also [net.Server.listen()](net.html#net-server-listen-handle-callback).
 
 ### server.close([callback])
 
@@ -881,7 +881,7 @@ authentication details.
 
 
 ['checkContinue']: #http_event_checkcontinue
-['listening']: net.html#net_event_listening
+['listening']: net.markdown#net_event_listening
 ['response']: #http_event_response
 [Agent]: #http_class_http_agent
 [Buffer]: buffer.html#buffer_buffer
@@ -895,15 +895,15 @@ authentication details.
 [http.Server]: #http_class_http_server
 [http.request()]: #http_http_request_options_callback
 [http.request()]: #http_http_request_options_callback
-[net.Server.close()]: net.html#net_server_close_callback
-[net.Server.listen(path)]: net.html#net_server_listen_path_callback
-[net.Server.listen(port)]: net.html#net_server_listen_port_host_backlog_callback
+[net.Server.close()]: net.markdown#net_server_close_callback
+[net.Server.listen(path)]: net.markdown#net_server_listen_path_callback
+[net.Server.listen(port)]: net.markdown#net_server_listen_port_host_backlog_callback
 [response.end()]: #http_response_end_data_encoding
 [response.write()]: #http_response_write_chunk_encoding
 [response.writeContinue()]: #http_response_writecontinue
 [response.writeHead()]: #http_response_writehead_statuscode_reasonphrase_headers
-[socket.setKeepAlive()]: net.html#net_socket_setkeepalive_enable_initialdelay
-[socket.setNoDelay()]: net.html#net_socket_setnodelay_nodelay
-[socket.setTimeout()]: net.html#net_socket_settimeout_timeout_callback
+[socket.setKeepAlive()]: net.markdown#net_socket_setkeepalive_enable_initialdelay
+[socket.setNoDelay()]: net.markdown#net_socket_setnodelay_nodelay
+[socket.setTimeout()]: net.markdown#net_socket_settimeout_timeout_callback
 [stream.setEncoding()]: stream.html#stream_stream_setencoding_encoding
 [url.parse()]: url.html#url_url_parse_urlstr_parsequerystring_slashesdenotehost

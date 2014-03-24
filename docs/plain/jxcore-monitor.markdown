@@ -9,9 +9,9 @@ The Process Monitor is a global and can be referenced from anywhere:
 var mon = jxcore.monitor;
 ```
 
-You can control monitor's process also from the [command line](jxcore-command-monitor.html).
+You can control monitor's process also from the [command line](jxcore-command-monitor.markdown).
 
-Apart from this feature, JXcore offers also [Internal Recovery](jxcore-feature-internal-recovery.html).
+Apart from this feature, JXcore offers also [Internal Recovery](jxcore-feature-internal-recovery.markdown).
 
 ## API
 
@@ -27,7 +27,7 @@ When process monitor is already running (started from command line) you can subs
 The `callback` will be invoked when the operation completes, whether with success or failure.
 
 There is also another argument: `waitCallback`. It is invoked in the case, when subscription to the monitor is configured to be delayed
-(check `start_delay` in [Config file](jxcore-command-monitor.html#jxcore_command_monitor_config_file) section).
+(check `start_delay` in [Config file](jxcore-command-monitor.markdown#config-file) section).
 In that case `waitCallback` will be called before the `callback` and it will receive one argument with value equal to `start_delay` param.
 Please note, that even if you didn't explicitly define this param in a *jx.config* file, the default value will be used.
 
@@ -48,7 +48,7 @@ jxcore.monitor.followMe(function (err, txt) {
 Please note, that in this sample, the application does nothing else except for subscribing to the monitor, and after that - it just exists.
 There are few things to be explained here:
 
-1. The `start_delay` (see [Config file](jxcore-command-monitor.html#jxcore_command_monitor_config_file)) parameter is engaged.
+1. The `start_delay` (see [Config file](jxcore-command-monitor.markdown#config-file)) parameter is engaged.
 It waits for defined amount of time before really subscribing to the monitor.
 In this particular example, because the application ends before `start_delay` ellapses - it does not perform subscription for being monitored.
 

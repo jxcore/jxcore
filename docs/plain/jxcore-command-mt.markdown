@@ -2,7 +2,7 @@
 # Multithreading from the command line
 
 Generally, there are two ways of executing your JavaScript code in multiple threads with JXcore.
-You can read about both of them here: [How to run multithreaded code?](jxcore-feature-multithreading.html#jxcore_feature_multithreading_how_to_run_multithreaded_code),
+You can read about both of them here: [How to run multithreaded code?](jxcore-feature-multithreading.markdown#how-to-run-multithreaded-code),
 but right now we will focus only on running multithreaded code from the command line.
 
 ## Commands
@@ -49,7 +49,7 @@ or
 
     > jx mt-keep:7 file.js
 
-Does exactly the same thing as `mt` command, except that keeps each of the threads alive. It means, that the whole application won't exit, unless you call [`process.release()`](jxcore-process.html#jxcore_process_process_release) for each thread.
+Does exactly the same thing as `mt` command, except that keeps each of the threads alive. It means, that the whole application won't exit, unless you call [`process.release()`](jxcore-process.markdown#jxcore-process-process-release) for each thread.
 
 ```js
 var delay = 1000 * (process.threadId + 1 );

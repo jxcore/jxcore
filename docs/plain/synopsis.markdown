@@ -2,7 +2,7 @@
 
 <!--type=misc-->
 
-An example of a [web server](http.html) written with JXcore which responds with 'Hello
+An example of a [web server](http.markdown) written with JXcore which responds with 'Hello
 World':
 
     var http = require('http');

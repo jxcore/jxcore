@@ -1,6 +1,6 @@
 # Internal Recovery
 
-In addition to recovering of crashed applications' processes by external [monitoring process](jxcore-command-monitor.html),
+In addition to recovering of crashed applications' processes by external [monitoring process](jxcore-command-monitor.markdown),
 JXcore also provides automatic Internal Process Recovery as well as Internal Thread Recovery (for code running in multithreaded mode).
 
 ## Internal Process Recovery
@@ -76,7 +76,7 @@ because it makes sense only for uncaught exceptions, which in this case are actu
 
 ## Internal Thread Recovery
 
-This is analogous to [Internal Process Recovery](#internal_process_recovery), except that it concerns a **single thread** rather than entire application's process.
+This is analogous to [Internal Process Recovery](#internal-process-recovery), except that it concerns a **single thread** rather than entire application's process.
 
 Attaching any callback to this event inside a code running in a subthread enables internal thread recovery.
 When an exception occurs inside the subthread, the callback is invoked and there you may decide if to allow restart of the thread or not.

@@ -62,7 +62,7 @@ See [http.close()][] for details.
 Makes a request to a secure web server.
 
 `options` can be an object or a string. If `options` is a string, it is
-automatically parsed with [url.parse()](url.html#url.parse).
+automatically parsed with [url.parse()](url.markdown#url.parse).
 
 All options from [http.request()][] are valid.
 
@@ -171,7 +171,7 @@ Example:
 Like `http.get()` but for HTTPS.
 
 `options` can be an object or a string. If `options` is a string, it is
-automatically parsed with [url.parse()](url.html#url.parse).
+automatically parsed with [url.parse()](url.markdown#url.parse).
 
 Example:
 

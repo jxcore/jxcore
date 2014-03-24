@@ -4,7 +4,7 @@
 JXcore offers embedded process monitoring tool. It checks regularly whether monitored process/processes still exist and respawns them if needed.
 When the monitor is running, then your applications can subscribe to it and start being monitored.
 
-Apart from this feature, JXcore offers also [Internal Recovery](jxcore-feature-internal-recovery.html).
+Apart from this feature, JXcore offers also [Internal Recovery](jxcore-feature-internal-recovery.markdown).
 Please refer there for complementary information.
 
 ## Commands
@@ -16,7 +16,7 @@ This section describes list of options, which can be used from the command line 
     > jx monitor start
 
 Starts the monitor. Only one instance of monitor's process is allowed on the same machine, so if one already exists, the new will not be started.
-The monitor internally creates an http server on http://127.0.0.1:port (the port number by default is 17777 - check `port` in [Config file](#jxcore_command_monitor_config_file) section).
+The monitor internally creates an http server on http://127.0.0.1:port (the port number by default is 17777 - check `port` in [Config file](#config-file) section).
 
 ### stop
 
@@ -35,11 +35,11 @@ Restarts the monitor. Find the monitor's process and shuts it down together with
 While the monitor is running, you can access its http server, e.g. by a browser for the following usage:
 
 * http://127.0.0.1:port/json - gets information (json string format) about currently monitored processes.
-* http://127.0.0.1:port/logs - gets contents of a log file (See `log_path` in [Config file](#jxcore_command_monitor_config_file) section).
+* http://127.0.0.1:port/logs - gets contents of a log file (See `log_path` in [Config file](#config-file) section).
 
 ## Subscribing application for being monitored
 
-See `followMe()` and `leaveMe()` on [Process Monitor API](jxcore-monitor.html).
+See `followMe()` and `leaveMe()` on [Process Monitor API](jxcore-monitor.markdown).
 
 ## Config file
 

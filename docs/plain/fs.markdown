@@ -156,7 +156,7 @@ Synchronous lchmod(2).
 ## fs.stat(path, callback)
 
 Asynchronous stat(2). The callback gets two arguments `(err, stats)` where
-`stats` is a [fs.Stats](#fs_class_fs_stats) object.  See the [fs.Stats](#fs_class_fs_stats)
+`stats` is a [fs.Stats](#class-fs-stats) object.  See the [fs.Stats](#class-fs-stats)
 section below for more information.
 
 ## fs.lstat(path, callback)
@@ -529,7 +529,7 @@ no-op, not an error.
     Stability: 2 - Unstable.
 
 Watch for changes on `filename`, where `filename` is either a file or a
-directory.  The returned object is a [fs.FSWatcher](#fs_class_fs_fswatcher).
+directory.  The returned object is a [fs.FSWatcher](#class-fs-fswatcher).
 
 The second argument is optional. The `options` if provided should be an object
 containing a boolean member `persistent`, which indicates whether the process
@@ -681,7 +681,7 @@ An example to read the last 10 bytes of a file which is 100 bytes long:
 
 ## Class: fs.ReadStream
 
-`ReadStream` is a [Readable Stream](stream.html#stream_class_stream_readable).
+`ReadStream` is a [Readable Stream](stream.markdown#class-stream-readable).
 
 ### Event: 'open'
 
@@ -707,7 +707,7 @@ default mode `w`.
 
 ## Class: fs.WriteStream
 
-`WriteStream` is a [Writable Stream](stream.html#stream_class_stream_writable).
+`WriteStream` is a [Writable Stream](stream.markdown#class-stream-writable).
 
 ### Event: 'open'
 
@@ -734,7 +734,7 @@ Stop watching for changes on the given `fs.FSWatcher`.
 * `filename` {String} The filename that changed (if relevant/available)
 
 Emitted when something changes in a watched directory or file.
-See more details in [fs.watch](#fs_fs_watch_filename_options_listener).
+See more details in [fs.watch](#fs-watch-filename-options-listener).
 
 ### Event: 'error'
 

@@ -19,7 +19,7 @@ If you launch te code with mt/mt-keep command line parameter, you can set the th
 
     > jx mt:4 hello.js
 
-Otherwise you can use `setThreadCount()` method. See also [How to run multithreaded code?](jxcore-feature-multithreading.html#jxcore_feature_multithreading_how_to_run_multithreaded_code) for more information.
+Otherwise you can use `setThreadCount()` method. See also [How to run multithreaded code?](jxcore-feature-multithreading.markdown#how-to-run-multithreaded-code) for more information.
 
 # API
 

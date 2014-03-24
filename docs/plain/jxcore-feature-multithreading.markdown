@@ -14,7 +14,7 @@ Every thread in JXcore are called a subthread. The subthread is completely separ
 because they all run in different V8′s contexts/isolates. It means that they cannot share or have common objects, variables etc. directly.
 Thus, there is no use for any global variable defined in a main thread – the subthread will not see it.
 
-But there is another way – JXcore exposes special thread-safe [Memory Store](jxcore-store.html), which can be shared among threads. See `jxcore.store.shared` for more information.
+But there is another way – JXcore exposes special thread-safe [Memory Store](jxcore-store.markdown), which can be shared among threads. See `jxcore.store.shared` for more information.
 
 Apart from that, there are also two other ways for subthread to communicate with the main thread:
 
@@ -34,8 +34,8 @@ If you launch te code with mt/mt-keep command line parameter, you can set the th
 
     > jx mt:4 hello.js
 
-Otherwise you can use [`tasks.setThreadCount()`](jxcore-tasks.html#jxcore_tasks_tasks_setthreadcount_value) method.
-See also [How to run multithreaded code?](jxcore-feature-multithreading.html#jxcore_feature_multithreading_how_to_run_multithreaded_code) for more information.
+Otherwise you can use [`tasks.setThreadCount()`](jxcore-tasks.markdown#tasks-setthreadcount-value) method.
+See also [How to run multithreaded code?](jxcore-feature-multithreading.markdown#how-to-run-multithreaded-code) for more information.
 
 ### Memory management
 
@@ -81,8 +81,8 @@ See the API for reference.
 
 ### Multithreading from the command line
 
-This topic is fully described here: [mt / mt-keep](jxcore-command-mt.html)
+This topic is fully described here: [mt / mt-keep](jxcore-command-mt.markdown)
 
 ### Multithreaded Javascript Tasks
 
-This topic is fully described here: [Tasks](jxcore-tasks.html)
+This topic is fully described here: [Tasks](jxcore-tasks.markdown)

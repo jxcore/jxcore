@@ -75,7 +75,7 @@ Get value of application’s parameter.
 
 Links assets embedded inside compiled JX file and defines them as static resource used by the application.
 
-For information, how to compile JX packages, see [compile](jxcore-feature-packaging-code-protection.html) command.
+For information, how to compile JX packages, see [compile](jxcore-feature-packaging-code-protection.markdown) command.
 
 The `urlPath` parameter is an url path, from which your application will access the asset files.
 Please note, that it will be combined with `urlPath` provided in `setApplication()` method.
