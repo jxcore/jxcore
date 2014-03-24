@@ -131,6 +131,41 @@ Thread-safe `jxcore.store.shared` has exactly the same methods as single threade
 
 See `store.exists(key, element)`.
 
+### store.shared.expires(key, timeout)
+
+* `key` {String}
+* `timeout` {Number}
+
+Sets an expiration `timeout` (milliseconds) for specified `key`.
+If there is no `read()`, `get()` or `set()` method called on this `key `within the `timeout` period (after `expires()` has been called),
+the `key` and it's value are automatically removed from the shared.store.
+Otherwise, whenever one of those methods are invoked for this `key` before the `timeout` elapses,
+JXcore invokes again the `expires()` method with the same parameters, so at that moment the `timeout` counter starts from zero.
+
+Precision of `key` expiration is +/- 10 milliseconds, which means, that if you set the `timeout` to e.g. 510 ms,
+the expiration may occur in a range between 500 and 520 ms.
+
+```js
+var mem = jxcore.store.shared;
+
+mem.set("key", "Hello");
+mem.expires("key", 350);
+
+setTimeout(function(){
+    // the key still exists in the shared store
+    // mem.read("key") will will rewind the timeout counter to the start
+    // so it will expire after another 350 ms
+    console.log("data", mem.read("key"));
+},300);
+
+setTimeout(function(){
+    // right now the timeout is expired
+    // and the key is already removed from the store.
+    // the return value of mem.read("key") will be undefined
+    console.log("data", mem.read("key"));
+},900);
+```
+
 ### store.shared.get(key)
 
 See `store.get(key)`.
