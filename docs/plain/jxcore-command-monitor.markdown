@@ -4,7 +4,7 @@
 JXcore offers embedded process monitoring tool. It checks regularly whether monitored process/processes still exist and respawns them if needed.
 When the monitor is running, then your applications can subscribe to it and start being monitored.
 
-Apart from this feature, JXcore offers also [Internal Recovery](jxcore-monitor.html#jxcore_monitor_internal_recovery).
+Apart from this feature, JXcore offers also [Internal Recovery](jxcore-feature-internal-recovery.html).
 Please refer there for complementary information.
 
 ## Commands

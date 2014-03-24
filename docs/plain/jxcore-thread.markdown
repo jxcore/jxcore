@@ -12,7 +12,7 @@ process.keepAlive();
 
 Attaching any callback to `restart` event, depending on the context in which it is performed, enables internal process or thread recovery.
 
-Internal Recovery is a separate section described [here](jxcore-monitor.html#jxcore_monitor_internal_recovery).
+Internal Recovery is a separate section described [here](jxcore-feature-internal-recovery.html).
 
 ## process.keepAlive(timeout)
 
@@ -91,7 +91,7 @@ if (process.subThread) {
 ## process.threadId
 
 Returns the ID of the subthread. For multithreaded application it is a number between 0 and 62 (because the maximum amount of subthreads is 63).
-You can also control the number of subthreads for your application, see here for more information: [Defaults]().
+You can also control the number of subthreads for your application, see here for more information: [Defaults](jxcore-feature-multithreading.html#defaults).
 
 Since one of the subthreads can have its index equal to 0, we should not test it with:
 

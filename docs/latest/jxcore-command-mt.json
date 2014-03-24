@@ -4,7 +4,7 @@
     {
       "textRaw": "Multithreading from the command line",
       "name": "multithreading_from_the_command_line",
-      "desc": "<p>Generally, there are two ways of executing your JavaScript code in multiple threads with JXcore.\nYou can read about both of them here: <a href=\"http://jxcore.com/multithreaded-javascript-tasks/\">How to run multithreaded code?</a>,\nbut right now we will focus only on running multithreaded code from the command line.\n\n</p>\n",
+      "desc": "<p>Generally, there are two ways of executing your JavaScript code in multiple threads with JXcore.\nYou can read about both of them here: <a href=\"jxcore-feature-multithreading.html#how_to_run_multithreaded_code\">How to run multithreaded code?</a>,\nbut right now we will focus only on running multithreaded code from the command line.\n\n</p>\n",
       "modules": [
         {
           "textRaw": "Commands",

@@ -39,7 +39,7 @@ When you already have a `JXP` project file (either created with `package` comman
 
 ## Hiding body of functions
 
-As you may already know, a javascript function (like everything in javascript – [www.w3schools]) is an object.
+As you may already know, a javascript function (like everything in javascript – [w3schools](http://www.w3schools.com)) is an object.
 To be more precise, it is an instance of the `Function` which inherits from the `Object`.
 And just because the `Object` has defined `toString()` method, you could also call it on some function,
 and the result will be a string containing function’s body.

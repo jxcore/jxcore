@@ -11,7 +11,7 @@ var mon = jxcore.monitor;
 
 You can control monitor's process also from the [command line](jxcore-command-monitor.html).
 
-Apart from this feature, JXcore offers also [Internal Recovery](#jxcore_monitor_internal_recovery).
+Apart from this feature, JXcore offers also [Internal Recovery](jxcore-feature-internal-recovery.html).
 
 ## API
 

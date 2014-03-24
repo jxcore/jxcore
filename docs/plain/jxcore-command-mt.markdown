@@ -2,7 +2,7 @@
 # Multithreading from the command line
 
 Generally, there are two ways of executing your JavaScript code in multiple threads with JXcore.
-You can read about both of them here: [How to run multithreaded code?](http://jxcore.com/multithreaded-javascript-tasks/),
+You can read about both of them here: [How to run multithreaded code?](jxcore-feature-multithreading.html#jxcore_feature_multithreading_how_to_run_multithreaded_code),
 but right now we will focus only on running multithreaded code from the command line.
 
 ## Commands
