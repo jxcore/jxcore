@@ -1,0 +1,621 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="0ea14592-d758-4b9e-9609-db748a2bb7ee" name="Default" comment="">
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Home.md" afterPath="" />
+    </list>
+    <ignored path="test.wiki.iws" />
+    <ignored path=".idea/workspace.xml" />
+    <option name="TRACKING_ENABLED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ChangesViewManager" flattened_view="true" show_ignored="false" />
+  <component name="CreatePatchCommitExecutor">
+    <option name="PATCH_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="DaemonCodeAnalyzer">
+    <disable_hints />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
+  <component name="FavoritesManager">
+    <favorites_list name="test.wiki" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf>
+      <file leaf-file-name="make-wiki.js" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/../make-wiki.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="120" column="54" selection-start="3953" selection-end="3953" vertical-scroll-proportion="3.0981066" vertical-offset="0" max-vertical-offset="3315">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="_toc.markdown" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/_toc.markdown">
+          <provider editor-type-id="MarkdownPreviewEditor">
+            <state />
+          </provider>
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="37" column="27" selection-start="1417" selection-end="1417" vertical-scroll-proportion="-10.471698" vertical-offset="0" max-vertical-offset="1230">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="jxcore-command-monitor.markdown" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/jxcore-command-monitor.markdown">
+          <provider editor-type-id="MarkdownPreviewEditor">
+            <state />
+          </provider>
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="6" column="62" selection-start="327" selection-end="327" vertical-scroll-proportion="-3.3333333" vertical-offset="0" max-vertical-offset="1080">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="jxcore-monitor.markdown" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/jxcore-monitor.markdown">
+          <provider editor-type-id="MarkdownPreviewEditor">
+            <state />
+          </provider>
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="35" column="5" selection-start="1526" selection-end="1526" vertical-scroll-proportion="0.25925925" vertical-offset="532" max-vertical-offset="1215">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="jxcore-feature-multithreading.markdown" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/jxcore-feature-multithreading.markdown">
+          <provider editor-type-id="MarkdownPreviewEditor">
+            <state />
+          </provider>
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="88" column="0" selection-start="4597" selection-end="4597" vertical-scroll-proportion="-26.962963" vertical-offset="592" max-vertical-offset="1410">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="process.markdown" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/process.markdown">
+          <provider editor-type-id="MarkdownPreviewEditor">
+            <state />
+          </provider>
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="459" column="40" selection-start="14216" selection-end="14216" vertical-scroll-proportion="-11.207547" vertical-offset="6291" max-vertical-offset="9900">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FindManager">
+    <FindUsagesManager>
+      <setting name="OPEN_NEW_TAB" value="false" />
+    </FindUsagesManager>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="changedFiles">
+      <list>
+        <option value="$PROJECT_DIR$/jxcore-features-mt.markdown" />
+        <option value="$PROJECT_DIR$/out.markdown" />
+        <option value="$PROJECT_DIR$/.gitignore" />
+        <option value="$PROJECT_DIR$/stream.markdown" />
+        <option value="$PROJECT_DIR$/jxcore-store.markdown" />
+        <option value="$PROJECT_DIR$/jxcore-messaging.markdown" />
+        <option value="$PROJECT_DIR$/Home.md" />
+        <option value="$PROJECT_DIR$/jxcore-tasks.markdown" />
+        <option value="$PROJECT_DIR$/jxcore-feature-internal-recovery.markdown" />
+        <option value="$PROJECT_DIR$/jxcore-monitor.markdown" />
+        <option value="$PROJECT_DIR$/process.markdown" />
+        <option value="$PROJECT_DIR$/jxcore-command-monitor.markdown" />
+        <option value="$PROJECT_DIR$/../make-wiki.js" />
+        <option value="$PROJECT_DIR$/_toc.markdown" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds">
+    <option name="x" value="1280" />
+    <option name="y" value="22" />
+    <option name="width" value="1920" />
+    <option name="height" value="1058" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="false">
+    <OptionsSetting value="true" id="Add" />
+    <OptionsSetting value="true" id="Remove" />
+    <OptionsSetting value="true" id="Checkout" />
+    <OptionsSetting value="true" id="Update" />
+    <OptionsSetting value="true" id="Status" />
+    <OptionsSetting value="true" id="Edit" />
+    <ConfirmationsSetting value="0" id="Add" />
+    <ConfirmationsSetting value="0" id="Remove" />
+  </component>
+  <component name="ProjectReloadState">
+    <option name="STATE" value="0" />
+  </component>
+  <component name="ProjectView">
+    <navigator currentView="ProjectPane" proportions="" version="1" splitterProportion="0.5">
+      <flattenPackages />
+      <showMembers />
+      <showModules />
+      <showLibraryContents />
+      <hideEmptyPackages />
+      <abbreviatePackageNames />
+      <autoscrollToSource />
+      <autoscrollFromSource />
+      <sortByType />
+    </navigator>
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="test.wiki" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="test.wiki" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="test.wiki" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
+      <pane id="Scope" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="options.splitter.main.proportions" value="0.3" />
+    <property name="options.lastSelected" value="preferences.pluginManager" />
+    <property name="options.searchVisible" value="true" />
+    <property name="options.splitter.details.proportions" value="0.2" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../jxdocs" />
+    <property name="LayoutCode.rearrangeEntriesJavaScript" value="false" />
+    <property name="SearchEverywhereHistory" value="&#10;{" />
+    <property name="FullScreen" value="false" />
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="DartUnitRunConfigurationType" factoryName="DartUnit">
+      <option name="VMOptions" />
+      <option name="arguments" />
+      <option name="filePath" />
+      <option name="scope" value="ALL" />
+      <option name="testName" />
+      <method />
+    </configuration>
+    <configuration default="true" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application">
+      <option name="VMOptions" />
+      <option name="arguments" />
+      <option name="filePath" />
+      <option name="name" value="Dart" />
+      <option name="saveOutputToFile" value="false" />
+      <option name="showConsoleOnStdErr" value="false" />
+      <option name="showConsoleOnStdOut" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="JSTestDriver:ConfigurationType" factoryName="JsTestDriver">
+      <setting name="configLocationType" value="CONFIG_FILE" />
+      <setting name="settingsFile" value="" />
+      <setting name="serverType" value="INTERNAL" />
+      <setting name="preferredDebugBrowser" value="CHROME" />
+      <method />
+    </configuration>
+    <configuration default="true" type="JavaScriptTestRunnerKarma" factoryName="Karma" singleton="true" config-file="">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="JavascriptDebugType" factoryName="JavaScript Debug" singleton="true">
+      <method />
+    </configuration>
+    <configuration default="true" type="NodeJSConfigurationType" factoryName="Node.js" working-dir="">
+      <browser start="false" url="" with-js-debugger="false" />
+      <method />
+    </configuration>
+    <list size="0" />
+  </component>
+  <component name="ShelveChangesManager" show_recycled="false" />
+  <component name="SvnConfiguration" maxAnnotateRevisions="500" myUseAcceleration="nothing" myAutoUpdateAfterCommit="false" cleanupOnStartRun="false" SSL_PROTOCOLS="sslv3">
+    <option name="USER" value="" />
+    <option name="PASSWORD" value="" />
+    <option name="mySSHConnectionTimeout" value="30000" />
+    <option name="mySSHReadTimeout" value="30000" />
+    <option name="LAST_MERGED_REVISION" />
+    <option name="MERGE_DRY_RUN" value="false" />
+    <option name="MERGE_DIFF_USE_ANCESTRY" value="true" />
+    <option name="UPDATE_LOCK_ON_DEMAND" value="false" />
+    <option name="IGNORE_SPACES_IN_MERGE" value="false" />
+    <option name="CHECK_NESTED_FOR_QUICK_MERGE" value="false" />
+    <option name="IGNORE_SPACES_IN_ANNOTATE" value="true" />
+    <option name="SHOW_MERGE_SOURCES_IN_ANNOTATE" value="true" />
+    <option name="FORCE_UPDATE" value="false" />
+    <option name="IGNORE_EXTERNALS" value="false" />
+    <myIsUseDefaultProxy>false</myIsUseDefaultProxy>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="0ea14592-d758-4b9e-9609-db748a2bb7ee" name="Default" comment="" />
+      <created>1395060449664</created>
+      <updated>1395060449664</updated>
+    </task>
+    <task id="LOCAL-00001" summary="initial">
+      <created>1395060542726</created>
+      <updated>1395060542726</updated>
+    </task>
+    <task id="LOCAL-00002" summary="initial&#10;">
+      <created>1395141971153</created>
+      <updated>1395141971153</updated>
+    </task>
+    <task id="LOCAL-00003" summary="initial&#10;">
+      <created>1395142133338</created>
+      <updated>1395142133338</updated>
+    </task>
+    <task id="LOCAL-00004" summary="initial&#10;">
+      <created>1395142879773</created>
+      <updated>1395142879773</updated>
+    </task>
+    <task id="LOCAL-00005" summary="initial&#10;">
+      <created>1395143301940</created>
+      <updated>1395143301941</updated>
+    </task>
+    <task id="LOCAL-00006" summary="initial&#10;">
+      <created>1395143354705</created>
+      <updated>1395143354705</updated>
+    </task>
+    <task id="LOCAL-00007" summary="initial&#10;">
+      <created>1395143923908</created>
+      <updated>1395143923908</updated>
+    </task>
+    <task id="LOCAL-00008" summary="initial&#10;">
+      <created>1395156175761</created>
+      <updated>1395156175761</updated>
+    </task>
+    <task id="LOCAL-00009" summary="initial&#10;">
+      <created>1395156482144</created>
+      <updated>1395156482144</updated>
+    </task>
+    <task id="LOCAL-00010" summary="initial&#10;">
+      <created>1395157912809</created>
+      <updated>1395157912809</updated>
+    </task>
+    <task id="LOCAL-00011" summary="test from console&#10;">
+      <created>1395159278032</created>
+      <updated>1395159278032</updated>
+    </task>
+    <task id="LOCAL-00012" summary="test from console&#10;">
+      <created>1395162378734</created>
+      <updated>1395162378734</updated>
+    </task>
+    <task id="LOCAL-00013" summary="test from console&#10;">
+      <created>1395162557073</created>
+      <updated>1395162557073</updated>
+    </task>
+    <task id="LOCAL-00014" summary="test from console&#10;">
+      <created>1395242368447</created>
+      <updated>1395242368447</updated>
+    </task>
+    <task id="LOCAL-00015" summary="test from console&#10;">
+      <created>1395242443544</created>
+      <updated>1395242443544</updated>
+    </task>
+    <task id="LOCAL-00016" summary="test from console&#10;">
+      <created>1395244322588</created>
+      <updated>1395244322588</updated>
+    </task>
+    <task id="LOCAL-00017" summary="test from console&#10;">
+      <created>1395244584265</created>
+      <updated>1395244584265</updated>
+    </task>
+    <task id="LOCAL-00018" summary="test from console&#10;">
+      <created>1395244811238</created>
+      <updated>1395244811238</updated>
+    </task>
+    <task id="LOCAL-00019" summary="test from console&#10;">
+      <created>1395246189613</created>
+      <updated>1395246189613</updated>
+    </task>
+    <task id="LOCAL-00020" summary="test from console&#10;">
+      <created>1395247716726</created>
+      <updated>1395247716726</updated>
+    </task>
+    <task id="LOCAL-00021" summary="test from console&#10;">
+      <created>1395247981068</created>
+      <updated>1395247981068</updated>
+    </task>
+    <task id="LOCAL-00022" summary="test from console&#10;">
+      <created>1395248722450</created>
+      <updated>1395248722450</updated>
+    </task>
+    <task id="LOCAL-00023" summary="test from console&#10;">
+      <created>1395249093980</created>
+      <updated>1395249093980</updated>
+    </task>
+    <task id="LOCAL-00024" summary="test from console&#10;">
+      <created>1395250238118</created>
+      <updated>1395250238118</updated>
+    </task>
+    <task id="LOCAL-00025" summary="test from console&#10;">
+      <created>1395250372706</created>
+      <updated>1395250372706</updated>
+    </task>
+    <task id="LOCAL-00026" summary="test from console&#10;">
+      <created>1395250536793</created>
+      <updated>1395250536793</updated>
+    </task>
+    <task id="LOCAL-00027" summary="test from console&#10;">
+      <created>1395250999558</created>
+      <updated>1395250999558</updated>
+    </task>
+    <task id="LOCAL-00028" summary="test from console&#10;">
+      <created>1395251210053</created>
+      <updated>1395251210053</updated>
+    </task>
+    <task id="LOCAL-00029" summary="test from console&#10;">
+      <created>1395315063232</created>
+      <updated>1395315063232</updated>
+    </task>
+    <task id="LOCAL-00030" summary="test from console&#10;">
+      <created>1395315182457</created>
+      <updated>1395315182457</updated>
+    </task>
+    <task id="LOCAL-00031" summary="test from console&#10;">
+      <created>1395315370279</created>
+      <updated>1395315370279</updated>
+    </task>
+    <task id="LOCAL-00032" summary="test from console&#10;">
+      <created>1395410898537</created>
+      <updated>1395410898537</updated>
+    </task>
+    <task id="LOCAL-00033" summary="test from console&#10;">
+      <created>1395411036081</created>
+      <updated>1395411036081</updated>
+    </task>
+    <task id="LOCAL-00034" summary="test from console&#10;">
+      <created>1395411155373</created>
+      <updated>1395411155373</updated>
+    </task>
+    <task id="LOCAL-00035" summary="test from console&#10;">
+      <created>1395657165049</created>
+      <updated>1395657165049</updated>
+    </task>
+    <task id="LOCAL-00036" summary="test from console&#10;">
+      <created>1395657237605</created>
+      <updated>1395657237605</updated>
+    </task>
+    <task id="LOCAL-00037" summary="test from console&#10;">
+      <created>1395657270926</created>
+      <updated>1395657270926</updated>
+    </task>
+    <task id="LOCAL-00038" summary="test from console&#10;">
+      <created>1395657298979</created>
+      <updated>1395657298979</updated>
+    </task>
+    <task id="LOCAL-00039" summary="test from console&#10;">
+      <created>1395657372640</created>
+      <updated>1395657372640</updated>
+    </task>
+    <task id="LOCAL-00040" summary="test from console&#10;">
+      <created>1395657983084</created>
+      <updated>1395657983084</updated>
+    </task>
+    <task id="LOCAL-00041" summary="test from console&#10;">
+      <created>1395658115328</created>
+      <updated>1395658115328</updated>
+    </task>
+    <task id="LOCAL-00042" summary="test from console&#10;">
+      <created>1395658363407</created>
+      <updated>1395658363407</updated>
+    </task>
+    <task id="LOCAL-00043" summary="test from console&#10;">
+      <created>1395658466912</created>
+      <updated>1395658466912</updated>
+    </task>
+    <task id="LOCAL-00044" summary="test from console&#10;">
+      <created>1395658524321</created>
+      <updated>1395658524321</updated>
+    </task>
+    <task id="LOCAL-00045" summary="test from console&#10;">
+      <created>1395659704292</created>
+      <updated>1395659704292</updated>
+    </task>
+    <task id="LOCAL-00046" summary="test from console&#10;">
+      <created>1395659783231</created>
+      <updated>1395659783231</updated>
+    </task>
+    <task id="LOCAL-00047" summary="test from console&#10;">
+      <created>1395659838438</created>
+      <updated>1395659838438</updated>
+    </task>
+    <task id="LOCAL-00048" summary="test from console&#10;">
+      <created>1395660108025</created>
+      <updated>1395660108025</updated>
+    </task>
+    <task id="LOCAL-00049" summary="test from console&#10;">
+      <created>1395660219022</created>
+      <updated>1395660219022</updated>
+    </task>
+    <task id="LOCAL-00050" summary="test from console&#10;">
+      <created>1395660381501</created>
+      <updated>1395660381501</updated>
+    </task>
+    <task id="LOCAL-00051" summary="test from console&#10;">
+      <created>1395660918508</created>
+      <updated>1395660918508</updated>
+    </task>
+    <task id="LOCAL-00052" summary="test from console&#10;">
+      <created>1395661576356</created>
+      <updated>1395661576356</updated>
+    </task>
+    <task id="LOCAL-00053" summary="test from console&#10;">
+      <created>1395662478386</created>
+      <updated>1395662478387</updated>
+    </task>
+    <option name="localTasksCounter" value="54" />
+    <servers />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="1280" y="22" width="1920" height="1058" extended-state="6" />
+    <editor active="false" />
+    <layout>
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32919255" sideWeight="0.4997367" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21853608" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32919255" sideWeight="0.5002633" order="0" side_tool="true" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+    </layout>
+  </component>
+  <component name="Vcs.Log.UiProperties">
+    <option name="RECENTLY_FILTERED_USERS">
+      <collection />
+    </option>
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="OFFER_MOVE_TO_ANOTHER_CHANGELIST_ON_PARTIAL_COMMIT" value="false" />
+    <option name="myTodoPanelSettings">
+      <TodoPanelSettings />
+    </option>
+    <MESSAGE value="initial" />
+    <MESSAGE value="initial&#10;" />
+    <MESSAGE value="test from console&#10;" />
+    <option name="LAST_COMMIT_MESSAGE" value="test from console&#10;" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/../make-wiki.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="29" column="0" selection-start="914" selection-end="914" vertical-scroll-proportion="0.0" vertical-offset="240" max-vertical-offset="3060">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../make-wiki.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="16" column="20" selection-start="478" selection-end="478" vertical-scroll-proportion="0.0" vertical-offset="240" max-vertical-offset="3045">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../make-wiki.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="52" column="18" selection-start="1584" selection-end="1584" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2760">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../make-wiki.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="52" column="18" selection-start="1584" selection-end="1584" vertical-scroll-proportion="0.0" vertical-offset="780" max-vertical-offset="1680">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../make-wiki.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="16" column="0" selection-start="434" selection-end="434" vertical-scroll-proportion="0.0" vertical-offset="240" max-vertical-offset="1740">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/jxcore-feature-internal-recovery.markdown">
+      <provider editor-type-id="MarkdownPreviewEditor">
+        <state />
+      </provider>
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="2" column="116" selection-start="137" selection-end="137" vertical-scroll-proportion="-1.1111112" vertical-offset="0" max-vertical-offset="2370">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/jxcore-monitor.markdown">
+      <provider editor-type-id="MarkdownPreviewEditor">
+        <state />
+      </provider>
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="35" column="5" selection-start="1526" selection-end="1526" vertical-scroll-proportion="0.25925925" vertical-offset="532" max-vertical-offset="1215">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/jxcore-feature-multithreading.markdown">
+      <provider editor-type-id="MarkdownPreviewEditor">
+        <state />
+      </provider>
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="88" column="0" selection-start="4597" selection-end="4597" vertical-scroll-proportion="-26.962963" vertical-offset="592" max-vertical-offset="1410">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/process.markdown">
+      <provider editor-type-id="MarkdownPreviewEditor">
+        <state />
+      </provider>
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="459" column="40" selection-start="14216" selection-end="14216" vertical-scroll-proportion="-11.207547" vertical-offset="6291" max-vertical-offset="9900">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/jxcore-command-monitor.markdown">
+      <provider editor-type-id="MarkdownPreviewEditor">
+        <state />
+      </provider>
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="6" column="62" selection-start="327" selection-end="327" vertical-scroll-proportion="-3.3333333" vertical-offset="0" max-vertical-offset="1080">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/_toc.markdown">
+      <provider editor-type-id="MarkdownPreviewEditor">
+        <state />
+      </provider>
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="37" column="27" selection-start="1417" selection-end="1417" vertical-scroll-proportion="-10.471698" vertical-offset="0" max-vertical-offset="1230">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="620">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../make-wiki.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="120" column="54" selection-start="3953" selection-end="3953" vertical-scroll-proportion="3.0981066" vertical-offset="0" max-vertical-offset="3315">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>
+
