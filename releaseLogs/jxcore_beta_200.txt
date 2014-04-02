@@ -1,0 +1,35 @@
+Stability
+- Node v10 Stable
+- Open SSL bug fixes (update to latest)
+- libUV bug fixes and multithreading patches
+- Node.JS internals (fixes, stability and multithreading patches)
+- JX packaging improvements
+- V8 JXP patch
+
+Performance
+- Windows release high performance update
+- Lock free internal thread switching
+- Task manager replacement – hot swappers
+- Task manager status aware libUV loops
+
+Platforms
+- NEW-Platform: Raspberry PI Raspbian release
+- NEW-Platform: FREEBSD x64 release
+- NEW-Platform: RH/CENTOS/FEDORA ia32 release
+- Windows Installer
+
+Feature Updates
+- Built-in package manager (jx install …)
+- Embedded SQLite Database Engine & sqlite3 native module
+- Embedded bignum, bson, weakref, and contextify native modules
+- Native module automatic MT compatibility (automatic libuv loop switcher)
+- Native module wrapper for static members (jx_persistent_store.h)
+- Internal thread and process recovery
+- Process monitoring service – jxcore.monitor
+- Shared memory store -safe block operations, ttl, new atomic operations
+- Multithreading – cross-thread messaging / threadkill
+- Messaging API – first release (Browser, and Java clients)
+
+Changes
+- jxcore.env.setThreadCount moved to jxcore.tasks.setThreadCount
+- jx package now creates the jx file under the active path
