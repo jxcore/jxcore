@@ -1,3 +1,43 @@
+Nubisa Inc. 2014 (http://nubisa.com)
+
+----JXcore Beta 2.02 (http://jxcore.com)
+
+Please visit (https://github.com/Nubisa/jxdocs/issues) to report issues or request a feature
+
+Bug Fixes
+- Internal BSON issue - https://github.com/Nubisa/jxdocs/issues/31 
+- JXP reader improvements
+- RH/Centos/Fedora64 ThreadKill issue is fixed 
+
+
+New
+- 'jx --jxv' shows JXcore version
+
+
+
+----JXcore Beta 2.01 (http://jxcore.com)
+
+Bug Fixes
+- JXP /index.js issue - https://github.com/Nubisa/jxdocs/issues/23
+- Unicode thread messaging - https://github.com/Nubisa/jxdocs/issues/24
+- JXP reverse coverage problem
+- KillThread - force removal async operations - https://github.com/Nubisa/jxdocs/issues/25
+- Missing Callback when a thread returns false
+- JXP embed error message improved - https://github.com/Nubisa/jxdocs/issues/28
+- JX Monitor on Windows - https://github.com/Nubisa/jxdocs/issues/29
+- Task (define) __dirname location is fixed
+
+Improvements
+- Partial memory pool for http server
+- Performance improvements
+
+New
+-Multithreading - waitLogic(with timeout) - https://github.com/Nubisa/jxdocs/issues/21 
+
+
+
+----JXcore Beta 2.00 (http://jxcore.com)
+
 Stability
 - Node v10 Stable
 - Open SSL bug fixes (update to latest)
@@ -9,7 +49,7 @@ Stability
 Performance
 - Windows release high performance update
 - Lock free internal thread switching
-- Task manager replacement – hot swappers
+- Task manager replacement � hot swappers
 - Task manager status aware libUV loops
 
 Platforms
@@ -19,16 +59,16 @@ Platforms
 - Windows Installer
 
 Feature Updates
-- Built-in package manager (jx install …)
+- Built-in package manager (jx install �)
 - Embedded SQLite Database Engine & sqlite3 native module
 - Embedded bignum, bson, weakref, and contextify native modules
 - Native module automatic MT compatibility (automatic libuv loop switcher)
 - Native module wrapper for static members (jx_persistent_store.h)
 - Internal thread and process recovery
-- Process monitoring service – jxcore.monitor
+- Process monitoring service � jxcore.monitor
 - Shared memory store -safe block operations, ttl, new atomic operations
-- Multithreading – cross-thread messaging / threadkill
-- Messaging API – first release (Browser, and Java clients)
+- Multithreading � cross-thread messaging / threadkill
+- Messaging API � first release (Browser, and Java clients)
 
 Changes
 - jxcore.env.setThreadCount moved to jxcore.tasks.setThreadCount
