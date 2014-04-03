@@ -20,7 +20,9 @@
             <ul>
                 <li><a href="http://jxcore.com/" class="home">Home</a></li>
                 <li><a href="http://jxcore.com/downloads/" class="download">Download</a></li>
-                <li><a href="http://jxcore.com/what-is-jxcore/" class="docs current">Docs</a></li>
+                <li><a href="index.html" class="docs current">Docs</a></li>
+                <li><a href="http://jxcore.com/tutorials/" class="docs current">Tutorials</a></li>
+                <li><a href="https://github.com/Nubisa/jxdocs/issues/" class="about">Issues</a></li>
                 <li><a href="http://jxcore.com/blog" class="blog">Blog</a></li>
             </ul>
             <p class="twitter"><a href="https://twitter.com/nodejx">Follow us</a></p>
@@ -53,7 +55,8 @@
 <li><a href="#jxcore_thread_process_keepalive_timeout">process.keepAlive(timeout)</a></li>
 <li><a href="#jxcore_thread_process_release">process.release()</a></li>
 <li><a href="#jxcore_thread_process_sendtomain_param">process.sendToMain(param)</a></li>
-<li><a href="#jxcore_thread_process_subthread">process.subthread</a></li>
+<li><a href="#jxcore_thread_process_sendtothreads_param">process.sendToThreads(param)</a></li>
+<li><a href="#jxcore_thread_process_subthread">process.subThread</a></li>
 <li><a href="#jxcore_thread_process_threadid">process.threadId</a></li>
 <li><a href="#jxcore_thread_process_unloadthread">process.unloadThread()</a></li>
 </ul>
@@ -142,7 +145,13 @@ When that counter is zero - the main process may exit now.
 <div class="signature"><ul>
 <li><code>param</code> <span class="type">Object</span></li>
 </div></ul>
-<p>Sends a message to the main thread, and there it can be received by attaching to <a href="jxcore-tasks.html#jxcore_tasks_event_message"><code>message</code></a> event. The <code>param</code> can be any value, for example string or json literal object.
+<blockquote>
+<p>This method is implemented only in the subthread context. When called from a main thread it does nothing.
+
+</p>
+</blockquote>
+<p>Sends a message to the main thread, and there it can be received by attaching to <a href="jxcore-tasks.html#jxcore_tasks_event_message"><code>message</code></a> event.
+The <code>param</code> can be any value, for example string or json literal object.
 
 </p>
 <pre><code class="js">process.sendToMain( { obj: &quot;something&quot; } );
@@ -152,7 +161,14 @@ jxcore.tasks.on(&#39;message&#39;, function (threadId, param) {
    console.log(&#39;Main thread received a message from subthread no &#39; + threadId +
       &#39;. Message: &#39;, param);
 });</code></pre>
-<h2>process.subthread<span><a class="mark" href="#jxcore_thread_process_subthread" id="jxcore_thread_process_subthread">#</a></span></h2>
+<h2>process.sendToThreads(param)<span><a class="mark" href="#jxcore_thread_process_sendtothreads_param" id="jxcore_thread_process_sendtothreads_param">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>param</code> <span class="type">Object</span></li>
+</div></ul>
+<p>Similar to <code>sendToMain()</code>, except that it sends a message to all of the threads from the thread pool.
+
+</p>
+<h2>process.subThread<span><a class="mark" href="#jxcore_thread_process_subthread" id="jxcore_thread_process_subthread">#</a></span></h2>
 <p>This property returns <code>true</code>, if the current code block runs under the subthread, or <code>false</code> otherwise.
 
 </p>
@@ -195,7 +211,9 @@ Adding any tasks later will create a fresh subthread automatically on demand.
         <ul class="clearfix">
             <li><a href="http://jxcore.com/" class="home">Home</a></li>
             <li><a href="http://jxcore.com/downloads/" class="download">Download</a></li>
-            <li><a href="http://jxcore.com/what-is-jxcore/" class="docs current">Docs</a></li>
+            <li><a href="index.html" class="docs current">Docs</a></li>
+            <li><a href="http://jxcore.com/tutorials/" class="docs current">Tutorials</a></li>
+            <li><a href="https://github.com/Nubisa/jxdocs/issues/" class="about">Issues</a></li>
             <li><a href="http://jxcore.com/blog" class="blog">Blog</a></li>
             <li><a href="https://twitter.com/nodejx" class="twitter">Follow us on Twitter</a></li>
         </ul>
@@ -206,6 +224,12 @@ Adding any tasks later will create a fresh subthread automatically on demand.
   <script src="assets/sh_main.js"></script>
   <script src="assets/sh_javascript.min.js"></script>
   <script>highlight(undefined, undefined, 'pre');</script>
+    <script>
+        var _gaq=[['_setAccount','UA-47144445-1'],['_trackPageview']];
+        (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+            g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
+            s.parentNode.insertBefore(g,s)}(document,'script'));
+    </script>
 </body>
 </html>
 

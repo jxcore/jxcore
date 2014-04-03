@@ -10,6 +10,13 @@
           "textRaw": "Commands",
           "name": "commands",
           "desc": "<p>This section describes list of options, which can be used from the command line for controlling the monitor&#39;s process.\n\n</p>\n",
+          "type": "module",
+          "displayName": "Commands"
+        },
+        {
+          "textRaw": "run",
+          "name": "run",
+          "desc": "<pre><code>&gt; jx monitor run application_file.js</code></pre>\n<p>Launches given application and subscribes it for being monitored (invokes <code>followMe()</code> method).\nThe monitor itself should be already running (see <code>start</code> command).\n\n</p>\n<p>Please note, that not every application is a good candidate for being monitored.\nEspecially those apps, which are not designed for constant running - probably they should not be monitored,\nbut that depends on developer and application&#39;s purpose.\n\n</p>\n<p>For more information about this, see <a href=\"jxcore-monitor.html\">Process Monitor API</a>.\n\n</p>\n",
           "modules": [
             {
               "textRaw": "start",
@@ -34,7 +41,7 @@
             }
           ],
           "type": "module",
-          "displayName": "Commands"
+          "displayName": "run"
         },
         {
           "textRaw": "Web access",

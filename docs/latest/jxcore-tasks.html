@@ -20,7 +20,9 @@
             <ul>
                 <li><a href="http://jxcore.com/" class="home">Home</a></li>
                 <li><a href="http://jxcore.com/downloads/" class="download">Download</a></li>
-                <li><a href="http://jxcore.com/what-is-jxcore/" class="docs current">Docs</a></li>
+                <li><a href="index.html" class="docs current">Docs</a></li>
+                <li><a href="http://jxcore.com/tutorials/" class="docs current">Tutorials</a></li>
+                <li><a href="https://github.com/Nubisa/jxdocs/issues/" class="about">Issues</a></li>
                 <li><a href="http://jxcore.com/blog" class="blog">Blog</a></li>
             </ul>
             <p class="twitter"><a href="https://twitter.com/nodejx">Follow us</a></p>
@@ -49,7 +51,6 @@
             <h2>Table of Contents</h2>
             <ul>
 <li><a href="#jxcore_tasks_multithreaded_javascript_tasks">Multithreaded Javascript Tasks</a></li>
-<li><a href="#jxcore_tasks_defaults">Defaults</a></li>
 <li><a href="#jxcore_tasks_api">API</a><ul>
 <li><a href="#jxcore_tasks_event_emptyqueue">Event: &#39;emptyQueue&#39;</a></li>
 <li><a href="#jxcore_tasks_event_message">Event: &#39;message&#39;</a></li>
@@ -58,6 +59,7 @@
 <li><a href="#jxcore_tasks_tasks_forcegc">tasks.forceGC()</a></li>
 <li><a href="#jxcore_tasks_tasks_getthreadcount">tasks.getThreadCount()</a></li>
 <li><a href="#jxcore_tasks_tasks_jobcount">tasks.jobCount()</a></li>
+<li><a href="#jxcore_tasks_tasks_killthread_threadid">tasks.killThread(threadId)</a></li>
 <li><a href="#jxcore_tasks_tasks_runonce_method_param_donotremember">tasks.runOnce(method, param, doNotRemember)</a></li>
 <li><a href="#jxcore_tasks_tasks_setthreadcount_value">tasks.setThreadCount(value)</a></li>
 <li><a href="#jxcore_tasks_tasks_unloadthreads">tasks.unloadThreads()</a></li>
@@ -69,29 +71,41 @@
 
           <div id="apicontent">
             <h1>Multithreaded Javascript Tasks<span><a class="mark" href="#jxcore_tasks_multithreaded_javascript_tasks" id="jxcore_tasks_multithreaded_javascript_tasks">#</a></span></h1>
-<p>Another important feature introduced in JXcore is multithreading.
-In a single-threaded project <code>setTimeout()</code> and <code>setInterval()</code> methods wait in a separate thread,
-but the scheduled methods are still executed under the main application thread.
-Since the main thread eventually handles every single task, the application may lost its responsiveness under a load or queued heavy tasks.
-Even if the application works well in a testing environment, it could start slowing down under a massive load (increased number of clients).
+<p>JXcore, in addition to running multithreaded applications with <code>mt</code>/<code>mt-keep</code> command, offers Multithreaded Javascript Tasks feature,
+which allows you from the code running in the main thread to add tasks for execution in a subthread.
 
 </p>
-<h1>Defaults<span><a class="mark" href="#jxcore_tasks_defaults" id="jxcore_tasks_defaults">#</a></span></h1>
-<p>JXcore uses the following defaults for subthreads for multithreaded applications:
+<p>The main idea in this approach is to define the tasks, which you will then add to the thread pool for execution.
+For this, you can use any of the methods described in the API section.
 
 </p>
-<ol>
-<li>minimum amount is set to 2. This is also the default value.</li>
-<li>maximum amount is set to 63.</li>
-</ol>
-<p>You can also control the number of subthreads and there are two ways you can do this, but that depends how you run the application.
+<p>The task can do anything. See the simplest example:
 
 </p>
-<p>If you launch te code with mt/mt-keep command line parameter, you can set the threads count by applying a number after the colon, like:
+<pre><code class="js">var method = function () {
+    console.log(&quot;this is message from thread no&quot;, process.threadId);
+};
+
+jxcore.tasks.addTask(method);</code></pre>
+<p>Another one:
 
 </p>
-<pre><code>&gt; jx mt:4 hello.js</code></pre>
-<p>Otherwise you can use <code>setThreadCount()</code> method. See also <a href="jxcore-feature-multithreading.html#jxcore_feature_multithreading_how_to_run_multithreaded_code">How to run multithreaded code?</a> for more information.
+<pre><code class="js">var method = {};
+method.define = function () {
+    require(&quot;./hello&quot;);
+    console.log(&quot;http server started on thread&quot;, process.threadId);
+    process.keepAlive();
+};
+
+jxcore.tasks.runOnce(method);</code></pre>
+<p>Note that this particular example does nothing but running hello.js file in multiple threads. The same result can be obtained by using mt:keep option as follows:
+
+</p>
+<pre><code>&gt; jx mt:keep hello.js</code></pre>
+<p>We have written a blog post showing How to turn your existing application into a multithreaded one with a few lines of code.
+
+</p>
+<p>See also general description of JXcore <a href="jxcore-feature-multithreading.html">multithreading</a>.
 
 </p>
 <h1>API<span><a class="mark" href="#jxcore_tasks_api" id="jxcore_tasks_api">#</a></span></h1>
@@ -102,11 +116,12 @@ Even if the application works well in a testing environment, it could start slow
 <pre><code class="js">// this event fires when all of the added tasks have been processed
 jxcore.tasks.on(&#39;emptyQueue&#39;, function () {
    console.log(&#39;all of the added tasks have been processed&#39;);
-});
+});</code></pre>
+<p>Please keep in mind, that if you plan to use some delayed/async work inside a task,
+the <code>emptyQueue</code> event can be fired before they will have chance to complete.
+Refer to <a href="jxcore-thread.html#jxcore_thread_process_keepalive_timeout"><code>process.keepAlive()</code></a> method for that matter.
 
-// please keep in mind, that if you plan to use some delayed/async work inside a task,
-// the emptyQueue event can be fired before they will have chance to complete.
-// refer to keepAlive() method for that matter.</code></pre>
+</p>
 <h2>Event: &#39;message&#39;<span><a class="mark" href="#jxcore_tasks_event_message" id="jxcore_tasks_event_message">#</a></span></h2>
 <div class="signature"><ul>
 <li><code>threadId</code> <span class="type">Number</span></li>
@@ -128,10 +143,10 @@ jxcore.tasks.on(&#39;message&#39;, callback);
 process.sendToMain( { obj: &quot;something&quot; } );</code></pre>
 <h2>tasks.addTask(method, param, callback, obj)<span><a class="mark" href="#jxcore_tasks_tasks_addtask_method_param_callback_obj" id="jxcore_tasks_tasks_addtask_method_param_callback_obj">#</a></span></h2>
 <div class="signature"><ul>
-<li>method <span class="type">Function</span></li>
-<li>param <span class="type">Object</span></li>
-<li>callback <span class="type">Function</span></li>
-<li>obj <span class="type">Object</span></li>
+<li><code>method</code> <span class="type">Function</span></li>
+<li><code>param</code> <span class="type">Object</span></li>
+<li><code>callback</code> <span class="type">Function</span></li>
+<li><code>obj</code> <span class="type">Object</span></li>
 </div></ul>
 <p>Adds new task <strong>as a method</strong> to be processed in a separate thread. The task will be processed as soon as possible.
 If there is any idle subthread, it will be used to execute the task immediately. Otherwise it may wait until the other tasks will finish or some of the subthreads will become idle.
@@ -184,8 +199,8 @@ var callback = function (obj, result) {
 jxcore.tasks.addTask(method, { str: &quot;hello&quot; }, callback, mainThreadVariable);</code></pre>
 <h2>tasks.addTask(object, param)<span><a class="mark" href="#jxcore_tasks_tasks_addtask_object_param" id="jxcore_tasks_tasks_addtask_object_param">#</a></span></h2>
 <div class="signature"><ul>
-<li>object <span class="type">Function</span> - this is the object containing <em>define() and/or logic()</em> methods, which will be executed in a subthread.</li>
-<li>param <span class="type">Object</span> - argument for <code>logic()</code> method</li>
+<li><code>object</code> <span class="type">Function</span> - this is the object containing <code>define()</code> and/or <code>logic()</code> methods, which will be executed in a subthread.</li>
+<li><code>param</code> <span class="type">Object</span> - argument for <code>logic()</code> method</li>
 </div></ul>
 <p>Adds new task <strong>as an object</strong> to be processed in a separate thread. The task will be processed as soon as possible.
 If there is any idle subthread, it will be used to execute the task immediately. Otherwise it may wait until the other tasks will finish or some of the subthreads will become idle.
@@ -228,6 +243,14 @@ task.logic = function(param) {
 <li>Variables and objects declared in <code>define()</code> method are freely accessible from inside <code>logic()</code> method. You can also freely modify them, but please remember that since everything declared in <code>define()</code> is static, if you change some variable’s value in one task, it will have affect for all subsequent tasks which run in this subthread. Also do not assume the tasks will be executed in the order of which they were added.</li>
 <li>This method is optional which means that the entire task’s job should be embedded inside the <code>define()</code> method. As mentioned before, it will run only once per subthread, no matter how many times the task was added to the subthread’s queue.</li>
 </ul>
+<p><strong>waitLogic</strong> <code>boolean</code>
+
+</p>
+<ul>
+<li>When this parameter is provided and is set to <code>true</code>, the <code>logic()</code> does not get executed immediately after <code>define()</code> completes.
+Instead, it waits, until you explicitly call <code>continueLogic()</code> from inside <code>define()</code>. If you will not do it, the <code>logic()</code> will never get called.
+This mechanism is intended to be used in scenarios, when <code>define()</code> runs async work, and <code>logic()</code> should be run afterwards.</li>
+</ul>
 <p>When adding a tasks with <em>define &amp; logic approach</em>, make sure to apply all of the principles for adding the tasks as methods – see <code>addTask(method, param, callback, obj)</code>.
 
 </p>
@@ -258,6 +281,28 @@ task.logic = function (param) {
 
 jxcore.tasks.addTask(task, &quot;task1&quot;);
 jxcore.tasks.addTask(task, &quot;task2&quot;);</code></pre>
+<p>Another example with <code>waitLogic</code>:
+
+</p>
+<pre><code class="js">var task = {
+    define: function () {
+        setTimeout(function () {
+            console.log(&quot;called&quot;)
+            continueLogic();
+        }, 2000);
+    },
+    logic: function (obj) {
+        console.log(obj);
+        return obj + &quot;X&quot;;
+    },
+    waitLogic: true
+};
+
+for (var o = 0; o &lt; 2; o++) {
+    jxcore.tasks.addTask(task, o + &quot; Hello&quot;, function (res) {
+        console.log(&quot;END&quot;, res);
+    });
+}</code></pre>
 <h2>tasks.forceGC()<span><a class="mark" href="#jxcore_tasks_tasks_forcegc" id="jxcore_tasks_tasks_forcegc">#</a></span></h2>
 <p>Forces garbage collection on V8 heap. Please use it with caution. It may trigger the garbage collection process immediately, which may freeze the application for a while and stop taking the requests during this time.
 
@@ -270,14 +315,46 @@ jxcore.tasks.addTask(task, &quot;task2&quot;);</code></pre>
 <p>Returns number of tasks currently waiting in the queue.
 
 </p>
+<h2>tasks.killThread(threadId)<span><a class="mark" href="#jxcore_tasks_tasks_killthread_threadid" id="jxcore_tasks_tasks_killthread_threadid">#</a></span></h2>
+<p>Kills a thread with given thread ID. This can be used for controlling the execution time of the task.
+
+</p>
+<p>In example below, when the task starts it notifies the main thread about that fact.
+From that moment the main thread may start counting the timeout for killing the thread.
+
+</p>
+<pre><code class="js">// main thread receives the message from a task
+jxcore.tasks.on(&quot;message&quot;, function(threadId, obj){
+    if(obj.started){
+        //kill the task after a second
+        setTimeout(function(){
+            jxcore.tasks.killThread(threadId);
+            console.log(&quot;thread killed&quot;, threadId);
+        },1000);
+    }
+});
+
+// adding a task
+jxcore.tasks.addTask( function() {
+    // informing the main thread, that task is just started
+    process.sendToMain({started:true});
+
+    // looping forever
+    while(true){};
+    console.log(&quot;this line will never happen.&quot;);
+});</code></pre>
 <h2>tasks.runOnce(method, param, doNotRemember)<span><a class="mark" href="#jxcore_tasks_tasks_runonce_method_param_donotremember" id="jxcore_tasks_tasks_runonce_method_param_donotremember">#</a></span></h2>
 <div class="signature"><ul>
-<li>method <span class="type">Function</span> - This is the method, which will be executed once for every existing subthread (<em>getThreadCount()</em> times).</li>
-<li>param <span class="type">Object</span> - Argument for that method.</li>
-<li>doNotRemember <span class="type">Boolean</span></li>
+<li><code>method</code> <span class="type">Function</span> - This is the method, which will be executed once for every existing subthread (<em>getThreadCount()</em> times).</li>
+<li><code>param</code> <span class="type">Object</span> - Argument for that method.</li>
+<li><code>doNotRemember</code> <span class="type">Boolean</span></li>
 </div></ul>
-<p>Adds new task (the <code>method</code> function with optional <code>param</code> argument) to be processed just once for every existing subthread. In other words, every subthread will call the task once.
-You can get number of subthreads by calling <code>getThreadCount()</code> method. Every subthread will process its task as soon as possible. If there are no other tasks in the subthread’s queue, the task will be executed immediately. Otherwise it may wait until the other tasks in this subthread will finish.
+<p>Adds new task (the <code>method</code> function with optional <code>param</code> argument) to be processed just once for every existing subthread.
+In other words, every subthread will call the task once.
+You can get number of subthreads by calling <code>getThreadCount()</code> method.
+Every subthread will process its task as soon as possible.
+If there are no other tasks in the subthread’s queue, the task will be executed immediately.
+Otherwise it may wait until the other tasks in this subthread will finish.
 
 </p>
 <p>If you don&#39;t want the method definition to be remembered by future threads – use <code>doNotRemember</code>. It&#39;s <code>false</code> by default.
@@ -290,6 +367,10 @@ You can get number of subthreads by calling <code>getThreadCount()</code> method
 
 </p>
 <pre><code class="js">jxcore.tasks.runOnce( method, &quot;some parameter&quot;);</code></pre>
+<p>If for some reason any of the threads will be recreated (for example
+
+
+</p>
 <h2>tasks.setThreadCount(value)<span><a class="mark" href="#jxcore_tasks_tasks_setthreadcount_value" id="jxcore_tasks_tasks_setthreadcount_value">#</a></span></h2>
 <div class="signature"><ul>
 <li><code>value</code> <span class="type">Number</span></li>
@@ -310,7 +391,8 @@ var tasks = jxcore.tasks;
 // and the thread pool is already created.
 jxcore.env.setThreadCount(10)</code></pre>
 <h2>tasks.unloadThreads()<span><a class="mark" href="#jxcore_tasks_tasks_unloadthreads" id="jxcore_tasks_tasks_unloadthreads">#</a></span></h2>
-<p>Marks all subthreads to be removed from the thread pool. If they are idle – the method removes them immediately. Otherwise it waits, until they finish their last tasks and removes them afterwards.
+<p>Marks all subthreads to be removed from the thread pool. If they are idle – the method removes them immediately.
+Otherwise it waits, until they finish their last tasks and removes them afterwards.
 </p>
 
           </div>
@@ -321,7 +403,9 @@ jxcore.env.setThreadCount(10)</code></pre>
         <ul class="clearfix">
             <li><a href="http://jxcore.com/" class="home">Home</a></li>
             <li><a href="http://jxcore.com/downloads/" class="download">Download</a></li>
-            <li><a href="http://jxcore.com/what-is-jxcore/" class="docs current">Docs</a></li>
+            <li><a href="index.html" class="docs current">Docs</a></li>
+            <li><a href="http://jxcore.com/tutorials/" class="docs current">Tutorials</a></li>
+            <li><a href="https://github.com/Nubisa/jxdocs/issues/" class="about">Issues</a></li>
             <li><a href="http://jxcore.com/blog" class="blog">Blog</a></li>
             <li><a href="https://twitter.com/nodejx" class="twitter">Follow us on Twitter</a></li>
         </ul>
@@ -332,6 +416,12 @@ jxcore.env.setThreadCount(10)</code></pre>
   <script src="assets/sh_main.js"></script>
   <script src="assets/sh_javascript.min.js"></script>
   <script>highlight(undefined, undefined, 'pre');</script>
+    <script>
+        var _gaq=[['_setAccount','UA-47144445-1'],['_trackPageview']];
+        (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+            g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
+            s.parentNode.insertBefore(g,s)}(document,'script'));
+    </script>
 </body>
 </html>
 

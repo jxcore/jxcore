@@ -20,7 +20,9 @@
             <ul>
                 <li><a href="http://jxcore.com/" class="home">Home</a></li>
                 <li><a href="http://jxcore.com/downloads/" class="download">Download</a></li>
-                <li><a href="http://jxcore.com/what-is-jxcore/" class="docs current">Docs</a></li>
+                <li><a href="index.html" class="docs current">Docs</a></li>
+                <li><a href="http://jxcore.com/tutorials/" class="docs current">Tutorials</a></li>
+                <li><a href="https://github.com/Nubisa/jxdocs/issues/" class="about">Issues</a></li>
                 <li><a href="http://jxcore.com/blog" class="blog">Blog</a></li>
             </ul>
             <p class="twitter"><a href="https://twitter.com/nodejx">Follow us</a></p>
@@ -140,10 +142,15 @@ It means that it occupies a different place in the memory, hence the queues do 
 <p>There are two ways of executing your JavaScript code in multiple threads with JXcore.
 
 </p>
+<h3>Multithreading from the command line<span><a class="mark" href="#jxcore_feature_multithreading_multithreading_from_the_command_line" id="jxcore_feature_multithreading_multithreading_from_the_command_line">#</a></span></h3>
 <p>The first and the easiest is just to use <code>mt</code> or <code>mt-keep</code> option in the command-line for jx:
 
 </p>
 <pre><code>&gt; jx mt-keep:4 easy1.js</code></pre>
+<p>This topic is fully described here: <a href="jxcore-command-mt.html">mt / mt-keep</a>
+
+</p>
+<h3>Multithreaded Javascript Tasks<span><a class="mark" href="#jxcore_feature_multithreading_multithreaded_javascript_tasks" id="jxcore_feature_multithreading_multithreaded_javascript_tasks">#</a></span></h3>
 <p>The second one is by using <code>jxcore.tasks</code> object. It requires you to implement all the multithreaded logic by yourself.
 Then you run the application without any jx’s options:
 
@@ -156,15 +163,11 @@ and you don’t really have any control to change the thread’s job, once the a
 </p>
 <p>With the second (the “tasks”) approach it’s all about adding jobs to the queue of the thread pool.
 Tasks start and finish, you can always add more tasks in the runtime.
-In this model you always have the main thread and the subthreads. You can also get notified, when all task are completed.
+In this model you always have the main thread and the subthreads.
+You can also get notified, when all task are completed.
 See the API for reference.
 
 </p>
-<h3>Multithreading from the command line<span><a class="mark" href="#jxcore_feature_multithreading_multithreading_from_the_command_line" id="jxcore_feature_multithreading_multithreading_from_the_command_line">#</a></span></h3>
-<p>This topic is fully described here: <a href="jxcore-command-mt.html">mt / mt-keep</a>
-
-</p>
-<h3>Multithreaded Javascript Tasks<span><a class="mark" href="#jxcore_feature_multithreading_multithreaded_javascript_tasks" id="jxcore_feature_multithreading_multithreaded_javascript_tasks">#</a></span></h3>
 <p>This topic is fully described here: <a href="jxcore-tasks.html">Tasks</a>
 </p>
 
@@ -176,7 +179,9 @@ See the API for reference.
         <ul class="clearfix">
             <li><a href="http://jxcore.com/" class="home">Home</a></li>
             <li><a href="http://jxcore.com/downloads/" class="download">Download</a></li>
-            <li><a href="http://jxcore.com/what-is-jxcore/" class="docs current">Docs</a></li>
+            <li><a href="index.html" class="docs current">Docs</a></li>
+            <li><a href="http://jxcore.com/tutorials/" class="docs current">Tutorials</a></li>
+            <li><a href="https://github.com/Nubisa/jxdocs/issues/" class="about">Issues</a></li>
             <li><a href="http://jxcore.com/blog" class="blog">Blog</a></li>
             <li><a href="https://twitter.com/nodejx" class="twitter">Follow us on Twitter</a></li>
         </ul>
@@ -187,6 +192,12 @@ See the API for reference.
   <script src="assets/sh_main.js"></script>
   <script src="assets/sh_javascript.min.js"></script>
   <script>highlight(undefined, undefined, 'pre');</script>
+    <script>
+        var _gaq=[['_setAccount','UA-47144445-1'],['_trackPageview']];
+        (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+            g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
+            s.parentNode.insertBefore(g,s)}(document,'script'));
+    </script>
 </body>
 </html>
 

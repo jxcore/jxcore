@@ -72,7 +72,31 @@
               ]
             }
           ],
-          "desc": "<p>Sends a message to the main thread, and there it can be received by attaching to <a href=\"jxcore-tasks.html#jxcore_tasks_event_message\"><code>message</code></a> event. The <code>param</code> can be any value, for example string or json literal object.\n\n</p>\n<pre><code class=\"js\">process.sendToMain( { obj: &quot;something&quot; } );\n\n// now the main thread can receive the message like this:\njxcore.tasks.on(&#39;message&#39;, function (threadId, param) {\n   console.log(&#39;Main thread received a message from subthread no &#39; + threadId +\n      &#39;. Message: &#39;, param);\n});</code></pre>\n"
+          "desc": "<blockquote>\n<p>This method is implemented only in the subthread context. When called from a main thread it does nothing.\n\n</p>\n</blockquote>\n<p>Sends a message to the main thread, and there it can be received by attaching to <a href=\"jxcore-tasks.html#jxcore_tasks_event_message\"><code>message</code></a> event.\nThe <code>param</code> can be any value, for example string or json literal object.\n\n</p>\n<pre><code class=\"js\">process.sendToMain( { obj: &quot;something&quot; } );\n\n// now the main thread can receive the message like this:\njxcore.tasks.on(&#39;message&#39;, function (threadId, param) {\n   console.log(&#39;Main thread received a message from subthread no &#39; + threadId +\n      &#39;. Message: &#39;, param);\n});</code></pre>\n"
+        },
+        {
+          "textRaw": "process.sendToThreads(param)",
+          "type": "method",
+          "name": "sendToThreads",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "`param` {Object} ",
+                  "name": "param",
+                  "type": "Object"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "param"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Similar to <code>sendToMain()</code>, except that it sends a message to all of the threads from the thread pool.\n\n</p>\n"
         },
         {
           "textRaw": "process.unloadThread()",
@@ -88,8 +112,8 @@
       ],
       "properties": [
         {
-          "textRaw": "process.subthread",
-          "name": "subthread",
+          "textRaw": "process.subThread",
+          "name": "subThread",
           "desc": "<p>This property returns <code>true</code>, if the current code block runs under the subthread, or <code>false</code> otherwise.\n\n</p>\n<pre><code class=\"js\">if (process.subThread) {\n   console.log(&quot;we are in a subthread.&quot;);\n}</code></pre>\n"
         },
         {
