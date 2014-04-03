@@ -59,16 +59,16 @@ Platforms
 - Windows Installer
 
 Feature Updates
-- Built-in package manager (jx install �)
+- Built-in package manager (jx install ..)
 - Embedded SQLite Database Engine & sqlite3 native module
 - Embedded bignum, bson, weakref, and contextify native modules
 - Native module automatic MT compatibility (automatic libuv loop switcher)
 - Native module wrapper for static members (jx_persistent_store.h)
 - Internal thread and process recovery
-- Process monitoring service � jxcore.monitor
+- Process monitoring service - jxcore.monitor
 - Shared memory store -safe block operations, ttl, new atomic operations
-- Multithreading � cross-thread messaging / threadkill
-- Messaging API � first release (Browser, and Java clients)
+- Multithreading - cross-thread messaging / threadkill
+- Messaging API - first release (Browser, and Java clients)
 
 Changes
 - jxcore.env.setThreadCount moved to jxcore.tasks.setThreadCount
