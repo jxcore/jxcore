@@ -23,7 +23,8 @@ JXcore by default will create 2 threads in the pool for that application, howeve
 
 It this case four threads will be created.
 
-Using the `mt` command suits the best, if your code does not execute any delayed or async jobs, otherwise the application may exit, before those jobs will have chance to complete.
+Using the `mt` command suits the best, when your code does not execute any delayed or async jobs,
+otherwise the application may exit, before those jobs will have chance to complete.
 
 Let's consider the following example (*test.js*):
 

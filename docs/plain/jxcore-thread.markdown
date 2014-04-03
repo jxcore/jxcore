@@ -72,7 +72,10 @@ process.release();
 
 * `param` {Object}
 
-Sends a message to the main thread, and there it can be received by attaching to [`message`](jxcore-tasks.markdown#event-message) event. The `param` can be any value, for example string or json literal object.
+> This method is implemented only in the subthread context. When called from a main thread it does nothing.
+
+Sends a message to the main thread, and there it can be received by attaching to [`message`](jxcore-tasks.markdown#event-message) event.
+The `param` can be any value, for example string or json literal object.
 
 ```js
 process.sendToMain( { obj: "something" } );
@@ -84,7 +87,13 @@ jxcore.tasks.on('message', function (threadId, param) {
 });
 ```
 
-## process.subthread
+## process.sendToThreads(param)
+
+* `param` {Object}
+
+Similar to `sendToMain()`, except that it sends a message to all of the threads from the thread pool.
+
+## process.subThread
 
 This property returns `true`, if the current code block runs under the subthread, or `false` otherwise.
 

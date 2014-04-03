@@ -11,6 +11,19 @@ Please refer there for complementary information.
 
 This section describes list of options, which can be used from the command line for controlling the monitor's process.
 
+## run
+
+    > jx monitor run application_file.js
+
+Launches given application and subscribes it for being monitored (invokes `followMe()` method).
+The monitor itself should be already running (see `start` command).
+
+Please note, that not every application is a good candidate for being monitored.
+Especially those apps, which are not designed for constant running - probably they should not be monitored,
+but that depends on developer and application's purpose.
+
+For more information about this, see [Process Monitor API](jxcore-monitor.markdown).
+
 ### start
 
     > jx monitor start
@@ -64,3 +77,4 @@ Below is example of *jx.config* file.
 * **start_delay** - how late (in milliseconds) should the application subscribe to the monitor. Default value: 2000.
 * **log_path** - path and/or name of the log file. If it's only a name (without directory part), it will be written in current working directory, which means the place, from where you started the monitor's process.
 You can use some predefined tags inside the log_path. Supported tags are [WEEKOFYEAR], [DAYOFMONTH], [DAYOFYEAR], [YEAR], [MONTH], [MINUTE], [HOUR].
+

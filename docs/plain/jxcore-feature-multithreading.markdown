@@ -61,9 +61,15 @@ See [native](https://github.com/Nubisa/jxdocs/tree/master/native).
 
 There are two ways of executing your JavaScript code in multiple threads with JXcore.
 
+### Multithreading from the command line
+
 The first and the easiest is just to use `mt` or `mt-keep` option in the command-line for jx:
 
     > jx mt-keep:4 easy1.js
+
+This topic is fully described here: [mt / mt-keep](jxcore-command-mt.markdown)
+
+### Multithreaded Javascript Tasks
 
 The second one is by using `jxcore.tasks` object. It requires you to implement all the multithreaded logic by yourself.
 Then you run the application without any jx’s options:
@@ -76,13 +82,8 @@ and you don’t really have any control to change the thread’s job, once the a
 
 With the second (the “tasks”) approach it’s all about adding jobs to the queue of the thread pool.
 Tasks start and finish, you can always add more tasks in the runtime.
-In this model you always have the main thread and the subthreads. You can also get notified, when all task are completed.
+In this model you always have the main thread and the subthreads.
+You can also get notified, when all task are completed.
 See the API for reference.
-
-### Multithreading from the command line
-
-This topic is fully described here: [mt / mt-keep](jxcore-command-mt.markdown)
-
-### Multithreaded Javascript Tasks
 
 This topic is fully described here: [Tasks](jxcore-tasks.markdown)

@@ -1,25 +1,41 @@
 # Multithreaded Javascript Tasks
 
-Another important feature introduced in JXcore is multithreading.
-In a single-threaded project `setTimeout()` and `setInterval()` methods wait in a separate thread,
-but the scheduled methods are still executed under the main application thread.
-Since the main thread eventually handles every single task, the application may lost its responsiveness under a load or queued heavy tasks.
-Even if the application works well in a testing environment, it could start slowing down under a massive load (increased number of clients).
+JXcore, in addition to running multithreaded applications with `mt`/`mt-keep` command, offers Multithreaded Javascript Tasks feature,
+which allows you from the code running in the main thread to add tasks for execution in a subthread.
 
-# Defaults
+The main idea in this approach is to define the tasks, which you will then add to the thread pool for execution.
+For this, you can use any of the methods described in the API section.
 
-JXcore uses the following defaults for subthreads for multithreaded applications:
+The task can do anything. See the simplest example:
 
-1. minimum amount is set to 2. This is also the default value.
-2. maximum amount is set to 63.
+```js
+var method = function () {
+    console.log("this is message from thread no", process.threadId);
+};
 
-You can also control the number of subthreads and there are two ways you can do this, but that depends how you run the application.
+jxcore.tasks.addTask(method);
+```
 
-If you launch te code with mt/mt-keep command line parameter, you can set the threads count by applying a number after the colon, like:
+Another one:
 
-    > jx mt:4 hello.js
+```js
+var method = {};
+method.define = function () {
+    require("./hello");
+    console.log("http server started on thread", process.threadId);
+    process.keepAlive();
+};
 
-Otherwise you can use `setThreadCount()` method. See also [How to run multithreaded code?](jxcore-feature-multithreading.markdown#how-to-run-multithreaded-code) for more information.
+jxcore.tasks.runOnce(method);
+```
+
+Note that this particular example does nothing but running hello.js file in multiple threads. The same result can be obtained by using mt:keep option as follows:
+
+    > jx mt:keep hello.js
+
+We have written a blog post showing How to turn your existing application into a multithreaded one with a few lines of code.
+
+See also general description of JXcore [multithreading](jxcore-feature-multithreading.markdown).
 
 # API
 
@@ -32,11 +48,11 @@ This event fires when all of the added tasks have been processed.
 jxcore.tasks.on('emptyQueue', function () {
    console.log('all of the added tasks have been processed');
 });
-
-// please keep in mind, that if you plan to use some delayed/async work inside a task,
-// the emptyQueue event can be fired before they will have chance to complete.
-// refer to keepAlive() method for that matter.
 ```
+
+Please keep in mind, that if you plan to use some delayed/async work inside a task,
+the `emptyQueue` event can be fired before they will have chance to complete.
+Refer to [`process.keepAlive()`](jxcore-thread.markdown#process-keepalive-timeout) method for that matter.
 
 ## Event: 'message'
 
@@ -61,10 +77,10 @@ process.sendToMain( { obj: "something" } );
 
 ## tasks.addTask(method, param, callback, obj)
 
-* method {Function}
-* param {Object}
-* callback {Function}
-* obj {Object}
+* `method` {Function}
+* `param` {Object}
+* `callback` {Function}
+* `obj` {Object}
 
 Adds new task **as a method** to be processed in a separate thread. The task will be processed as soon as possible.
 If there is any idle subthread, it will be used to execute the task immediately. Otherwise it may wait until the other tasks will finish or some of the subthreads will become idle.
@@ -116,8 +132,8 @@ jxcore.tasks.addTask(method, { str: "hello" }, callback, mainThreadVariable);
 
 ## tasks.addTask(object, param)
 
-* object {Function} - this is the object containing *define() and/or logic()* methods, which will be executed in a subthread.
-* param {Object} - argument for `logic()` method
+* `object` {Function} - this is the object containing `define()` and/or `logic()` methods, which will be executed in a subthread.
+* `param` {Object} - argument for `logic()` method
 
 Adds new task **as an object** to be processed in a separate thread. The task will be processed as soon as possible.
 If there is any idle subthread, it will be used to execute the task immediately. Otherwise it may wait until the other tasks will finish or some of the subthreads will become idle.
@@ -155,6 +171,12 @@ task.logic = function(param) {
   * Variables and objects declared in `define()` method are freely accessible from inside `logic()` method. You can also freely modify them, but please remember that since everything declared in `define()` is static, if you change some variable’s value in one task, it will have affect for all subsequent tasks which run in this subthread. Also do not assume the tasks will be executed in the order of which they were added.
   * This method is optional which means that the entire task’s job should be embedded inside the `define()` method. As mentioned before, it will run only once per subthread, no matter how many times the task was added to the subthread’s queue.
 
+**waitLogic** `boolean`
+
+  * When this parameter is provided and is set to `true`, the `logic()` does not get executed immediately after `define()` completes.
+  Instead, it waits, until you explicitly call `continueLogic()` from inside `define()`. If you will not do it, the `logic()` will never get called.
+  This mechanism is intended to be used in scenarios, when `define()` runs async work, and `logic()` should be run afterwards.
+
 When adding a tasks with *define & logic approach*, make sure to apply all of the principles for adding the tasks as methods – see `addTask(method, param, callback, obj)`.
 
 Keep in mind that only those two members of the task object (`define()` and `logic()` methods) are meaningful. Any other object members will be ignored. Moreover, we highly discourage adding any other members, especially if you plan to add massive amount of such tasks, because they can unnecessarily raise memory usage and may impact the performance.
@@ -186,6 +208,30 @@ jxcore.tasks.addTask(task, "task1");
 jxcore.tasks.addTask(task, "task2");
 ```
 
+Another example with `waitLogic`:
+
+```js
+var task = {
+    define: function () {
+        setTimeout(function () {
+            console.log("called")
+            continueLogic();
+        }, 2000);
+    },
+    logic: function (obj) {
+        console.log(obj);
+        return obj + "X";
+    },
+    waitLogic: true
+};
+
+for (var o = 0; o < 2; o++) {
+    jxcore.tasks.addTask(task, o + " Hello", function (res) {
+        console.log("END", res);
+    });
+}
+```
+
 ## tasks.forceGC()
 
 Forces garbage collection on V8 heap. Please use it with caution. It may trigger the garbage collection process immediately, which may freeze the application for a while and stop taking the requests during this time.
@@ -198,14 +244,48 @@ Returns the number of subthreads currently used by application (size of the thre
 
 Returns number of tasks currently waiting in the queue.
 
+## tasks.killThread(threadId)
+
+Kills a thread with given thread ID. This can be used for controlling the execution time of the task.
+
+In example below, when the task starts it notifies the main thread about that fact.
+From that moment the main thread may start counting the timeout for killing the thread.
+
+```js
+// main thread receives the message from a task
+jxcore.tasks.on("message", function(threadId, obj){
+    if(obj.started){
+        //kill the task after a second
+        setTimeout(function(){
+            jxcore.tasks.killThread(threadId);
+            console.log("thread killed", threadId);
+        },1000);
+    }
+});
+
+// adding a task
+jxcore.tasks.addTask( function() {
+    // informing the main thread, that task is just started
+    process.sendToMain({started:true});
+
+    // looping forever
+    while(true){};
+    console.log("this line will never happen.");
+});
+```
+
 ## tasks.runOnce(method, param, doNotRemember)
 
-* method {Function} - This is the method, which will be executed once for every existing subthread (<em>getThreadCount()</em> times).
-* param {Object} - Argument for that method.
-* doNotRemember {Boolean}
+* `method` {Function} - This is the method, which will be executed once for every existing subthread (<em>getThreadCount()</em> times).
+* `param` {Object} - Argument for that method.
+* `doNotRemember` {Boolean}
 
-Adds new task (the `method` function with optional `param` argument) to be processed just once for every existing subthread. In other words, every subthread will call the task once.
-You can get number of subthreads by calling `getThreadCount()` method. Every subthread will process its task as soon as possible. If there are no other tasks in the subthread’s queue, the task will be executed immediately. Otherwise it may wait until the other tasks in this subthread will finish.
+Adds new task (the `method` function with optional `param` argument) to be processed just once for every existing subthread.
+In other words, every subthread will call the task once.
+You can get number of subthreads by calling `getThreadCount()` method.
+Every subthread will process its task as soon as possible.
+If there are no other tasks in the subthread’s queue, the task will be executed immediately.
+Otherwise it may wait until the other tasks in this subthread will finish.
 
 If you don't want the method definition to be remembered by future threads – use `doNotRemember`. It's `false` by default.
 
@@ -216,6 +296,9 @@ One of the cases for using `runOnce()` could be setting up a http server on each
 ```js
 jxcore.tasks.runOnce( method, "some parameter");
 ```
+
+If for some reason any of the threads will be recreated (for example
+
 
 ## tasks.setThreadCount(value)
 
@@ -238,4 +321,5 @@ jxcore.env.setThreadCount(10)
 
 ## tasks.unloadThreads()
 
-Marks all subthreads to be removed from the thread pool. If they are idle – the method removes them immediately. Otherwise it waits, until they finish their last tasks and removes them afterwards.
+Marks all subthreads to be removed from the thread pool. If they are idle – the method removes them immediately.
+Otherwise it waits, until they finish their last tasks and removes them afterwards.
