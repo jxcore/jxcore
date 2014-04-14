@@ -12,7 +12,7 @@ There are some tutorials for using JXcore Messaging available here: [Hello World
 
 ## Configuration
 
-All of the server's settings listed below may be changed using [`setConfig()`](#setconfig-key-value) method.
+All of the server's settings listed below may be changed using `setConfig()` method.
 
 ### chunked
 
@@ -66,7 +66,7 @@ Thread#0 HTTP  -> http://192.168.1.11:8000/test
 When this option is set to `false` (and it is by default), the client's methods `Subscribe()` and `Unsubscribe()` are disabled.
 They still exist in client's API, but invoking them will have no effect, since the calls will be ignored on the server-side.
 Client's are still able to send messages to the groups, but since they cannot subscribe o them, it should be done by the server.
-See server-side methods [`subscribeClient()`](#subscribeclient-env-groupname) and [`unSubscribeClient()`](#unsubscribeclient-env-groupname).
+See server-side methods `subscribeClient()` and `unSubscribeClient()`.
 
 ### encoding
 
@@ -182,7 +182,7 @@ If no listener is attached to this event, user unsubscribes always.
 
 Attaching to this event gives you control, whether to allow the user to be unsubscribed or not.
 
-See also: [Event: 'subscribe'](#event-subscribe)
+See also [Event: 'subscribe'](#subscribe)
 
 ### sendToGroup
 
@@ -222,8 +222,8 @@ server.on('sendToGroup', function(env, params, allow) {
 ## Object: env
 
 * `ClientId` {String}
-* 'ApplicationName` {String}
-* 'SessionID` {String}
+* `ApplicationName` {String}
+* `SessionID` {String}
 * `Index` {number}
 
 This object is passed to some of the methods described in this document. It contains information about a call made from a client's side.

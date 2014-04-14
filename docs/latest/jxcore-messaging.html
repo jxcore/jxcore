@@ -149,7 +149,7 @@
 </p>
 <h1>API Server<span><a class="mark" href="#jxcore_messaging_api_server" id="jxcore_messaging_api_server">#</a></span></h1>
 <h2>Configuration<span><a class="mark" href="#jxcore_messaging_configuration" id="jxcore_messaging_configuration">#</a></span></h2>
-<p>All of the server&#39;s settings listed below may be changed using <a href="#jxcore_messaging_setconfig_key_value"><code>setConfig()</code></a> method.
+<p>All of the server&#39;s settings listed below may be changed using <code>setConfig()</code> method.
 
 </p>
 <h3>chunked<span><a class="mark" href="#jxcore_messaging_chunked" id="jxcore_messaging_chunked">#</a></span></h3>
@@ -207,7 +207,7 @@ Thread#0 HTTP  -&gt; http://192.168.1.11:8000/test</code></pre>
 <p>When this option is set to <code>false</code> (and it is by default), the client&#39;s methods <code>Subscribe()</code> and <code>Unsubscribe()</code> are disabled.
 They still exist in client&#39;s API, but invoking them will have no effect, since the calls will be ignored on the server-side.
 Client&#39;s are still able to send messages to the groups, but since they cannot subscribe o them, it should be done by the server.
-See server-side methods <a href="#jxcore_messaging_subscribeclient_env_groupname"><code>subscribeClient()</code></a> and <a href="#jxcore_messaging_unsubscribeclient_env_groupname"><code>unSubscribeClient()</code></a>.
+See server-side methods <code>subscribeClient()</code> and <code>unSubscribeClient()</code>.
 
 </p>
 <h3>encoding<span><a class="mark" href="#jxcore_messaging_encoding" id="jxcore_messaging_encoding">#</a></span></h3>
@@ -337,7 +337,7 @@ If no listener is attached to this event, user unsubscribes always.
 <p>Attaching to this event gives you control, whether to allow the user to be unsubscribed or not.
 
 </p>
-<p>See also: <a href="#jxcore_messaging_event_subscribe">Event: &#39;subscribe&#39;</a>
+<p>See also <a href="#jxcore_messaging_subscribe">Event: &#39;subscribe&#39;</a>
 
 </p>
 <h3>sendToGroup<span><a class="mark" href="#jxcore_messaging_sendtogroup" id="jxcore_messaging_sendtogroup">#</a></span></h3>
@@ -379,8 +379,8 @@ If no listener is attached to this event, messages are always sent.
 <h2>Object: env<span><a class="mark" href="#jxcore_messaging_object_env" id="jxcore_messaging_object_env">#</a></span></h2>
 <div class="signature"><ul>
 <li><code>ClientId</code> <span class="type">String</span></li>
-<li>&#39;ApplicationName` <span class="type">String</span></li>
-<li>&#39;SessionID` <span class="type">String</span></li>
+<li><code>ApplicationName</code> <span class="type">String</span></li>
+<li><code>SessionID</code> <span class="type">String</span></li>
 <li><code>Index</code> <span class="type">number</span></li>
 </div></ul>
 <p>This object is passed to some of the methods described in this document. It contains information about a call made from a client&#39;s side.

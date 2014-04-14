@@ -63,7 +63,7 @@
           <div id="apicontent">
             <h1>Internal Recovery<span><a class="mark" href="#jxcore_feature_internal_recovery_internal_recovery" id="jxcore_feature_internal_recovery_internal_recovery">#</a></span></h1>
 <p>In addition to recovering of crashed applications&#39; processes by external <a href="jxcore-command-monitor.html">monitoring process</a>,
-JXcore also provides automatic Internal Process Recovery as well as Internal Thread Recovery (for code running in multithreaded mode).
+JXcore also provides automatic Internal Process Recovery as well as Internal Thread Recovery (for code running in multi-threaded mode).
 
 </p>
 <h2>Internal Process Recovery<span><a class="mark" href="#jxcore_feature_internal_recovery_internal_process_recovery" id="jxcore_feature_internal_recovery_internal_process_recovery">#</a></span></h2>
@@ -131,7 +131,7 @@ We do this in order to prevent circular recoveries.
 });
 
 
-// JXcore does not autorestart application if it dies under 5000 ms
+// JXcore does not auto-restart application if it dies under 5000 ms
 setTimeout(function () {
     throw &quot;&quot;;
 }, 5200);</code></pre>
@@ -167,7 +167,8 @@ Also this is a good opportunity to save some data used by this thread, because a
 Any tasks, that you want to perform, like saving some thread&#39;s data (objects, variables etc) into database or even shared memory store, must be done before calling <code>restartCallback</code>.
 
 </p>
-<p>In the example below we are throwing an exception, which causes <code>restart</code> event to be fired. Also we are counting how many times thread was restarted, and based on that we decide if to allow for another restart or not.
+<p>In the example below we are throwing an exception, which causes <code>restart</code> event to be fired.
+Also we are counting how many times thread was restarted, and based on that we decide if to allow for another restart or not.
 
 </p>
 <p>The code should be run with mt-keep parameter:
@@ -218,7 +219,7 @@ setTimeout(function () {
 so they could interfere with each other leading to unexpected behaviour. For example, the application could be respawned into multiple instances, or fall into uncontrolled loop of restarting.
 
 </p>
-<p>On the other hand, when your application is running in multithreaded mode, you can still use Internal Thread Recovery
+<p>On the other hand, when your application is running in multi-threaded mode, you can still use Internal Thread Recovery
 (which allows to restart crashed threads, not the application&#39;s process) together with Process Monitor.
 </p>
 

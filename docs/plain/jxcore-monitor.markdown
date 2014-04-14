@@ -50,7 +50,7 @@ There are few things to be explained here:
 
 1. The `start_delay` (see [Config file](jxcore-command-monitor.markdown#config-file)) parameter is engaged.
 It waits for defined amount of time before really subscribing to the monitor.
-In this particular example, because the application ends before `start_delay` ellapses - it does not perform subscription for being monitored.
+In this particular example, because the application ends before `start_delay` elapses - it does not perform subscription for being monitored.
 
 2. Having said that, we can conclude, that there is no point to monitor such an application which is not designed for constant running.
 If purpose of that application is to just run a task and exit - the monitor unnecessarily would respawn it again and again.

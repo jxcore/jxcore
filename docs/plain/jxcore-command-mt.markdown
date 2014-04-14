@@ -3,7 +3,7 @@
 
 Generally, there are two ways of executing your JavaScript code in multiple threads with JXcore.
 You can read about both of them here: [How to run multithreaded code?](jxcore-feature-multithreading.markdown#how-to-run-multithreaded-code),
-but right now we will focus only on running multithreaded code from the command line.
+but right now we will focus only on running multi-threaded code from the command line.
 
 ## Commands
 
@@ -44,7 +44,8 @@ the process will not last for 20 seconds, because it will end after the last lin
 
 To keep the process alive and waiting for any delayed tasks, you have two options:
 
-1) call [`process.keepAlive()`](jxcore-process.markdown#jxcore-process-process-keepalive-timeout) in the code above (but then at some point also [`process.release()`](jxcore-process.markdown#jxcore-process-process-release) if you want to release the application's process), like:
+1) call [`process.keepAlive()`](jxcore-process.markdown#jxcore-process-process-keepalive-timeout) in the code above
+(but then at some point also [`process.release()`](jxcore-process.markdown#jxcore-process-process-release) if you want to release the application's process), like:
 
 ```js
 process.keepAlive();

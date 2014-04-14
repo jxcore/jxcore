@@ -1,7 +1,7 @@
 # Internal Recovery
 
 In addition to recovering of crashed applications' processes by external [monitoring process](jxcore-command-monitor.markdown),
-JXcore also provides automatic Internal Process Recovery as well as Internal Thread Recovery (for code running in multithreaded mode).
+JXcore also provides automatic Internal Process Recovery as well as Internal Thread Recovery (for code running in multi-threaded mode).
 
 ## Internal Process Recovery
 
@@ -62,7 +62,7 @@ process.on('restart', function (restartCallback, newExitCode) {
 });
 
 
-// JXcore does not autorestart application if it dies under 5000 ms
+// JXcore does not auto-restart application if it dies under 5000 ms
 setTimeout(function () {
     throw "";
 }, 5200);
@@ -97,7 +97,8 @@ Argument for the callback:
 This is a function, which should be invoked if you want to allow for thread recovery. If you will not call it, the thread will die but not restart.
 Any tasks, that you want to perform, like saving some thread's data (objects, variables etc) into database or even shared memory store, must be done before calling `restartCallback`.
 
-In the example below we are throwing an exception, which causes `restart` event to be fired. Also we are counting how many times thread was restarted, and based on that we decide if to allow for another restart or not.
+In the example below we are throwing an exception, which causes `restart` event to be fired.
+Also we are counting how many times thread was restarted, and based on that we decide if to allow for another restart or not.
 
 The code should be run with mt-keep parameter:
 
@@ -148,5 +149,5 @@ Please note, that when any listener is attached to `process.on("uncaughtExceptio
 Process Monitor and Internal Process Recovery should not be used simultaneously. Both of them perform restart of the application's process,
 so they could interfere with each other leading to unexpected behaviour. For example, the application could be respawned into multiple instances, or fall into uncontrolled loop of restarting.
 
-On the other hand, when your application is running in multithreaded mode, you can still use Internal Thread Recovery
+On the other hand, when your application is running in multi-threaded mode, you can still use Internal Thread Recovery
 (which allows to restart crashed threads, not the application's process) together with Process Monitor.

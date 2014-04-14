@@ -15,7 +15,9 @@ You can download a package as a single jx file and it is ready to be `required()
 Downloads npm package specified by `name_of_the_package`. If this package exists in JXcore repository, it will be downloaded as single .jx file.
 Otherwise the nmp tool will be employed to install required package as a regular npm module.
 
-`-g` - enables global installation, the same as npm tool does. In fact, this switch is available only for npm packages: even if the package would be available on JXcore repository, it will not be installed when you use `-g` switch. Instead the package will be installed from the npm repository.
+`-g` - enables global installation, the same as npm tool does. In fact, this switch is available only for npm packages:
+even if the package would be available on JXcore repository, it will not be installed when you use `-g` switch.
+Instead the package will be installed from the npm repository.
 
 Let’s discuss the following example: we would like to install the [express](https://github.com/visionmedia/express) module.
 
@@ -32,7 +34,8 @@ In case if you would like to install different `version` of this package, you ca
 
     > jx install express@3.3.3
 
-Since this version (3.3.3) is not present in JXcore repository, the command will first download *npm.jx* file (which is in fact the npm tool packed into the jx file), and will try to use it to download the required version of the express package.
+Since this version (3.3.3) is not present in JXcore repository, the command will first download *npm.jx* file
+(which is in fact the npm tool packed into the jx file), and will try to use it to download the required version of the express package.
 Now you can use it like any other npm module:
 
 ```js

@@ -1,6 +1,6 @@
 # Process
 
-This API is a collection of JXcore methods and properties for accessing from both mainthread and a subthread.
+This API is a collection of JXcore methods and properties for accessing from both main thread and a subthread.
 
 All of the methods described here are accessible from global `process` object, for example:
 
@@ -28,7 +28,8 @@ But if you would use in the task code e.g. delayed execution with `setTimeout()`
 the task method may return faster, before those delayed/async jobs will have chance to complete.
 This is a moment, when `keepAlive()` comes in handy. Later in the code, you can call `release()` to signal the main thread, that the task has completed.
 
-The `timeout` parameter specifies, how many milliseconds the task should be kept alive, before automatic release will happen. This parameter is optional, and if you don’t provide it, task will be alive forever, or until `process.release()` will be called.
+The `timeout` parameter specifies, how many milliseconds the task should be kept alive, before automatic release will happen.
+This parameter is optional, and if you don’t provide it, task will be alive forever, or until `process.release()` will be called.
 
 ```js
 var method = function (obj) {
@@ -60,7 +61,8 @@ When that counter is zero - the main process may exit now.
 
 > This method is implemented only in the subthread context. When called from a main thread it does nothing.
 
-Unmarks the current task (from which the method was called) from being alive. You can use this method to inform the thread pool, that the task finished its work. If you will do this for all of the tasks, the main thread could freely exit then, and the application may close itself naturally with exit code = 0.
+Unmarks the current task (from which the method was called) from being alive. You can use this method to inform the thread pool, that the task finished its work.
+If you will do this for all of the tasks, the main thread could freely exit then, and the application may close itself naturally with exit code = 0.
 
 Please refer to `process.keepAlive()` method for full example.
 

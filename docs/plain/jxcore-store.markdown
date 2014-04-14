@@ -6,7 +6,7 @@ It’s implementation is based on Google’s cpp-btree library, hence benefits f
 
 The major performance benefit from Memory Store is very high access speed (even for large containers) and low memory foot-print.
 Indeed, the best news is, that Memory Store is kept outside V8′s heap memory space.
-As a result it doesn’t fall under it’s limitations (similar to Multithreaded isolates).
+As a result it doesn't fall under it's limitations (similar to Multithreaded isolates).
 Keeping V8 away from high memory pressure also results in more responsive application since the unexpected garbage collection may keep the application blocked several seconds.
 
 The Memory Store works like a standard key/value store. It is available for both main and sub threads and also as a separate or shared object.
@@ -20,7 +20,7 @@ The Memory store is a global object and can be used anywhere:
 var store = jxcore.store;
 ```
 
-or for multithreaded access:
+or for multi-threaded access:
 
 ```js
 var shared = jxcore.store.shared;
@@ -30,7 +30,7 @@ var shared = jxcore.store.shared;
 
 ## jxcore.store
 
-When used in multithreading, every subthread has it’s own `jxcore.store` object.
+When used in multi-threading, every subthread has it’s own `jxcore.store` object.
 It can be considered as a static global per store context, which means, that threads cannot share the same `jxcore.store` among themselves.
 But all of the tasks running inside a particular thread have shared access to it.
 
@@ -71,7 +71,7 @@ console.log("value for key1:", jxcore.store.get("key1"));
 
 * `key` {String}
 
-Reads element for specific key and returns its value as a string. This method doesn’t remove the element from the store.
+Reads element for specific key and returns its value as a string. This method doesn't remove the element from the store.
 If the key is found, the method returns its value, otherwise returns `undefined`.
 
 ```js
@@ -125,7 +125,7 @@ First of all, access time may take little longer comparing to the single threade
 which modify content of the data store (`set()`, `remove()` and `get()` – the last one also removes the item).
 Also, when different threads are simultaneously writing/modifying value of the same key, the final stored value is the one that is updated last.
 
-Thread-safe `jxcore.store.shared` has exactly the same methods as single threaded `jxcore.store`, but also implements some other members, specific for multithreading.
+Thread-safe `jxcore.store.shared` has exactly the same methods as single threaded `jxcore.store`, but also implements some other members, specific for multi-threading.
 
 ### store.shared.exists(key, element)
 

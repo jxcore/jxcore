@@ -78,7 +78,9 @@ You can download a package as a single jx file and it is ready to be <code>requi
 Otherwise the nmp tool will be employed to install required package as a regular npm module.
 
 </p>
-<p><code>-g</code> - enables global installation, the same as npm tool does. In fact, this switch is available only for npm packages: even if the package would be available on JXcore repository, it will not be installed when you use <code>-g</code> switch. Instead the package will be installed from the npm repository.
+<p><code>-g</code> - enables global installation, the same as npm tool does. In fact, this switch is available only for npm packages:
+even if the package would be available on JXcore repository, it will not be installed when you use <code>-g</code> switch.
+Instead the package will be installed from the npm repository.
 
 </p>
 <p>Let’s discuss the following example: we would like to install the <a href="https://github.com/visionmedia/express">express</a> module.
@@ -94,7 +96,8 @@ Now this package is ready to be used inside of your application:
 
 </p>
 <pre><code>&gt; jx install express@3.3.3</code></pre>
-<p>Since this version (3.3.3) is not present in JXcore repository, the command will first download <em>npm.jx</em> file (which is in fact the npm tool packed into the jx file), and will try to use it to download the required version of the express package.
+<p>Since this version (3.3.3) is not present in JXcore repository, the command will first download <em>npm.jx</em> file
+(which is in fact the npm tool packed into the jx file), and will try to use it to download the required version of the express package.
 Now you can use it like any other npm module:
 
 </p>

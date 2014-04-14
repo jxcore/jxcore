@@ -66,7 +66,7 @@
             <h1>Multithreading from the command line<span><a class="mark" href="#jxcore_command_mt_multithreading_from_the_command_line" id="jxcore_command_mt_multithreading_from_the_command_line">#</a></span></h1>
 <p>Generally, there are two ways of executing your JavaScript code in multiple threads with JXcore.
 You can read about both of them here: <a href="jxcore-feature-multithreading.html#jxcore_feature_multithreading_how_to_run_multithreaded_code">How to run multithreaded code?</a>,
-but right now we will focus only on running multithreaded code from the command line.
+but right now we will focus only on running multi-threaded code from the command line.
 
 </p>
 <h2>Commands<span><a class="mark" href="#jxcore_command_mt_commands" id="jxcore_command_mt_commands">#</a></span></h2>
@@ -108,7 +108,8 @@ console.log(&quot;I&#39;m here immediately.&quot;);</code></pre>
 <p>To keep the process alive and waiting for any delayed tasks, you have two options:
 
 </p>
-<p>1) call <a href="jxcore-process.html#jxcore_process_process_keepalive_timeout"><code>process.keepAlive()</code></a> in the code above (but then at some point also <a href="jxcore-process.html#jxcore_process_process_release"><code>process.release()</code></a> if you want to release the application&#39;s process), like:
+<p>1) call <a href="jxcore-process.html#jxcore_process_process_keepalive_timeout"><code>process.keepAlive()</code></a> in the code above
+(but then at some point also <a href="jxcore-process.html#jxcore_process_process_release"><code>process.release()</code></a> if you want to release the application&#39;s process), like:
 
 </p>
 <pre><code class="js">process.keepAlive();

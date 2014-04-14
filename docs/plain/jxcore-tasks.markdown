@@ -33,7 +33,7 @@ Note that this particular example does nothing but running hello.js file in mult
 
     > jx mt:keep hello.js
 
-We have written a blog post showing How to turn your existing application into a multithreaded one with a few lines of code.
+We have written a blog post showing How to turn your existing application into a multi-threaded one with a few lines of code.
 
 See also general description of JXcore [multithreading](jxcore-feature-multithreading.markdown).
 

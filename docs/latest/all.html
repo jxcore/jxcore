@@ -15119,7 +15119,9 @@ You can download a package as a single jx file and it is ready to be <code>requi
 Otherwise the nmp tool will be employed to install required package as a regular npm module.
 
 </p>
-<p><code>-g</code> - enables global installation, the same as npm tool does. In fact, this switch is available only for npm packages: even if the package would be available on JXcore repository, it will not be installed when you use <code>-g</code> switch. Instead the package will be installed from the npm repository.
+<p><code>-g</code> - enables global installation, the same as npm tool does. In fact, this switch is available only for npm packages:
+even if the package would be available on JXcore repository, it will not be installed when you use <code>-g</code> switch.
+Instead the package will be installed from the npm repository.
 
 </p>
 <p>Let’s discuss the following example: we would like to install the <a href="https://github.com/visionmedia/express">express</a> module.
@@ -15135,7 +15137,8 @@ Now this package is ready to be used inside of your application:
 
 </p>
 <pre><code>&gt; jx install express@3.3.3</code></pre>
-<p>Since this version (3.3.3) is not present in JXcore repository, the command will first download <em>npm.jx</em> file (which is in fact the npm tool packed into the jx file), and will try to use it to download the required version of the express package.
+<p>Since this version (3.3.3) is not present in JXcore repository, the command will first download <em>npm.jx</em> file
+(which is in fact the npm tool packed into the jx file), and will try to use it to download the required version of the express package.
 Now you can use it like any other npm module:
 
 </p>
@@ -15236,7 +15239,7 @@ You can use some predefined tags inside the log_path. Supported tags are [WEEKOF
 <h1>Multithreading from the command line<span><a class="mark" href="#all_multithreading_from_the_command_line" id="all_multithreading_from_the_command_line">#</a></span></h1>
 <p>Generally, there are two ways of executing your JavaScript code in multiple threads with JXcore.
 You can read about both of them here: <a href="jxcore-feature-multithreading.html#jxcore_feature_multithreading_how_to_run_multithreaded_code">How to run multithreaded code?</a>,
-but right now we will focus only on running multithreaded code from the command line.
+but right now we will focus only on running multi-threaded code from the command line.
 
 </p>
 <h2>Commands<span><a class="mark" href="#all_commands_1" id="all_commands_1">#</a></span></h2>
@@ -15278,7 +15281,8 @@ console.log(&quot;I&#39;m here immediately.&quot;);</code></pre>
 <p>To keep the process alive and waiting for any delayed tasks, you have two options:
 
 </p>
-<p>1) call <a href="jxcore-process.html#jxcore_process_process_keepalive_timeout"><code>process.keepAlive()</code></a> in the code above (but then at some point also <a href="jxcore-process.html#jxcore_process_process_release"><code>process.release()</code></a> if you want to release the application&#39;s process), like:
+<p>1) call <a href="jxcore-process.html#jxcore_process_process_keepalive_timeout"><code>process.keepAlive()</code></a> in the code above
+(but then at some point also <a href="jxcore-process.html#jxcore_process_process_release"><code>process.release()</code></a> if you want to release the application&#39;s process), like:
 
 </p>
 <pre><code class="js">process.keepAlive();
@@ -15326,7 +15330,7 @@ console.log(&quot;I&#39;m here immediately. ThreadID: &quot; + process.threadId)
 </p>
 <h1>Internal Recovery<span><a class="mark" href="#all_internal_recovery" id="all_internal_recovery">#</a></span></h1>
 <p>In addition to recovering of crashed applications&#39; processes by external <a href="jxcore-command-monitor.html">monitoring process</a>,
-JXcore also provides automatic Internal Process Recovery as well as Internal Thread Recovery (for code running in multithreaded mode).
+JXcore also provides automatic Internal Process Recovery as well as Internal Thread Recovery (for code running in multi-threaded mode).
 
 </p>
 <h2>Internal Process Recovery<span><a class="mark" href="#all_internal_process_recovery" id="all_internal_process_recovery">#</a></span></h2>
@@ -15394,7 +15398,7 @@ We do this in order to prevent circular recoveries.
 });
 
 
-// JXcore does not autorestart application if it dies under 5000 ms
+// JXcore does not auto-restart application if it dies under 5000 ms
 setTimeout(function () {
     throw &quot;&quot;;
 }, 5200);</code></pre>
@@ -15430,7 +15434,8 @@ Also this is a good opportunity to save some data used by this thread, because a
 Any tasks, that you want to perform, like saving some thread&#39;s data (objects, variables etc) into database or even shared memory store, must be done before calling <code>restartCallback</code>.
 
 </p>
-<p>In the example below we are throwing an exception, which causes <code>restart</code> event to be fired. Also we are counting how many times thread was restarted, and based on that we decide if to allow for another restart or not.
+<p>In the example below we are throwing an exception, which causes <code>restart</code> event to be fired.
+Also we are counting how many times thread was restarted, and based on that we decide if to allow for another restart or not.
 
 </p>
 <p>The code should be run with mt-keep parameter:
@@ -15481,7 +15486,7 @@ setTimeout(function () {
 so they could interfere with each other leading to unexpected behaviour. For example, the application could be respawned into multiple instances, or fall into uncontrolled loop of restarting.
 
 </p>
-<p>On the other hand, when your application is running in multithreaded mode, you can still use Internal Thread Recovery
+<p>On the other hand, when your application is running in multi-threaded mode, you can still use Internal Thread Recovery
 (which allows to restart crashed threads, not the application&#39;s process) together with Process Monitor.
 
 </p>
@@ -15854,7 +15859,7 @@ When a license or readme file is specified, it can be also displayed in a consol
 </p>
 <h1>API Server<span><a class="mark" href="#all_api_server" id="all_api_server">#</a></span></h1>
 <h2>Configuration<span><a class="mark" href="#all_configuration" id="all_configuration">#</a></span></h2>
-<p>All of the server&#39;s settings listed below may be changed using <a href="#jxcore_messaging_setconfig_key_value"><code>setConfig()</code></a> method.
+<p>All of the server&#39;s settings listed below may be changed using <code>setConfig()</code> method.
 
 </p>
 <h3>chunked<span><a class="mark" href="#all_chunked" id="all_chunked">#</a></span></h3>
@@ -15912,7 +15917,7 @@ Thread#0 HTTP  -&gt; http://192.168.1.11:8000/test</code></pre>
 <p>When this option is set to <code>false</code> (and it is by default), the client&#39;s methods <code>Subscribe()</code> and <code>Unsubscribe()</code> are disabled.
 They still exist in client&#39;s API, but invoking them will have no effect, since the calls will be ignored on the server-side.
 Client&#39;s are still able to send messages to the groups, but since they cannot subscribe o them, it should be done by the server.
-See server-side methods <a href="#jxcore_messaging_subscribeclient_env_groupname"><code>subscribeClient()</code></a> and <a href="#jxcore_messaging_unsubscribeclient_env_groupname"><code>unSubscribeClient()</code></a>.
+See server-side methods <code>subscribeClient()</code> and <code>unSubscribeClient()</code>.
 
 </p>
 <h3>encoding<span><a class="mark" href="#all_encoding" id="all_encoding">#</a></span></h3>
@@ -16042,7 +16047,7 @@ If no listener is attached to this event, user unsubscribes always.
 <p>Attaching to this event gives you control, whether to allow the user to be unsubscribed or not.
 
 </p>
-<p>See also: <a href="#jxcore_messaging_event_subscribe">Event: &#39;subscribe&#39;</a>
+<p>See also <a href="#jxcore_messaging_subscribe">Event: &#39;subscribe&#39;</a>
 
 </p>
 <h3>sendToGroup<span><a class="mark" href="#all_sendtogroup" id="all_sendtogroup">#</a></span></h3>
@@ -16084,8 +16089,8 @@ If no listener is attached to this event, messages are always sent.
 <h2>Object: env<span><a class="mark" href="#all_object_env" id="all_object_env">#</a></span></h2>
 <div class="signature"><ul>
 <li><code>ClientId</code> <span class="type">String</span></li>
-<li>&#39;ApplicationName` <span class="type">String</span></li>
-<li>&#39;SessionID` <span class="type">String</span></li>
+<li><code>ApplicationName</code> <span class="type">String</span></li>
+<li><code>SessionID</code> <span class="type">String</span></li>
 <li><code>Index</code> <span class="type">number</span></li>
 </div></ul>
 <p>This object is passed to some of the methods described in this document. It contains information about a call made from a client&#39;s side.
@@ -16860,7 +16865,7 @@ There are few things to be explained here:
 <ol>
 <li><p>The <code>start_delay</code> (see <a href="jxcore-command-monitor.html#jxcore_command_monitor_config_file">Config file</a>) parameter is engaged.
 It waits for defined amount of time before really subscribing to the monitor.
-In this particular example, because the application ends before <code>start_delay</code> ellapses - it does not perform subscription for being monitored.</p>
+In this particular example, because the application ends before <code>start_delay</code> elapses - it does not perform subscription for being monitored.</p>
 </li>
 <li><p>Having said that, we can conclude, that there is no point to monitor such an application which is not designed for constant running.
 If purpose of that application is to just run a task and exit - the monitor unnecessarily would respawn it again and again.</p>
@@ -16893,7 +16898,7 @@ If purpose of that application is to just run a task and exit - the monitor unne
 </p>
 <p>The major performance benefit from Memory Store is very high access speed (even for large containers) and low memory foot-print.
 Indeed, the best news is, that Memory Store is kept outside V8′s heap memory space.
-As a result it doesn’t fall under it’s limitations (similar to Multithreaded isolates).
+As a result it doesn&#39;t fall under it&#39;s limitations (similar to Multithreaded isolates).
 Keeping V8 away from high memory pressure also results in more responsive application since the unexpected garbage collection may keep the application blocked several seconds.
 
 </p>
@@ -16908,13 +16913,13 @@ The <code>element</code> also should be a string type, but you can use a number 
 
 </p>
 <pre><code class="js">var store = jxcore.store;</code></pre>
-<p>or for multithreaded access:
+<p>or for multi-threaded access:
 
 </p>
 <pre><code class="js">var shared = jxcore.store.shared;</code></pre>
 <h1>API<span><a class="mark" href="#all_api_3" id="all_api_3">#</a></span></h1>
 <h2>jxcore.store<span><a class="mark" href="#all_jxcore_store" id="all_jxcore_store">#</a></span></h2>
-<p>When used in multithreading, every subthread has it’s own <code>jxcore.store</code> object.
+<p>When used in multi-threading, every subthread has it’s own <code>jxcore.store</code> object.
 It can be considered as a static global per store context, which means, that threads cannot share the same <code>jxcore.store</code> among themselves.
 But all of the tasks running inside a particular thread have shared access to it.
 
@@ -16952,7 +16957,7 @@ console.log(&quot;value for key1:&quot;, jxcore.store.get(&quot;key1&quot;));</c
 <div class="signature"><ul>
 <li><code>key</code> <span class="type">String</span></li>
 </div></ul>
-<p>Reads element for specific key and returns its value as a string. This method doesn’t remove the element from the store.
+<p>Reads element for specific key and returns its value as a string. This method doesn&#39;t remove the element from the store.
 If the key is found, the method returns its value, otherwise returns <code>undefined</code>.
 
 </p>
@@ -17000,7 +17005,7 @@ which modify content of the data store (<code>set()</code>, <code>remove()</code
 Also, when different threads are simultaneously writing/modifying value of the same key, the final stored value is the one that is updated last.
 
 </p>
-<p>Thread-safe <code>jxcore.store.shared</code> has exactly the same methods as single threaded <code>jxcore.store</code>, but also implements some other members, specific for multithreading.
+<p>Thread-safe <code>jxcore.store.shared</code> has exactly the same methods as single threaded <code>jxcore.store</code>, but also implements some other members, specific for multi-threading.
 
 </p>
 <h3>store.shared.exists(key, element)<span><a class="mark" href="#all_store_shared_exists_key_element" id="all_store_shared_exists_key_element">#</a></span></h3>
@@ -17183,7 +17188,7 @@ jxcore.tasks.runOnce(method);</code></pre>
 
 </p>
 <pre><code>&gt; jx mt:keep hello.js</code></pre>
-<p>We have written a blog post showing How to turn your existing application into a multithreaded one with a few lines of code.
+<p>We have written a blog post showing How to turn your existing application into a multi-threaded one with a few lines of code.
 
 </p>
 <p>See also general description of JXcore <a href="jxcore-feature-multithreading.html">multithreading</a>.

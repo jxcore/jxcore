@@ -91,7 +91,7 @@
 </p>
 <p>The major performance benefit from Memory Store is very high access speed (even for large containers) and low memory foot-print.
 Indeed, the best news is, that Memory Store is kept outside V8′s heap memory space.
-As a result it doesn’t fall under it’s limitations (similar to Multithreaded isolates).
+As a result it doesn&#39;t fall under it&#39;s limitations (similar to Multithreaded isolates).
 Keeping V8 away from high memory pressure also results in more responsive application since the unexpected garbage collection may keep the application blocked several seconds.
 
 </p>
@@ -106,13 +106,13 @@ The <code>element</code> also should be a string type, but you can use a number 
 
 </p>
 <pre><code class="js">var store = jxcore.store;</code></pre>
-<p>or for multithreaded access:
+<p>or for multi-threaded access:
 
 </p>
 <pre><code class="js">var shared = jxcore.store.shared;</code></pre>
 <h1>API<span><a class="mark" href="#jxcore_store_api" id="jxcore_store_api">#</a></span></h1>
 <h2>jxcore.store<span><a class="mark" href="#jxcore_store_jxcore_store" id="jxcore_store_jxcore_store">#</a></span></h2>
-<p>When used in multithreading, every subthread has it’s own <code>jxcore.store</code> object.
+<p>When used in multi-threading, every subthread has it’s own <code>jxcore.store</code> object.
 It can be considered as a static global per store context, which means, that threads cannot share the same <code>jxcore.store</code> among themselves.
 But all of the tasks running inside a particular thread have shared access to it.
 
@@ -150,7 +150,7 @@ console.log(&quot;value for key1:&quot;, jxcore.store.get(&quot;key1&quot;));</c
 <div class="signature"><ul>
 <li><code>key</code> <span class="type">String</span></li>
 </div></ul>
-<p>Reads element for specific key and returns its value as a string. This method doesn’t remove the element from the store.
+<p>Reads element for specific key and returns its value as a string. This method doesn&#39;t remove the element from the store.
 If the key is found, the method returns its value, otherwise returns <code>undefined</code>.
 
 </p>
@@ -198,7 +198,7 @@ which modify content of the data store (<code>set()</code>, <code>remove()</code
 Also, when different threads are simultaneously writing/modifying value of the same key, the final stored value is the one that is updated last.
 
 </p>
-<p>Thread-safe <code>jxcore.store.shared</code> has exactly the same methods as single threaded <code>jxcore.store</code>, but also implements some other members, specific for multithreading.
+<p>Thread-safe <code>jxcore.store.shared</code> has exactly the same methods as single threaded <code>jxcore.store</code>, but also implements some other members, specific for multi-threading.
 
 </p>
 <h3>store.shared.exists(key, element)<span><a class="mark" href="#jxcore_store_store_shared_exists_key_element" id="jxcore_store_store_shared_exists_key_element">#</a></span></h3>
