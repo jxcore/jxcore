@@ -10034,7 +10034,7 @@
             {
               "textRaw": "message.socket",
               "name": "socket",
-              "desc": "<p>The <code>net.Socket</code> object associated with the connection.\n\n</p>\n<p>With HTTPS support, use request.connection.verifyPeer() and\nrequest.connection.getPeerCertificate() to obtain the client&#39;s\nauthentication details.\n\n\n</p>\n"
+              "desc": "<p>The <code>net.Socket</code> object associated with the connection.\n\n</p>\n<p>With HTTPS support, use request.connection.verifyPeer() and\nrequest.connection.getPeerCertificate() to obtain the client&#39;s\nauthentication details.\n\n</p>\n"
             }
           ],
           "methods": [
@@ -10071,6 +10071,11 @@
               "desc": "<p>Calls <code>message.connection.setTimeout(msecs, callback)</code>.\n\n</p>\n"
             }
           ]
+        },
+        {
+          "textRaw": "http.setMaxHeaderLength",
+          "name": "setMaxHeaderLength",
+          "desc": "<p>Sets the maximum header length for the HTTP as well as HTTPS requests (see <code>http.IncomingMessage.headers</code>).\nThe default value is 32768.\nYou can also disable the limit check by setting value 0.\n\n</p>\n<p>This option is introduced in JXcore for security reasons.\n\n\n</p>\n"
         }
       ],
       "methods": [
@@ -13700,16 +13705,9 @@
         {
           "textRaw": "Description",
           "name": "description",
-          "desc": "<p>Asynchronous, non-blocking <a href=\"http://sqlite.org/\">SQLite3</a> bindings for JXcore and Node.js.\n\n</p>\n",
+          "desc": "<p>Asynchronous, non-blocking SQLite3 bindings for JXcore and Node.js.\n\n</p>\n<p>Besides SQLite3 module, JXcore also has SQLite 3.8.4.3 engine with FTS3, FTS4 embedded.\n\n</p>\n",
           "type": "module",
           "displayName": "Description"
-        },
-        {
-          "textRaw": "Depends",
-          "name": "depends",
-          "desc": "<p>Binaries for most Node versions and platforms are provided by default via <a href=\"https://github.com/springmeyer/node-pre-gyp\">node-pre-gyp</a>.\n\n</p>\n<p>Also works with <a href=\"https://github.com/rogerwang/node-webkit\">node-webkit</a> and sqlcipher.\n\n</p>\n",
-          "type": "module",
-          "displayName": "Depends"
         }
       ],
       "type": "module",
@@ -13718,23 +13716,9 @@
     {
       "textRaw": "Usage",
       "name": "usage",
-      "desc": "<pre><code class=\"js\">var sqlite3 = require(&#39;sqlite3&#39;).verbose();\nvar db = new sqlite3.Database(&#39;:memory:&#39;);\n\ndb.serialize(function() {\n  db.run(&quot;CREATE TABLE lorem (info TEXT)&quot;);\n\n  var stmt = db.prepare(&quot;INSERT INTO lorem VALUES (?)&quot;);\n  for (var i = 0; i &lt; 10; i++) {\n      stmt.run(&quot;Ipsum &quot; + i);\n  }\n  stmt.finalize();\n\n  db.each(&quot;SELECT rowid AS id, info FROM lorem&quot;, function(err, row) {\n      console.log(row.id + &quot;: &quot; + row.info);\n  });\n});\n\ndb.close();</code></pre>\n",
+      "desc": "<pre><code class=\"js\">var sqlite3 = require(&#39;sqlite3&#39;).verbose();\nvar db = new sqlite3.Database(&#39;:memory:&#39;);\n\ndb.serialize(function() {\n  db.run(&quot;CREATE TABLE lorem (info TEXT)&quot;);\n\n  var stmt = db.prepare(&quot;INSERT INTO lorem VALUES (?)&quot;);\n  for (var i = 0; i &lt; 10; i++) {\n      stmt.run(&quot;Ipsum &quot; + i);\n  }\n  stmt.finalize();\n\n  db.each(&quot;SELECT rowid AS id, info FROM lorem&quot;, function(err, row) {\n      console.log(row.id + &quot;: &quot; + row.info);\n  });\n});\n\ndb.close();</code></pre>\n<p>FTS4 example:\n\n</p>\n<pre><code class=\"js\">var sqlite3 = require(&#39;sqlite3&#39;).verbose();\n\nvar db = new sqlite3.Database(&#39;:memory:&#39;);\n\ndb.serialize(function () {\n    db.run(&quot;CREATE VIRTUAL TABLE ftsTest USING fts4(content TEXT);&quot;);\n\n    var stmt = db.prepare(&quot;INSERT INTO ftsTest VALUES (?)&quot;);\n    for (var i = 1; i &lt; 100; i++) {\n        stmt.run(&quot;A Ipsum &quot; + i);\n    }\n    stmt.finalize();\n    console.log(&quot;virtual fts4 table is written&quot;);\n\n    console.log(&quot;\\nFirst 20 results:\\n&quot;);\n    var str = &quot;SELECT rowid AS id, content FROM ftsTest &quot; +\n              &quot;where content MATCH &#39;Ipsum&#39; LIMIT &quot; + 20;\n\n    db.all(str, function (err, rows) {\n        if (err) {\n            console.log(err + &quot;&quot;);\n        }\n        else {\n            rows.forEach(function (row) {\n                console.log(row.id + &quot;: &quot; + row.content);\n            });\n        }\n    });\n});</code></pre>\n",
       "type": "module",
       "displayName": "Usage"
-    },
-    {
-      "textRaw": "Features",
-      "name": "Features",
-      "desc": "<p>See the <a href=\"https://github.com/mapbox/node-sqlite3/wiki\">API documentation</a> in the wiki.\n\n</p>\n",
-      "type": "module",
-      "displayName": "API"
-    },
-    {
-      "textRaw": "API",
-      "name": "api",
-      "desc": "<p>See the <a href=\"https://github.com/mapbox/node-sqlite3/wiki\">API documentation</a> in the wiki.\n\n</p>\n",
-      "type": "module",
-      "displayName": "API"
     },
     {
       "textRaw": "Contributors",
@@ -14507,6 +14491,15 @@
               "desc": "<p>Hides body of a given <code>fn</code> function. It will remain invokable inside, but\n\n</p>\n<p>Let’s discuss it by the example. We’ll create <em>hide_test.js</em> file with the following code:\n\n</p>\n<pre><code class=\"js\">exports.myMethod = function (id1) {\n    return &quot;this is some function. It returns &quot; + id1;\n};</code></pre>\n<p>And compile it into JX package:\n\n</p>\n<pre><code>&gt; jx package hide_test.js &quot;HideTest&quot;</code></pre>\n<p>Now if we run it in the command window:\n\n</p>\n<pre><code>&gt; jx -e &#39;console.log(require(&quot;./hide_test.jx&quot;).myMethod.toString());&#39;</code></pre>\n<p>We’ll see the output:\n\n</p>\n<p><img src=\"http://jxcore.com/wp-content/uploads/2014/02/jx_hiding_body1.gif\" alt=\"\">\n\n</p>\n<p>As we can see, the whole content of <code>myMethod</code> is currently visible.\nBut we don’t want it, especially when we talk about code protection.\nFor this we implemented in JXcore mechanism to hide functions contents, but in the same time to have them still invokable.\n\n</p>\n<p>Just add the following line to the <em>hide_test.js</em>:\n\n</p>\n<pre><code class=\"js\">jxcore.utils.hideMethod(exports.myMethod);</code></pre>\n<p>and when you run the package again (after recompiling), the output will be different:\n\n</p>\n<p><img src=\"http://jxcore.com/wp-content/uploads/2014/02/jx_hiding_body2.gif\" alt=\"\">\n\n</p>\n<p>We can still call the method itself:\n\n</p>\n<pre><code>&gt; jx -e &#39;console.log(require(&quot;./hide_test.jx&quot;).myMethod(&quot;an arg&quot;));&#39;</code></pre>\n<p>and it displays regular function’s result:\n\n</p>\n<p><img src=\"http://jxcore.com/wp-content/uploads/2014/01/jx_hiding_body3.gif\" alt=\"\">\n\n</p>\n"
             }
           ],
+          "modules": [
+            {
+              "textRaw": "special comment",
+              "name": "special_comment",
+              "desc": "<p>As an alternative to <code>jxcore.utils.hideMethod()</code> you can also use a special comment <code>/*_jx_protected_*/</code> inside a function&#39;s body:\n\n</p>\n<pre><code class=\"js\">var func = function() {\n    /*_jx_protected_*/\n    console.log(&quot;hello&quot;);\n}</code></pre>\n<p>It can be placed anywhere, as far it is located between function&#39;s curly brackets.\n\n</p>\n",
+              "type": "module",
+              "displayName": "special comment"
+            }
+          ],
           "type": "module",
           "displayName": "Hiding body of functions"
         },
@@ -14569,7 +14562,7 @@
     {
       "textRaw": "Mesaging",
       "name": "mesaging",
-      "desc": "<p>Using JXcore Messaging API, your clients can easily communicate with the server (backend service) as well as with other clients.\n\n</p>\n<p>Simply create a custom method. It can be invoked either by any of the clients or by the server itself.\n\n</p>\n<p>If you want to create an online game, chat application, or any other project for multiple users – JXcore Messaging API is for you.\n\n</p>\n<p>There are some tutorials for using Messaging API available here: <a href=\"http://jxcore.com/messaging-api/#post-652\">My first JXcore Messaging API Server</a>.\n\n</p>\n",
+      "desc": "<p>Using JXcore Messaging, your clients can easily communicate with the server (backend service) as well as with other clients.\n\n</p>\n<p>Simply create a custom method. It can be invoked either by any of the clients or by the server itself.\n\n</p>\n<p>If you want to create an online game, chat application, or any other project for multiple users – JXcore Messaging is for you.\n\n</p>\n<p>There are some tutorials for using JXcore Messaging available here: <a href=\"http://jxcore.com/messaging-api/#cat-32\">Hello World</a>.\n\n</p>\n",
       "type": "module",
       "displayName": "Mesaging"
     },
@@ -14577,6 +14570,149 @@
       "textRaw": "API Server",
       "name": "api_server",
       "modules": [
+        {
+          "textRaw": "Configuration",
+          "name": "configuration",
+          "desc": "<p>All of the server&#39;s settings listed below may be changed using <a href=\"#jxcore_messaging_setconfig_key_value\"><code>setConfig()</code></a> method.\n\n</p>\n",
+          "modules": [
+            {
+              "textRaw": "chunked",
+              "name": "chunked",
+              "desc": "<p>Enables messaging server to send multiple messages at once to the client. This increases performance of JXcore Messaging.\nThere are some browser versions, however, which don&#39;t support this feature (for example IE below v8).\nIn this case, chunked mode is internally disabled, even if server&#39;s <code>chunked</code> option is set to <code>true</code>.\n\n</p>\n",
+              "type": "module",
+              "displayName": "chunked"
+            },
+            {
+              "textRaw": "collectorLatency",
+              "name": "collectorlatency",
+              "desc": "<p>Defines interval in milliseconds for pushing messages to the clients.\nEach message, that client has sent to the server or other clients is not processed immediately.\nInstead it is queued and processed together with other messages collected within <code>collectorLatency</code> period.\nThis way server stays more responsive, because doesn&#39;t have to deal with each message separately.\n\n</p>\n",
+              "type": "module",
+              "displayName": "collectorLatency"
+            },
+            {
+              "textRaw": "console",
+              "name": "console",
+              "desc": "<p>When enabled, displays log and error messages to the console output.\n\n</p>\n",
+              "type": "module",
+              "displayName": "console"
+            },
+            {
+              "textRaw": "consoleInfo",
+              "name": "consoleinfo",
+              "desc": "<p>When enabled, displays additional (informative) log messages to the console output.\n\n</p>\n",
+              "type": "module",
+              "displayName": "consoleInfo"
+            },
+            {
+              "textRaw": "consoleThreadNumber",
+              "name": "consolethreadnumber",
+              "desc": "<p>When JXcore Messaging server runs in multithreaded mode and this option is enabled, each of log and error messages displayed to the console\ncontains information about thread ID, from which the message comes.\n\n</p>\n<p>Example output:\n\n</p>\n<pre><code>Thread#1 JXcore Messaging v0.22\nThread#0 JXcore Messaging v0.22\nThread#1 HTTP  -&gt; http://192.168.1.11:8000/test\nThread#0 HTTP  -&gt; http://192.168.1.11:8000/test</code></pre>\n",
+              "type": "module",
+              "displayName": "consoleThreadNumber"
+            },
+            {
+              "textRaw": "enableClientSideSubscription",
+              "name": "enableclientsidesubscription",
+              "desc": "<p>When this option is set to <code>false</code> (and it is by default), the client&#39;s methods <code>Subscribe()</code> and <code>Unsubscribe()</code> are disabled.\nThey still exist in client&#39;s API, but invoking them will have no effect, since the calls will be ignored on the server-side.\nClient&#39;s are still able to send messages to the groups, but since they cannot subscribe o them, it should be done by the server.\nSee server-side methods <a href=\"#jxcore_messaging_subscribeclient_env_groupname\"><code>subscribeClient()</code></a> and <a href=\"#jxcore_messaging_unsubscribeclient_env_groupname\"><code>unSubscribeClient()</code></a>.\n\n</p>\n",
+              "type": "module",
+              "displayName": "enableClientSideSubscription"
+            },
+            {
+              "textRaw": "encoding",
+              "name": "encoding",
+              "desc": "<p>Defines encoding type of messages being sent both ways between server and client&#39;s.\n\n</p>\n",
+              "type": "module",
+              "displayName": "encoding"
+            },
+            {
+              "textRaw": "httpsCertLocation",
+              "name": "httpsCertLocation",
+              "desc": "<p>Those both options define locations for SSL certificate files. See also: <code>httpsServerPort</code> option.\n\n</p>\n",
+              "type": "module",
+              "displayName": "httpsKeyLocation"
+            },
+            {
+              "textRaw": "httpsKeyLocation",
+              "name": "httpskeylocation",
+              "desc": "<p>Those both options define locations for SSL certificate files. See also: <code>httpsServerPort</code> option.\n\n</p>\n",
+              "type": "module",
+              "displayName": "httpsKeyLocation"
+            },
+            {
+              "textRaw": "httpServerPor",
+              "name": "httpserverpor",
+              "desc": "<p>Defines port for HTTP server of JXcore Messaging Server.\n\n</p>\n",
+              "type": "module",
+              "displayName": "httpServerPor"
+            },
+            {
+              "textRaw": "httpsServerPort",
+              "name": "httpsserverport",
+              "desc": "<p>Defines port for HTTPS (SSL) server of JXcore Messaging.\nThe default value 0 also disables SSL support and it means, that JXcore Messaging backend will run based on regular HTTP protocol.\nWhen <code>httpsServerPort</code> is set to a number, both <code>httpsCertLocation</code> and <code>httpsKeyLocation</code> should be provided and be a valid file paths,\notherwise SSL support will not be enabled.\n\n</p>\n",
+              "type": "module",
+              "displayName": "httpsServerPort"
+            },
+            {
+              "textRaw": "IPAddress",
+              "name": "ipaddress",
+              "desc": "<p>Defines the IP address, on which JXcore Messaging backend&#39;s HTTP or HTTPS server will be running.\nBy default it&#39;s &quot;localhost&quot;, but you may also use any valid IP address, like &quot;192.168.1.11&quot; or any other.\n\n</p>\n<p>Client&#39;s will use this value to connect to the server, so the IP should be always accessible for them.\nFor example, you should avoid situations in which JXcore Messaging server is configured for IP set to &quot;localhost&quot; or &quot;127.0.0.1&quot;,\nbut client&#39;s are connecting from remote machines using server&#39;s public address.\nAlthough this might work, and client&#39;s might connect it might also generate errors.\nFor example some browsers may fail to use WebSockets and will try to switch to older HTTP protocols.\n\n</p>\n",
+              "type": "module",
+              "displayName": "IPAddress"
+            },
+            {
+              "textRaw": "listenerTimeout",
+              "name": "listenertimeout",
+              "desc": "<p>Defines long polling request time in milliseconds. The maximum value is should not be greater that 120000 (120 seconds).\n\n</p>\n",
+              "type": "module",
+              "displayName": "listenerTimeout"
+            },
+            {
+              "textRaw": "mapiVersion",
+              "name": "mapiversion",
+              "desc": "<p>Contains version number of JXcore Messaging Server. For example &quot;0.22&quot;.\nIt is used mostly for informational purpose and is displayed for example when server starts from tthe console window.\n\n</p>\n",
+              "type": "module",
+              "displayName": "mapiVersion"
+            }
+          ],
+          "type": "module",
+          "displayName": "Configuration"
+        },
+        {
+          "textRaw": "Events",
+          "name": "events",
+          "modules": [
+            {
+              "textRaw": "subscribe",
+              "name": "subscribe",
+              "desc": "<p>Condition for this event to be fired is that server-side <a href=\"#jxcore_messaging_enableclientsidesubscription\"><code>enableClientSideSubscription</code></a> option should enabled.\nBy default it is set to false, and it means, that client&#39;s cannot subscribe to a channels nor unsubscribe from them.\nIn that case the event <code>subscribe</code> is never raised.\n\n</p>\n<p>When <code>enableClientSideSubscription</code> is set to true, the <code>subscribe</code> event fires whenever client subscribes to a <code>group</code> by calling its <code>Subscribe()</code> method.\nIf no listener is attached to this event, user subscribes always.\n\n</p>\n<p>Attaching to this event gives you control, whether to allow the user to be subscribed or not.\nThe <code>allow</code> argument is a function, which should be called if you want to accept user&#39;s subscription request.\nOtherwise user will not be subscribed to a <code>group</code>, and client&#39;s callback will not be invoked.\n\n</p>\n<p>client-side (index.html):\n\n</p>\n<pre><code class=\"js\">var callback = function(group) {\n    alert(&quot;subscribed to &quot; + group);\n};\n\njxcore.Subscribe(&quot;group1&quot;, callback);</code></pre>\n<p>server-side (my_server.js):\n</p>\n<pre><code class=\"js\">server.on(&quot;subscribe&quot;, function(env, params, allow) {\n    // don&#39;t ever subscribe to &quot;admin_group&quot;\n    if (params.group !== &quot;admin_group&quot;) {\n        allow();\n    }\n});</code></pre>\n",
+              "type": "module",
+              "displayName": "subscribe"
+            },
+            {
+              "textRaw": "unsubscribe",
+              "name": "unsubscribe",
+              "desc": "<p>Condition for this event to be fired is that server-side <a href=\"#jxcore_messaging_enableclientsidesubscription\"><code>enableClientSideSubscription</code></a> option should enabled.\nBy default it is set to false, and it means, that client&#39;s cannot subscribe to a channels nor unsubscribe from them.\nIn that case the event <code>subscribe</code> is never raised.\n\n</p>\n<p>When <code>enableClientSideSubscription</code> is set to true, the <code>unsubscribe</code> event fires whenever client unsubscribes from a <code>group</code> by calling its <code>Unsubscribe()</code> method.\nIf no listener is attached to this event, user unsubscribes always.\n\n</p>\n<p>Attaching to this event gives you control, whether to allow the user to be unsubscribed or not.\n\n</p>\n<p>See also: <a href=\"#jxcore_messaging_event_subscribe\">Event: &#39;subscribe&#39;</a>\n\n</p>\n",
+              "type": "module",
+              "displayName": "unsubscribe"
+            },
+            {
+              "textRaw": "sendToGroup",
+              "name": "sendtogroup",
+              "desc": "<p>This event fires, whenever user calls <code>SendToGroup()</code> method.\nIf no listener is attached to this event, messages are always sent.\n\n</p>\n<p>Attaching to this event gives you control, whether to allow for sending particular message or not.\n\n</p>\n<p>The <code>allow</code> argument is a function, which should be called if you want to let the message to be sent.\n\n</p>\n<p>client-side (index.html):\n\n</p>\n<pre><code class=\"js\">    btnSend.onclick = function() {\n        jxcore.SendToGroup(&#39;group1&#39;, &quot;clientsMethod&quot;, { txt: &quot;my_message&quot;} );\n    };</code></pre>\n<p>server-side (my_server.js):\n\n</p>\n<pre><code class=\"js\">server.on(&#39;sendToGroup&#39;, function(env, params, allow) {\n    if (params.group === &quot;group&quot; &amp;&amp; params.method === &quot;clientsMethod&quot;) {\n        allow();\n    }\n});</code></pre>\n",
+              "type": "module",
+              "displayName": "sendToGroup"
+            }
+          ],
+          "type": "module",
+          "displayName": "Events"
+        },
+        {
+          "textRaw": "Object: env",
+          "name": "object:_env",
+          "desc": "<p>This object is passed to some of the methods described in this document. It contains information about a call made from a client&#39;s side.\nFor example, when a client invokes server&#39;s method by using <code>Call()</code>, the server&#39;s method will receive <code>env</code> object apart from argument passed to <code>Call()</code>.\n\n</p>\n<p><code>Index</code> represents id of client&#39;s callback and is used by <code>sendCallback()</code> method.\n\n</p>\n",
+          "type": "module",
+          "displayName": "Object: env"
+        },
         {
           "textRaw": "allowedResourceTypes",
           "name": "allowedresourcetypes",
@@ -14600,6 +14736,18 @@
                 },
                 {
                   "textRaw": "`method` {Function} ",
+                  "options": [
+                    {
+                      "textRaw": "`env` {Object} ",
+                      "name": "env",
+                      "type": "Object"
+                    },
+                    {
+                      "textRaw": "`params` {Object} ",
+                      "name": "params",
+                      "type": "Object"
+                    }
+                  ],
                   "name": "method",
                   "type": "Function"
                 }
@@ -14616,7 +14764,7 @@
               ]
             }
           ],
-          "desc": "<p>Adds custom method to the application. This method can be called from the client’s side.\n\n</p>\n<p>server-side (my_server.js):\n\n</p>\n<pre><code class=\"js\">server.addJSMethod(&quot;chatMessage&quot;, function (env, params) {\n    server.sendToAll(&quot;addText&quot;, params );\n});</code></pre>\n<p>client-side (index.html):\n\n</p>\n<pre><code class=\"html\">&lt;script type=&quot;text/javascript&quot;&gt;\n    jxcore.Call(&quot;chatMessage&quot;, &quot;hello&quot;);\n&lt;/script&gt;</code></pre>\n"
+          "desc": "<p>Adds custom method to the application and it can be called from the client’s side.\nMethod can receive two parameters: <a href=\"#jxcore_messaging_object_env\"><code>env</code></a> as well as <code>params</code>, which is the value sent by client.\n\n</p>\n<p>client-side (index.html):\n\n</p>\n<pre><code class=\"html\">&lt;script type=&quot;text/javascript&quot;&gt;\n    jxcore.Call(&quot;chatMessage&quot;, &quot;hello&quot;);\n&lt;/script&gt;</code></pre>\n<p>server-side (my_server.js):\n\n</p>\n<pre><code class=\"js\">server.addJSMethod(&quot;chatMessage&quot;, function (env, params) {\n    // params contains &quot;Hello&quot; string\n    server.sendToAll(&quot;addText&quot;, params );\n});</code></pre>\n"
         },
         {
           "textRaw": "getConfig(key)",
@@ -14768,7 +14916,7 @@
               ]
             }
           ],
-          "desc": "<p>Calls the callback method at specific client. The <code>env</code> is the same parameter, which you received as argument for a custom method defined by you with <code>addJSMethod()</code>, while <code>params</code> is an argument for the callback. It can be anything – string, number or json literal object containing many values.\n\n</p>\n<pre><code class=\"js\">server.addJSMethod(&quot;serverMethod&quot;, function (env, params) {\n    // server responses to a client by calling it&#39;s callback\n    server.sendCallBack(env, params + &quot; World!&quot;);\n});</code></pre>\n"
+          "desc": "<p>Calls the callback method at specific client. The <code>env</code> is the same parameter, which you received as argument for a custom method defined by you with <code>addJSMethod()</code>,\nwhile <code>params</code> is an argument for the callback. It can be anything – string, number or json literal object containing many values.\n\n</p>\n<pre><code class=\"js\">server.addJSMethod(&quot;serverMethod&quot;, function (env, params) {\n    // server responses to a client by calling it&#39;s callback\n    server.sendCallBack(env, params + &quot; World!&quot;);\n});</code></pre>\n"
         },
         {
           "textRaw": "sendToGroup(groupName, methodName, params)",
@@ -14961,6 +15109,72 @@
             }
           ],
           "desc": "<p>Starts JXcore application with optional <code>options</code> for the server. Once started, it will be accessible to all clients.\n\n</p>\n"
+        },
+        {
+          "textRaw": "subscribeClient(env, groupName)",
+          "type": "method",
+          "name": "subscribeClient",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "`env` {Object} - see [Object: `env`](#jxcore_messaging_object_env) ",
+                  "name": "env",
+                  "type": "Object",
+                  "desc": "see [Object: `env`](#jxcore_messaging_object_env)"
+                },
+                {
+                  "textRaw": "`groupName` {String} ",
+                  "name": "groupName",
+                  "type": "String"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "env"
+                },
+                {
+                  "name": "groupName"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Subscribes the client to a <code>groupName</code>, or channel. This is server-side equivalent of <code>Subscribe()</code> method from client&#39;s API.\n\n</p>\n<p>From now on, messages sent to that group by any other subscriber or server will be received by the client.\nAlso the client can send messages to this group – see <code>SendToGroup()</code> method.\n\n</p>\n<p>This method should be used in one of server&#39;s custom method defined with <code>addJSMethod()</code>,\nbecause it requires the <a href=\"#jxcore_messaging_object_env\"><code>env</code></a> object containing information about client&#39;s call.\n\n</p>\n<p>For example, when client calls:\n\n</p>\n<pre><code class=\"js\">    jxcore.Call(&quot;someMethod&quot;, true);</code></pre>\n<p>on the server-side you can use it to subscribe him to a group:\n\n</p>\n<pre><code class=\"js\">server.addJSMethod(&quot;someMethod&quot;, function(env, param) {\n    if (param === true) {\n        server.subscribeClient(env, &quot;testGroup&quot;);\n    }\n});</code></pre>\n<p>Of course you may apply any logic or algorithm for making decision, whether subscribe the client and how.\n\n</p>\n"
+        },
+        {
+          "textRaw": "unSubscribeClient(env, groupName)",
+          "type": "method",
+          "name": "unSubscribeClient",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "`env` {Object} - see [Object: `env`](#jxcore_messaging_object_env) ",
+                  "name": "env",
+                  "type": "Object",
+                  "desc": "see [Object: `env`](#jxcore_messaging_object_env)"
+                },
+                {
+                  "textRaw": "`groupName` {String} ",
+                  "name": "groupName",
+                  "type": "String"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "env"
+                },
+                {
+                  "name": "groupName"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Unsubscribes the client from a <code>groupName</code>, or channel. This is server-side equivalent of <code>Unsubscribe()</code> method from client&#39;s API.\n\n</p>\n<p>From now on, messages sent to that group cannot be received by this client.\nAlso, the client cannot messages to that group.\n\n</p>\n<p>The usage is analogous to the <code>subscribeClient()</code> method.\n\n</p>\n<p>client-side:\n\n</p>\n<pre><code class=\"js\">    jxcore.Call(&quot;someMethod&quot;, false);</code></pre>\n<p>server-side:\n\n</p>\n<pre><code class=\"js\">server.addJSMethod(&quot;someMethod&quot;, function(env, param) {\n    if (param === true) {\n        server.subscribeClient(env, &quot;testGroup&quot;);\n    } else {\n        server.unSubscribeClient(env, &quot;testGroup&quot;);\n    }\n});</code></pre>\n"
         }
       ],
       "type": "module",
@@ -14969,50 +15183,72 @@
     {
       "textRaw": "API JavaScript Client",
       "name": "api_javascript_client",
-      "events": [
+      "modules": [
         {
-          "textRaw": "Event: 'document.onjxready'",
-          "type": "event",
-          "name": "document.onjxready",
-          "desc": "<p>There is a special event <code>document.onjxready</code>, which is called right after the JXcore script is loaded:\n\n</p>\n<pre><code class=\"html\">&lt;script src=&quot;/helloworld/jx?ms=connect&quot; type=&quot;text/javascript&quot;&gt;</code></pre>\n<p>Inside that event we can start to use jxcore object and for example we attach to the following events: <code>OnClose</code>, <code>OnError</code> and <code>Start()</code> method. The last one is the most important one for us. Please see the comments in the code above to catch the idea.\n\n</p>\n<pre><code class=\"js\">&lt;script type=&quot;text/javascript&quot;&gt;\n\n    document.onjxready = function () {\n\n        jxcore.Start(function (status) {\n\n            var send_button = document.getElementById(&#39;send_button&#39;);\n            // let&#39;s enable button, right now the script is loaded\n            send_button.disabled = &quot;&quot;;\n\n            var msg = document.getElementById(&#39;msg&#39;);\n            msg.innerHTML += &quot;Connected.&lt;BR&gt;&quot;;\n\n            var callback = function (s) {\n                msg.innerHTML += s + &quot;&lt;BR&gt;&quot;;\n            };\n\n            send_button.onclick = function () {\n                // let&#39;s call the server-side method &quot;serverMethod&quot; from the client!\n                // in turn, as a response, the backend service will invoke\n                // client&#39;s local &quot;callback&quot; defined above!\n                jxcore.Call(&quot;serverMethod&quot;, &quot;Hello&quot;, callback);\n            };\n        });\n\n        jxcore.OnClose = function (reconnecting) {\n            msg.innerHTML += &quot;Disconnected.&lt;BR&gt;&quot;;\n        };\n\n        jxcore.OnError = function (err) {\n            msg.innerHTML += err;\n        }\n    };\n&lt;/script&gt;</code></pre>\n",
-          "params": []
-        },
-        {
-          "textRaw": "Event: 'OnClose'",
-          "type": "event",
-          "name": "OnClose",
-          "params": [],
-          "desc": "<p>This event is fired every time, when the client loses connection with the server. The <code>reconnecting</code> parameter has a <code>true</code> value, if client already tries to reconnect.\n\n</p>\n<pre><code class=\"js\">jxcore.OnClose = function (reconnecting) {\n    msg.innerHTML += &quot;Disconnected.&lt;BR&gt;&quot;;\n};</code></pre>\n"
-        },
-        {
-          "textRaw": "Event: 'OnError'",
-          "type": "event",
-          "name": "OnError",
-          "params": [],
-          "desc": "<p>This event is emitted every time, the error occurs.\n\n</p>\n<pre><code class=\"js\">jxcore.OnError = function (err) {\n    msg.innerHTML += err;\n}</code></pre>\n"
+          "textRaw": "Events",
+          "name": "events",
+          "properties": [
+            {
+              "textRaw": "document.onjxready",
+              "name": "onjxready",
+              "desc": "<p>There is a special event <code>document.onjxready</code>, which is called right after the JXcore script is loaded:\n\n</p>\n<pre><code class=\"html\">&lt;script src=&quot;/helloworld/jx?ms=connect&quot; type=&quot;text/javascript&quot;&gt;</code></pre>\n<p>Inside that event we can start to use jxcore object and for example we attach to the following events: <code>OnClose</code>, <code>OnError</code> and <code>Start()</code> method. The last one is the most important one for us. Please see the comments in the code above to catch the idea.\n\n</p>\n<pre><code class=\"js\">&lt;script type=&quot;text/javascript&quot;&gt;\n\n    document.onjxready = function () {\n\n        jxcore.Start(function (status) {\n\n            var send_button = document.getElementById(&#39;send_button&#39;);\n            // let&#39;s enable button, right now the script is loaded\n            send_button.disabled = &quot;&quot;;\n\n            var msg = document.getElementById(&#39;msg&#39;);\n            msg.innerHTML += &quot;Connected.&lt;BR&gt;&quot;;\n\n            var callback = function (s) {\n                msg.innerHTML += s + &quot;&lt;BR&gt;&quot;;\n            };\n\n            send_button.onclick = function () {\n                // let&#39;s call the server-side method &quot;serverMethod&quot; from the client!\n                // in turn, as a response, the backend service will invoke\n                // client&#39;s local &quot;callback&quot; defined above!\n                jxcore.Call(&quot;serverMethod&quot;, &quot;Hello&quot;, callback);\n            };\n        });\n\n        jxcore.OnClose = function (reconnecting) {\n            msg.innerHTML += &quot;Disconnected.&lt;BR&gt;&quot;;\n        };\n\n        jxcore.OnError = function (err) {\n            msg.innerHTML += err;\n        }\n    };\n&lt;/script&gt;</code></pre>\n"
+            }
+          ],
+          "modules": [
+            {
+              "textRaw": "OnClose",
+              "name": "onclose",
+              "desc": "<p>This event is fired every time, when the client loses connection with the server.\nThe <code>reconnecting</code> parameter has a <code>true</code> value, if client already tries to reconnect.\n\n</p>\n<pre><code class=\"js\">jxcore.OnClose = function (reconnecting) {\n    msg.innerHTML += &quot;Disconnected.&lt;BR&gt;&quot;;\n};</code></pre>\n",
+              "type": "module",
+              "displayName": "OnClose"
+            },
+            {
+              "textRaw": "OnError",
+              "name": "onerror",
+              "desc": "<p>This event is emitted every time, the error occurs.\n\n</p>\n<pre><code class=\"js\">jxcore.OnError = function (err) {\n    msg.innerHTML += err;\n}</code></pre>\n",
+              "type": "module",
+              "displayName": "OnError"
+            },
+            {
+              "textRaw": "OnSubscription",
+              "name": "onsubscription",
+              "desc": "<p>This event is raised when client gets subscribed to a group or unsubscribed from it by a call made from a server-side (<code>subscribeClient()</code> or <code>unSubscribeClient()</code> methods).\n\n</p>\n<p>The <code>subscribed</code> value indicates, whether this event was raised as a result of subscription (<code>true</code>) or unsubscription (<code>false</code>) request.\nThe <code>groupName</code> is the name of the group, for which the event occured.\n\n</p>\n<p>When subscription/unsubscription request was made by a client&#39;s method <code>Subscribe()</code> or <code>Unsubscribe()</code>, the event <code>OnSubscription</code> is not raised, but instead you may provide the callback for those methods.\nPlease refer to their description for more details.\n\n</p>\n<p>client-side:\n\n</p>\n<pre><code class=\"js\">jxcore.Call(&quot;someMethod&quot;, true);\n\njxcore.OnSubscription = function (subscribed,  group) {\n    if (subscribed) {\n        alert(&quot;event: subscribed to a group &quot; + group);\n    } else {\n        alert(&quot;event: unsubscribed from a group &quot; + group);\n    }\n};</code></pre>\n<p>server-side:\n\n</p>\n<pre><code class=\"js\">server.addJSMethod(&quot;someMethod&quot;, function(env, param) {\n    if (param === true) {\n        server.subscribeClient(env, &quot;testGroup&quot;);\n    }\n});</code></pre>\n",
+              "type": "module",
+              "displayName": "OnSubscription"
+            }
+          ],
+          "type": "module",
+          "displayName": "Events"
         }
       ],
       "methods": [
         {
-          "textRaw": "jxcore.Call(methodName, json, cb)",
+          "textRaw": "Call(methodName, json, cb)",
           "type": "method",
           "name": "Call",
           "signatures": [
             {
               "params": [
                 {
-                  "textRaw": "methodName {String} ",
+                  "textRaw": "`methodName` {String} ",
                   "name": "methodName",
                   "type": "String"
                 },
                 {
-                  "textRaw": "json {Object} ",
+                  "textRaw": "`json` {Object} ",
                   "name": "json",
                   "type": "Object"
                 },
                 {
-                  "textRaw": "cb {Function} ",
-                  "name": "cb",
+                  "textRaw": "`callback` {Function} ",
+                  "options": [
+                    {
+                      "textRaw": "`param` {Object} ",
+                      "name": "param",
+                      "type": "Object"
+                    }
+                  ],
+                  "name": "callback",
                   "type": "Function"
                 }
               ]
@@ -15031,17 +15267,17 @@
               ]
             }
           ],
-          "desc": "<p>Invokes specific custom method named <code>methodName</code> defined on the server-side and passes to it one parameter <code>json</code>. The client&#39;s <code>cb</code> callback is optional, but when provided, it will be called after server completes invoking the method.\n\n</p>\n<p>In the example below we call the server-side method <em>serverMethod</em> from the client-side.\nIn turn, as a response, the backend service will invoke the client&#39;s local <em>callback</em> function:\n\n</p>\n<pre><code class=\"js\">var callback = function(param) {\n    alert(param);\n}\n\njxcore.Call(&quot;serverMethod&quot;, &quot;hello&quot;, callback);</code></pre>\n<p>or simply:\n\n</p>\n<pre><code class=\"js\">jxcore.Call(&quot;serverMethod&quot;, &quot;hello&quot;, function(param) {\n    alert(param);\n});</code></pre>\n"
+          "desc": "<p>Invokes specific custom method named <code>methodName</code> defined on the server-side and passes to it one parameter <code>json</code>.\nThe client&#39;s <code>callback</code> is optional, but when provided, it will be called after server completes invoking the method\nand will receive <code>param</code> argument sent from the server-side.\n\n</p>\n<p>In the example below we call the server-side method &quot;serverMethod&quot; from the client-side.\nIn turn, as a response, the backend service will invoke the client&#39;s local <code>callback</code> function:\n\n</p>\n<pre><code class=\"js\">var callback = function(param) {\n    alert(param);\n}\n\njxcore.Call(&quot;serverMethod&quot;, &quot;hello&quot;, callback);</code></pre>\n<p>or simply:\n\n</p>\n<pre><code class=\"js\">jxcore.Call(&quot;serverMethod&quot;, &quot;hello&quot;, function(param) {\n    alert(param);\n});</code></pre>\n"
         },
         {
-          "textRaw": "jxcore.Close(tx)",
+          "textRaw": "Close(tx)",
           "type": "method",
           "name": "Close",
           "signatures": [
             {
               "params": [
                 {
-                  "textRaw": "tx {Boolean} ",
+                  "textRaw": "`tx` {Boolean} ",
                   "name": "tx",
                   "type": "Boolean"
                 }
@@ -15055,10 +15291,10 @@
               ]
             }
           ],
-          "desc": "<p>Closes client and disconnects from server.\n\n</p>\n<p>The <code>tx</code> parameter is optional. If set to <code>false</code>, the <code>OnClose</code> event will also be invoked with <code>false</code> value as an argument: <code>OnClose(false)</code>. If <code>true</code> - <code>OnClose</code> event will not get invoked.\n\n</p>\n"
+          "desc": "<p>Closes client and disconnects from the server.\n\n</p>\n<p>The <code>tx</code> parameter is optional. If set to <code>false</code>, the <code>OnClose</code> event will also be invoked with <code>false</code> value as an argument: <code>OnClose(false)</code>.\nIf <code>true</code> - then <code>OnClose</code> event will not get invoked.\n\n</p>\n"
         },
         {
-          "textRaw": "jxcore.GetClientId()",
+          "textRaw": "GetClientId()",
           "type": "method",
           "name": "GetClientId",
           "desc": "<p>Gets the id of the client, which is an unique string value.\n\n</p>\n",
@@ -15069,7 +15305,7 @@
           ]
         },
         {
-          "textRaw": "jxcore.ReConnect()",
+          "textRaw": "ReConnect()",
           "type": "method",
           "name": "ReConnect",
           "desc": "<p>Forces the client to reconnect to the server.\n\n</p>\n",
@@ -15080,24 +15316,24 @@
           ]
         },
         {
-          "textRaw": "jxcore.SendToGroup(group, methodName, json)",
+          "textRaw": "SendToGroup(groupName, methodName, json)",
           "type": "method",
           "name": "SendToGroup",
           "signatures": [
             {
               "params": [
                 {
-                  "textRaw": "groupName {String} ",
+                  "textRaw": "`groupName` {String} ",
                   "name": "groupName",
                   "type": "String"
                 },
                 {
-                  "textRaw": "methodName {String} ",
+                  "textRaw": "`methodName` {String} ",
                   "name": "methodName",
                   "type": "String"
                 },
                 {
-                  "textRaw": "json {Object} ",
+                  "textRaw": "`json` {Object} ",
                   "name": "json",
                   "type": "Object"
                 }
@@ -15106,7 +15342,7 @@
             {
               "params": [
                 {
-                  "name": "group"
+                  "name": "groupName"
                 },
                 {
                   "name": "methodName"
@@ -15117,18 +15353,25 @@
               ]
             }
           ],
-          "desc": "<p>Sends message to all clients, that have already subscribed to the specific <code>groupName</code>. The message is passed as <code>json</code> argument to the target&#39;s method named <code>methodName</code>.\nThe message can be any value, primitive (string, number, etc.) or json literal object.\n\n</p>\n<p>The <em>addText</em> method should be available on every client, which is subscribed to <em>programmers</em> group.\nWhile invoking the <em>addText</em> method at each client, the server will pass { obj : &quot;value&quot; } as an argument.\n\n</p>\n<pre><code class=\"js\">document.getElementById(&quot;btnSend&quot;).onclick = function(){\n    jxcore.SendToGroup(&quot;programmers&quot;, &quot;addText&quot;, { obj : &quot;value&quot; } );\n};</code></pre>\n"
+          "desc": "<p>Sends message to all of the clients, that have already subscribed to the specific <code>groupName</code>.\nThe message is passed as <code>json</code> argument to the target&#39;s method named <code>methodName</code>.\nThe message can be any value, primitive (string, number, etc.) or json literal object.\n\n</p>\n<pre><code class=\"js\">document.getElementById(&quot;btnSend&quot;).onclick = function(){\n    jxcore.SendToGroup(&quot;programmers&quot;, &quot;addText&quot;, { obj : &quot;value&quot; } );\n};</code></pre>\n<p>The &quot;addText&quot; method should be available on every client which is subscribed to &quot;programmers&quot; group.\nWhile invoking the &quot;addText&quot; method at each client, the server will pass { obj : &quot;value&quot; } as an argument.\n\n</p>\n"
         },
         {
-          "textRaw": "jxcore.Start(cb)",
+          "textRaw": "Start(cb)",
           "type": "method",
           "name": "Start",
           "signatures": [
             {
               "params": [
                 {
-                  "textRaw": "cb {Function} ",
-                  "name": "cb",
+                  "textRaw": "`callback` {Function} ",
+                  "options": [
+                    {
+                      "textRaw": "`status` {Boolean} ",
+                      "name": "status",
+                      "type": "Boolean"
+                    }
+                  ],
+                  "name": "callback",
                   "type": "Function"
                 }
               ]
@@ -15141,22 +15384,29 @@
               ]
             }
           ],
-          "desc": "<p>Starts JXcore client. Connects to the server, and when it succeedes - the client’s callback <code>cb</code> is called.\n\n</p>\n<pre><code class=\"js\">document.onjxready = function () {\n    jxcore.Start(function (status) {\n\n        // here we are, after the client has connected to server\n        // we can enable the button now\n        var btnSend = document.getElementById(&#39;btnSend&#39;);\n        btnSend.disabled = &quot;&quot;;\n\n        // do anything else\n        // see tutorials for more usage\n    });\n};</code></pre>\n"
+          "desc": "<p>Starts JXcore client. Connects to the server, and when it succeeds - the client’s callback <code>callback</code> is called.\n\n</p>\n<pre><code class=\"js\">document.onjxready = function () {\n    jxcore.Start(function (status) {\n\n        // here we are, after the client has connected to server\n        // we can enable the button now\n        var btnSend = document.getElementById(&#39;btnSend&#39;);\n        btnSend.disabled = &quot;&quot;;\n\n        // do anything else\n        // see tutorials for more usage\n    });\n};</code></pre>\n"
         },
         {
-          "textRaw": "jxcore.Subscribe(group, callback)",
+          "textRaw": "Subscribe(groupName, callback)",
           "type": "method",
           "name": "Subscribe",
           "signatures": [
             {
               "params": [
                 {
-                  "textRaw": "group {String} ",
-                  "name": "group",
+                  "textRaw": "`groupName` {String} ",
+                  "name": "groupName",
                   "type": "String"
                 },
                 {
-                  "textRaw": "callback {Function} ",
+                  "textRaw": "`callback` {Function} ",
+                  "options": [
+                    {
+                      "textRaw": "`groupName` {String} ",
+                      "name": "groupName",
+                      "type": "String"
+                    }
+                  ],
                   "name": "callback",
                   "type": "Function"
                 }
@@ -15165,7 +15415,7 @@
             {
               "params": [
                 {
-                  "name": "group"
+                  "name": "groupName"
                 },
                 {
                   "name": "callback"
@@ -15173,22 +15423,29 @@
               ]
             }
           ],
-          "desc": "<p>Subscribes the client to a <code>group</code>, or channel. From now on, messages sent to that group by any other subscriber will be received by the client. Also the client can send messages to this group – see <code>jxcore.SendToGroup()</code> method.\nAfter the server will successfully subscribe the client to the <code>group</code>, the client&#39;s <code>callback</code> will be called.\n\n</p>\n<pre><code class=\"js\">jxcore.Subscribe(&quot;programmers&quot;, function() {\n    alert(&quot;subscribed&quot;);\n});</code></pre>\n"
+          "desc": "<p>Subscribes the client to a <code>groupName</code>, or channel. From now on, messages sent to that group by any other subscriber will be received by the client.\nAlso the client can send messages to this group – see <code>SendToGroup()</code> method.\nAfter the server will successfully subscribe the client to the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.\n\n</p>\n<pre><code class=\"js\">jxcore.Subscribe(&quot;programmers&quot;, function(groupName) {\n    alert(&quot;subscribed to group: &quot; + groupName);\n});</code></pre>\n"
         },
         {
-          "textRaw": "jxcore.Unsubscribe(group, callback)",
+          "textRaw": "Unsubscribe(groupName, callback)",
           "type": "method",
           "name": "Unsubscribe",
           "signatures": [
             {
               "params": [
                 {
-                  "textRaw": "group {String} ",
-                  "name": "group",
+                  "textRaw": "`groupName` {String} ",
+                  "name": "groupName",
                   "type": "String"
                 },
                 {
-                  "textRaw": "callback {Function} ",
+                  "textRaw": "`callback` {Function} ",
+                  "options": [
+                    {
+                      "textRaw": "`groupName` {String} ",
+                      "name": "groupName",
+                      "type": "String"
+                    }
+                  ],
                   "name": "callback",
                   "type": "Function"
                 }
@@ -15197,7 +15454,7 @@
             {
               "params": [
                 {
-                  "name": "group"
+                  "name": "groupName"
                 },
                 {
                   "name": "callback"
@@ -15205,7 +15462,7 @@
               ]
             }
           ],
-          "desc": "<p>Unsubscribes the client from a <code>group</code>, or channel. From now on, messages sent to that group cannot be received by this client.\nAfter the server will successfully unsubscribe the client from the <code>group</code>, the client&#39;s <code>callback</code> will be called.\n\n</p>\n<pre><code class=\"js\">jxcore.Unsubscribe(&quot;programmers&quot;, function() {\n    alert(&quot;unsubscribed&quot;);\n});</code></pre>\n"
+          "desc": "<p>Unsubscribes the client from a <code>groupName</code>, or channel. From now on, messages sent to that group cannot be received by this client.\nAfter the server will successfully unsubscribe the client from the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.\n\n</p>\n<pre><code class=\"js\">jxcore.Unsubscribe(&quot;programmers&quot;, function(groupName) {\n    alert(&quot;unsubscribed from a group:&quot; + groupName);\n});</code></pre>\n"
         }
       ],
       "type": "module",
@@ -15219,35 +15476,42 @@
         {
           "textRaw": "Events",
           "name": "events",
-          "desc": "<p>Messaging module for Java defines events in a separate class <code>jxcore.ClientEvents</code>. In order to listen for client&#39;s events, we need to instantiate this class and assign to <code>client.Events</code> property:\n\n</p>\n<pre><code class=\"java\">import jxcore.*;\n\njxcore.ClientEvents events = new ClientEvents(){\n    @Override public void OnErrorReceived(Client c, String Message) {\n        //Error received\n    }\n    @Override public void OnClientConnected(Client c) {\n        //Client is connected\n    }\n    @Override public void OnClientDisconnected(Client c) {\n        //Client is disconnected\n    }\n    @Override public void OnEventLog(Client c, String log, LogLevel level) {\n        //get the event log from here\n    }\n};\n//now we may define this listener into our Client instance\nclient.Events = event;</code></pre>\n",
-          "events": [
+          "desc": "<p>Messaging module for Java defines events in a separate class <code>ClientEvents</code>. In order to listen for client&#39;s events, we need to instantiate this class and assign to <code>client.Events</code> property:\n\n</p>\n<pre><code class=\"java\">import jxcore.*;\n\njxcore.ClientEvents events = new ClientEvents(){\n    @Override\n    public void OnErrorReceived(Client c, String Message) {\n        // Error received\n    }\n    @Override\n    public void OnClientConnected(Client c) {\n        // Client is connected\n    }\n    @Override\n    public void OnClientDisconnected(Client c) {\n        // Client is disconnected\n    }\n    @Override\n    public void OnEventLog(Client c, String log, LogLevel level) {\n        // get the event log from here\n    }\n    @Override\n    public void OnSubscription(Client c, Boolean subscribed, String group) {\n        // Client was subscribed to a group or unsubscribed from a group\n        // by a server-side call\n    }\n};\n//now we may define this listener into our Client instance\nclient.Events = event;</code></pre>\n",
+          "modules": [
             {
-              "textRaw": "Event: 'OnErrorReceived'",
-              "type": "event",
-              "name": "OnErrorReceived",
-              "params": [],
-              "desc": "<p>This event is emitted whenever an error occurs at the <code>client</code>.\n\n</p>\n"
+              "textRaw": "OnErrorReceived",
+              "name": "onerrorreceived",
+              "desc": "<p>This event is emitted whenever an error occurs at the <code>client</code>.\n\n</p>\n",
+              "type": "module",
+              "displayName": "OnErrorReceived"
             },
             {
-              "textRaw": "Event: 'OnClientConnected'",
-              "type": "event",
-              "name": "OnClientConnected",
-              "params": [],
-              "desc": "<p>This event is emitted after the <code>client</code> successfully connects to the server.\n\n</p>\n"
+              "textRaw": "OnClientConnected",
+              "name": "onclientconnected",
+              "desc": "<p>This event is emitted after the <code>client</code> successfully connects to the server.\n\n</p>\n",
+              "type": "module",
+              "displayName": "OnClientConnected"
             },
             {
-              "textRaw": "Event: 'OnClientDisconnected'",
-              "type": "event",
-              "name": "OnClientDisconnected",
-              "params": [],
-              "desc": "<p>This event is emitted when the <code>client</code> loses its connection with the server.\n\n</p>\n"
+              "textRaw": "OnClientDisconnected",
+              "name": "onclientdisconnected",
+              "desc": "<p>This event is emitted when the <code>client</code> loses its connection with the server.\n\n</p>\n",
+              "type": "module",
+              "displayName": "OnClientDisconnected"
             },
             {
-              "textRaw": "Event: 'OnEventLog'",
-              "type": "event",
-              "name": "OnEventLog",
-              "params": [],
-              "desc": "<p>This event is fired whenever the <code>client</code> logs an information <code>log</code> message. The <code>level</code> parameter is an enumeration value and can have one of the following: <em>Informative</em> or <em>Critical</em>.\n\n</p>\n"
+              "textRaw": "OnEventLog",
+              "name": "oneventlog",
+              "desc": "<p>This event is fired whenever the <code>client</code> logs an information <code>log</code> message. The <code>level</code> parameter is an enumeration value and can have one of the following: <em>Informative</em> or <em>Critical</em>.\n\n</p>\n",
+              "type": "module",
+              "displayName": "OnEventLog"
+            },
+            {
+              "textRaw": "OnSubscription",
+              "name": "onsubscription",
+              "desc": "<p>This event is raised when client gets subscribed to a group or unsubscribed from it by a call made from a server-side (<code>subscribeClient()</code> or <code>unSubscribeClient()</code> methods).\n\n</p>\n<p>The <code>subscribed</code> value indicates, whether this event was raised as a result of subscription (<code>true</code>) or unsubscription (<code>false</code>) request.\nThe <code>groupName</code> is the name of the group, for which the event occured.\n\n</p>\n<p>When subscription/unsubscription request was made by a client&#39;s method <code>Subscribe()</code> or <code>Unsubscribe()</code>, the event <code>OnSubscription</code> is not raised, but instead you may provide the callback for those methods.\nPlease refer to their description for more details.\n\n</p>\n",
+              "type": "module",
+              "displayName": "OnSubscription"
             }
           ],
           "type": "module",
@@ -15263,37 +15527,37 @@
             {
               "params": [
                 {
-                  "textRaw": "localTarget {Object} ",
+                  "textRaw": "`localTarget` {Object} ",
                   "name": "localTarget",
                   "type": "Object"
                 },
                 {
-                  "textRaw": "appName {String} ",
+                  "textRaw": "`appName` {String} ",
                   "name": "appName",
                   "type": "String"
                 },
                 {
-                  "textRaw": "appKey {String} ",
+                  "textRaw": "`appKey` {String} ",
                   "name": "appKey",
                   "type": "String"
                 },
                 {
-                  "textRaw": "url {String} ",
+                  "textRaw": "`url` {String} ",
                   "name": "url",
                   "type": "String"
                 },
                 {
-                  "textRaw": "port {int} ",
+                  "textRaw": "`port` {int} ",
                   "name": "port",
                   "type": "int"
                 },
                 {
-                  "textRaw": "secure {boolean} ",
+                  "textRaw": "`secure` {boolean} ",
                   "name": "secure",
                   "type": "boolean"
                 },
                 {
-                  "textRaw": "resetUID {boolean} ",
+                  "textRaw": "`resetUID` {boolean} ",
                   "name": "resetUID",
                   "type": "boolean"
                 }
@@ -15334,17 +15598,17 @@
             {
               "params": [
                 {
-                  "textRaw": "methodName {String} ",
+                  "textRaw": "`methodName` {String} ",
                   "name": "methodName",
                   "type": "String"
                 },
                 {
-                  "textRaw": "params {Object} ",
+                  "textRaw": "`params` {Object} ",
                   "name": "params",
                   "type": "Object"
                 },
                 {
-                  "textRaw": "callback {jxcore.Callback} ",
+                  "textRaw": "`callback` {jxcore.Callback} ",
                   "name": "callback",
                   "type": "jxcore.Callback"
                 }
@@ -15396,17 +15660,17 @@
             {
               "params": [
                 {
-                  "textRaw": "groupName {String} ",
+                  "textRaw": "`groupName` {String} ",
                   "name": "groupName",
                   "type": "String"
                 },
                 {
-                  "textRaw": "methodName {String} ",
+                  "textRaw": "`methodName` {String} ",
                   "name": "methodName",
                   "type": "String"
                 },
                 {
-                  "textRaw": "params {Object} ",
+                  "textRaw": "`params` {Object} ",
                   "name": "params",
                   "type": "Object"
                 }
@@ -15426,22 +15690,29 @@
               ]
             }
           ],
-          "desc": "<p>Sends message to all clients, that have already subscribed to the specific <code>groupName</code>. The message is passed as <code>params</code> argument to the target&#39;s method named <code>methodName</code>.\n\n</p>\n<p>The <em>addText</em> method should be available on every client, which is subscribed to <em>programmers</em> group.\nWhile invoking the <em>addText</em> method at each client, the server will pass &quot;Hello from client!&quot; as an argument.\n\n</p>\n<pre><code class=\"java\">client.SendToGroup(&quot;programmers&quot;, &quot;addText&quot;, &quot;Hello from client!&quot;);</code></pre>\n"
+          "desc": "<p>Sends message to all clients, that have already subscribed to the specific <code>groupName</code>. The message is passed as <code>params</code> argument to the target&#39;s method named <code>methodName</code>.\n\n</p>\n<p>The &quot;addText&quot; method should be available on every client, which is subscribed to <em>programmers</em> group.\nWhile invoking the <em>addText</em> method at each client, the server will pass &quot;Hello from client!&quot; as an argument.\n\n</p>\n<pre><code class=\"java\">client.SendToGroup(&quot;programmers&quot;, &quot;addText&quot;, &quot;Hello from client!&quot;);</code></pre>\n"
         },
         {
-          "textRaw": "Subscribe(group, callback)",
+          "textRaw": "Subscribe(groupName, callback)",
           "type": "method",
           "name": "Subscribe",
           "signatures": [
             {
               "params": [
                 {
-                  "textRaw": "group {String} ",
-                  "name": "group",
+                  "textRaw": "`groupName` {String} ",
+                  "name": "groupName",
                   "type": "String"
                 },
                 {
-                  "textRaw": "callback {jxcore.Callback} ",
+                  "textRaw": "`callback` {jxcore.Callback} ",
+                  "options": [
+                    {
+                      "textRaw": "`groupName` {String} ",
+                      "name": "groupName",
+                      "type": "String"
+                    }
+                  ],
                   "name": "callback",
                   "type": "jxcore.Callback"
                 }
@@ -15450,7 +15721,7 @@
             {
               "params": [
                 {
-                  "name": "group"
+                  "name": "groupName"
                 },
                 {
                   "name": "callback"
@@ -15458,7 +15729,7 @@
               ]
             }
           ],
-          "desc": "<p>Subscribes the client to a <code>group</code>, or channel. From now on, messages sent to that group by any other subscriber will be received by the client. Also the client can send messages to this group – see <code>jxcore.SendToGroup()</code> method.\nAfter the server will successfully subscribe the client to the <code>group</code>, the client&#39;s <code>callback</code> will be called.\n\n</p>\n<pre><code class=\"java\">try {\n     client.Subscribe(&quot;programmers&quot;, new Callback() {\n         @Override\n         public void call(Object o) throws Exception {\n             System.out.println(&quot;Subscribed to &quot; + o.toString());\n             client.SendToGroup(&quot;programmers&quot;, &quot;clientMethod&quot;,\n             &quot;Hello from client!&quot;);\n         }\n     });\n} catch (Exception e) {\n     System.out.println(&quot;Cannot subscribe.&quot;);\n}</code></pre>\n"
+          "desc": "<p>Subscribes the client to a <code>groupName</code>, or channel. From now on, messages sent to that group by any other subscriber will be received by the client.\nAlso the client can send messages to this group – see <code>SendToGroup()</code> method.\nAfter the server will successfully subscribe the client to the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.\n\n</p>\n<pre><code class=\"java\">try {\n     client.Subscribe(&quot;programmers&quot;, new Callback() {\n         @Override\n         public void call(Object o) throws Exception {\n             System.out.println(&quot;Subscribed to &quot; + o.toString());\n             client.SendToGroup(&quot;programmers&quot;, &quot;clientMethod&quot;,\n             &quot;Hello from client!&quot;);\n         }\n     });\n} catch (Exception e) {\n     System.out.println(&quot;Cannot subscribe.&quot;);\n}</code></pre>\n"
         },
         {
           "textRaw": "Unsubscribe(group, callback)",
@@ -15468,12 +15739,19 @@
             {
               "params": [
                 {
-                  "textRaw": "group {String} ",
-                  "name": "group",
+                  "textRaw": "`groupName` {String} ",
+                  "name": "groupName",
                   "type": "String"
                 },
                 {
-                  "textRaw": "callback {jxcore.Callback} ",
+                  "textRaw": "`callback` {jxcore.Callback} ",
+                  "options": [
+                    {
+                      "textRaw": "`groupName` {String} ",
+                      "name": "groupName",
+                      "type": "String"
+                    }
+                  ],
                   "name": "callback",
                   "type": "jxcore.Callback"
                 }
@@ -15490,7 +15768,7 @@
               ]
             }
           ],
-          "desc": "<p>Unsubscribes the client from a <code>group</code>, or channel. From now on, messages sent to that group cannot be received by this client.\nAfter the server will successfully unsubscribe the client from the <code>group</code>, the client&#39;s <code>callback</code> will be called.\n\n</p>\n<pre><code class=\"java\">try {\n     client.Unubscribe(&quot;programmers&quot;, new Callback() {\n         @Override\n         public void call(Object o) throws Exception {\n             System.out.println(&quot;Unubscribed from &quot; + o.toString());\n         }\n     });\n} catch (Exception e) {\n     System.out.println(&quot;Cannot unubscribe.&quot;);\n}</code></pre>\n"
+          "desc": "<p>Unsubscribes the client from a <code>groupName</code>, or channel. From now on, messages sent to that group cannot be received by this client.\nAfter the server will successfully unsubscribe the client from the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.\n\n</p>\n<pre><code class=\"java\">try {\n     client.Unubscribe(&quot;programmers&quot;, new Callback() {\n         @Override\n         public void call(Object o) throws Exception {\n             System.out.println(&quot;Unubscribed from &quot; + o.toString());\n         }\n     });\n} catch (Exception e) {\n     System.out.println(&quot;Cannot unubscribe.&quot;);\n}</code></pre>\n"
         }
       ],
       "type": "module",
@@ -15813,7 +16091,7 @@
             {
               "textRaw": "store.shared.safeBlock(key, safeBlockFunction, errorCallback)",
               "name": "store.shared.safeblock(key,_safeblockfunction,_errorcallback)",
-              "desc": "<p>Allows to execute number of store related operations on a single <code>key</code> in one continuous safe block.\nDuring it&#39;s execution, access to this element (the key and it&#39;s value) is locked for other threads.\nThe default maximum blocking time is defined by <code>setBlockTimeout()</code> parameter.\n\n</p>\n<p>The <code>safeBlockFunction</code> is the execution block. This should be a function without any arguments.\n\n</p>\n<pre><code class=\"js\">jxcore.store.shared.safeBlock(&quot;myNumber&quot;, function () {\n\n        if (!shared.exists(&quot;myNumber&quot;)) {\n            shared.set(&quot;myNumber&quot;, 0);\n        }\n\n        var n = shared.read(&quot;myNumber&quot;);\n        n = parseInt(n) + 1;\n        shared.set(&quot;myNumber&quot;, n);\n\n        // working with a different key should not be performed in this block:\n        shared.set(&quot;myNumber_2&quot;, 333);\n}</code></pre>\n<p>In the example above we are using a <code>safeBlock</code> to perform multithread-safe increment of <em>myNumber</em> value kept in the shared store.\n\n</p>\n<p>Functionality of the <code>safeBlockFunction</code> should be limited only to operations on a single key kept in the store, because locking mechanism applies only for that <code>key</code> and there is simply no safety guarantee for any other keys.\n\n</p>\n<p>Every <code>safeBlock()</code> invocation locks the key and it&#39;s value for a specific amount of time defined by <code>setBlockTimeout()</code>.\n\n</p>\n<p>The <code>errorCallback</code> will be invoked whenever an exception occurs inside the <code>safeBlockFunction</code>. Exception is caught in a safe manner, so the key and its value will be unlocked for other threads access.\n\n</p>\n<pre><code class=\"js\">jxcore.store.shared.safeBlock(&quot;myNumber&quot;,\n    function () {\n        throw &quot;some error&quot;;\n    },\n    function(err) {\n        console.log(err);\n    }\n);</code></pre>\n",
+              "desc": "<p>Allows to execute number of store related operations on a single <code>key</code> in one continuous safe block.\nDuring it&#39;s execution, access to this element (the key and it&#39;s value) is locked for other threads.\nThe default maximum blocking time is defined by <code>setBlockTimeout()</code> parameter.\n\n</p>\n<p>The <code>safeBlockFunction</code> is the execution block. This should be a function without any arguments.\n\n</p>\n<pre><code class=\"js\">jxcore.store.shared.safeBlock(&quot;myNumber&quot;, function () {\n\n        if (!shared.exists(&quot;myNumber&quot;)) {\n            shared.set(&quot;myNumber&quot;, 0);\n        }\n\n        var n = shared.read(&quot;myNumber&quot;);\n        n = parseInt(n) + 1;\n        shared.set(&quot;myNumber&quot;, n);\n\n        // working with a different key should not be performed in this block:\n        shared.set(&quot;myNumber_2&quot;, 333);\n});</code></pre>\n<p>In the example above we are using a <code>safeBlock</code> to perform multithread-safe increment of <em>myNumber</em> value kept in the shared store.\n\n</p>\n<p>Functionality of the <code>safeBlockFunction</code> should be limited only to operations on a single key kept in the store, because locking mechanism applies only for that <code>key</code> and there is simply no safety guarantee for any other keys.\n\n</p>\n<p>Every <code>safeBlock()</code> invocation locks the key and it&#39;s value for a specific amount of time defined by <code>setBlockTimeout()</code>.\n\n</p>\n<p>The <code>errorCallback</code> will be invoked whenever an exception occurs inside the <code>safeBlockFunction</code>. Exception is caught in a safe manner, so the key and its value will be unlocked for other threads access.\n\n</p>\n<pre><code class=\"js\">jxcore.store.shared.safeBlock(&quot;myNumber&quot;,\n    function () {\n        throw &quot;some error&quot;;\n    },\n    function(err) {\n        console.log(err);\n    }\n);</code></pre>\n",
               "type": "module",
               "displayName": "store.shared.safeBlock(key, safeBlockFunction, errorCallback)"
             },

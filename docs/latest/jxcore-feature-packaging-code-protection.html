@@ -58,6 +58,7 @@
 </li>
 <li><a href="#jxcore_feature_packaging_code_protection_hiding_body_of_functions">Hiding body of functions</a><ul>
 <li><a href="#jxcore_feature_packaging_code_protection_utils_hidemethod_fn">utils.hideMethod(fn)</a></li>
+<li><a href="#jxcore_feature_packaging_code_protection_special_comment">special comment</a></li>
 </ul>
 </li>
 <li><a href="#jxcore_feature_packaging_code_protection_jx_package">JX package</a><ul>
@@ -178,6 +179,17 @@ For this we implemented in JXcore mechanism to hide functions contents, but in t
 
 </p>
 <p><img src="http://jxcore.com/wp-content/uploads/2014/01/jx_hiding_body3.gif" alt="">
+
+</p>
+<h3>special comment<span><a class="mark" href="#jxcore_feature_packaging_code_protection_special_comment" id="jxcore_feature_packaging_code_protection_special_comment">#</a></span></h3>
+<p>As an alternative to <code>jxcore.utils.hideMethod()</code> you can also use a special comment <code>/*_jx_protected_*/</code> inside a function&#39;s body:
+
+</p>
+<pre><code class="js">var func = function() {
+    /*_jx_protected_*/
+    console.log(&quot;hello&quot;);
+}</code></pre>
+<p>It can be placed anywhere, as far it is located between function&#39;s curly brackets.
 
 </p>
 <h2>JX package<span><a class="mark" href="#jxcore_feature_packaging_code_protection_jx_package" id="jxcore_feature_packaging_code_protection_jx_package">#</a></span></h2>

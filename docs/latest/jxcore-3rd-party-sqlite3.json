@@ -22,16 +22,9 @@
         {
           "textRaw": "Description",
           "name": "description",
-          "desc": "<p>Asynchronous, non-blocking <a href=\"http://sqlite.org/\">SQLite3</a> bindings for JXcore and Node.js.\n\n</p>\n",
+          "desc": "<p>Asynchronous, non-blocking SQLite3 bindings for JXcore and Node.js.\n\n</p>\n<p>Besides SQLite3 module, JXcore also has SQLite 3.8.4.3 engine with FTS3, FTS4 embedded.\n\n</p>\n",
           "type": "module",
           "displayName": "Description"
-        },
-        {
-          "textRaw": "Depends",
-          "name": "depends",
-          "desc": "<p>Binaries for most Node versions and platforms are provided by default via <a href=\"https://github.com/springmeyer/node-pre-gyp\">node-pre-gyp</a>.\n\n</p>\n<p>Also works with <a href=\"https://github.com/rogerwang/node-webkit\">node-webkit</a> and sqlcipher.\n\n</p>\n",
-          "type": "module",
-          "displayName": "Depends"
         }
       ],
       "type": "module",
@@ -40,23 +33,9 @@
     {
       "textRaw": "Usage",
       "name": "usage",
-      "desc": "<pre><code class=\"js\">var sqlite3 = require(&#39;sqlite3&#39;).verbose();\nvar db = new sqlite3.Database(&#39;:memory:&#39;);\n\ndb.serialize(function() {\n  db.run(&quot;CREATE TABLE lorem (info TEXT)&quot;);\n\n  var stmt = db.prepare(&quot;INSERT INTO lorem VALUES (?)&quot;);\n  for (var i = 0; i &lt; 10; i++) {\n      stmt.run(&quot;Ipsum &quot; + i);\n  }\n  stmt.finalize();\n\n  db.each(&quot;SELECT rowid AS id, info FROM lorem&quot;, function(err, row) {\n      console.log(row.id + &quot;: &quot; + row.info);\n  });\n});\n\ndb.close();</code></pre>\n",
+      "desc": "<pre><code class=\"js\">var sqlite3 = require(&#39;sqlite3&#39;).verbose();\nvar db = new sqlite3.Database(&#39;:memory:&#39;);\n\ndb.serialize(function() {\n  db.run(&quot;CREATE TABLE lorem (info TEXT)&quot;);\n\n  var stmt = db.prepare(&quot;INSERT INTO lorem VALUES (?)&quot;);\n  for (var i = 0; i &lt; 10; i++) {\n      stmt.run(&quot;Ipsum &quot; + i);\n  }\n  stmt.finalize();\n\n  db.each(&quot;SELECT rowid AS id, info FROM lorem&quot;, function(err, row) {\n      console.log(row.id + &quot;: &quot; + row.info);\n  });\n});\n\ndb.close();</code></pre>\n<p>FTS4 example:\n\n</p>\n<pre><code class=\"js\">var sqlite3 = require(&#39;sqlite3&#39;).verbose();\n\nvar db = new sqlite3.Database(&#39;:memory:&#39;);\n\ndb.serialize(function () {\n    db.run(&quot;CREATE VIRTUAL TABLE ftsTest USING fts4(content TEXT);&quot;);\n\n    var stmt = db.prepare(&quot;INSERT INTO ftsTest VALUES (?)&quot;);\n    for (var i = 1; i &lt; 100; i++) {\n        stmt.run(&quot;A Ipsum &quot; + i);\n    }\n    stmt.finalize();\n    console.log(&quot;virtual fts4 table is written&quot;);\n\n    console.log(&quot;\\nFirst 20 results:\\n&quot;);\n    var str = &quot;SELECT rowid AS id, content FROM ftsTest &quot; +\n              &quot;where content MATCH &#39;Ipsum&#39; LIMIT &quot; + 20;\n\n    db.all(str, function (err, rows) {\n        if (err) {\n            console.log(err + &quot;&quot;);\n        }\n        else {\n            rows.forEach(function (row) {\n                console.log(row.id + &quot;: &quot; + row.content);\n            });\n        }\n    });\n});</code></pre>\n",
       "type": "module",
       "displayName": "Usage"
-    },
-    {
-      "textRaw": "Features",
-      "name": "Features",
-      "desc": "<p>See the <a href=\"https://github.com/mapbox/node-sqlite3/wiki\">API documentation</a> in the wiki.\n\n</p>\n",
-      "type": "module",
-      "displayName": "API"
-    },
-    {
-      "textRaw": "API",
-      "name": "api",
-      "desc": "<p>See the <a href=\"https://github.com/mapbox/node-sqlite3/wiki\">API documentation</a> in the wiki.\n\n</p>\n",
-      "type": "module",
-      "displayName": "API"
     },
     {
       "textRaw": "Contributors",

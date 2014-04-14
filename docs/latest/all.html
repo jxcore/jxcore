@@ -754,6 +754,7 @@
 <li><a href="#all_message_socket">message.socket</a></li>
 </ul>
 </li>
+<li><a href="#all_http_setmaxheaderlength">http.setMaxHeaderLength</a></li>
 </ul>
 </li>
 <li><a href="#all_https">HTTPS</a><ul>
@@ -1095,16 +1096,14 @@
 <li><a href="#all_credits_4">Credits:</a></li>
 <li><a href="#all_installation_4">Installation</a></li>
 <li><a href="#all_description_3">Description</a></li>
-<li><a href="#all_depends">Depends</a></li>
 </ul>
 </li>
 <li><a href="#all_usage">Usage</a></li>
 <li><a href="#all_features">Features</a></li>
-<li><a href="#all_api_1">API</a></li>
 <li><a href="#all_contributors">Contributors</a></li>
 <li><a href="#all_acknowledgments_1">Acknowledgments</a></li>
 <li><a href="#all_license">License</a></li>
-<li><a href="#all_api_2">API</a><ul>
+<li><a href="#all_api_1">API</a><ul>
 <li><a href="#all_new_sqlite3_database_filename_mode_callback">new sqlite3.Database(filename, [mode], [callback])</a></li>
 <li><a href="#all_sqlite3_verbose">sqlite3.verbose()</a></li>
 <li><a href="#all_database_run_sql_param_callback">Database#run(sql, [param, ...], [callback])</a></li>
@@ -1195,6 +1194,7 @@
 </li>
 <li><a href="#all_hiding_body_of_functions">Hiding body of functions</a><ul>
 <li><a href="#all_utils_hidemethod_fn">utils.hideMethod(fn)</a></li>
+<li><a href="#all_special_comment">special comment</a></li>
 </ul>
 </li>
 <li><a href="#all_jx_package">JX package</a><ul>
@@ -1212,6 +1212,30 @@
 </li>
 <li><a href="#all_mesaging">Mesaging</a></li>
 <li><a href="#all_api_server">API Server</a><ul>
+<li><a href="#all_configuration">Configuration</a><ul>
+<li><a href="#all_chunked">chunked</a></li>
+<li><a href="#all_collectorlatency">collectorLatency</a></li>
+<li><a href="#all_console_2">console</a></li>
+<li><a href="#all_consoleinfo">consoleInfo</a></li>
+<li><a href="#all_consolethreadnumber">consoleThreadNumber</a></li>
+<li><a href="#all_enableclientsidesubscription">enableClientSideSubscription</a></li>
+<li><a href="#all_encoding">encoding</a></li>
+<li><a href="#all_httpscertlocation">httpsCertLocation</a></li>
+<li><a href="#all_httpskeylocation">httpsKeyLocation</a></li>
+<li><a href="#all_httpserverpor">httpServerPor</a></li>
+<li><a href="#all_httpsserverport">httpsServerPort</a></li>
+<li><a href="#all_ipaddress">IPAddress</a></li>
+<li><a href="#all_listenertimeout">listenerTimeout</a></li>
+<li><a href="#all_mapiversion">mapiVersion</a></li>
+</ul>
+</li>
+<li><a href="#all_events_2">Events</a><ul>
+<li><a href="#all_subscribe">subscribe</a></li>
+<li><a href="#all_unsubscribe">unsubscribe</a></li>
+<li><a href="#all_sendtogroup">sendToGroup</a></li>
+</ul>
+</li>
+<li><a href="#all_object_env">Object: env</a></li>
 <li><a href="#all_allowedresourcetypes">allowedResourceTypes</a></li>
 <li><a href="#all_addjsmethod_name_method">addJSMethod(name, method)</a></li>
 <li><a href="#all_getconfig_key">getConfig(key)</a></li>
@@ -1225,41 +1249,48 @@
 <li><a href="#all_sendtoall_methodname_params">sendToAll(methodName, params)</a></li>
 <li><a href="#all_setengine_app">setEngine(app)</a></li>
 <li><a href="#all_start_options">start(options)</a></li>
+<li><a href="#all_subscribeclient_env_groupname">subscribeClient(env, groupName)</a></li>
+<li><a href="#all_unsubscribeclient_env_groupname">unSubscribeClient(env, groupName)</a></li>
 </ul>
 </li>
 <li><a href="#all_api_javascript_client">API JavaScript Client</a><ul>
-<li><a href="#all_event_document_onjxready">Event: &#39;document.onjxready&#39;</a></li>
-<li><a href="#all_event_onclose">Event: &#39;OnClose&#39;</a></li>
-<li><a href="#all_event_onerror">Event: &#39;OnError&#39;</a></li>
-<li><a href="#all_jxcore_call_methodname_json_cb">jxcore.Call(methodName, json, cb)</a></li>
-<li><a href="#all_jxcore_close_tx">jxcore.Close(tx)</a></li>
-<li><a href="#all_jxcore_getclientid">jxcore.GetClientId()</a></li>
-<li><a href="#all_jxcore_reconnect">jxcore.ReConnect()</a></li>
-<li><a href="#all_jxcore_sendtogroup_group_methodname_json">jxcore.SendToGroup(group, methodName, json)</a></li>
-<li><a href="#all_jxcore_start_cb">jxcore.Start(cb)</a></li>
-<li><a href="#all_jxcore_subscribe_group_callback">jxcore.Subscribe(group, callback)</a></li>
-<li><a href="#all_jxcore_unsubscribe_group_callback">jxcore.Unsubscribe(group, callback)</a></li>
+<li><a href="#all_events_3">Events</a><ul>
+<li><a href="#all_document_onjxready">document.onjxready</a></li>
+<li><a href="#all_onclose">OnClose</a></li>
+<li><a href="#all_onerror">OnError</a></li>
+<li><a href="#all_onsubscription">OnSubscription</a></li>
+</ul>
+</li>
+<li><a href="#all_call_methodname_json_cb">Call(methodName, json, cb)</a></li>
+<li><a href="#all_close_tx">Close(tx)</a></li>
+<li><a href="#all_getclientid">GetClientId()</a></li>
+<li><a href="#all_reconnect">ReConnect()</a></li>
+<li><a href="#all_sendtogroup_groupname_methodname_json">SendToGroup(groupName, methodName, json)</a></li>
+<li><a href="#all_start_cb">Start(cb)</a></li>
+<li><a href="#all_subscribe_groupname_callback">Subscribe(groupName, callback)</a></li>
+<li><a href="#all_unsubscribe_groupname_callback">Unsubscribe(groupName, callback)</a></li>
 </ul>
 </li>
 <li><a href="#all_api_java_client">API Java Client</a><ul>
-<li><a href="#all_events_2">Events</a><ul>
-<li><a href="#all_event_onerrorreceived">Event: &#39;OnErrorReceived&#39;</a></li>
-<li><a href="#all_event_onclientconnected">Event: &#39;OnClientConnected&#39;</a></li>
-<li><a href="#all_event_onclientdisconnected">Event: &#39;OnClientDisconnected&#39;</a></li>
-<li><a href="#all_event_oneventlog">Event: &#39;OnEventLog&#39;</a></li>
+<li><a href="#all_events_4">Events</a><ul>
+<li><a href="#all_onerrorreceived">OnErrorReceived</a></li>
+<li><a href="#all_onclientconnected">OnClientConnected</a></li>
+<li><a href="#all_onclientdisconnected">OnClientDisconnected</a></li>
+<li><a href="#all_oneventlog">OnEventLog</a></li>
+<li><a href="#all_onsubscription_1">OnSubscription</a></li>
 </ul>
 </li>
 <li><a href="#all_new_client_localtarget_appname_appkey_url_port_secure">new Client(localTarget, appName, appKey, url, port, secure)</a></li>
 <li><a href="#all_call_methodname_params_callback">Call(methodName, params, callback)</a></li>
 <li><a href="#all_connect">Connect()</a></li>
-<li><a href="#all_getclientid">getClientId()</a></li>
+<li><a href="#all_getclientid_1">getClientId()</a></li>
 <li><a href="#all_sendtogroup_string_groupname_string_methodname_object_params">SendToGroup(String groupName, String methodName, Object params)</a></li>
-<li><a href="#all_subscribe_group_callback">Subscribe(group, callback)</a></li>
+<li><a href="#all_subscribe_groupname_callback_1">Subscribe(groupName, callback)</a></li>
 <li><a href="#all_unsubscribe_group_callback">Unsubscribe(group, callback)</a></li>
 </ul>
 </li>
 <li><a href="#all_process_monitor_1">Process Monitor</a><ul>
-<li><a href="#all_api_3">API</a><ul>
+<li><a href="#all_api_2">API</a><ul>
 <li><a href="#all_monitor_followme_callback_waitcallback">monitor.followMe(callback, waitCallback)</a></li>
 <li><a href="#all_monitor_leaveme_callback">monitor.leaveMe(callback)</a></li>
 </ul>
@@ -1267,7 +1298,7 @@
 </ul>
 </li>
 <li><a href="#all_memory_store">Memory Store</a></li>
-<li><a href="#all_api_4">API</a><ul>
+<li><a href="#all_api_3">API</a><ul>
 <li><a href="#all_jxcore_store">jxcore.store</a><ul>
 <li><a href="#all_store_exists_key_element">store.exists(key, element)</a></li>
 <li><a href="#all_store_get_key">store.get(key)</a></li>
@@ -1294,7 +1325,7 @@
 </ul>
 </li>
 <li><a href="#all_multithreaded_javascript_tasks_1">Multithreaded Javascript Tasks</a></li>
-<li><a href="#all_api_5">API</a><ul>
+<li><a href="#all_api_4">API</a><ul>
 <li><a href="#all_event_emptyqueue">Event: &#39;emptyQueue&#39;</a></li>
 <li><a href="#all_event_message_3">Event: &#39;message&#39;</a></li>
 <li><a href="#all_tasks_addtask_method_param_callback_obj">tasks.addTask(method, param, callback, obj)</a></li>
@@ -10773,6 +10804,15 @@ you can use the <code>require(&#39;querystring&#39;).parse</code> function, or p
 request.connection.getPeerCertificate() to obtain the client&#39;s
 authentication details.
 
+</p>
+<h2>http.setMaxHeaderLength<span><a class="mark" href="#all_http_setmaxheaderlength" id="all_http_setmaxheaderlength">#</a></span></h2>
+<p>Sets the maximum header length for the HTTP as well as HTTPS requests (see <code>http.IncomingMessage.headers</code>).
+The default value is 32768.
+You can also disable the limit check by setting value 0.
+
+</p>
+<p>This option is introduced in JXcore for security reasons.
+
 
 </p>
 <h1>HTTPS<span><a class="mark" href="#all_https" id="all_https">#</a></span></h1>
@@ -14673,17 +14713,10 @@ over the execution order of the callbacks. This is similar in concept to JXcore
 
 </p>
 <h2>Description<span><a class="mark" href="#all_description_3" id="all_description_3">#</a></span></h2>
-<p>Asynchronous, non-blocking <a href="http://sqlite.org/">SQLite3</a> bindings for JXcore and Node.js.
+<p>Asynchronous, non-blocking SQLite3 bindings for JXcore and Node.js.
 
 </p>
-<h2>Depends<span><a class="mark" href="#all_depends" id="all_depends">#</a></span></h2>
-<div class="signature"><ul>
-<li>JXcore v.10.x or Node.js v0.8.x or v0.10.x</li>
-</div></ul>
-<p>Binaries for most Node versions and platforms are provided by default via <a href="https://github.com/springmeyer/node-pre-gyp">node-pre-gyp</a>.
-
-</p>
-<p>Also works with <a href="https://github.com/rogerwang/node-webkit">node-webkit</a> and sqlcipher.
+<p>Besides SQLite3 module, JXcore also has SQLite 3.8.4.3 engine with FTS3, FTS4 embedded.
 
 </p>
 <h1>Usage<span><a class="mark" href="#all_usage" id="all_usage">#</a></span></h1>
@@ -14705,6 +14738,38 @@ db.serialize(function() {
 });
 
 db.close();</code></pre>
+<p>FTS4 example:
+
+</p>
+<pre><code class="js">var sqlite3 = require(&#39;sqlite3&#39;).verbose();
+
+var db = new sqlite3.Database(&#39;:memory:&#39;);
+
+db.serialize(function () {
+    db.run(&quot;CREATE VIRTUAL TABLE ftsTest USING fts4(content TEXT);&quot;);
+
+    var stmt = db.prepare(&quot;INSERT INTO ftsTest VALUES (?)&quot;);
+    for (var i = 1; i &lt; 100; i++) {
+        stmt.run(&quot;A Ipsum &quot; + i);
+    }
+    stmt.finalize();
+    console.log(&quot;virtual fts4 table is written&quot;);
+
+    console.log(&quot;\nFirst 20 results:\n&quot;);
+    var str = &quot;SELECT rowid AS id, content FROM ftsTest &quot; +
+              &quot;where content MATCH &#39;Ipsum&#39; LIMIT &quot; + 20;
+
+    db.all(str, function (err, rows) {
+        if (err) {
+            console.log(err + &quot;&quot;);
+        }
+        else {
+            rows.forEach(function (row) {
+                console.log(row.id + &quot;: &quot; + row.content);
+            });
+        }
+    });
+});</code></pre>
 <h1>Features<span><a class="mark" href="#all_features" id="all_features">#</a></span></h1>
 <div class="signature"><ul>
 <li>Straightforward query and parameter binding interface</li>
@@ -14714,11 +14779,9 @@ db.close();</code></pre>
 <li><a href="https://github.com/mapbox/node-sqlite3/wiki/Extensions">Extension support</a></li>
 <li>Big test suite</li>
 <li>Written in modern C++ and tested for memory leaks</li>
+<li>built-in FTS3</li>
+<li>FTS4 enabled</li>
 </div></ul>
-<h1>API<span><a class="mark" href="#all_api_1" id="all_api_1">#</a></span></h1>
-<p>See the <a href="https://github.com/mapbox/node-sqlite3/wiki">API documentation</a> in the wiki.
-
-</p>
 <h1>Contributors<span><a class="mark" href="#all_contributors" id="all_contributors">#</a></span></h1>
 <div class="signature"><ul>
 <li><a href="https://github.com/kkaefer">Konstantin Käfer</a></li>
@@ -14749,7 +14812,7 @@ db.close();</code></pre>
 <p><code>node-sqlite3</code> is <a href="https://github.com/mapbox/node-sqlite3/raw/master/LICENSE">BSD licensed</a>.
 
 </p>
-<h1>API<span><a class="mark" href="#all_api_2" id="all_api_2">#</a></span></h1>
+<h1>API<span><a class="mark" href="#all_api_1" id="all_api_1">#</a></span></h1>
 <h2>new sqlite3.Database(filename, [mode], [callback])<span><a class="mark" href="#all_new_sqlite3_database_filename_mode_callback" id="all_new_sqlite3_database_filename_mode_callback">#</a></span></h2>
 <p>Returns a new Database object and automatically opens the database. There is no separate method to open the database.
 
@@ -15625,6 +15688,17 @@ For this we implemented in JXcore mechanism to hide functions contents, but in t
 <p><img src="http://jxcore.com/wp-content/uploads/2014/01/jx_hiding_body3.gif" alt="">
 
 </p>
+<h3>special comment<span><a class="mark" href="#all_special_comment" id="all_special_comment">#</a></span></h3>
+<p>As an alternative to <code>jxcore.utils.hideMethod()</code> you can also use a special comment <code>/*_jx_protected_*/</code> inside a function&#39;s body:
+
+</p>
+<pre><code class="js">var func = function() {
+    /*_jx_protected_*/
+    console.log(&quot;hello&quot;);
+}</code></pre>
+<p>It can be placed anywhere, as far it is located between function&#39;s curly brackets.
+
+</p>
 <h2>JX package<span><a class="mark" href="#all_jx_package" id="all_jx_package">#</a></span></h2>
 <h3>About JX package file<span><a class="mark" href="#all_about_jx_package_file" id="all_about_jx_package_file">#</a></span></h3>
 <p>The <code>JX</code> package file is what you get as a result of compilation, packaging and encrypting of your project.
@@ -15766,19 +15840,261 @@ When a license or readme file is specified, it can be also displayed in a consol
     console.log(&quot;This code is still under development.&quot;);
 }</code></pre>
 <h1>Mesaging<span><a class="mark" href="#all_mesaging" id="all_mesaging">#</a></span></h1>
-<p>Using JXcore Messaging API, your clients can easily communicate with the server (backend service) as well as with other clients.
+<p>Using JXcore Messaging, your clients can easily communicate with the server (backend service) as well as with other clients.
 
 </p>
 <p>Simply create a custom method. It can be invoked either by any of the clients or by the server itself.
 
 </p>
-<p>If you want to create an online game, chat application, or any other project for multiple users – JXcore Messaging API is for you.
+<p>If you want to create an online game, chat application, or any other project for multiple users – JXcore Messaging is for you.
 
 </p>
-<p>There are some tutorials for using Messaging API available here: <a href="http://jxcore.com/messaging-api/#post-652">My first JXcore Messaging API Server</a>.
+<p>There are some tutorials for using JXcore Messaging available here: <a href="http://jxcore.com/messaging-api/#cat-32">Hello World</a>.
 
 </p>
 <h1>API Server<span><a class="mark" href="#all_api_server" id="all_api_server">#</a></span></h1>
+<h2>Configuration<span><a class="mark" href="#all_configuration" id="all_configuration">#</a></span></h2>
+<p>All of the server&#39;s settings listed below may be changed using <a href="#jxcore_messaging_setconfig_key_value"><code>setConfig()</code></a> method.
+
+</p>
+<h3>chunked<span><a class="mark" href="#all_chunked" id="all_chunked">#</a></span></h3>
+<div class="signature"><ul>
+<li><span class="type">Boolean</span> default <code>true</code></li>
+</div></ul>
+<p>Enables messaging server to send multiple messages at once to the client. This increases performance of JXcore Messaging.
+There are some browser versions, however, which don&#39;t support this feature (for example IE below v8).
+In this case, chunked mode is internally disabled, even if server&#39;s <code>chunked</code> option is set to <code>true</code>.
+
+</p>
+<h3>collectorLatency<span><a class="mark" href="#all_collectorlatency" id="all_collectorlatency">#</a></span></h3>
+<div class="signature"><ul>
+<li><span class="type">Number</span> default 50</li>
+</div></ul>
+<p>Defines interval in milliseconds for pushing messages to the clients.
+Each message, that client has sent to the server or other clients is not processed immediately.
+Instead it is queued and processed together with other messages collected within <code>collectorLatency</code> period.
+This way server stays more responsive, because doesn&#39;t have to deal with each message separately.
+
+</p>
+<h3>console<span><a class="mark" href="#all_console_2" id="all_console_2">#</a></span></h3>
+<div class="signature"><ul>
+<li><span class="type">Boolean</span> default <code>true</code></li>
+</div></ul>
+<p>When enabled, displays log and error messages to the console output.
+
+</p>
+<h3>consoleInfo<span><a class="mark" href="#all_consoleinfo" id="all_consoleinfo">#</a></span></h3>
+<div class="signature"><ul>
+<li><span class="type">Boolean</span> default <code>false</code></li>
+</div></ul>
+<p>When enabled, displays additional (informative) log messages to the console output.
+
+</p>
+<h3>consoleThreadNumber<span><a class="mark" href="#all_consolethreadnumber" id="all_consolethreadnumber">#</a></span></h3>
+<div class="signature"><ul>
+<li><span class="type">Boolean</span> default <code>true</code></li>
+</div></ul>
+<p>When JXcore Messaging server runs in multithreaded mode and this option is enabled, each of log and error messages displayed to the console
+contains information about thread ID, from which the message comes.
+
+</p>
+<p>Example output:
+
+</p>
+<pre><code>Thread#1 JXcore Messaging v0.22
+Thread#0 JXcore Messaging v0.22
+Thread#1 HTTP  -&gt; http://192.168.1.11:8000/test
+Thread#0 HTTP  -&gt; http://192.168.1.11:8000/test</code></pre>
+<h3>enableClientSideSubscription<span><a class="mark" href="#all_enableclientsidesubscription" id="all_enableclientsidesubscription">#</a></span></h3>
+<div class="signature"><ul>
+<li><span class="type">Boolean</span> default <code>false</code></li>
+</div></ul>
+<p>When this option is set to <code>false</code> (and it is by default), the client&#39;s methods <code>Subscribe()</code> and <code>Unsubscribe()</code> are disabled.
+They still exist in client&#39;s API, but invoking them will have no effect, since the calls will be ignored on the server-side.
+Client&#39;s are still able to send messages to the groups, but since they cannot subscribe o them, it should be done by the server.
+See server-side methods <a href="#jxcore_messaging_subscribeclient_env_groupname"><code>subscribeClient()</code></a> and <a href="#jxcore_messaging_unsubscribeclient_env_groupname"><code>unSubscribeClient()</code></a>.
+
+</p>
+<h3>encoding<span><a class="mark" href="#all_encoding" id="all_encoding">#</a></span></h3>
+<div class="signature"><ul>
+<li><span class="type">String</span> default &quot;UTF-8&quot;</li>
+</div></ul>
+<p>Defines encoding type of messages being sent both ways between server and client&#39;s.
+
+</p>
+<h3>httpsCertLocation<span><a class="mark" href="#all_httpscertlocation" id="all_httpscertlocation">#</a></span></h3>
+<h3>httpsKeyLocation<span><a class="mark" href="#all_httpskeylocation" id="all_httpskeylocation">#</a></span></h3>
+<ul>
+<li>{String} default null</li>
+</ul>
+<p>Those both options define locations for SSL certificate files. See also: <code>httpsServerPort</code> option.
+
+</p>
+<h3>httpServerPor<span><a class="mark" href="#all_httpserverpor" id="all_httpserverpor">#</a></span></h3>
+<div class="signature"><ul>
+<li><span class="type">Number</span> default 8000</li>
+</div></ul>
+<p>Defines port for HTTP server of JXcore Messaging Server.
+
+</p>
+<h3>httpsServerPort<span><a class="mark" href="#all_httpsserverport" id="all_httpsserverport">#</a></span></h3>
+<div class="signature"><ul>
+<li><span class="type">Number</span> default 0</li>
+</div></ul>
+<p>Defines port for HTTPS (SSL) server of JXcore Messaging.
+The default value 0 also disables SSL support and it means, that JXcore Messaging backend will run based on regular HTTP protocol.
+When <code>httpsServerPort</code> is set to a number, both <code>httpsCertLocation</code> and <code>httpsKeyLocation</code> should be provided and be a valid file paths,
+otherwise SSL support will not be enabled.
+
+</p>
+<h3>IPAddress<span><a class="mark" href="#all_ipaddress" id="all_ipaddress">#</a></span></h3>
+<div class="signature"><ul>
+<li><span class="type">String</span> default &quot;localhost&quot;;</li>
+</div></ul>
+<p>Defines the IP address, on which JXcore Messaging backend&#39;s HTTP or HTTPS server will be running.
+By default it&#39;s &quot;localhost&quot;, but you may also use any valid IP address, like &quot;192.168.1.11&quot; or any other.
+
+</p>
+<p>Client&#39;s will use this value to connect to the server, so the IP should be always accessible for them.
+For example, you should avoid situations in which JXcore Messaging server is configured for IP set to &quot;localhost&quot; or &quot;127.0.0.1&quot;,
+but client&#39;s are connecting from remote machines using server&#39;s public address.
+Although this might work, and client&#39;s might connect it might also generate errors.
+For example some browsers may fail to use WebSockets and will try to switch to older HTTP protocols.
+
+</p>
+<h3>listenerTimeout<span><a class="mark" href="#all_listenertimeout" id="all_listenertimeout">#</a></span></h3>
+<div class="signature"><ul>
+<li><span class="type">Number</span> default 60000</li>
+</div></ul>
+<p>Defines long polling request time in milliseconds. The maximum value is should not be greater that 120000 (120 seconds).
+
+</p>
+<h3>mapiVersion<span><a class="mark" href="#all_mapiversion" id="all_mapiversion">#</a></span></h3>
+<div class="signature"><ul>
+<li><span class="type">String</span></li>
+</div></ul>
+<p>Contains version number of JXcore Messaging Server. For example &quot;0.22&quot;.
+It is used mostly for informational purpose and is displayed for example when server starts from tthe console window.
+
+</p>
+<h2>Events<span><a class="mark" href="#all_events_2" id="all_events_2">#</a></span></h2>
+<h3>subscribe<span><a class="mark" href="#all_subscribe" id="all_subscribe">#</a></span></h3>
+<ul>
+<li><code>env</code> {Object} - see <a href="#jxcore_messaging_object_env">Object: <code>env</code></a></li>
+<li><code>params</code> {Object}<ul>
+<li><code>req</code> {Object} - object containing information about client&#39;s request</li>
+<li><code>group</code> {String} - name of the group, to which user subscribes</li>
+<li><code>groups</code> {Array} - names of the groups, to which user already belongs</li>
+</ul>
+</li>
+<li><code>allow</code> {Function}</li>
+</ul>
+<p>Condition for this event to be fired is that server-side <a href="#jxcore_messaging_enableclientsidesubscription"><code>enableClientSideSubscription</code></a> option should enabled.
+By default it is set to false, and it means, that client&#39;s cannot subscribe to a channels nor unsubscribe from them.
+In that case the event <code>subscribe</code> is never raised.
+
+</p>
+<p>When <code>enableClientSideSubscription</code> is set to true, the <code>subscribe</code> event fires whenever client subscribes to a <code>group</code> by calling its <code>Subscribe()</code> method.
+If no listener is attached to this event, user subscribes always.
+
+</p>
+<p>Attaching to this event gives you control, whether to allow the user to be subscribed or not.
+The <code>allow</code> argument is a function, which should be called if you want to accept user&#39;s subscription request.
+Otherwise user will not be subscribed to a <code>group</code>, and client&#39;s callback will not be invoked.
+
+</p>
+<p>client-side (index.html):
+
+</p>
+<pre><code class="js">var callback = function(group) {
+    alert(&quot;subscribed to &quot; + group);
+};
+
+jxcore.Subscribe(&quot;group1&quot;, callback);</code></pre>
+<p>server-side (my_server.js):
+</p>
+<pre><code class="js">server.on(&quot;subscribe&quot;, function(env, params, allow) {
+    // don&#39;t ever subscribe to &quot;admin_group&quot;
+    if (params.group !== &quot;admin_group&quot;) {
+        allow();
+    }
+});</code></pre>
+<h3>unsubscribe<span><a class="mark" href="#all_unsubscribe" id="all_unsubscribe">#</a></span></h3>
+<div class="signature"><ul>
+<li><code>env</code> <span class="type">Object</span> - see <a href="#jxcore_messaging_object_env">Object: <code>env</code></a></li>
+<li><code>params</code> <span class="type">Object</span><ul>
+<li><code>req</code> <span class="type">Object</span></li>
+<li><code>group</code> <span class="type">String</span></li>
+<li><code>groups</code> <span class="type">Array</span></li>
+</ul>
+</li>
+<li><code>allow</code> <span class="type">Function</span></li>
+</div></ul>
+<p>Condition for this event to be fired is that server-side <a href="#jxcore_messaging_enableclientsidesubscription"><code>enableClientSideSubscription</code></a> option should enabled.
+By default it is set to false, and it means, that client&#39;s cannot subscribe to a channels nor unsubscribe from them.
+In that case the event <code>subscribe</code> is never raised.
+
+</p>
+<p>When <code>enableClientSideSubscription</code> is set to true, the <code>unsubscribe</code> event fires whenever client unsubscribes from a <code>group</code> by calling its <code>Unsubscribe()</code> method.
+If no listener is attached to this event, user unsubscribes always.
+
+</p>
+<p>Attaching to this event gives you control, whether to allow the user to be unsubscribed or not.
+
+</p>
+<p>See also: <a href="#jxcore_messaging_event_subscribe">Event: &#39;subscribe&#39;</a>
+
+</p>
+<h3>sendToGroup<span><a class="mark" href="#all_sendtogroup" id="all_sendtogroup">#</a></span></h3>
+<div class="signature"><ul>
+<li><code>env</code> <span class="type">Object</span> - see <a href="#jxcore_messaging_object_env">Object: <code>env</code></a></li>
+<li><code>params</code> <span class="type">Object</span><ul>
+<li><code>req</code> <span class="type">Object</span> - object containing information about client&#39;s request</li>
+<li><code>group</code> <span class="type">String</span> - group, to which client is sending a message</li>
+<li><code>method</code> <span class="type">Array</span> - name of the method called by a client with <code>SendToGroup()</code></li>
+<li><code>message</code> <span class="type">Object</span> - contents of a message</li>
+</ul>
+</li>
+<li><code>allow</code> <span class="type">Function</span></li>
+</div></ul>
+<p>This event fires, whenever user calls <code>SendToGroup()</code> method.
+If no listener is attached to this event, messages are always sent.
+
+</p>
+<p>Attaching to this event gives you control, whether to allow for sending particular message or not.
+
+</p>
+<p>The <code>allow</code> argument is a function, which should be called if you want to let the message to be sent.
+
+</p>
+<p>client-side (index.html):
+
+</p>
+<pre><code class="js">    btnSend.onclick = function() {
+        jxcore.SendToGroup(&#39;group1&#39;, &quot;clientsMethod&quot;, { txt: &quot;my_message&quot;} );
+    };</code></pre>
+<p>server-side (my_server.js):
+
+</p>
+<pre><code class="js">server.on(&#39;sendToGroup&#39;, function(env, params, allow) {
+    if (params.group === &quot;group&quot; &amp;&amp; params.method === &quot;clientsMethod&quot;) {
+        allow();
+    }
+});</code></pre>
+<h2>Object: env<span><a class="mark" href="#all_object_env" id="all_object_env">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>ClientId</code> <span class="type">String</span></li>
+<li>&#39;ApplicationName` <span class="type">String</span></li>
+<li>&#39;SessionID` <span class="type">String</span></li>
+<li><code>Index</code> <span class="type">number</span></li>
+</div></ul>
+<p>This object is passed to some of the methods described in this document. It contains information about a call made from a client&#39;s side.
+For example, when a client invokes server&#39;s method by using <code>Call()</code>, the server&#39;s method will receive <code>env</code> object apart from argument passed to <code>Call()</code>.
+
+</p>
+<p><code>Index</code> represents id of client&#39;s callback and is used by <code>sendCallback()</code> method.
+
+</p>
 <h2>allowedResourceTypes<span><a class="mark" href="#all_allowedresourcetypes" id="all_allowedresourcetypes">#</a></span></h2>
 <p>List of supported types for resource files.
 
@@ -15808,23 +16124,29 @@ When a license or readme file is specified, it can be also displayed in a consol
 <h2>addJSMethod(name, method)<span><a class="mark" href="#all_addjsmethod_name_method" id="all_addjsmethod_name_method">#</a></span></h2>
 <div class="signature"><ul>
 <li><code>name</code> <span class="type">String</span></li>
-<li><code>method</code> <span class="type">Function</span></li>
+<li><code>method</code> <span class="type">Function</span><ul>
+<li><code>env</code> <span class="type">Object</span></li>
+<li><code>params</code> <span class="type">Object</span></li>
+</ul>
+</li>
 </div></ul>
-<p>Adds custom method to the application. This method can be called from the client’s side.
+<p>Adds custom method to the application and it can be called from the client’s side.
+Method can receive two parameters: <a href="#jxcore_messaging_object_env"><code>env</code></a> as well as <code>params</code>, which is the value sent by client.
 
 </p>
-<p>server-side (my_server.js):
-
-</p>
-<pre><code class="js">server.addJSMethod(&quot;chatMessage&quot;, function (env, params) {
-    server.sendToAll(&quot;addText&quot;, params );
-});</code></pre>
 <p>client-side (index.html):
 
 </p>
 <pre><code class="html">&lt;script type=&quot;text/javascript&quot;&gt;
     jxcore.Call(&quot;chatMessage&quot;, &quot;hello&quot;);
 &lt;/script&gt;</code></pre>
+<p>server-side (my_server.js):
+
+</p>
+<pre><code class="js">server.addJSMethod(&quot;chatMessage&quot;, function (env, params) {
+    // params contains &quot;Hello&quot; string
+    server.sendToAll(&quot;addText&quot;, params );
+});</code></pre>
 <h2>getConfig(key)<span><a class="mark" href="#all_getconfig_key" id="all_getconfig_key">#</a></span></h2>
 <div class="signature"><ul>
 <li><code>key</code> <span class="type">String</span></li>
@@ -15922,7 +16244,8 @@ Now, the both combine into &quot;/chat/assets&quot;.
 <li><code>env</code> <span class="type">Object</span></li>
 <li><code>params</code> <span class="type">Object</span></li>
 </div></ul>
-<p>Calls the callback method at specific client. The <code>env</code> is the same parameter, which you received as argument for a custom method defined by you with <code>addJSMethod()</code>, while <code>params</code> is an argument for the callback. It can be anything – string, number or json literal object containing many values.
+<p>Calls the callback method at specific client. The <code>env</code> is the same parameter, which you received as argument for a custom method defined by you with <code>addJSMethod()</code>,
+while <code>params</code> is an argument for the callback. It can be anything – string, number or json literal object containing many values.
 
 </p>
 <pre><code class="js">server.addJSMethod(&quot;serverMethod&quot;, function (env, params) {
@@ -16000,8 +16323,69 @@ Now, the both combine into &quot;/chat/assets&quot;.
 <p>Starts JXcore application with optional <code>options</code> for the server. Once started, it will be accessible to all clients.
 
 </p>
+<h2>subscribeClient(env, groupName)<span><a class="mark" href="#all_subscribeclient_env_groupname" id="all_subscribeclient_env_groupname">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>env</code> <span class="type">Object</span> - see <a href="#jxcore_messaging_object_env">Object: <code>env</code></a></li>
+<li><code>groupName</code> <span class="type">String</span></li>
+</div></ul>
+<p>Subscribes the client to a <code>groupName</code>, or channel. This is server-side equivalent of <code>Subscribe()</code> method from client&#39;s API.
+
+</p>
+<p>From now on, messages sent to that group by any other subscriber or server will be received by the client.
+Also the client can send messages to this group – see <code>SendToGroup()</code> method.
+
+</p>
+<p>This method should be used in one of server&#39;s custom method defined with <code>addJSMethod()</code>,
+because it requires the <a href="#jxcore_messaging_object_env"><code>env</code></a> object containing information about client&#39;s call.
+
+</p>
+<p>For example, when client calls:
+
+</p>
+<pre><code class="js">    jxcore.Call(&quot;someMethod&quot;, true);</code></pre>
+<p>on the server-side you can use it to subscribe him to a group:
+
+</p>
+<pre><code class="js">server.addJSMethod(&quot;someMethod&quot;, function(env, param) {
+    if (param === true) {
+        server.subscribeClient(env, &quot;testGroup&quot;);
+    }
+});</code></pre>
+<p>Of course you may apply any logic or algorithm for making decision, whether subscribe the client and how.
+
+</p>
+<h2>unSubscribeClient(env, groupName)<span><a class="mark" href="#all_unsubscribeclient_env_groupname" id="all_unsubscribeclient_env_groupname">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>env</code> <span class="type">Object</span> - see <a href="#jxcore_messaging_object_env">Object: <code>env</code></a></li>
+<li><code>groupName</code> <span class="type">String</span></li>
+</div></ul>
+<p>Unsubscribes the client from a <code>groupName</code>, or channel. This is server-side equivalent of <code>Unsubscribe()</code> method from client&#39;s API.
+
+</p>
+<p>From now on, messages sent to that group cannot be received by this client.
+Also, the client cannot messages to that group.
+
+</p>
+<p>The usage is analogous to the <code>subscribeClient()</code> method.
+
+</p>
+<p>client-side:
+
+</p>
+<pre><code class="js">    jxcore.Call(&quot;someMethod&quot;, false);</code></pre>
+<p>server-side:
+
+</p>
+<pre><code class="js">server.addJSMethod(&quot;someMethod&quot;, function(env, param) {
+    if (param === true) {
+        server.subscribeClient(env, &quot;testGroup&quot;);
+    } else {
+        server.unSubscribeClient(env, &quot;testGroup&quot;);
+    }
+});</code></pre>
 <h1>API JavaScript Client<span><a class="mark" href="#all_api_javascript_client" id="all_api_javascript_client">#</a></span></h1>
-<h2>Event: &#39;document.onjxready&#39;<span><a class="mark" href="#all_event_document_onjxready" id="all_event_document_onjxready">#</a></span></h2>
+<h2>Events<span><a class="mark" href="#all_events_3" id="all_events_3">#</a></span></h2>
+<h3>document.onjxready<span><a class="mark" href="#all_document_onjxready" id="all_document_onjxready">#</a></span></h3>
 <p>There is a special event <code>document.onjxready</code>, which is called right after the JXcore script is loaded:
 
 </p>
@@ -16043,19 +16427,20 @@ Now, the both combine into &quot;/chat/assets&quot;.
         }
     };
 &lt;/script&gt;</code></pre>
-<h2>Event: &#39;OnClose&#39;<span><a class="mark" href="#all_event_onclose" id="all_event_onclose">#</a></span></h2>
+<h3>OnClose<span><a class="mark" href="#all_onclose" id="all_onclose">#</a></span></h3>
 <div class="signature"><ul>
-<li>reconnecting <span class="type">Boolean</span></li>
+<li><code>reconnecting</code> <span class="type">Boolean</span></li>
 </div></ul>
-<p>This event is fired every time, when the client loses connection with the server. The <code>reconnecting</code> parameter has a <code>true</code> value, if client already tries to reconnect.
+<p>This event is fired every time, when the client loses connection with the server.
+The <code>reconnecting</code> parameter has a <code>true</code> value, if client already tries to reconnect.
 
 </p>
 <pre><code class="js">jxcore.OnClose = function (reconnecting) {
     msg.innerHTML += &quot;Disconnected.&lt;BR&gt;&quot;;
 };</code></pre>
-<h2>Event: &#39;OnError&#39;<span><a class="mark" href="#all_event_onerror" id="all_event_onerror">#</a></span></h2>
+<h3>OnError<span><a class="mark" href="#all_onerror" id="all_onerror">#</a></span></h3>
 <div class="signature"><ul>
-<li>err <span class="type">String</span></li>
+<li><code>err</code> <span class="type">String</span></li>
 </div></ul>
 <p>This event is emitted every time, the error occurs.
 
@@ -16063,17 +16448,58 @@ Now, the both combine into &quot;/chat/assets&quot;.
 <pre><code class="js">jxcore.OnError = function (err) {
     msg.innerHTML += err;
 }</code></pre>
-<h2>jxcore.Call(methodName, json, cb)<span><a class="mark" href="#all_jxcore_call_methodname_json_cb" id="all_jxcore_call_methodname_json_cb">#</a></span></h2>
+<h3>OnSubscription<span><a class="mark" href="#all_onsubscription" id="all_onsubscription">#</a></span></h3>
 <div class="signature"><ul>
-<li>methodName <span class="type">String</span></li>
-<li>json <span class="type">Object</span></li>
-<li>cb <span class="type">Function</span></li>
+<li><code>subscribed</code> <span class="type">Boolean</span></li>
+<li><code>groupName</code> <span class="type">String</span></li>
 </div></ul>
-<p>Invokes specific custom method named <code>methodName</code> defined on the server-side and passes to it one parameter <code>json</code>. The client&#39;s <code>cb</code> callback is optional, but when provided, it will be called after server completes invoking the method.
+<p>This event is raised when client gets subscribed to a group or unsubscribed from it by a call made from a server-side (<code>subscribeClient()</code> or <code>unSubscribeClient()</code> methods).
 
 </p>
-<p>In the example below we call the server-side method <em>serverMethod</em> from the client-side.
-In turn, as a response, the backend service will invoke the client&#39;s local <em>callback</em> function:
+<p>The <code>subscribed</code> value indicates, whether this event was raised as a result of subscription (<code>true</code>) or unsubscription (<code>false</code>) request.
+The <code>groupName</code> is the name of the group, for which the event occured.
+
+</p>
+<p>When subscription/unsubscription request was made by a client&#39;s method <code>Subscribe()</code> or <code>Unsubscribe()</code>, the event <code>OnSubscription</code> is not raised, but instead you may provide the callback for those methods.
+Please refer to their description for more details.
+
+</p>
+<p>client-side:
+
+</p>
+<pre><code class="js">jxcore.Call(&quot;someMethod&quot;, true);
+
+jxcore.OnSubscription = function (subscribed,  group) {
+    if (subscribed) {
+        alert(&quot;event: subscribed to a group &quot; + group);
+    } else {
+        alert(&quot;event: unsubscribed from a group &quot; + group);
+    }
+};</code></pre>
+<p>server-side:
+
+</p>
+<pre><code class="js">server.addJSMethod(&quot;someMethod&quot;, function(env, param) {
+    if (param === true) {
+        server.subscribeClient(env, &quot;testGroup&quot;);
+    }
+});</code></pre>
+<h2>Call(methodName, json, cb)<span><a class="mark" href="#all_call_methodname_json_cb" id="all_call_methodname_json_cb">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>methodName</code> <span class="type">String</span></li>
+<li><code>json</code> <span class="type">Object</span></li>
+<li><code>callback</code> <span class="type">Function</span><ul>
+<li><code>param</code> <span class="type">Object</span></li>
+</ul>
+</li>
+</div></ul>
+<p>Invokes specific custom method named <code>methodName</code> defined on the server-side and passes to it one parameter <code>json</code>.
+The client&#39;s <code>callback</code> is optional, but when provided, it will be called after server completes invoking the method
+and will receive <code>param</code> argument sent from the server-side.
+
+</p>
+<p>In the example below we call the server-side method &quot;serverMethod&quot; from the client-side.
+In turn, as a response, the backend service will invoke the client&#39;s local <code>callback</code> function:
 
 </p>
 <pre><code class="js">var callback = function(param) {
@@ -16087,46 +16513,51 @@ jxcore.Call(&quot;serverMethod&quot;, &quot;hello&quot;, callback);</code></pre>
 <pre><code class="js">jxcore.Call(&quot;serverMethod&quot;, &quot;hello&quot;, function(param) {
     alert(param);
 });</code></pre>
-<h2>jxcore.Close(tx)<span><a class="mark" href="#all_jxcore_close_tx" id="all_jxcore_close_tx">#</a></span></h2>
+<h2>Close(tx)<span><a class="mark" href="#all_close_tx" id="all_close_tx">#</a></span></h2>
 <div class="signature"><ul>
-<li>tx <span class="type">Boolean</span></li>
+<li><code>tx</code> <span class="type">Boolean</span></li>
 </div></ul>
-<p>Closes client and disconnects from server.
+<p>Closes client and disconnects from the server.
 
 </p>
-<p>The <code>tx</code> parameter is optional. If set to <code>false</code>, the <code>OnClose</code> event will also be invoked with <code>false</code> value as an argument: <code>OnClose(false)</code>. If <code>true</code> - <code>OnClose</code> event will not get invoked.
+<p>The <code>tx</code> parameter is optional. If set to <code>false</code>, the <code>OnClose</code> event will also be invoked with <code>false</code> value as an argument: <code>OnClose(false)</code>.
+If <code>true</code> - then <code>OnClose</code> event will not get invoked.
 
 </p>
-<h2>jxcore.GetClientId()<span><a class="mark" href="#all_jxcore_getclientid" id="all_jxcore_getclientid">#</a></span></h2>
+<h2>GetClientId()<span><a class="mark" href="#all_getclientid" id="all_getclientid">#</a></span></h2>
 <p>Gets the id of the client, which is an unique string value.
 
 </p>
-<h2>jxcore.ReConnect()<span><a class="mark" href="#all_jxcore_reconnect" id="all_jxcore_reconnect">#</a></span></h2>
+<h2>ReConnect()<span><a class="mark" href="#all_reconnect" id="all_reconnect">#</a></span></h2>
 <p>Forces the client to reconnect to the server.
 
 </p>
-<h2>jxcore.SendToGroup(group, methodName, json)<span><a class="mark" href="#all_jxcore_sendtogroup_group_methodname_json" id="all_jxcore_sendtogroup_group_methodname_json">#</a></span></h2>
+<h2>SendToGroup(groupName, methodName, json)<span><a class="mark" href="#all_sendtogroup_groupname_methodname_json" id="all_sendtogroup_groupname_methodname_json">#</a></span></h2>
 <div class="signature"><ul>
-<li>groupName <span class="type">String</span></li>
-<li>methodName <span class="type">String</span></li>
-<li>json <span class="type">Object</span></li>
+<li><code>groupName</code> <span class="type">String</span></li>
+<li><code>methodName</code> <span class="type">String</span></li>
+<li><code>json</code> <span class="type">Object</span></li>
 </div></ul>
-<p>Sends message to all clients, that have already subscribed to the specific <code>groupName</code>. The message is passed as <code>json</code> argument to the target&#39;s method named <code>methodName</code>.
+<p>Sends message to all of the clients, that have already subscribed to the specific <code>groupName</code>.
+The message is passed as <code>json</code> argument to the target&#39;s method named <code>methodName</code>.
 The message can be any value, primitive (string, number, etc.) or json literal object.
-
-</p>
-<p>The <em>addText</em> method should be available on every client, which is subscribed to <em>programmers</em> group.
-While invoking the <em>addText</em> method at each client, the server will pass { obj : &quot;value&quot; } as an argument.
 
 </p>
 <pre><code class="js">document.getElementById(&quot;btnSend&quot;).onclick = function(){
     jxcore.SendToGroup(&quot;programmers&quot;, &quot;addText&quot;, { obj : &quot;value&quot; } );
 };</code></pre>
-<h2>jxcore.Start(cb)<span><a class="mark" href="#all_jxcore_start_cb" id="all_jxcore_start_cb">#</a></span></h2>
+<p>The &quot;addText&quot; method should be available on every client which is subscribed to &quot;programmers&quot; group.
+While invoking the &quot;addText&quot; method at each client, the server will pass { obj : &quot;value&quot; } as an argument.
+
+</p>
+<h2>Start(cb)<span><a class="mark" href="#all_start_cb" id="all_start_cb">#</a></span></h2>
 <div class="signature"><ul>
-<li>cb <span class="type">Function</span></li>
+<li><code>callback</code> <span class="type">Function</span><ul>
+<li><code>status</code> <span class="type">Boolean</span></li>
+</ul>
+</li>
 </div></ul>
-<p>Starts JXcore client. Connects to the server, and when it succeedes - the client’s callback <code>cb</code> is called.
+<p>Starts JXcore client. Connects to the server, and when it succeeds - the client’s callback <code>callback</code> is called.
 
 </p>
 <pre><code class="js">document.onjxready = function () {
@@ -16141,96 +16572,129 @@ While invoking the <em>addText</em> method at each client, the server will pass 
         // see tutorials for more usage
     });
 };</code></pre>
-<h2>jxcore.Subscribe(group, callback)<span><a class="mark" href="#all_jxcore_subscribe_group_callback" id="all_jxcore_subscribe_group_callback">#</a></span></h2>
+<h2>Subscribe(groupName, callback)<span><a class="mark" href="#all_subscribe_groupname_callback" id="all_subscribe_groupname_callback">#</a></span></h2>
 <div class="signature"><ul>
-<li>group <span class="type">String</span></li>
-<li>callback <span class="type">Function</span></li>
+<li><code>groupName</code> <span class="type">String</span></li>
+<li><code>callback</code> <span class="type">Function</span><ul>
+<li><code>groupName</code> <span class="type">String</span></li>
+</ul>
+</li>
 </div></ul>
-<p>Subscribes the client to a <code>group</code>, or channel. From now on, messages sent to that group by any other subscriber will be received by the client. Also the client can send messages to this group – see <code>jxcore.SendToGroup()</code> method.
-After the server will successfully subscribe the client to the <code>group</code>, the client&#39;s <code>callback</code> will be called.
+<p>Subscribes the client to a <code>groupName</code>, or channel. From now on, messages sent to that group by any other subscriber will be received by the client.
+Also the client can send messages to this group – see <code>SendToGroup()</code> method.
+After the server will successfully subscribe the client to the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.
 
 </p>
-<pre><code class="js">jxcore.Subscribe(&quot;programmers&quot;, function() {
-    alert(&quot;subscribed&quot;);
+<pre><code class="js">jxcore.Subscribe(&quot;programmers&quot;, function(groupName) {
+    alert(&quot;subscribed to group: &quot; + groupName);
 });</code></pre>
-<h2>jxcore.Unsubscribe(group, callback)<span><a class="mark" href="#all_jxcore_unsubscribe_group_callback" id="all_jxcore_unsubscribe_group_callback">#</a></span></h2>
+<h2>Unsubscribe(groupName, callback)<span><a class="mark" href="#all_unsubscribe_groupname_callback" id="all_unsubscribe_groupname_callback">#</a></span></h2>
 <div class="signature"><ul>
-<li>group <span class="type">String</span></li>
-<li>callback <span class="type">Function</span></li>
+<li><code>groupName</code> <span class="type">String</span></li>
+<li><code>callback</code> <span class="type">Function</span><ul>
+<li><code>groupName</code> <span class="type">String</span></li>
+</ul>
+</li>
 </div></ul>
-<p>Unsubscribes the client from a <code>group</code>, or channel. From now on, messages sent to that group cannot be received by this client.
-After the server will successfully unsubscribe the client from the <code>group</code>, the client&#39;s <code>callback</code> will be called.
+<p>Unsubscribes the client from a <code>groupName</code>, or channel. From now on, messages sent to that group cannot be received by this client.
+After the server will successfully unsubscribe the client from the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.
 
 </p>
-<pre><code class="js">jxcore.Unsubscribe(&quot;programmers&quot;, function() {
-    alert(&quot;unsubscribed&quot;);
+<pre><code class="js">jxcore.Unsubscribe(&quot;programmers&quot;, function(groupName) {
+    alert(&quot;unsubscribed from a group:&quot; + groupName);
 });</code></pre>
 <h1>API Java Client<span><a class="mark" href="#all_api_java_client" id="all_api_java_client">#</a></span></h1>
 <p>There is a tutorial showing, how to consume JXcore Messaging API from a <a href="http://jxcore.com/messaging-api/#post-665">Java Client</a>.
 
 </p>
-<h2>Events<span><a class="mark" href="#all_events_2" id="all_events_2">#</a></span></h2>
-<p>Messaging module for Java defines events in a separate class <code>jxcore.ClientEvents</code>. In order to listen for client&#39;s events, we need to instantiate this class and assign to <code>client.Events</code> property:
+<h2>Events<span><a class="mark" href="#all_events_4" id="all_events_4">#</a></span></h2>
+<p>Messaging module for Java defines events in a separate class <code>ClientEvents</code>. In order to listen for client&#39;s events, we need to instantiate this class and assign to <code>client.Events</code> property:
 
 </p>
 <pre><code class="java">import jxcore.*;
 
 jxcore.ClientEvents events = new ClientEvents(){
-    @Override public void OnErrorReceived(Client c, String Message) {
-        //Error received
+    @Override
+    public void OnErrorReceived(Client c, String Message) {
+        // Error received
     }
-    @Override public void OnClientConnected(Client c) {
-        //Client is connected
+    @Override
+    public void OnClientConnected(Client c) {
+        // Client is connected
     }
-    @Override public void OnClientDisconnected(Client c) {
-        //Client is disconnected
+    @Override
+    public void OnClientDisconnected(Client c) {
+        // Client is disconnected
     }
-    @Override public void OnEventLog(Client c, String log, LogLevel level) {
-        //get the event log from here
+    @Override
+    public void OnEventLog(Client c, String log, LogLevel level) {
+        // get the event log from here
+    }
+    @Override
+    public void OnSubscription(Client c, Boolean subscribed, String group) {
+        // Client was subscribed to a group or unsubscribed from a group
+        // by a server-side call
     }
 };
 //now we may define this listener into our Client instance
 client.Events = event;</code></pre>
-<h3>Event: &#39;OnErrorReceived&#39;<span><a class="mark" href="#all_event_onerrorreceived" id="all_event_onerrorreceived">#</a></span></h3>
+<h3>OnErrorReceived<span><a class="mark" href="#all_onerrorreceived" id="all_onerrorreceived">#</a></span></h3>
 <div class="signature"><ul>
-<li>client <span class="type">jxcore.Client</span></li>
-<li>message <span class="type">String</span></li>
+<li><code>client</code> <span class="type">jxcore.Client</span></li>
+<li><code>message</code> <span class="type">String</span></li>
 </div></ul>
 <p>This event is emitted whenever an error occurs at the <code>client</code>.
 
 </p>
-<h3>Event: &#39;OnClientConnected&#39;<span><a class="mark" href="#all_event_onclientconnected" id="all_event_onclientconnected">#</a></span></h3>
+<h3>OnClientConnected<span><a class="mark" href="#all_onclientconnected" id="all_onclientconnected">#</a></span></h3>
 <div class="signature"><ul>
-<li>client <span class="type">jxcore.Client</span></li>
+<li><code>client</code> <span class="type">jxcore.Client</span></li>
 </div></ul>
 <p>This event is emitted after the <code>client</code> successfully connects to the server.
 
 </p>
-<h3>Event: &#39;OnClientDisconnected&#39;<span><a class="mark" href="#all_event_onclientdisconnected" id="all_event_onclientdisconnected">#</a></span></h3>
+<h3>OnClientDisconnected<span><a class="mark" href="#all_onclientdisconnected" id="all_onclientdisconnected">#</a></span></h3>
 <div class="signature"><ul>
-<li>client <span class="type">jxcore.Client</span></li>
+<li><code>client</code> <span class="type">jxcore.Client</span></li>
 </div></ul>
 <p>This event is emitted when the <code>client</code> loses its connection with the server.
 
 </p>
-<h3>Event: &#39;OnEventLog&#39;<span><a class="mark" href="#all_event_oneventlog" id="all_event_oneventlog">#</a></span></h3>
+<h3>OnEventLog<span><a class="mark" href="#all_oneventlog" id="all_oneventlog">#</a></span></h3>
 <div class="signature"><ul>
-<li>client <span class="type">jxcore.Client</span></li>
-<li>log <span class="type">String</span></li>
-<li>level <span class="type">jxcore.LogLevel</span></li>
+<li><code>client</code> <span class="type">jxcore.Client</span></li>
+<li><code>log</code> <span class="type">String</span></li>
+<li><code>level</code> <span class="type">jxcore.LogLevel</span></li>
 </div></ul>
 <p>This event is fired whenever the <code>client</code> logs an information <code>log</code> message. The <code>level</code> parameter is an enumeration value and can have one of the following: <em>Informative</em> or <em>Critical</em>.
 
 </p>
+<h3>OnSubscription<span><a class="mark" href="#all_onsubscription_1" id="all_onsubscription_1">#</a></span></h3>
+<div class="signature"><ul>
+<li><code>client</code> <span class="type">jxcore.Client</span></li>
+<li><code>subscribed</code> <span class="type">Boolean</span></li>
+<li><code>groupName</code> <span class="type">String</span></li>
+</div></ul>
+<p>This event is raised when client gets subscribed to a group or unsubscribed from it by a call made from a server-side (<code>subscribeClient()</code> or <code>unSubscribeClient()</code> methods).
+
+</p>
+<p>The <code>subscribed</code> value indicates, whether this event was raised as a result of subscription (<code>true</code>) or unsubscription (<code>false</code>) request.
+The <code>groupName</code> is the name of the group, for which the event occured.
+
+</p>
+<p>When subscription/unsubscription request was made by a client&#39;s method <code>Subscribe()</code> or <code>Unsubscribe()</code>, the event <code>OnSubscription</code> is not raised, but instead you may provide the callback for those methods.
+Please refer to their description for more details.
+
+</p>
 <h2>new Client(localTarget, appName, appKey, url, port, secure)<span><a class="mark" href="#all_new_client_localtarget_appname_appkey_url_port_secure" id="all_new_client_localtarget_appname_appkey_url_port_secure">#</a></span></h2>
 <div class="signature"><ul>
-<li>localTarget <span class="type">Object</span></li>
-<li>appName <span class="type">String</span></li>
-<li>appKey <span class="type">String</span></li>
-<li>url <span class="type">String</span></li>
-<li>port <span class="type">int</span></li>
-<li>secure <span class="type">boolean</span></li>
-<li>resetUID <span class="type">boolean</span></li>
+<li><code>localTarget</code> <span class="type">Object</span></li>
+<li><code>appName</code> <span class="type">String</span></li>
+<li><code>appKey</code> <span class="type">String</span></li>
+<li><code>url</code> <span class="type">String</span></li>
+<li><code>port</code> <span class="type">int</span></li>
+<li><code>secure</code> <span class="type">boolean</span></li>
+<li><code>resetUID</code> <span class="type">boolean</span></li>
 </div></ul>
 <p>Creates an instance of JXcore Java Client with specified application name <code>appName</code> and application key <code>appKey</code> (which is obtainable from web control panel).
 The <code>url</code> parameter specifies JXcore server URL, e.g. <em>sampledomain.com</em> or <em>120.1.2.3</em>. You can also enable SSL support with <code>secure</code> parameter.
@@ -16249,9 +16713,9 @@ Client client = new Client(new CustomMethods(), &quot;channels&quot;,
     &quot;NUBISA-STANDARD-KEY-CHANGE-THIS&quot;, &quot;localhost&quot;, 8000, false, true);</code></pre>
 <h2>Call(methodName, params, callback)<span><a class="mark" href="#all_call_methodname_params_callback" id="all_call_methodname_params_callback">#</a></span></h2>
 <div class="signature"><ul>
-<li>methodName <span class="type">String</span></li>
-<li>params <span class="type">Object</span></li>
-<li>callback <span class="type">jxcore.Callback</span></li>
+<li><code>methodName</code> <span class="type">String</span></li>
+<li><code>params</code> <span class="type">Object</span></li>
+<li><code>callback</code> <span class="type">jxcore.Callback</span></li>
 </div></ul>
 <p>Invokes specific custom method <code>methodName</code> defined on the server-side and passes to it <code>params</code> value. The <code>methodName</code> should also contain the class name and the namespace, e.g. <em>com.example.MyClass.MyMethod</em>.
 
@@ -16271,31 +16735,35 @@ In turn, as a response, the backend service will invoke the client&#39;s local <
 <pre><code class="java">if (client.Connect()) {
     System.out.println(&quot;ready!&quot;);
 }</code></pre>
-<h2>getClientId()<span><a class="mark" href="#all_getclientid" id="all_getclientid">#</a></span></h2>
+<h2>getClientId()<span><a class="mark" href="#all_getclientid_1" id="all_getclientid_1">#</a></span></h2>
 <p>Gets the string containing unique id of the client.
 
 </p>
 <h2>SendToGroup(String groupName, String methodName, Object params)<span><a class="mark" href="#all_sendtogroup_string_groupname_string_methodname_object_params" id="all_sendtogroup_string_groupname_string_methodname_object_params">#</a></span></h2>
 <div class="signature"><ul>
-<li>groupName <span class="type">String</span></li>
-<li>methodName <span class="type">String</span></li>
-<li>params <span class="type">Object</span></li>
+<li><code>groupName</code> <span class="type">String</span></li>
+<li><code>methodName</code> <span class="type">String</span></li>
+<li><code>params</code> <span class="type">Object</span></li>
 </div></ul>
 <p>Sends message to all clients, that have already subscribed to the specific <code>groupName</code>. The message is passed as <code>params</code> argument to the target&#39;s method named <code>methodName</code>.
 
 </p>
-<p>The <em>addText</em> method should be available on every client, which is subscribed to <em>programmers</em> group.
+<p>The &quot;addText&quot; method should be available on every client, which is subscribed to <em>programmers</em> group.
 While invoking the <em>addText</em> method at each client, the server will pass &quot;Hello from client!&quot; as an argument.
 
 </p>
 <pre><code class="java">client.SendToGroup(&quot;programmers&quot;, &quot;addText&quot;, &quot;Hello from client!&quot;);</code></pre>
-<h2>Subscribe(group, callback)<span><a class="mark" href="#all_subscribe_group_callback" id="all_subscribe_group_callback">#</a></span></h2>
+<h2>Subscribe(groupName, callback)<span><a class="mark" href="#all_subscribe_groupname_callback_1" id="all_subscribe_groupname_callback_1">#</a></span></h2>
 <div class="signature"><ul>
-<li>group <span class="type">String</span></li>
-<li>callback <span class="type">jxcore.Callback</span></li>
+<li><code>groupName</code> <span class="type">String</span></li>
+<li><code>callback</code> <span class="type">jxcore.Callback</span><ul>
+<li><code>groupName</code> <span class="type">String</span></li>
+</ul>
+</li>
 </div></ul>
-<p>Subscribes the client to a <code>group</code>, or channel. From now on, messages sent to that group by any other subscriber will be received by the client. Also the client can send messages to this group – see <code>jxcore.SendToGroup()</code> method.
-After the server will successfully subscribe the client to the <code>group</code>, the client&#39;s <code>callback</code> will be called.
+<p>Subscribes the client to a <code>groupName</code>, or channel. From now on, messages sent to that group by any other subscriber will be received by the client.
+Also the client can send messages to this group – see <code>SendToGroup()</code> method.
+After the server will successfully subscribe the client to the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.
 
 </p>
 <pre><code class="java">try {
@@ -16312,11 +16780,14 @@ After the server will successfully subscribe the client to the <code>group</code
 }</code></pre>
 <h2>Unsubscribe(group, callback)<span><a class="mark" href="#all_unsubscribe_group_callback" id="all_unsubscribe_group_callback">#</a></span></h2>
 <div class="signature"><ul>
-<li>group <span class="type">String</span></li>
-<li>callback <span class="type">jxcore.Callback</span></li>
+<li><code>groupName</code> <span class="type">String</span></li>
+<li><code>callback</code> <span class="type">jxcore.Callback</span><ul>
+<li><code>groupName</code> <span class="type">String</span></li>
+</ul>
+</li>
 </div></ul>
-<p>Unsubscribes the client from a <code>group</code>, or channel. From now on, messages sent to that group cannot be received by this client.
-After the server will successfully unsubscribe the client from the <code>group</code>, the client&#39;s <code>callback</code> will be called.
+<p>Unsubscribes the client from a <code>groupName</code>, or channel. From now on, messages sent to that group cannot be received by this client.
+After the server will successfully unsubscribe the client from the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.
 
 </p>
 <pre><code class="java">try {
@@ -16344,7 +16815,7 @@ When the monitor is running, then your applications can subscribe to it and star
 <p>Apart from this feature, JXcore offers also <a href="jxcore-feature-internal-recovery.html">Internal Recovery</a>.
 
 </p>
-<h2>API<span><a class="mark" href="#all_api_3" id="all_api_3">#</a></span></h2>
+<h2>API<span><a class="mark" href="#all_api_2" id="all_api_2">#</a></span></h2>
 <h3>monitor.followMe(callback, waitCallback)<span><a class="mark" href="#all_monitor_followme_callback_waitcallback" id="all_monitor_followme_callback_waitcallback">#</a></span></h3>
 <ul>
 <li><code>callback</code> {Function}<ul>
@@ -16438,7 +16909,7 @@ The <code>element</code> also should be a string type, but you can use a number 
 
 </p>
 <pre><code class="js">var shared = jxcore.store.shared;</code></pre>
-<h1>API<span><a class="mark" href="#all_api_4" id="all_api_4">#</a></span></h1>
+<h1>API<span><a class="mark" href="#all_api_3" id="all_api_3">#</a></span></h1>
 <h2>jxcore.store<span><a class="mark" href="#all_jxcore_store" id="all_jxcore_store">#</a></span></h2>
 <p>When used in multithreading, every subthread has it’s own <code>jxcore.store</code> object.
 It can be considered as a static global per store context, which means, that threads cannot share the same <code>jxcore.store</code> among themselves.
@@ -16614,7 +17085,7 @@ The default maximum blocking time is defined by <code>setBlockTimeout()</code> p
 
         // working with a different key should not be performed in this block:
         shared.set(&quot;myNumber_2&quot;, 333);
-}</code></pre>
+});</code></pre>
 <p>In the example above we are using a <code>safeBlock</code> to perform multithread-safe increment of <em>myNumber</em> value kept in the shared store.
 
 </p>
@@ -16715,7 +17186,7 @@ jxcore.tasks.runOnce(method);</code></pre>
 <p>See also general description of JXcore <a href="jxcore-feature-multithreading.html">multithreading</a>.
 
 </p>
-<h1>API<span><a class="mark" href="#all_api_5" id="all_api_5">#</a></span></h1>
+<h1>API<span><a class="mark" href="#all_api_4" id="all_api_4">#</a></span></h1>
 <h2>Event: &#39;emptyQueue&#39;<span><a class="mark" href="#all_event_emptyqueue" id="all_event_emptyqueue">#</a></span></h2>
 <p>This event fires when all of the added tasks have been processed.
 

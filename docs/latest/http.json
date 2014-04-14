@@ -65,7 +65,7 @@
             {
               "textRaw": "message.socket",
               "name": "socket",
-              "desc": "<p>The <code>net.Socket</code> object associated with the connection.\n\n</p>\n<p>With HTTPS support, use request.connection.verifyPeer() and\nrequest.connection.getPeerCertificate() to obtain the client&#39;s\nauthentication details.\n\n\n</p>\n"
+              "desc": "<p>The <code>net.Socket</code> object associated with the connection.\n\n</p>\n<p>With HTTPS support, use request.connection.verifyPeer() and\nrequest.connection.getPeerCertificate() to obtain the client&#39;s\nauthentication details.\n\n</p>\n"
             }
           ],
           "methods": [
@@ -102,6 +102,11 @@
               "desc": "<p>Calls <code>message.connection.setTimeout(msecs, callback)</code>.\n\n</p>\n"
             }
           ]
+        },
+        {
+          "textRaw": "http.setMaxHeaderLength",
+          "name": "setMaxHeaderLength",
+          "desc": "<p>Sets the maximum header length for the HTTP as well as HTTPS requests (see <code>http.IncomingMessage.headers</code>).\nThe default value is 32768.\nYou can also disable the limit check by setting value 0.\n\n</p>\n<p>This option is introduced in JXcore for security reasons.\n\n\n</p>\n"
         }
       ],
       "methods": [

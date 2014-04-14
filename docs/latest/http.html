@@ -123,6 +123,7 @@
 <li><a href="#http_message_socket">message.socket</a></li>
 </ul>
 </li>
+<li><a href="#http_http_setmaxheaderlength">http.setMaxHeaderLength</a></li>
 </ul>
 </li>
 </ul>
@@ -1091,6 +1092,15 @@ you can use the <code>require(&#39;querystring&#39;).parse</code> function, or p
 <p>With HTTPS support, use request.connection.verifyPeer() and
 request.connection.getPeerCertificate() to obtain the client&#39;s
 authentication details.
+
+</p>
+<h2>http.setMaxHeaderLength<span><a class="mark" href="#http_http_setmaxheaderlength" id="http_http_setmaxheaderlength">#</a></span></h2>
+<p>Sets the maximum header length for the HTTP as well as HTTPS requests (see <code>http.IncomingMessage.headers</code>).
+The default value is 32768.
+You can also disable the limit check by setting value 0.
+
+</p>
+<p>This option is introduced in JXcore for security reasons.
 
 
 </p>

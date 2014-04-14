@@ -54,12 +54,10 @@
 <li><a href="#jxcore_3rd_party_sqlite3_credits">Credits:</a></li>
 <li><a href="#jxcore_3rd_party_sqlite3_installation">Installation</a></li>
 <li><a href="#jxcore_3rd_party_sqlite3_description">Description</a></li>
-<li><a href="#jxcore_3rd_party_sqlite3_depends">Depends</a></li>
 </ul>
 </li>
 <li><a href="#jxcore_3rd_party_sqlite3_usage">Usage</a></li>
 <li><a href="#jxcore_3rd_party_sqlite3_features">Features</a></li>
-<li><a href="#jxcore_3rd_party_sqlite3_api">API</a></li>
 <li><a href="#jxcore_3rd_party_sqlite3_contributors">Contributors</a></li>
 <li><a href="#jxcore_3rd_party_sqlite3_acknowledgments">Acknowledgments</a></li>
 <li><a href="#jxcore_3rd_party_sqlite3_license">License</a></li>
@@ -79,17 +77,10 @@
 
 </p>
 <h2>Description<span><a class="mark" href="#jxcore_3rd_party_sqlite3_description" id="jxcore_3rd_party_sqlite3_description">#</a></span></h2>
-<p>Asynchronous, non-blocking <a href="http://sqlite.org/">SQLite3</a> bindings for JXcore and Node.js.
+<p>Asynchronous, non-blocking SQLite3 bindings for JXcore and Node.js.
 
 </p>
-<h2>Depends<span><a class="mark" href="#jxcore_3rd_party_sqlite3_depends" id="jxcore_3rd_party_sqlite3_depends">#</a></span></h2>
-<div class="signature"><ul>
-<li>JXcore v.10.x or Node.js v0.8.x or v0.10.x</li>
-</div></ul>
-<p>Binaries for most Node versions and platforms are provided by default via <a href="https://github.com/springmeyer/node-pre-gyp">node-pre-gyp</a>.
-
-</p>
-<p>Also works with <a href="https://github.com/rogerwang/node-webkit">node-webkit</a> and sqlcipher.
+<p>Besides SQLite3 module, JXcore also has SQLite 3.8.4.3 engine with FTS3, FTS4 embedded.
 
 </p>
 <h1>Usage<span><a class="mark" href="#jxcore_3rd_party_sqlite3_usage" id="jxcore_3rd_party_sqlite3_usage">#</a></span></h1>
@@ -111,6 +102,38 @@ db.serialize(function() {
 });
 
 db.close();</code></pre>
+<p>FTS4 example:
+
+</p>
+<pre><code class="js">var sqlite3 = require(&#39;sqlite3&#39;).verbose();
+
+var db = new sqlite3.Database(&#39;:memory:&#39;);
+
+db.serialize(function () {
+    db.run(&quot;CREATE VIRTUAL TABLE ftsTest USING fts4(content TEXT);&quot;);
+
+    var stmt = db.prepare(&quot;INSERT INTO ftsTest VALUES (?)&quot;);
+    for (var i = 1; i &lt; 100; i++) {
+        stmt.run(&quot;A Ipsum &quot; + i);
+    }
+    stmt.finalize();
+    console.log(&quot;virtual fts4 table is written&quot;);
+
+    console.log(&quot;\nFirst 20 results:\n&quot;);
+    var str = &quot;SELECT rowid AS id, content FROM ftsTest &quot; +
+              &quot;where content MATCH &#39;Ipsum&#39; LIMIT &quot; + 20;
+
+    db.all(str, function (err, rows) {
+        if (err) {
+            console.log(err + &quot;&quot;);
+        }
+        else {
+            rows.forEach(function (row) {
+                console.log(row.id + &quot;: &quot; + row.content);
+            });
+        }
+    });
+});</code></pre>
 <h1>Features<span><a class="mark" href="#jxcore_3rd_party_sqlite3_features" id="jxcore_3rd_party_sqlite3_features">#</a></span></h1>
 <div class="signature"><ul>
 <li>Straightforward query and parameter binding interface</li>
@@ -120,11 +143,9 @@ db.close();</code></pre>
 <li><a href="https://github.com/mapbox/node-sqlite3/wiki/Extensions">Extension support</a></li>
 <li>Big test suite</li>
 <li>Written in modern C++ and tested for memory leaks</li>
+<li>built-in FTS3</li>
+<li>FTS4 enabled</li>
 </div></ul>
-<h1>API<span><a class="mark" href="#jxcore_3rd_party_sqlite3_api" id="jxcore_3rd_party_sqlite3_api">#</a></span></h1>
-<p>See the <a href="https://github.com/mapbox/node-sqlite3/wiki">API documentation</a> in the wiki.
-
-</p>
 <h1>Contributors<span><a class="mark" href="#jxcore_3rd_party_sqlite3_contributors" id="jxcore_3rd_party_sqlite3_contributors">#</a></span></h1>
 <div class="signature"><ul>
 <li><a href="https://github.com/kkaefer">Konstantin Käfer</a></li>
