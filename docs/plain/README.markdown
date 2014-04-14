@@ -18,9 +18,9 @@
 * [package](jxcore-feature-packaging-code-protection.markdown#jxcore-features-package-manager-package)
 
 # Sorted by Modules API
-* [Store](jxcore-store.markdown)
 * [Messaging](jxcore-messaging.markdown)
 * [Monitor](jxcore-monitor.markdown)
+* [Store](jxcore-store.markdown)
 * [Tasks](jxcore-tasks.markdown)
 * [Process](jxcore-thread.markdown)
 

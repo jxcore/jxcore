@@ -879,6 +879,14 @@ With HTTPS support, use request.connection.verifyPeer() and
 request.connection.getPeerCertificate() to obtain the client's
 authentication details.
 
+## http.setMaxHeaderLength
+
+Sets the maximum header length for the HTTP as well as HTTPS requests (see `http.IncomingMessage.headers`).
+The default value is 32768.
+You can also disable the limit check by setting value 0.
+
+This option is introduced in JXcore for security reasons.
+
 
 ['checkContinue']: #http_event_checkcontinue
 ['listening']: net.markdown#net_event_listening

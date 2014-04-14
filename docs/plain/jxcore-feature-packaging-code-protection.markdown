@@ -95,6 +95,19 @@ and it displays regular function’s result:
 
 ![](http://jxcore.com/wp-content/uploads/2014/01/jx_hiding_body3.gif)
 
+### special comment
+
+As an alternative to `jxcore.utils.hideMethod()` you can also use a special comment `/*_jx_protected_*/` inside a function's body:
+
+```js
+var func = function() {
+    /*_jx_protected_*/
+    console.log("hello");
+}
+```
+
+It can be placed anywhere, as far it is located between function's curly brackets.
+
 ## JX package
 
 ### About JX package file

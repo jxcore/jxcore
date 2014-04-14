@@ -11,15 +11,9 @@ No installation is needed, since this module is embedded inside JXcore.
 
 ## Description
 
-Asynchronous, non-blocking [SQLite3](http://sqlite.org/) bindings for JXcore and Node.js.
+Asynchronous, non-blocking SQLite3 bindings for JXcore and Node.js.
 
-## Depends
-
- - JXcore v.10.x or Node.js v0.8.x or v0.10.x
-
-Binaries for most Node versions and platforms are provided by default via [node-pre-gyp](https://github.com/springmeyer/node-pre-gyp).
-
-Also works with [node-webkit](https://github.com/rogerwang/node-webkit) and sqlcipher.
+Besides SQLite3 module, JXcore also has SQLite 3.8.4.3 engine with FTS3, FTS4 embedded.
 
 # Usage
 
@@ -44,6 +38,40 @@ db.serialize(function() {
 db.close();
 ```
 
+FTS4 example:
+
+```js
+var sqlite3 = require('sqlite3').verbose();
+
+var db = new sqlite3.Database(':memory:');
+
+db.serialize(function () {
+    db.run("CREATE VIRTUAL TABLE ftsTest USING fts4(content TEXT);");
+
+    var stmt = db.prepare("INSERT INTO ftsTest VALUES (?)");
+    for (var i = 1; i < 100; i++) {
+        stmt.run("A Ipsum " + i);
+    }
+    stmt.finalize();
+    console.log("virtual fts4 table is written");
+
+    console.log("\nFirst 20 results:\n");
+    var str = "SELECT rowid AS id, content FROM ftsTest " +
+              "where content MATCH 'Ipsum' LIMIT " + 20;
+
+    db.all(str, function (err, rows) {
+        if (err) {
+            console.log(err + "");
+        }
+        else {
+            rows.forEach(function (row) {
+                console.log(row.id + ": " + row.content);
+            });
+        }
+    });
+});
+```
+
 # Features
 
  - Straightforward query and parameter binding interface
@@ -53,11 +81,8 @@ db.close();
  - [Extension support](https://github.com/mapbox/node-sqlite3/wiki/Extensions)
  - Big test suite
  - Written in modern C++ and tested for memory leaks
-
-
-# API
-
-See the [API documentation](https://github.com/mapbox/node-sqlite3/wiki) in the wiki.
+ - built-in FTS3
+ - FTS4 enabled
 
 # Contributors
 

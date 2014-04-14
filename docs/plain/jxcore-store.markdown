@@ -212,7 +212,7 @@ jxcore.store.shared.safeBlock("myNumber", function () {
 
         // working with a different key should not be performed in this block:
         shared.set("myNumber_2", 333);
-}
+});
 ```
 
 In the example above we are using a `safeBlock` to perform multithread-safe increment of *myNumber* value kept in the shared store.
