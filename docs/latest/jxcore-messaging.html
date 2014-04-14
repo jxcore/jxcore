@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Mesaging JXcore Manual &amp; Documentation</title>
+  <title>Messaging JXcore Manual &amp; Documentation</title>
   <link rel="stylesheet" href="assets/style.css">
   <link rel="stylesheet" href="assets/sh.css">
 </head>
@@ -50,7 +50,7 @@
           <div id="toc">
             <h2>Table of Contents</h2>
             <ul>
-<li><a href="#jxcore_messaging_mesaging">Mesaging</a></li>
+<li><a href="#jxcore_messaging_messaging">Messaging</a></li>
 <li><a href="#jxcore_messaging_api_server">API Server</a><ul>
 <li><a href="#jxcore_messaging_configuration">Configuration</a><ul>
 <li><a href="#jxcore_messaging_chunked">chunked</a></li>
@@ -134,7 +134,7 @@
           </div>
 
           <div id="apicontent">
-            <h1>Mesaging<span><a class="mark" href="#jxcore_messaging_mesaging" id="jxcore_messaging_mesaging">#</a></span></h1>
+            <h1>Messaging<span><a class="mark" href="#jxcore_messaging_messaging" id="jxcore_messaging_messaging">#</a></span></h1>
 <p>Using JXcore Messaging, your clients can easily communicate with the server (backend service) as well as with other clients.
 
 </p>
@@ -189,7 +189,7 @@ This way server stays more responsive, because doesn&#39;t have to deal with eac
 <div class="signature"><ul>
 <li><span class="type">Boolean</span> default <code>true</code></li>
 </div></ul>
-<p>When JXcore Messaging server runs in multithreaded mode and this option is enabled, each of log and error messages displayed to the console
+<p>When JXcore Messaging server runs in multi-threaded mode and this option is enabled, each of log and error messages displayed to the console
 contains information about thread ID, from which the message comes.
 
 </p>
@@ -594,6 +594,7 @@ while <code>params</code> is an argument for the callback. It can be anything â€
 <li><code>value</code> <span class="type">String</span></li>
 </div></ul>
 <p>Defines value for applicationâ€™s parameter. Allows changing server configuration.
+See <a href="#jxcore_messaging_configuration">Configuration</a> for detailed information.
 
 </p>
 <h2>sendToAll(methodName, params)<span><a class="mark" href="#jxcore_messaging_sendtoall_methodname_params" id="jxcore_messaging_sendtoall_methodname_params">#</a></span></h2>
@@ -752,10 +753,11 @@ The <code>reconnecting</code> parameter has a <code>true</code> value, if client
 
 </p>
 <p>The <code>subscribed</code> value indicates, whether this event was raised as a result of subscription (<code>true</code>) or unsubscription (<code>false</code>) request.
-The <code>groupName</code> is the name of the group, for which the event occured.
+The <code>groupName</code> is the name of the group, for which the event occurred.
 
 </p>
-<p>When subscription/unsubscription request was made by a client&#39;s method <code>Subscribe()</code> or <code>Unsubscribe()</code>, the event <code>OnSubscription</code> is not raised, but instead you may provide the callback for those methods.
+<p>When subscription/unsubscription request was made by a client&#39;s method <code>Subscribe()</code> or <code>Unsubscribe()</code>,
+the event <code>OnSubscription</code> is not raised, but instead you may provide the callback for those methods.
 Please refer to their description for more details.
 
 </p>
@@ -903,7 +905,8 @@ After the server will successfully unsubscribe the client from the <code>groupNa
 
 </p>
 <h2>Events<span><a class="mark" href="#jxcore_messaging_events_2" id="jxcore_messaging_events_2">#</a></span></h2>
-<p>Messaging module for Java defines events in a separate class <code>ClientEvents</code>. In order to listen for client&#39;s events, we need to instantiate this class and assign to <code>client.Events</code> property:
+<p>Messaging module for Java defines events in a separate class <code>ClientEvents</code>.
+In order to listen for client&#39;s events, we need to instantiate this class and assign to <code>client.Events</code> property:
 
 </p>
 <pre><code class="java">import jxcore.*;
@@ -974,7 +977,7 @@ client.Events = event;</code></pre>
 
 </p>
 <p>The <code>subscribed</code> value indicates, whether this event was raised as a result of subscription (<code>true</code>) or unsubscription (<code>false</code>) request.
-The <code>groupName</code> is the name of the group, for which the event occured.
+The <code>groupName</code> is the name of the group, for which the event occurred.
 
 </p>
 <p>When subscription/unsubscription request was made by a client&#39;s method <code>Subscribe()</code> or <code>Unsubscribe()</code>, the event <code>OnSubscription</code> is not raised, but instead you may provide the callback for those methods.
@@ -1086,14 +1089,14 @@ After the server will successfully unsubscribe the client from the <code>groupNa
 
 </p>
 <pre><code class="java">try {
-     client.Unubscribe(&quot;programmers&quot;, new Callback() {
+     client.Unsubscribe(&quot;programmers&quot;, new Callback() {
          @Override
          public void call(Object o) throws Exception {
-             System.out.println(&quot;Unubscribed from &quot; + o.toString());
+             System.out.println(&quot;Unsubscribed from &quot; + o.toString());
          }
      });
 } catch (Exception e) {
-     System.out.println(&quot;Cannot unubscribe.&quot;);
+     System.out.println(&quot;Cannot unsubscribe.&quot;);
 }</code></pre>
 
           </div>

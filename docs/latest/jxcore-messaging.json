@@ -2,11 +2,11 @@
   "source": "doc/api/jxcore-messaging.markdown",
   "modules": [
     {
-      "textRaw": "Mesaging",
-      "name": "mesaging",
+      "textRaw": "Messaging",
+      "name": "messaging",
       "desc": "<p>Using JXcore Messaging, your clients can easily communicate with the server (backend service) as well as with other clients.\n\n</p>\n<p>Simply create a custom method. It can be invoked either by any of the clients or by the server itself.\n\n</p>\n<p>If you want to create an online game, chat application, or any other project for multiple users – JXcore Messaging is for you.\n\n</p>\n<p>There are some tutorials for using JXcore Messaging available here: <a href=\"http://jxcore.com/messaging-api/#cat-32\">Hello World</a>.\n\n</p>\n",
       "type": "module",
-      "displayName": "Mesaging"
+      "displayName": "Messaging"
     },
     {
       "textRaw": "API Server",
@@ -48,7 +48,7 @@
             {
               "textRaw": "consoleThreadNumber",
               "name": "consolethreadnumber",
-              "desc": "<p>When JXcore Messaging server runs in multithreaded mode and this option is enabled, each of log and error messages displayed to the console\ncontains information about thread ID, from which the message comes.\n\n</p>\n<p>Example output:\n\n</p>\n<pre><code>Thread#1 JXcore Messaging v0.22\nThread#0 JXcore Messaging v0.22\nThread#1 HTTP  -&gt; http://192.168.1.11:8000/test\nThread#0 HTTP  -&gt; http://192.168.1.11:8000/test</code></pre>\n",
+              "desc": "<p>When JXcore Messaging server runs in multi-threaded mode and this option is enabled, each of log and error messages displayed to the console\ncontains information about thread ID, from which the message comes.\n\n</p>\n<p>Example output:\n\n</p>\n<pre><code>Thread#1 JXcore Messaging v0.22\nThread#0 JXcore Messaging v0.22\nThread#1 HTTP  -&gt; http://192.168.1.11:8000/test\nThread#0 HTTP  -&gt; http://192.168.1.11:8000/test</code></pre>\n",
               "type": "module",
               "displayName": "consoleThreadNumber"
             },
@@ -470,7 +470,7 @@
               ]
             }
           ],
-          "desc": "<p>Defines value for application’s parameter. Allows changing server configuration.\n\n</p>\n"
+          "desc": "<p>Defines value for application’s parameter. Allows changing server configuration.\nSee <a href=\"#jxcore_messaging_configuration\">Configuration</a> for detailed information.\n\n</p>\n"
         },
         {
           "textRaw": "sendToAll(methodName, params)",
@@ -654,7 +654,7 @@
             {
               "textRaw": "OnSubscription",
               "name": "onsubscription",
-              "desc": "<p>This event is raised when client gets subscribed to a group or unsubscribed from it by a call made from a server-side (<code>subscribeClient()</code> or <code>unSubscribeClient()</code> methods).\n\n</p>\n<p>The <code>subscribed</code> value indicates, whether this event was raised as a result of subscription (<code>true</code>) or unsubscription (<code>false</code>) request.\nThe <code>groupName</code> is the name of the group, for which the event occured.\n\n</p>\n<p>When subscription/unsubscription request was made by a client&#39;s method <code>Subscribe()</code> or <code>Unsubscribe()</code>, the event <code>OnSubscription</code> is not raised, but instead you may provide the callback for those methods.\nPlease refer to their description for more details.\n\n</p>\n<p>client-side:\n\n</p>\n<pre><code class=\"js\">jxcore.Call(&quot;someMethod&quot;, true);\n\njxcore.OnSubscription = function (subscribed,  group) {\n    if (subscribed) {\n        alert(&quot;event: subscribed to a group &quot; + group);\n    } else {\n        alert(&quot;event: unsubscribed from a group &quot; + group);\n    }\n};</code></pre>\n<p>server-side:\n\n</p>\n<pre><code class=\"js\">server.addJSMethod(&quot;someMethod&quot;, function(env, param) {\n    if (param === true) {\n        server.subscribeClient(env, &quot;testGroup&quot;);\n    }\n});</code></pre>\n",
+              "desc": "<p>This event is raised when client gets subscribed to a group or unsubscribed from it by a call made from a server-side (<code>subscribeClient()</code> or <code>unSubscribeClient()</code> methods).\n\n</p>\n<p>The <code>subscribed</code> value indicates, whether this event was raised as a result of subscription (<code>true</code>) or unsubscription (<code>false</code>) request.\nThe <code>groupName</code> is the name of the group, for which the event occurred.\n\n</p>\n<p>When subscription/unsubscription request was made by a client&#39;s method <code>Subscribe()</code> or <code>Unsubscribe()</code>,\nthe event <code>OnSubscription</code> is not raised, but instead you may provide the callback for those methods.\nPlease refer to their description for more details.\n\n</p>\n<p>client-side:\n\n</p>\n<pre><code class=\"js\">jxcore.Call(&quot;someMethod&quot;, true);\n\njxcore.OnSubscription = function (subscribed,  group) {\n    if (subscribed) {\n        alert(&quot;event: subscribed to a group &quot; + group);\n    } else {\n        alert(&quot;event: unsubscribed from a group &quot; + group);\n    }\n};</code></pre>\n<p>server-side:\n\n</p>\n<pre><code class=\"js\">server.addJSMethod(&quot;someMethod&quot;, function(env, param) {\n    if (param === true) {\n        server.subscribeClient(env, &quot;testGroup&quot;);\n    }\n});</code></pre>\n",
               "type": "module",
               "displayName": "OnSubscription"
             }
@@ -918,7 +918,7 @@
         {
           "textRaw": "Events",
           "name": "events",
-          "desc": "<p>Messaging module for Java defines events in a separate class <code>ClientEvents</code>. In order to listen for client&#39;s events, we need to instantiate this class and assign to <code>client.Events</code> property:\n\n</p>\n<pre><code class=\"java\">import jxcore.*;\n\njxcore.ClientEvents events = new ClientEvents(){\n    @Override\n    public void OnErrorReceived(Client c, String Message) {\n        // Error received\n    }\n    @Override\n    public void OnClientConnected(Client c) {\n        // Client is connected\n    }\n    @Override\n    public void OnClientDisconnected(Client c) {\n        // Client is disconnected\n    }\n    @Override\n    public void OnEventLog(Client c, String log, LogLevel level) {\n        // get the event log from here\n    }\n    @Override\n    public void OnSubscription(Client c, Boolean subscribed, String group) {\n        // Client was subscribed to a group or unsubscribed from a group\n        // by a server-side call\n    }\n};\n//now we may define this listener into our Client instance\nclient.Events = event;</code></pre>\n",
+          "desc": "<p>Messaging module for Java defines events in a separate class <code>ClientEvents</code>.\nIn order to listen for client&#39;s events, we need to instantiate this class and assign to <code>client.Events</code> property:\n\n</p>\n<pre><code class=\"java\">import jxcore.*;\n\njxcore.ClientEvents events = new ClientEvents(){\n    @Override\n    public void OnErrorReceived(Client c, String Message) {\n        // Error received\n    }\n    @Override\n    public void OnClientConnected(Client c) {\n        // Client is connected\n    }\n    @Override\n    public void OnClientDisconnected(Client c) {\n        // Client is disconnected\n    }\n    @Override\n    public void OnEventLog(Client c, String log, LogLevel level) {\n        // get the event log from here\n    }\n    @Override\n    public void OnSubscription(Client c, Boolean subscribed, String group) {\n        // Client was subscribed to a group or unsubscribed from a group\n        // by a server-side call\n    }\n};\n//now we may define this listener into our Client instance\nclient.Events = event;</code></pre>\n",
           "modules": [
             {
               "textRaw": "OnErrorReceived",
@@ -951,7 +951,7 @@
             {
               "textRaw": "OnSubscription",
               "name": "onsubscription",
-              "desc": "<p>This event is raised when client gets subscribed to a group or unsubscribed from it by a call made from a server-side (<code>subscribeClient()</code> or <code>unSubscribeClient()</code> methods).\n\n</p>\n<p>The <code>subscribed</code> value indicates, whether this event was raised as a result of subscription (<code>true</code>) or unsubscription (<code>false</code>) request.\nThe <code>groupName</code> is the name of the group, for which the event occured.\n\n</p>\n<p>When subscription/unsubscription request was made by a client&#39;s method <code>Subscribe()</code> or <code>Unsubscribe()</code>, the event <code>OnSubscription</code> is not raised, but instead you may provide the callback for those methods.\nPlease refer to their description for more details.\n\n</p>\n",
+              "desc": "<p>This event is raised when client gets subscribed to a group or unsubscribed from it by a call made from a server-side (<code>subscribeClient()</code> or <code>unSubscribeClient()</code> methods).\n\n</p>\n<p>The <code>subscribed</code> value indicates, whether this event was raised as a result of subscription (<code>true</code>) or unsubscription (<code>false</code>) request.\nThe <code>groupName</code> is the name of the group, for which the event occurred.\n\n</p>\n<p>When subscription/unsubscription request was made by a client&#39;s method <code>Subscribe()</code> or <code>Unsubscribe()</code>, the event <code>OnSubscription</code> is not raised, but instead you may provide the callback for those methods.\nPlease refer to their description for more details.\n\n</p>\n",
               "type": "module",
               "displayName": "OnSubscription"
             }
@@ -1210,7 +1210,7 @@
               ]
             }
           ],
-          "desc": "<p>Unsubscribes the client from a <code>groupName</code>, or channel. From now on, messages sent to that group cannot be received by this client.\nAfter the server will successfully unsubscribe the client from the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.\n\n</p>\n<pre><code class=\"java\">try {\n     client.Unubscribe(&quot;programmers&quot;, new Callback() {\n         @Override\n         public void call(Object o) throws Exception {\n             System.out.println(&quot;Unubscribed from &quot; + o.toString());\n         }\n     });\n} catch (Exception e) {\n     System.out.println(&quot;Cannot unubscribe.&quot;);\n}</code></pre>\n"
+          "desc": "<p>Unsubscribes the client from a <code>groupName</code>, or channel. From now on, messages sent to that group cannot be received by this client.\nAfter the server will successfully unsubscribe the client from the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.\n\n</p>\n<pre><code class=\"java\">try {\n     client.Unsubscribe(&quot;programmers&quot;, new Callback() {\n         @Override\n         public void call(Object o) throws Exception {\n             System.out.println(&quot;Unsubscribed from &quot; + o.toString());\n         }\n     });\n} catch (Exception e) {\n     System.out.println(&quot;Cannot unsubscribe.&quot;);\n}</code></pre>\n"
         }
       ],
       "type": "module",

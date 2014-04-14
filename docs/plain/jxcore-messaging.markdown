@@ -1,4 +1,4 @@
-# Mesaging
+# Messaging
 
 Using JXcore Messaging, your clients can easily communicate with the server (backend service) as well as with other clients.
 
@@ -47,7 +47,7 @@ When enabled, displays additional (informative) log messages to the console outp
 
 * {Boolean} default `true`
 
-When JXcore Messaging server runs in multithreaded mode and this option is enabled, each of log and error messages displayed to the console
+When JXcore Messaging server runs in multi-threaded mode and this option is enabled, each of log and error messages displayed to the console
 contains information about thread ID, from which the message comes.
 
 Example output:
@@ -438,6 +438,7 @@ Please note, that the "/chat" part in the url is the `urlPath` parameter describ
 * `value` {String}
 
 Defines value for application’s parameter. Allows changing server configuration.
+See [Configuration](#configuration) for detailed information.
 
 ## sendToAll(methodName, params)
 
@@ -603,9 +604,10 @@ jxcore.OnError = function (err) {
 This event is raised when client gets subscribed to a group or unsubscribed from it by a call made from a server-side (`subscribeClient()` or `unSubscribeClient()` methods).
 
 The `subscribed` value indicates, whether this event was raised as a result of subscription (`true`) or unsubscription (`false`) request.
-The `groupName` is the name of the group, for which the event occured.
+The `groupName` is the name of the group, for which the event occurred.
 
-When subscription/unsubscription request was made by a client's method `Subscribe()` or `Unsubscribe()`, the event `OnSubscription` is not raised, but instead you may provide the callback for those methods.
+When subscription/unsubscription request was made by a client's method `Subscribe()` or `Unsubscribe()`,
+the event `OnSubscription` is not raised, but instead you may provide the callback for those methods.
 Please refer to their description for more details.
 
 client-side:
@@ -757,7 +759,8 @@ There is a tutorial showing, how to consume JXcore Messaging API from a [Java Cl
 
 ## Events
 
-Messaging module for Java defines events in a separate class `ClientEvents`. In order to listen for client's events, we need to instantiate this class and assign to `client.Events` property:
+Messaging module for Java defines events in a separate class `ClientEvents`.
+In order to listen for client's events, we need to instantiate this class and assign to `client.Events` property:
 
 ```java
 import jxcore.*;
@@ -825,7 +828,7 @@ This event is fired whenever the `client` logs an information `log` message. The
 This event is raised when client gets subscribed to a group or unsubscribed from it by a call made from a server-side (`subscribeClient()` or `unSubscribeClient()` methods).
 
 The `subscribed` value indicates, whether this event was raised as a result of subscription (`true`) or unsubscription (`false`) request.
-The `groupName` is the name of the group, for which the event occured.
+The `groupName` is the name of the group, for which the event occurred.
 
 When subscription/unsubscription request was made by a client's method `Subscribe()` or `Unsubscribe()`, the event `OnSubscription` is not raised, but instead you may provide the callback for those methods.
 Please refer to their description for more details.
@@ -937,13 +940,13 @@ After the server will successfully unsubscribe the client from the `groupName`, 
 
 ```java
 try {
-     client.Unubscribe("programmers", new Callback() {
+     client.Unsubscribe("programmers", new Callback() {
          @Override
          public void call(Object o) throws Exception {
-             System.out.println("Unubscribed from " + o.toString());
+             System.out.println("Unsubscribed from " + o.toString());
          }
      });
 } catch (Exception e) {
-     System.out.println("Cannot unubscribe.");
+     System.out.println("Cannot unsubscribe.");
 }
 ```
