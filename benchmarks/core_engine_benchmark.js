@@ -1,3 +1,4 @@
+// Copyright 2014 Nubisa Inc.
 // Copyright 2012 the V8 project authors. All rights reserved.
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -29,8 +30,9 @@
 // Simple framework for running the benchmark suites and
 // computing a score based on the timing measurements.
 
-
-var print = console.log;
+if(console){ // to make it compatible with JXcore's experimental engine
+	global.print = console.log;
+}
 
 // A benchmark has a name (string) and a function that will be run to
 // do the performance measurement. The optional setup and tearDown
