@@ -1,4 +1,3 @@
-
 To run the benchmark;
 
-jx js_engine_benchmark
+jx core_engine_benchmark
