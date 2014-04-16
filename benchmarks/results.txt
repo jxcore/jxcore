@@ -18,7 +18,7 @@ NavierStokes: 25448
 Score (version 7): 15558 (Fastest)
 
 
-**JXcore (experimental engine)**
+**JXcore (experimental engine / supports latest JavaScript features)** 
 
 Richards: 18332
 DeltaBlue: 18989
