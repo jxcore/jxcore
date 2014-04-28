@@ -1,0 +1,22 @@
+{
+	"name": "sample1",
+	"version": "1.0",
+	"author": "",
+	"description": "",
+	"company": "",
+	"website": "",
+	"package": null,
+	"startup": "index.js",
+	"execute": null,
+	"extract": false,
+	"output": "sample1.jx",
+	"files": [
+		"index.js"
+	],
+	"assets": [
+		"asset.txt",
+		"sample1.jxp",
+		"subFolder/other.txt"
+	],
+	"library": true
+}
