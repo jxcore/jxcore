@@ -901,7 +901,7 @@ After the server will successfully unsubscribe the client from the <code>groupNa
     alert(&quot;unsubscribed from a group:&quot; + groupName);
 });</code></pre>
 <h1>API Java Client<span><a class="mark" href="#jxcore_messaging_api_java_client" id="jxcore_messaging_api_java_client">#</a></span></h1>
-<p>There is a tutorial showing, how to consume JXcore Messaging API from a <a href="http://jxcore.com/messaging-api/#post-665">Java Client</a>.
+<p>There are some <a href="http://jxcore.com/messaging-api/">tutorials</a> available, and they show how to consume JXcore Messaging API from a Java Client.
 
 </p>
 <h2>Events<span><a class="mark" href="#jxcore_messaging_events_2" id="jxcore_messaging_events_2">#</a></span></h2>
@@ -994,7 +994,7 @@ Please refer to their description for more details.
 <li><code>secure</code> <span class="type">boolean</span></li>
 <li><code>resetUID</code> <span class="type">boolean</span></li>
 </div></ul>
-<p>Creates an instance of JXcore Java Client with specified application name <code>appName</code> and application key <code>appKey</code> (which is obtainable from web control panel).
+<p>Creates an instance of JXcore Java Client with specified application name <code>appName</code> and application key <code>appKey</code>.
 The <code>url</code> parameter specifies JXcore server URL, e.g. <em>sampledomain.com</em> or <em>120.1.2.3</em>. You can also enable SSL support with <code>secure</code> parameter.
 
 </p>
@@ -1009,6 +1009,38 @@ In that class you will specify client methods, which will be callable by other c
 
 Client client = new Client(new CustomMethods(), &quot;channels&quot;,
     &quot;NUBISA-STANDARD-KEY-CHANGE-THIS&quot;, &quot;localhost&quot;, 8000, false, true);</code></pre>
+<p>and <em>CustomMethods</em> may look like this:
+
+</p>
+<pre><code class="java">package com.jxcore.messagingAPI;
+import jxcore.Client;
+
+public class CustomMethods {
+
+    public CustomMethods() { }
+
+    public void clientsMethod(Object response) {
+        System.out.println(&quot;Received message from the group: &quot; + response.toString());
+    }
+}</code></pre>
+<p>You may also inherit your custom method&#39;s class from JXcore’s internal <code>CustomMethodBase</code> class,
+and this gives you for example access to the <code>super.client</code> instance of the <code>Client</code> object. For example:
+
+</p>
+<pre><code class="java">package com.jxcore.messagingAPI;
+
+import jxcore.Client;
+import jxcore.CustomMethodsBase;
+
+public class CustomMethods extends CustomMethodsBase {
+
+    public CustomMethods() { }
+
+    public void clientsMethod(Object response) {
+        System.out.println(&quot;Received message from the group: &quot; + response.toString());
+        super.client.Close();
+    }
+}</code></pre>
 <h2>Call(methodName, params, callback)<span><a class="mark" href="#jxcore_messaging_call_methodname_params_callback" id="jxcore_messaging_call_methodname_params_callback">#</a></span></h2>
 <div class="signature"><ul>
 <li><code>methodName</code> <span class="type">String</span></li>

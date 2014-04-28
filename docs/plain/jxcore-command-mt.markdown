@@ -5,6 +5,11 @@ Generally, there are two ways of executing your JavaScript code in multiple thre
 You can read about both of them here: [How to run multithreaded code?](jxcore-feature-multithreading.markdown#how-to-run-multithreaded-code),
 but right now we will focus only on running multi-threaded code from the command line.
 
+## Maximum number of threads
+
+The maximum number of threads to run with `mt` or `mt-keep` command is 16.
+This is different to maximum thread count value when set with [`tasks.setThreadCount()`](jxcore-tasks.markdown#tasks-setthreadcount-value) for running multithreaded `tasks`.
+
 ## Commands
 
 ### mt[:number]

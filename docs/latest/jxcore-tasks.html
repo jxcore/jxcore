@@ -54,13 +54,19 @@
 <li><a href="#jxcore_tasks_api">API</a><ul>
 <li><a href="#jxcore_tasks_event_emptyqueue">Event: &#39;emptyQueue&#39;</a></li>
 <li><a href="#jxcore_tasks_event_message">Event: &#39;message&#39;</a></li>
-<li><a href="#jxcore_tasks_tasks_addtask_method_param_callback_obj">tasks.addTask(method, param, callback, obj)</a></li>
+<li><a href="#jxcore_tasks_tasks_addtask_method_param_callback_obj">tasks.addTask(method, param, callback, obj)</a><ul>
+<li><a href="#jxcore_tasks_method_runtask_param_callback_obj">method.runTask(param, callback, obj)</a></li>
+</ul>
+</li>
 <li><a href="#jxcore_tasks_tasks_addtask_object_param">tasks.addTask(object, param)</a></li>
 <li><a href="#jxcore_tasks_tasks_forcegc">tasks.forceGC()</a></li>
 <li><a href="#jxcore_tasks_tasks_getthreadcount">tasks.getThreadCount()</a></li>
 <li><a href="#jxcore_tasks_tasks_jobcount">tasks.jobCount()</a></li>
 <li><a href="#jxcore_tasks_tasks_killthread_threadid">tasks.killThread(threadId)</a></li>
-<li><a href="#jxcore_tasks_tasks_runonce_method_param_donotremember">tasks.runOnce(method, param, doNotRemember)</a></li>
+<li><a href="#jxcore_tasks_tasks_runonce_method_param_donotremember">tasks.runOnce(method, param, doNotRemember)</a><ul>
+<li><a href="#jxcore_tasks_method_runonce_param_donotremember">method.runOnce(param, doNotRemember)</a></li>
+</ul>
+</li>
 <li><a href="#jxcore_tasks_tasks_setthreadcount_value">tasks.setThreadCount(value)</a></li>
 <li><a href="#jxcore_tasks_tasks_unloadthreads">tasks.unloadThreads()</a></li>
 </ul>
@@ -197,6 +203,36 @@ var callback = function (obj, result) {
 };
 
 jxcore.tasks.addTask(method, { str: &quot;hello&quot; }, callback, mainThreadVariable);</code></pre>
+<p>There is also an alternative way to run a function as a task. See below for <code>method.runTask()</code>.
+
+</p>
+<h3>method.runTask(param, callback, obj)<span><a class="mark" href="#jxcore_tasks_method_runtask_param_callback_obj" id="jxcore_tasks_method_runtask_param_callback_obj">#</a></span></h3>
+<div class="signature"><ul>
+<li><code>param</code> <span class="type">Object</span></li>
+<li><code>callback</code> <span class="type">Function</span></li>
+<li><code>obj</code> <span class="type">Object</span></li>
+</div></ul>
+<p>This is shorter alternative to <code>tasks.addTask()</code>.
+JXcore adds <code>runTask()</code> method to function&#39;s prototype, so each function can be added as a task directly by calling <code>method.runTask()</code>:
+
+</p>
+<pre><code class="js">var method = function (param) {
+    console.log(&quot;We are in a subthread now. Argument value is:&quot;, param);
+    return &quot;ok&quot;;
+};
+
+var mainThreadVariable = {
+    log : function(txt) {
+        console.log(txt);
+    }
+};
+
+var callback = function (obj, result) {
+    // now we can access mainThreadVariable (by obj argument)
+    obj.log(result);
+};
+
+method.runTask({ str: &quot;hello&quot; }, callback, mainThreadVariable);</code></pre>
 <h2>tasks.addTask(object, param)<span><a class="mark" href="#jxcore_tasks_tasks_addtask_object_param" id="jxcore_tasks_tasks_addtask_object_param">#</a></span></h2>
 <div class="signature"><ul>
 <li><code>object</code> <span class="type">Function</span> - this is the object containing <code>define()</code> and/or <code>logic()</code> methods, which will be executed in a subthread.</li>
@@ -366,11 +402,21 @@ Otherwise it may wait until the other tasks in this subthread will finish.
 <p>One of the cases for using <code>runOnce()</code> could be setting up a http server on each thread.
 
 </p>
-<pre><code class="js">jxcore.tasks.runOnce( method, &quot;some parameter&quot;);</code></pre>
-<p>If for some reason any of the threads will be recreated (for example
-
+<pre><code class="js">jxcore.tasks.runOnce(method, &quot;some parameter&quot;);</code></pre>
+<h3>method.runOnce(param, doNotRemember)<span><a class="mark" href="#jxcore_tasks_method_runonce_param_donotremember" id="jxcore_tasks_method_runonce_param_donotremember">#</a></span></h3>
+<div class="signature"><ul>
+<li><code>param</code> <span class="type">Object</span> - Argument for that method.</li>
+<li><code>doNotRemember</code> <span class="type">Boolean</span></li>
+</div></ul>
+<p>This is shorter alternative to <code>tasks.runOnce()</code>.
+JXcore adds <code>runOnce()</code> method to function&#39;s prototype, so each function can be added as a task directly by calling <code>method.runOnce()</code>:
 
 </p>
+<pre><code class="js">var method = function (param) {
+    console.log(&quot;Subthread no &quot; + process.threadId + &quot;. Argument value is:&quot;, param);
+};
+
+method.runOnce(&quot;hello&quot;);</code></pre>
 <h2>tasks.setThreadCount(value)<span><a class="mark" href="#jxcore_tasks_tasks_setthreadcount_value" id="jxcore_tasks_tasks_setthreadcount_value">#</a></span></h2>
 <div class="signature"><ul>
 <li><code>value</code> <span class="type">Number</span></li>

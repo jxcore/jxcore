@@ -7,6 +7,13 @@
       "desc": "<p>Generally, there are two ways of executing your JavaScript code in multiple threads with JXcore.\nYou can read about both of them here: <a href=\"jxcore-feature-multithreading.html#jxcore_feature_multithreading_how_to_run_multithreaded_code\">How to run multithreaded code?</a>,\nbut right now we will focus only on running multi-threaded code from the command line.\n\n</p>\n",
       "modules": [
         {
+          "textRaw": "Maximum number of threads",
+          "name": "maximum_number_of_threads",
+          "desc": "<p>The maximum number of threads to run with <code>mt</code> or <code>mt-keep</code> command is 16.\nThis is different to maximum thread count value when set with <a href=\"jxcore-tasks.html#jxcore_tasks_tasks_setthreadcount_value\"><code>tasks.setThreadCount()</code></a> for running multithreaded <code>tasks</code>.\n\n</p>\n",
+          "type": "module",
+          "displayName": "Maximum number of threads"
+        },
+        {
           "textRaw": "Commands",
           "name": "commands",
           "properties": [

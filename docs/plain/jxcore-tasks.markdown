@@ -130,6 +130,37 @@ var callback = function (obj, result) {
 jxcore.tasks.addTask(method, { str: "hello" }, callback, mainThreadVariable);
 ```
 
+There is also an alternative way to run a function as a task. See below for `method.runTask()`.
+
+### method.runTask(param, callback, obj)
+
+* `param` {Object}
+* `callback` {Function}
+* `obj` {Object}
+
+This is shorter alternative to `tasks.addTask()`.
+JXcore adds `runTask()` method to function's prototype, so each function can be added as a task directly by calling `method.runTask()`:
+
+```js
+var method = function (param) {
+    console.log("We are in a subthread now. Argument value is:", param);
+    return "ok";
+};
+
+var mainThreadVariable = {
+    log : function(txt) {
+        console.log(txt);
+    }
+};
+
+var callback = function (obj, result) {
+    // now we can access mainThreadVariable (by obj argument)
+    obj.log(result);
+};
+
+method.runTask({ str: "hello" }, callback, mainThreadVariable);
+```
+
 ## tasks.addTask(object, param)
 
 * `object` {Function} - this is the object containing `define()` and/or `logic()` methods, which will be executed in a subthread.
@@ -294,11 +325,24 @@ Running tasks with `runOnce()` method will also get `emptyQueue` event fired.
 One of the cases for using `runOnce()` could be setting up a http server on each thread.
 
 ```js
-jxcore.tasks.runOnce( method, "some parameter");
+jxcore.tasks.runOnce(method, "some parameter");
 ```
 
-If for some reason any of the threads will be recreated (for example
+### method.runOnce(param, doNotRemember)
 
+* `param` {Object} - Argument for that method.
+* `doNotRemember` {Boolean}
+
+This is shorter alternative to `tasks.runOnce()`.
+JXcore adds `runOnce()` method to function's prototype, so each function can be added as a task directly by calling `method.runOnce()`:
+
+```js
+var method = function (param) {
+    console.log("Subthread no " + process.threadId + ". Argument value is:", param);
+};
+
+method.runOnce("hello");
+```
 
 ## tasks.setThreadCount(value)
 

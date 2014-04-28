@@ -72,6 +72,11 @@
 <li><a href="#jxcore_feature_packaging_code_protection_file_structure">File structure</a></li>
 </ul>
 </li>
+<li><a href="#jxcore_feature_packaging_code_protection_accessing_files_and_assets_from_a_package">Accessing files and assets from a package</a><ul>
+<li><a href="#jxcore_feature_packaging_code_protection_assets">assets</a></li>
+<li><a href="#jxcore_feature_packaging_code_protection_files">files</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -80,13 +85,13 @@
 
           <div id="apicontent">
             <h1>Packaging &amp; Code Protection<span><a class="mark" href="#jxcore_feature_packaging_code_protection_packaging_code_protection" id="jxcore_feature_packaging_code_protection_packaging_code_protection">#</a></span></h1>
-<p>JXcore introduces a unique feature for packaging and encryption of source files and other assets into <code>JX</code> packages.
+<p>JXcore introduces a unique feature for packaging and encryption of source files and other assets into JX packages.
 
 </p>
-<p>Let’s assume you have a large project consisting of many files. This feature packs them all into a single file to simplify the distribution. It also protects your server side javascript code by encrypting all source files.
+<p>Let’s assume you have a large project consisting of many files. This feature packs them all into a single file to simplify the distribution. It also protects your server side JavaScript code by encrypting all source files.
 
 </p>
-<p><code>JX</code> packages can be easily executed with JXcore, just like normal JavaScript applications:
+<p>JX packages can be easily executed with JXcore, just like normal JavaScript applications:
 
 </p>
 <pre><code>&gt; jx helloworld.jx</code></pre>
@@ -102,31 +107,31 @@ After that compiles the <code>JXP</code> file (by invoking <code>compile</code> 
 
 </p>
 <ul>
-<li><code>javascript_file</code> - the main file, which will be executed when <code>JX</code> package will be launched with JXcore.</li>
+<li><code>javascript_file</code> - the main file, which will be executed when JX package will be launched with JXcore.</li>
 <li><code>name_of_the_package</code> - indicates the name of the package file. For example, giving the value <em>MyPackage</em>  will create <em>mypackage.jx</em> file.</li>
-<li><code>-slim</code> - this optional parameters followed by folder names separated with comma - prevents adding those folders into the final <code>JX</code> package.</li>
+<li><code>-slim</code> - this optional parameters followed by folder names separated with comma - prevents adding those folders into the final JX package.</li>
 </ul>
 <p>Suppose you have a simple <em>Hello_World</em> project, with just two files: <em>helloworld.js</em> and <em>index.html</em>. When you call:
 
 </p>
 <pre><code>&gt; jx package helloworld.js &quot;Hello World&quot;</code></pre>
-<p>initially, the tool generates <code>JXP</code> project file (<em>helloworld.jxp</em>). Then it is used as an input for <code>compile</code> command, which will create the output <code>JX</code> package <em>helloworld.jx</em>.
+<p>initially, the tool generates <code>JXP</code> project file (<em>helloworld.jxp</em>). Then it is used as an input for <code>compile</code> command, which will create the output JX package <em>helloworld.jx</em>.
 
 </p>
 <h3>compile<span><a class="mark" href="#jxcore_feature_packaging_code_protection_compile" id="jxcore_feature_packaging_code_protection_compile">#</a></span></h3>
-<p>When you already have a <code>JXP</code> project file (either created with <code>package</code> command or manually), you can call <code>compile</code> for generating <code>JX</code> package.
+<p>When you already have a <code>JXP</code> project file (either created with <code>package</code> command or manually), you can call <code>compile</code> for generating JX package.
 
 </p>
 <pre><code>&gt; jx compile project_file.jxp</code></pre>
 <h2>Hiding body of functions<span><a class="mark" href="#jxcore_feature_packaging_code_protection_hiding_body_of_functions" id="jxcore_feature_packaging_code_protection_hiding_body_of_functions">#</a></span></h2>
-<p>As you may already know, a javascript function (like everything in javascript – <a href="http://www.w3schools.com">w3schools</a>) is an object.
+<p>As you may already know, a JavaScript function (like everything in JavaScript – <a href="http://www.w3schools.com">w3schools</a>) is an object.
 To be more precise, it is an instance of the <code>Function</code> which inherits from the <code>Object</code>.
 And just because the <code>Object</code> has defined <code>toString()</code> method, you could also call it on some function,
 and the result will be a string containing function’s body.
 
 </p>
 <p>In JXcore Packaging &amp; Code Protection module we solved that problem.
-You can hide body of the function inside of a jx package, even if the function is exported out of the module.
+You can hide body of the function inside of a JX package, even if the function is exported out of the module.
 
 </p>
 <h3>utils.hideMethod(fn)<span><a class="mark" href="#jxcore_feature_packaging_code_protection_utils_hidemethod_fn" id="jxcore_feature_packaging_code_protection_utils_hidemethod_fn">#</a></span></h3>
@@ -194,7 +199,7 @@ For this we implemented in JXcore mechanism to hide functions contents, but in t
 </p>
 <h2>JX package<span><a class="mark" href="#jxcore_feature_packaging_code_protection_jx_package" id="jxcore_feature_packaging_code_protection_jx_package">#</a></span></h2>
 <h3>About JX package file<span><a class="mark" href="#jxcore_feature_packaging_code_protection_about_jx_package_file" id="jxcore_feature_packaging_code_protection_about_jx_package_file">#</a></span></h3>
-<p>The <code>JX</code> package file is what you get as a result of compilation, packaging and encrypting of your project.
+<p>The JX package file is what you get as a result of compilation, packaging and encrypting of your project.
 It’s a binary file used only by <code>jx</code> executable.
 Contains all of the script files of your project, as well as assets, which can be considered as static resources.
 
@@ -258,7 +263,7 @@ It means, if you want to package your project into a JX package, you need to cre
     &quot;license_file&quot;: null,
     &quot;readme_file&quot;: null
 }</code></pre>
-<p>You can access this object in a runtime of your <code>JX</code> package by:
+<p>You can access this object in a runtime of your JX package by:
 
 </p>
 <pre><code class="js">var obj = exports.$JXP;</code></pre>
@@ -272,22 +277,24 @@ It means, if you want to package your project into a JX package, you need to cre
 <ul>
 <li><strong>name</strong>, <strong>version</strong>, <strong>author</strong>, <strong>description</strong>, <strong>company</strong>, <strong>website</strong>
 These are all string values.</li>
-<li><strong>package</strong>
-This is not supported for now. It is reserved for future use. Using this field, you will be able to specify a path for package.json file, from which the compilation process of JX package will gather all required NPM dependencies and embed them into output JX package.</li>
 <li><strong>startup</strong>
 Name of the main project file. If execute parameter is not defined, this file will be executed first when you run the package.</li>
 <li><strong>execute</strong>
-Name of the main execution file. If this parameter is omitted or null – the value from startup will be used. This parameter has different meaning depending on the library value. When the package is compiled with library = false, and you run the compiled package, this execute file will be executed first. If library is true, and the package is called with require() method, the execute file will be returned by the latter.</li>
+Name of the main execution file. If this parameter is omitted or null – the value from startup will be used.
+This parameter has different meaning depending on the library value.
+When the package is compiled with <code>library</code> = <code>false</code>, and you run the compiled package, this execute file will be executed first.
+If <code>library</code> is <code>true</code>, and the package is called with <code>require()</code> method, the execute file will be returned by the latter.</li>
 <li><strong>extract</strong>
-It is a boolean value: true or false. When you set this value to true, all package contents will be extracted at first run of the compiled package. There will be a new folder created with the name parameter. All files and assets embedded inside the package will be saved with full directory structure preserved.</li>
+This is a boolean value: true or false. When it&#39;s set to true, all package contents will be extracted at first run of the compiled package. There will be a new folder created with the name parameter. All files and assets embedded inside the package will be saved with full directory structure preserved.</li>
 <li><strong>output</strong>
 Name of the output JX package.</li>
 <li><strong>files</strong>
-It is an array, where you can define, which script files from your project will be included into the JX package. Only files with Javascript code should be included there.</li>
+This is an array, where you can define, which script files from your project will be included into the JX package. Only <code>*.js</code> and <code>*.json</code> files are allowed there.</li>
 <li><strong>assets</strong>
 This is the array with static resource files. You can embed as an asset any file of the type: html, css, txt, xml, log, types, ini, json.</li>
 <li><strong>library</strong>
-It is a boolean value: true or false. Value set to true means that JX package can be treated as a library and it can be used from inside another JX package (with require() method). Setting this value to false is a good way of preventing its usage as an external module (and then require() will not be possible).</li>
+It is a boolean value: true or false. Value set to true means that JX package can be treated as a library and it can be used from inside another JX package (with <code>require()</code> method).
+Setting this value to false is a good way of preventing its usage as an external module (and then <code>require()</code> will not be possible).</li>
 <li><strong>licence_file</strong>
 Name of the file containing the licensing information – it is generally a simple text file. If this parameter is omitted or null and if a file named “LICENSE” exists in the directory from where you compile the package – it will be embedded automatically.</li>
 <li><strong>readme_file</strong>
@@ -332,6 +339,73 @@ When a license or readme file is specified, it can be also displayed in a consol
 } else {
     console.log(&quot;This code is still under development.&quot;);
 }</code></pre>
+<p>However, <code>files</code> and <code>assets</code> members are not accessible from exports.$JXP
+
+</p>
+<h2>Accessing files and assets from a package<span><a class="mark" href="#jxcore_feature_packaging_code_protection_accessing_files_and_assets_from_a_package" id="jxcore_feature_packaging_code_protection_accessing_files_and_assets_from_a_package">#</a></span></h2>
+<h3>assets<span><a class="mark" href="#jxcore_feature_packaging_code_protection_assets" id="jxcore_feature_packaging_code_protection_assets">#</a></span></h3>
+<p>There are few native methods in <a href="fs.html">FileSystem</a> module, that you can use to access assets embedded inside a JX package.
+
+</p>
+<ul>
+<li><code>readFile()</code></li>
+<li><code>readFileSync()</code></li>
+<li><code>readdir()</code></li>
+<li><code>readdirSync()</code></li>
+</ul>
+<p>When called, each of these methods try to find a given file or folder in the real file system in first place.
+If nothing was found, JXcore searches through assets from JX package.
+
+</p>
+<p>Assets can be always referenced relatively to <code>__dirname</code> or <code>./</code>.
+
+</p>
+<p>Let&#39;s consider JX package containing the following directory structure:
+
+</p>
+<ul>
+<li>folder<ul>
+<li>file2.html</li>
+<li>module.js</li>
+</ul>
+</li>
+<li>index.html</li>
+<li>package.json</li>
+<li>test.js</li>
+</ul>
+<p>After creating a package with the command:
+
+</p>
+<pre><code>&gt; jx package test.js my_package</code></pre>
+<p>we can perform accessing package&#39;s assets from inside <em>test.js</em> file, and this would be like this:
+
+</p>
+<pre><code class="js">var fs = require(&#39;fs&#39;);
+
+// gets index.html file from package&#39;s assets, if it does not exists on the disk.
+var index = fs.readFileSync(__dirname + &#39;/index.html&#39;);
+
+// asset from subfolder:
+var file = fs.readFileSync(__dirname + &#39;/folder/file2.html&#39;);</code></pre>
+<p>The following sample works as expected and it returns file system&#39;s directory contents. readdirSync and readdir only
+return from JX package when the given path does not exist on real file system. Calling one of these methods for the main
+folder of the JX package will return the results from actual file system. In order to reach asset files using one of these
+methods, you should consider putting them into a sub folder.
+
+</p>
+<pre><code class="js">var fs = require(&#39;fs&#39;);
+var index1 = fs.readdirSync(&#39;./folder&#39;);</code></pre>
+<h3>files<span><a class="mark" href="#jxcore_feature_packaging_code_protection_files" id="jxcore_feature_packaging_code_protection_files">#</a></span></h3>
+<p>readFile and readFileSync methods can be used to reach any files inside a JX package but the sources.
+JavaScript files inside a JX package can be accessed only by using <code>require()</code> method. In other words,
+you can not read the source files using readFile or readFileSync.
+
+</p>
+<p>Example below shows how to load <em>module.js</em> file contained inside <em>folder</em> directory of JX package:
+
+</p>
+<pre><code class="js">var lib = require(&quot;./folder/module.js&quot;);
+console.log(&quot;lib.value&quot;, lib.value);</code></pre>
 
           </div>
         </div>

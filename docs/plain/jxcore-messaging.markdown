@@ -755,7 +755,7 @@ jxcore.Unsubscribe("programmers", function(groupName) {
 
 # API Java Client
 
-There is a tutorial showing, how to consume JXcore Messaging API from a [Java Client](http://jxcore.com/messaging-api/#post-665).
+There are some [tutorials](http://jxcore.com/messaging-api/) available, and they show how to consume JXcore Messaging API from a Java Client.
 
 ## Events
 
@@ -843,7 +843,7 @@ Please refer to their description for more details.
 * `secure` {boolean}
 * `resetUID` {boolean}
 
-Creates an instance of JXcore Java Client with specified application name `appName` and application key `appKey` (which is obtainable from web control panel).
+Creates an instance of JXcore Java Client with specified application name `appName` and application key `appKey`.
 The `url` parameter specifies JXcore server URL, e.g. *sampledomain.com* or *120.1.2.3*. You can also enable SSL support with `secure` parameter.
 
 Setting `resetUID` as `true` will reset the unique instance id (session id).
@@ -856,6 +856,42 @@ import jxcore.*;
 
 Client client = new Client(new CustomMethods(), "channels",
     "NUBISA-STANDARD-KEY-CHANGE-THIS", "localhost", 8000, false, true);
+```
+
+and *CustomMethods* may look like this:
+
+```java
+package com.jxcore.messagingAPI;
+import jxcore.Client;
+
+public class CustomMethods {
+
+    public CustomMethods() { }
+
+    public void clientsMethod(Object response) {
+        System.out.println("Received message from the group: " + response.toString());
+    }
+}
+```
+
+You may also inherit your custom method's class from JXcore’s internal `CustomMethodBase` class,
+and this gives you for example access to the `super.client` instance of the `Client` object. For example:
+
+```java
+package com.jxcore.messagingAPI;
+
+import jxcore.Client;
+import jxcore.CustomMethodsBase;
+
+public class CustomMethods extends CustomMethodsBase {
+
+    public CustomMethods() { }
+
+    public void clientsMethod(Object response) {
+        System.out.println("Received message from the group: " + response.toString());
+        super.client.Close();
+    }
+}
 ```
 
 ## Call(methodName, params, callback)

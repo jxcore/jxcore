@@ -422,9 +422,16 @@ The callback gets two arguments <code>(err, files)</code> where <code>files</cod
 the names of the files in the directory excluding <code>&#39;.&#39;</code> and <code>&#39;..&#39;</code>.
 
 </p>
+<p>When called from inside a JX package, it also reads contents of embedded directory.
+See <a href="jxcore-feature-packaging-code-protection.html#jxcore_feature_packaging_code_protection_accessing_files_and_assets_from_inside_a_package">Accessing files and assets from inside a package</a>.
+
+</p>
 <h2>fs.readdirSync(path)<span><a class="mark" href="#fs_fs_readdirsync_path" id="fs_fs_readdirsync_path">#</a></span></h2>
 <p>Synchronous readdir(3). Returns an array of filenames excluding <code>&#39;.&#39;</code> and
 <code>&#39;..&#39;</code>.
+
+</p>
+<p>When called from inside a JX package, it also reads contents of embedded directory.
 
 </p>
 <h2>fs.close(fd, callback)<span><a class="mark" href="#fs_fs_close_fd_callback" id="fs_fs_close_fd_callback">#</a></span></h2>
@@ -599,6 +606,9 @@ contents of the file.
 </p>
 <p>If no encoding is specified, then the raw buffer is returned.
 
+</p>
+<p>When called from inside a JX package, it also reads contents of file embedded in <code>assets</code> array.
+See <a href="jxcore-feature-packaging-code-protection.html#jxcore_feature_packaging_code_protection_accessing_files_and_assets_from_inside_a_package">Accessing files and assets from inside a package</a>.
 
 </p>
 <h2>fs.readFileSync(filename, [options])<span><a class="mark" href="#fs_fs_readfilesync_filename_options" id="fs_fs_readfilesync_filename_options">#</a></span></h2>
@@ -607,7 +617,6 @@ contents of the file.
 </p>
 <p>If the <code>encoding</code> option is specified then this function returns a
 string. Otherwise it returns a buffer.
-
 
 </p>
 <h2>fs.writeFile(filename, data, [options], callback)<span><a class="mark" href="#fs_fs_writefile_filename_data_options_callback" id="fs_fs_writefile_filename_data_options_callback">#</a></span></h2>

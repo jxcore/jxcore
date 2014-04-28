@@ -267,10 +267,15 @@ Asynchronous readdir(3).  Reads the contents of a directory.
 The callback gets two arguments `(err, files)` where `files` is an array of
 the names of the files in the directory excluding `'.'` and `'..'`.
 
+When called from inside a JX package, it also reads contents of embedded directory.
+See [Accessing files and assets from inside a package](jxcore-feature-packaging-code-protection.markdown#accessing-files-and-assets-from-inside-a-package).
+
 ## fs.readdirSync(path)
 
 Synchronous readdir(3). Returns an array of filenames excluding `'.'` and
 `'..'`.
+
+When called from inside a JX package, it also reads contents of embedded directory.
 
 ## fs.close(fd, callback)
 
@@ -427,6 +432,8 @@ contents of the file.
 
 If no encoding is specified, then the raw buffer is returned.
 
+When called from inside a JX package, it also reads contents of file embedded in `assets` array.
+See [Accessing files and assets from inside a package](jxcore-feature-packaging-code-protection.markdown#accessing-files-and-assets-from-inside-a-package).
 
 ## fs.readFileSync(filename, [options])
 
@@ -434,7 +441,6 @@ Synchronous version of `fs.readFile`. Returns the contents of the `filename`.
 
 If the `encoding` option is specified then this function returns a
 string. Otherwise it returns a buffer.
-
 
 ## fs.writeFile(filename, data, [options], callback)
 

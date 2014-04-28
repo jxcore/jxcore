@@ -7552,7 +7552,7 @@
           "textRaw": "fs.readdir(path, callback)",
           "type": "method",
           "name": "readdir",
-          "desc": "<p>Asynchronous readdir(3).  Reads the contents of a directory.\nThe callback gets two arguments <code>(err, files)</code> where <code>files</code> is an array of\nthe names of the files in the directory excluding <code>&#39;.&#39;</code> and <code>&#39;..&#39;</code>.\n\n</p>\n",
+          "desc": "<p>Asynchronous readdir(3).  Reads the contents of a directory.\nThe callback gets two arguments <code>(err, files)</code> where <code>files</code> is an array of\nthe names of the files in the directory excluding <code>&#39;.&#39;</code> and <code>&#39;..&#39;</code>.\n\n</p>\n<p>When called from inside a JX package, it also reads contents of embedded directory.\nSee <a href=\"jxcore-feature-packaging-code-protection.html#jxcore_feature_packaging_code_protection_accessing_files_and_assets_from_inside_a_package\">Accessing files and assets from inside a package</a>.\n\n</p>\n",
           "signatures": [
             {
               "params": [
@@ -7570,7 +7570,7 @@
           "textRaw": "fs.readdirSync(path)",
           "type": "method",
           "name": "readdirSync",
-          "desc": "<p>Synchronous readdir(3). Returns an array of filenames excluding <code>&#39;.&#39;</code> and\n<code>&#39;..&#39;</code>.\n\n</p>\n",
+          "desc": "<p>Synchronous readdir(3). Returns an array of filenames excluding <code>&#39;.&#39;</code> and\n<code>&#39;..&#39;</code>.\n\n</p>\n<p>When called from inside a JX package, it also reads contents of embedded directory.\n\n</p>\n",
           "signatures": [
             {
               "params": [
@@ -7978,13 +7978,13 @@
               ]
             }
           ],
-          "desc": "<p>Asynchronously reads the entire contents of a file. Example:\n\n</p>\n<pre><code>fs.readFile(&#39;/etc/passwd&#39;, function (err, data) {\n  if (err) throw err;\n  console.log(data);\n});</code></pre>\n<p>The callback is passed two arguments <code>(err, data)</code>, where <code>data</code> is the\ncontents of the file.\n\n</p>\n<p>If no encoding is specified, then the raw buffer is returned.\n\n\n</p>\n"
+          "desc": "<p>Asynchronously reads the entire contents of a file. Example:\n\n</p>\n<pre><code>fs.readFile(&#39;/etc/passwd&#39;, function (err, data) {\n  if (err) throw err;\n  console.log(data);\n});</code></pre>\n<p>The callback is passed two arguments <code>(err, data)</code>, where <code>data</code> is the\ncontents of the file.\n\n</p>\n<p>If no encoding is specified, then the raw buffer is returned.\n\n</p>\n<p>When called from inside a JX package, it also reads contents of file embedded in <code>assets</code> array.\nSee <a href=\"jxcore-feature-packaging-code-protection.html#jxcore_feature_packaging_code_protection_accessing_files_and_assets_from_inside_a_package\">Accessing files and assets from inside a package</a>.\n\n</p>\n"
         },
         {
           "textRaw": "fs.readFileSync(filename, [options])",
           "type": "method",
           "name": "readFileSync",
-          "desc": "<p>Synchronous version of <code>fs.readFile</code>. Returns the contents of the <code>filename</code>.\n\n</p>\n<p>If the <code>encoding</code> option is specified then this function returns a\nstring. Otherwise it returns a buffer.\n\n\n</p>\n",
+          "desc": "<p>Synchronous version of <code>fs.readFile</code>. Returns the contents of the <code>filename</code>.\n\n</p>\n<p>If the <code>encoding</code> option is specified then this function returns a\nstring. Otherwise it returns a buffer.\n\n</p>\n",
           "signatures": [
             {
               "params": [
@@ -14315,6 +14315,13 @@
       "desc": "<p>Generally, there are two ways of executing your JavaScript code in multiple threads with JXcore.\nYou can read about both of them here: <a href=\"jxcore-feature-multithreading.html#jxcore_feature_multithreading_how_to_run_multithreaded_code\">How to run multithreaded code?</a>,\nbut right now we will focus only on running multi-threaded code from the command line.\n\n</p>\n",
       "modules": [
         {
+          "textRaw": "Maximum number of threads",
+          "name": "maximum_number_of_threads",
+          "desc": "<p>The maximum number of threads to run with <code>mt</code> or <code>mt-keep</code> command is 16.\nThis is different to maximum thread count value when set with <a href=\"jxcore-tasks.html#jxcore_tasks_tasks_setthreadcount_value\"><code>tasks.setThreadCount()</code></a> for running multithreaded <code>tasks</code>.\n\n</p>\n",
+          "type": "module",
+          "displayName": "Maximum number of threads"
+        },
+        {
           "textRaw": "Commands",
           "name": "commands",
           "properties": [
@@ -14437,7 +14444,7 @@
     {
       "textRaw": "Packaging & Code Protection",
       "name": "packaging_&_code_protection",
-      "desc": "<p>JXcore introduces a unique feature for packaging and encryption of source files and other assets into <code>JX</code> packages.\n\n</p>\n<p>Let’s assume you have a large project consisting of many files. This feature packs them all into a single file to simplify the distribution. It also protects your server side javascript code by encrypting all source files.\n\n</p>\n<p><code>JX</code> packages can be easily executed with JXcore, just like normal JavaScript applications:\n\n</p>\n<pre><code>&gt; jx helloworld.jx</code></pre>\n<p>instead of:\n\n</p>\n<pre><code>&gt; jx helloworld.js</code></pre>\n",
+      "desc": "<p>JXcore introduces a unique feature for packaging and encryption of source files and other assets into JX packages.\n\n</p>\n<p>Let’s assume you have a large project consisting of many files. This feature packs them all into a single file to simplify the distribution. It also protects your server side JavaScript code by encrypting all source files.\n\n</p>\n<p>JX packages can be easily executed with JXcore, just like normal JavaScript applications:\n\n</p>\n<pre><code>&gt; jx helloworld.jx</code></pre>\n<p>instead of:\n\n</p>\n<pre><code>&gt; jx helloworld.js</code></pre>\n",
       "modules": [
         {
           "textRaw": "Command",
@@ -14446,14 +14453,14 @@
             {
               "textRaw": "package",
               "name": "package",
-              "desc": "<pre><code>&gt; jx package javascript_file name_of_the_package [-slim folder, folder2, ...]</code></pre>\n<p>This command recursively scans the current folder and generates a <code>JXP</code> package information file based on all the files in that directory.\nAfter that compiles the <code>JXP</code> file (by invoking <code>compile</code> command).\n\n</p>\n<ul>\n<li><code>javascript_file</code> - the main file, which will be executed when <code>JX</code> package will be launched with JXcore.</li>\n<li><code>name_of_the_package</code> - indicates the name of the package file. For example, giving the value <em>MyPackage</em>  will create <em>mypackage.jx</em> file.</li>\n<li><code>-slim</code> - this optional parameters followed by folder names separated with comma - prevents adding those folders into the final <code>JX</code> package.</li>\n</ul>\n<p>Suppose you have a simple <em>Hello_World</em> project, with just two files: <em>helloworld.js</em> and <em>index.html</em>. When you call:\n\n</p>\n<pre><code>&gt; jx package helloworld.js &quot;Hello World&quot;</code></pre>\n<p>initially, the tool generates <code>JXP</code> project file (<em>helloworld.jxp</em>). Then it is used as an input for <code>compile</code> command, which will create the output <code>JX</code> package <em>helloworld.jx</em>.\n\n</p>\n",
+              "desc": "<pre><code>&gt; jx package javascript_file name_of_the_package [-slim folder, folder2, ...]</code></pre>\n<p>This command recursively scans the current folder and generates a <code>JXP</code> package information file based on all the files in that directory.\nAfter that compiles the <code>JXP</code> file (by invoking <code>compile</code> command).\n\n</p>\n<ul>\n<li><code>javascript_file</code> - the main file, which will be executed when JX package will be launched with JXcore.</li>\n<li><code>name_of_the_package</code> - indicates the name of the package file. For example, giving the value <em>MyPackage</em>  will create <em>mypackage.jx</em> file.</li>\n<li><code>-slim</code> - this optional parameters followed by folder names separated with comma - prevents adding those folders into the final JX package.</li>\n</ul>\n<p>Suppose you have a simple <em>Hello_World</em> project, with just two files: <em>helloworld.js</em> and <em>index.html</em>. When you call:\n\n</p>\n<pre><code>&gt; jx package helloworld.js &quot;Hello World&quot;</code></pre>\n<p>initially, the tool generates <code>JXP</code> project file (<em>helloworld.jxp</em>). Then it is used as an input for <code>compile</code> command, which will create the output JX package <em>helloworld.jx</em>.\n\n</p>\n",
               "type": "module",
               "displayName": "package"
             },
             {
               "textRaw": "compile",
               "name": "compile",
-              "desc": "<p>When you already have a <code>JXP</code> project file (either created with <code>package</code> command or manually), you can call <code>compile</code> for generating <code>JX</code> package.\n\n</p>\n<pre><code>&gt; jx compile project_file.jxp</code></pre>\n",
+              "desc": "<p>When you already have a <code>JXP</code> project file (either created with <code>package</code> command or manually), you can call <code>compile</code> for generating JX package.\n\n</p>\n<pre><code>&gt; jx compile project_file.jxp</code></pre>\n",
               "type": "module",
               "displayName": "compile"
             }
@@ -14464,7 +14471,7 @@
         {
           "textRaw": "Hiding body of functions",
           "name": "hiding_body_of_functions",
-          "desc": "<p>As you may already know, a javascript function (like everything in javascript – <a href=\"http://www.w3schools.com\">w3schools</a>) is an object.\nTo be more precise, it is an instance of the <code>Function</code> which inherits from the <code>Object</code>.\nAnd just because the <code>Object</code> has defined <code>toString()</code> method, you could also call it on some function,\nand the result will be a string containing function’s body.\n\n</p>\n<p>In JXcore Packaging &amp; Code Protection module we solved that problem.\nYou can hide body of the function inside of a jx package, even if the function is exported out of the module.\n\n</p>\n",
+          "desc": "<p>As you may already know, a JavaScript function (like everything in JavaScript – <a href=\"http://www.w3schools.com\">w3schools</a>) is an object.\nTo be more precise, it is an instance of the <code>Function</code> which inherits from the <code>Object</code>.\nAnd just because the <code>Object</code> has defined <code>toString()</code> method, you could also call it on some function,\nand the result will be a string containing function’s body.\n\n</p>\n<p>In JXcore Packaging &amp; Code Protection module we solved that problem.\nYou can hide body of the function inside of a JX package, even if the function is exported out of the module.\n\n</p>\n",
           "methods": [
             {
               "textRaw": "utils.hideMethod(fn)",
@@ -14510,7 +14517,7 @@
             {
               "textRaw": "About JX package file",
               "name": "about_jx_package_file",
-              "desc": "<p>The <code>JX</code> package file is what you get as a result of compilation, packaging and encrypting of your project.\nIt’s a binary file used only by <code>jx</code> executable.\nContains all of the script files of your project, as well as assets, which can be considered as static resources.\n\n</p>\n",
+              "desc": "<p>The JX package file is what you get as a result of compilation, packaging and encrypting of your project.\nIt’s a binary file used only by <code>jx</code> executable.\nContains all of the script files of your project, as well as assets, which can be considered as static resources.\n\n</p>\n",
               "type": "module",
               "displayName": "About JX package file"
             },
@@ -14547,13 +14554,35 @@
             {
               "textRaw": "File structure",
               "name": "file_structure",
-              "desc": "<p>The JXP project file is simple text file that contains package description written as json literal object:\n\n</p>\n<pre><code class=\"js\">{\n    &quot;name&quot;: &quot;Hello World&quot;,\n    &quot;version&quot;: &quot;1.0&quot;,\n    &quot;author&quot;: &quot;&quot;,\n    &quot;description&quot;: &quot;&quot;,\n    &quot;company&quot;: &quot;&quot;,\n    &quot;website&quot; : &quot;&quot;,\n    &quot;package&quot;: null,\n    &quot;startup&quot;: &quot;helloworld.js&quot;,\n    &quot;execute&quot;: null,\n    &quot;extract&quot;: false,\n    &quot;output&quot;: &quot;helloworld.jx&quot;,\n    &quot;files&quot;: [\n        &quot;helloworld.js&quot;\n    ],\n    &quot;assets&quot;: [\n        &quot;index.html&quot;\n    ],\n    &quot;library&quot;: false,\n    &quot;license_file&quot;: null,\n    &quot;readme_file&quot;: null\n}</code></pre>\n<p>You can access this object in a runtime of your <code>JX</code> package by:\n\n</p>\n<pre><code class=\"js\">var obj = exports.$JXP;</code></pre>\n<p>And the single field:\n\n</p>\n<pre><code class=\"js\">var name = obj.name;</code></pre>\n<p>Below you can find explanation for all supported fields:\n\n</p>\n<ul>\n<li><strong>name</strong>, <strong>version</strong>, <strong>author</strong>, <strong>description</strong>, <strong>company</strong>, <strong>website</strong>\nThese are all string values.</li>\n<li><strong>package</strong>\nThis is not supported for now. It is reserved for future use. Using this field, you will be able to specify a path for package.json file, from which the compilation process of JX package will gather all required NPM dependencies and embed them into output JX package.</li>\n<li><strong>startup</strong>\nName of the main project file. If execute parameter is not defined, this file will be executed first when you run the package.</li>\n<li><strong>execute</strong>\nName of the main execution file. If this parameter is omitted or null – the value from startup will be used. This parameter has different meaning depending on the library value. When the package is compiled with library = false, and you run the compiled package, this execute file will be executed first. If library is true, and the package is called with require() method, the execute file will be returned by the latter.</li>\n<li><strong>extract</strong>\nIt is a boolean value: true or false. When you set this value to true, all package contents will be extracted at first run of the compiled package. There will be a new folder created with the name parameter. All files and assets embedded inside the package will be saved with full directory structure preserved.</li>\n<li><strong>output</strong>\nName of the output JX package.</li>\n<li><strong>files</strong>\nIt is an array, where you can define, which script files from your project will be included into the JX package. Only files with Javascript code should be included there.</li>\n<li><strong>assets</strong>\nThis is the array with static resource files. You can embed as an asset any file of the type: html, css, txt, xml, log, types, ini, json.</li>\n<li><strong>library</strong>\nIt is a boolean value: true or false. Value set to true means that JX package can be treated as a library and it can be used from inside another JX package (with require() method). Setting this value to false is a good way of preventing its usage as an external module (and then require() will not be possible).</li>\n<li><strong>licence_file</strong>\nName of the file containing the licensing information – it is generally a simple text file. If this parameter is omitted or null and if a file named “LICENSE” exists in the directory from where you compile the package – it will be embedded automatically.</li>\n<li><strong>readme_file</strong>\nName of the file containing additional notes about the package. If this parameter is omitted or null and if a file named “README” or “README.md” exists in the directory from where you compile the package – it will be embedded automatically.\nWhen a license or readme file is specified, it can be also displayed in a console window directly from the package.</li>\n</ul>\n<p>For example, running the following command:\n\n</p>\n<pre><code>&gt; jx package.jx license</code></pre>\n<p>will display the licence file to the console without executing the package. The same applies to:\n\n</p>\n<pre><code>&gt; jx package.jx readme</code></pre>\n<ul>\n<li><strong>custom_fields</strong></li>\n</ul>\n<p>You can also define your own constants, as many as you want, for example:\n\n</p>\n<pre><code class=\"js\">{\n    // ...\n    // ...\n    // ...\n    field1 : &quot;one&quot;,\n    myField2 : &quot;two&quot;,\n    someObject : {\n        PI : 3.14159265359,\n        userArray : [ 1, 2 ]\n    },\n    Release : true\n}</code></pre>\n<p>Similarly, accessing those values in a runtime of your JX package is also easy:\n\n</p>\n<pre><code class=\"js\">var pi = exports.$JXP.someObject.PI;</code></pre>\n<p>One of the usage examples for those custom fields can be:\n\n</p>\n<pre><code class=\"js\">if (exports.$JXP.Release) {\n    console.log(&quot;This is the final release of the product.&quot;);\n} else {\n    console.log(&quot;This code is still under development.&quot;);\n}</code></pre>\n",
+              "desc": "<p>The JXP project file is simple text file that contains package description written as json literal object:\n\n</p>\n<pre><code class=\"js\">{\n    &quot;name&quot;: &quot;Hello World&quot;,\n    &quot;version&quot;: &quot;1.0&quot;,\n    &quot;author&quot;: &quot;&quot;,\n    &quot;description&quot;: &quot;&quot;,\n    &quot;company&quot;: &quot;&quot;,\n    &quot;website&quot; : &quot;&quot;,\n    &quot;package&quot;: null,\n    &quot;startup&quot;: &quot;helloworld.js&quot;,\n    &quot;execute&quot;: null,\n    &quot;extract&quot;: false,\n    &quot;output&quot;: &quot;helloworld.jx&quot;,\n    &quot;files&quot;: [\n        &quot;helloworld.js&quot;\n    ],\n    &quot;assets&quot;: [\n        &quot;index.html&quot;\n    ],\n    &quot;library&quot;: false,\n    &quot;license_file&quot;: null,\n    &quot;readme_file&quot;: null\n}</code></pre>\n<p>You can access this object in a runtime of your JX package by:\n\n</p>\n<pre><code class=\"js\">var obj = exports.$JXP;</code></pre>\n<p>And the single field:\n\n</p>\n<pre><code class=\"js\">var name = obj.name;</code></pre>\n<p>Below you can find explanation for all supported fields:\n\n</p>\n<ul>\n<li><strong>name</strong>, <strong>version</strong>, <strong>author</strong>, <strong>description</strong>, <strong>company</strong>, <strong>website</strong>\nThese are all string values.</li>\n<li><strong>startup</strong>\nName of the main project file. If execute parameter is not defined, this file will be executed first when you run the package.</li>\n<li><strong>execute</strong>\nName of the main execution file. If this parameter is omitted or null – the value from startup will be used.\nThis parameter has different meaning depending on the library value.\nWhen the package is compiled with <code>library</code> = <code>false</code>, and you run the compiled package, this execute file will be executed first.\nIf <code>library</code> is <code>true</code>, and the package is called with <code>require()</code> method, the execute file will be returned by the latter.</li>\n<li><strong>extract</strong>\nThis is a boolean value: true or false. When it&#39;s set to true, all package contents will be extracted at first run of the compiled package. There will be a new folder created with the name parameter. All files and assets embedded inside the package will be saved with full directory structure preserved.</li>\n<li><strong>output</strong>\nName of the output JX package.</li>\n<li><strong>files</strong>\nThis is an array, where you can define, which script files from your project will be included into the JX package. Only <code>*.js</code> and <code>*.json</code> files are allowed there.</li>\n<li><strong>assets</strong>\nThis is the array with static resource files. You can embed as an asset any file of the type: html, css, txt, xml, log, types, ini, json.</li>\n<li><strong>library</strong>\nIt is a boolean value: true or false. Value set to true means that JX package can be treated as a library and it can be used from inside another JX package (with <code>require()</code> method).\nSetting this value to false is a good way of preventing its usage as an external module (and then <code>require()</code> will not be possible).</li>\n<li><strong>licence_file</strong>\nName of the file containing the licensing information – it is generally a simple text file. If this parameter is omitted or null and if a file named “LICENSE” exists in the directory from where you compile the package – it will be embedded automatically.</li>\n<li><strong>readme_file</strong>\nName of the file containing additional notes about the package. If this parameter is omitted or null and if a file named “README” or “README.md” exists in the directory from where you compile the package – it will be embedded automatically.\nWhen a license or readme file is specified, it can be also displayed in a console window directly from the package.</li>\n</ul>\n<p>For example, running the following command:\n\n</p>\n<pre><code>&gt; jx package.jx license</code></pre>\n<p>will display the licence file to the console without executing the package. The same applies to:\n\n</p>\n<pre><code>&gt; jx package.jx readme</code></pre>\n<ul>\n<li><strong>custom_fields</strong></li>\n</ul>\n<p>You can also define your own constants, as many as you want, for example:\n\n</p>\n<pre><code class=\"js\">{\n    // ...\n    // ...\n    // ...\n    field1 : &quot;one&quot;,\n    myField2 : &quot;two&quot;,\n    someObject : {\n        PI : 3.14159265359,\n        userArray : [ 1, 2 ]\n    },\n    Release : true\n}</code></pre>\n<p>Similarly, accessing those values in a runtime of your JX package is also easy:\n\n</p>\n<pre><code class=\"js\">var pi = exports.$JXP.someObject.PI;</code></pre>\n<p>One of the usage examples for those custom fields can be:\n\n</p>\n<pre><code class=\"js\">if (exports.$JXP.Release) {\n    console.log(&quot;This is the final release of the product.&quot;);\n} else {\n    console.log(&quot;This code is still under development.&quot;);\n}</code></pre>\n<p>However, <code>files</code> and <code>assets</code> members are not accessible from exports.$JXP\n\n</p>\n",
               "type": "module",
               "displayName": "File structure"
             }
           ],
           "type": "module",
           "displayName": "JXP project file"
+        },
+        {
+          "textRaw": "Accessing files and assets from a package",
+          "name": "accessing_files_and_assets_from_a_package",
+          "modules": [
+            {
+              "textRaw": "assets",
+              "name": "assets",
+              "desc": "<p>There are few native methods in <a href=\"fs.html\">FileSystem</a> module, that you can use to access assets embedded inside a JX package.\n\n</p>\n<ul>\n<li><code>readFile()</code></li>\n<li><code>readFileSync()</code></li>\n<li><code>readdir()</code></li>\n<li><code>readdirSync()</code></li>\n</ul>\n<p>When called, each of these methods try to find a given file or folder in the real file system in first place.\nIf nothing was found, JXcore searches through assets from JX package.\n\n</p>\n<p>Assets can be always referenced relatively to <code>__dirname</code> or <code>./</code>.\n\n</p>\n<p>Let&#39;s consider JX package containing the following directory structure:\n\n</p>\n<ul>\n<li>folder<ul>\n<li>file2.html</li>\n<li>module.js</li>\n</ul>\n</li>\n<li>index.html</li>\n<li>package.json</li>\n<li>test.js</li>\n</ul>\n<p>After creating a package with the command:\n\n</p>\n<pre><code>&gt; jx package test.js my_package</code></pre>\n<p>we can perform accessing package&#39;s assets from inside <em>test.js</em> file, and this would be like this:\n\n</p>\n<pre><code class=\"js\">var fs = require(&#39;fs&#39;);\n\n// gets index.html file from package&#39;s assets, if it does not exists on the disk.\nvar index = fs.readFileSync(__dirname + &#39;/index.html&#39;);\n\n// asset from subfolder:\nvar file = fs.readFileSync(__dirname + &#39;/folder/file2.html&#39;);</code></pre>\n<p>The following sample works as expected and it returns file system&#39;s directory contents. readdirSync and readdir only\nreturn from JX package when the given path does not exist on real file system. Calling one of these methods for the main\nfolder of the JX package will return the results from actual file system. In order to reach asset files using one of these\nmethods, you should consider putting them into a sub folder.\n\n</p>\n<pre><code class=\"js\">var fs = require(&#39;fs&#39;);\nvar index1 = fs.readdirSync(&#39;./folder&#39;);</code></pre>\n",
+              "type": "module",
+              "displayName": "assets"
+            },
+            {
+              "textRaw": "files",
+              "name": "files",
+              "desc": "<p>readFile and readFileSync methods can be used to reach any files inside a JX package but the sources.\nJavaScript files inside a JX package can be accessed only by using <code>require()</code> method. In other words,\nyou can not read the source files using readFile or readFileSync.\n\n</p>\n<p>Example below shows how to load <em>module.js</em> file contained inside <em>folder</em> directory of JX package:\n\n</p>\n<pre><code class=\"js\">var lib = require(&quot;./folder/module.js&quot;);\nconsole.log(&quot;lib.value&quot;, lib.value);</code></pre>\n",
+              "type": "module",
+              "displayName": "files"
+            }
+          ],
+          "type": "module",
+          "displayName": "Accessing files and assets from a package"
         }
       ],
       "type": "module",
@@ -15471,7 +15500,7 @@
     {
       "textRaw": "API Java Client",
       "name": "api_java_client",
-      "desc": "<p>There is a tutorial showing, how to consume JXcore Messaging API from a <a href=\"http://jxcore.com/messaging-api/#post-665\">Java Client</a>.\n\n</p>\n",
+      "desc": "<p>There are some <a href=\"http://jxcore.com/messaging-api/\">tutorials</a> available, and they show how to consume JXcore Messaging API from a Java Client.\n\n</p>\n",
       "modules": [
         {
           "textRaw": "Events",
@@ -15586,7 +15615,7 @@
               ]
             }
           ],
-          "desc": "<p>Creates an instance of JXcore Java Client with specified application name <code>appName</code> and application key <code>appKey</code> (which is obtainable from web control panel).\nThe <code>url</code> parameter specifies JXcore server URL, e.g. <em>sampledomain.com</em> or <em>120.1.2.3</em>. You can also enable SSL support with <code>secure</code> parameter.\n\n</p>\n<p>Setting <code>resetUID</code> as <code>true</code> will reset the unique instance id (session id).\n\n</p>\n<p>The first argument <code>localTarget</code> is an instance of a local class, which will be answering the calls from server.\nIn that class you will specify client methods, which will be callable by other clients or the server itself.\n\n</p>\n<pre><code class=\"java\">import jxcore.*;\n\nClient client = new Client(new CustomMethods(), &quot;channels&quot;,\n    &quot;NUBISA-STANDARD-KEY-CHANGE-THIS&quot;, &quot;localhost&quot;, 8000, false, true);</code></pre>\n"
+          "desc": "<p>Creates an instance of JXcore Java Client with specified application name <code>appName</code> and application key <code>appKey</code>.\nThe <code>url</code> parameter specifies JXcore server URL, e.g. <em>sampledomain.com</em> or <em>120.1.2.3</em>. You can also enable SSL support with <code>secure</code> parameter.\n\n</p>\n<p>Setting <code>resetUID</code> as <code>true</code> will reset the unique instance id (session id).\n\n</p>\n<p>The first argument <code>localTarget</code> is an instance of a local class, which will be answering the calls from server.\nIn that class you will specify client methods, which will be callable by other clients or the server itself.\n\n</p>\n<pre><code class=\"java\">import jxcore.*;\n\nClient client = new Client(new CustomMethods(), &quot;channels&quot;,\n    &quot;NUBISA-STANDARD-KEY-CHANGE-THIS&quot;, &quot;localhost&quot;, 8000, false, true);</code></pre>\n<p>and <em>CustomMethods</em> may look like this:\n\n</p>\n<pre><code class=\"java\">package com.jxcore.messagingAPI;\nimport jxcore.Client;\n\npublic class CustomMethods {\n\n    public CustomMethods() { }\n\n    public void clientsMethod(Object response) {\n        System.out.println(&quot;Received message from the group: &quot; + response.toString());\n    }\n}</code></pre>\n<p>You may also inherit your custom method&#39;s class from JXcore’s internal <code>CustomMethodBase</code> class,\nand this gives you for example access to the <code>super.client</code> instance of the <code>Client</code> object. For example:\n\n</p>\n<pre><code class=\"java\">package com.jxcore.messagingAPI;\n\nimport jxcore.Client;\nimport jxcore.CustomMethodsBase;\n\npublic class CustomMethods extends CustomMethodsBase {\n\n    public CustomMethods() { }\n\n    public void clientsMethod(Object response) {\n        System.out.println(&quot;Received message from the group: &quot; + response.toString());\n        super.client.Close();\n    }\n}</code></pre>\n"
         }
       ],
       "methods": [
@@ -16204,7 +16233,49 @@
               ]
             }
           ],
-          "desc": "<p>Adds new task <strong>as a method</strong> to be processed in a separate thread. The task will be processed as soon as possible.\nIf there is any idle subthread, it will be used to execute the task immediately. Otherwise it may wait until the other tasks will finish or some of the subthreads will become idle.\n\n</p>\n<p>The task is the function <code>method</code> with optional <code>param</code> as an argument. After the method completes, the <code>callback</code> will be invoked.\nIt can receive one or twe arguments, depending if <code>obj</code> is provided or not.\n\n</p>\n<p><code>obj</code> is a context object from the main thread and it can contain any value. If it’s not provided, then the <code>callback</code> method will have only one argument, and it will be the result from the task <code>method</code>.\nOtherwise, the <code>callback</code> will contain two arguments. The first one is the <code>obj</code> object which we are describing right now, while the second argument is the result from the task <code>method</code>.\n\n</p>\n<p>There are few principles regarding adding the tasks, that you should be aware of:\n\n</p>\n<ol>\n<li>You cannot specify, in which of the subthreads your task will run. The subthread will be chosen automatically. You can find out, which subthread is used for that task only from inside the task itself (see <code>threadId</code> property in Subthreads API).</li>\n<li>If for example on your system <code>getThreadCount()</code> returns 3, and you add 3 tasks one after another, there is no guarantee, that each of them will run in its own subthread, but still it is one of the possibilities. But things can go also in many other ways: all of the 3 tasks can run in the same subthread, or two of them in one subthread, and the third in another, etc.</li>\n<li>Do not assume the tasks will be executed in the order of which they were added.</li>\n<li>When the task <code>method</code> returns from its execution block (for example by calling return statement), it is considered as completed. This means, that if you use in the task code any delayed execution with <code>setTimeout()</code> or <code>setInterval()</code>, or async calls, the task method may return faster, before those delayed/async jobs will have chance to complete. For gaining control over task’s execution time, please use <code>process.keepAlive()</code> and <code>process.release()</code> methods from Subthreads API.</li>\n</ol>\n<p>Adding a task with one-argument callback:\n\n</p>\n<pre><code class=\"js\">var method = function (param) {\n   console.log(&quot;We are in a subthread now. Argument value is:&quot;, param);\n   return &quot;ok&quot;;\n};\n\njxcore.tasks.addTask(method, { str: &quot;hello&quot; }, function (result) {\n   console.log(&quot;This is result from subthreaded method:&quot;, result);\n   // should display &quot;ok&quot;\n});</code></pre>\n<p>Adding a task with two-argument callback:\n\n</p>\n<pre><code class=\"js\">// we&#39;re going to pass some object from the main thread to the callback\nvar mainThreadVariable = {\n    log : function(txt) {\n        console.log(txt);\n    }\n};\n\nvar callback = function (obj, result) {\n    // now we can access mainThreadVariable (by obj argument)\n    obj.log(result);\n};\n\njxcore.tasks.addTask(method, { str: &quot;hello&quot; }, callback, mainThreadVariable);</code></pre>\n"
+          "desc": "<p>Adds new task <strong>as a method</strong> to be processed in a separate thread. The task will be processed as soon as possible.\nIf there is any idle subthread, it will be used to execute the task immediately. Otherwise it may wait until the other tasks will finish or some of the subthreads will become idle.\n\n</p>\n<p>The task is the function <code>method</code> with optional <code>param</code> as an argument. After the method completes, the <code>callback</code> will be invoked.\nIt can receive one or twe arguments, depending if <code>obj</code> is provided or not.\n\n</p>\n<p><code>obj</code> is a context object from the main thread and it can contain any value. If it’s not provided, then the <code>callback</code> method will have only one argument, and it will be the result from the task <code>method</code>.\nOtherwise, the <code>callback</code> will contain two arguments. The first one is the <code>obj</code> object which we are describing right now, while the second argument is the result from the task <code>method</code>.\n\n</p>\n<p>There are few principles regarding adding the tasks, that you should be aware of:\n\n</p>\n<ol>\n<li>You cannot specify, in which of the subthreads your task will run. The subthread will be chosen automatically. You can find out, which subthread is used for that task only from inside the task itself (see <code>threadId</code> property in Subthreads API).</li>\n<li>If for example on your system <code>getThreadCount()</code> returns 3, and you add 3 tasks one after another, there is no guarantee, that each of them will run in its own subthread, but still it is one of the possibilities. But things can go also in many other ways: all of the 3 tasks can run in the same subthread, or two of them in one subthread, and the third in another, etc.</li>\n<li>Do not assume the tasks will be executed in the order of which they were added.</li>\n<li>When the task <code>method</code> returns from its execution block (for example by calling return statement), it is considered as completed. This means, that if you use in the task code any delayed execution with <code>setTimeout()</code> or <code>setInterval()</code>, or async calls, the task method may return faster, before those delayed/async jobs will have chance to complete. For gaining control over task’s execution time, please use <code>process.keepAlive()</code> and <code>process.release()</code> methods from Subthreads API.</li>\n</ol>\n<p>Adding a task with one-argument callback:\n\n</p>\n<pre><code class=\"js\">var method = function (param) {\n   console.log(&quot;We are in a subthread now. Argument value is:&quot;, param);\n   return &quot;ok&quot;;\n};\n\njxcore.tasks.addTask(method, { str: &quot;hello&quot; }, function (result) {\n   console.log(&quot;This is result from subthreaded method:&quot;, result);\n   // should display &quot;ok&quot;\n});</code></pre>\n<p>Adding a task with two-argument callback:\n\n</p>\n<pre><code class=\"js\">// we&#39;re going to pass some object from the main thread to the callback\nvar mainThreadVariable = {\n    log : function(txt) {\n        console.log(txt);\n    }\n};\n\nvar callback = function (obj, result) {\n    // now we can access mainThreadVariable (by obj argument)\n    obj.log(result);\n};\n\njxcore.tasks.addTask(method, { str: &quot;hello&quot; }, callback, mainThreadVariable);</code></pre>\n<p>There is also an alternative way to run a function as a task. See below for <code>method.runTask()</code>.\n\n</p>\n",
+          "methods": [
+            {
+              "textRaw": "method.runTask(param, callback, obj)",
+              "type": "method",
+              "name": "runTask",
+              "signatures": [
+                {
+                  "params": [
+                    {
+                      "textRaw": "`param` {Object} ",
+                      "name": "param",
+                      "type": "Object"
+                    },
+                    {
+                      "textRaw": "`callback` {Function} ",
+                      "name": "callback",
+                      "type": "Function"
+                    },
+                    {
+                      "textRaw": "`obj` {Object} ",
+                      "name": "obj",
+                      "type": "Object"
+                    }
+                  ]
+                },
+                {
+                  "params": [
+                    {
+                      "name": "param"
+                    },
+                    {
+                      "name": "callback"
+                    },
+                    {
+                      "name": "obj"
+                    }
+                  ]
+                }
+              ],
+              "desc": "<p>This is shorter alternative to <code>tasks.addTask()</code>.\nJXcore adds <code>runTask()</code> method to function&#39;s prototype, so each function can be added as a task directly by calling <code>method.runTask()</code>:\n\n</p>\n<pre><code class=\"js\">var method = function (param) {\n    console.log(&quot;We are in a subthread now. Argument value is:&quot;, param);\n    return &quot;ok&quot;;\n};\n\nvar mainThreadVariable = {\n    log : function(txt) {\n        console.log(txt);\n    }\n};\n\nvar callback = function (obj, result) {\n    // now we can access mainThreadVariable (by obj argument)\n    obj.log(result);\n};\n\nmethod.runTask({ str: &quot;hello&quot; }, callback, mainThreadVariable);</code></pre>\n"
+            }
+          ]
         },
         {
           "textRaw": "tasks.addTask(object, param)",
@@ -16328,7 +16399,42 @@
               ]
             }
           ],
-          "desc": "<p>Adds new task (the <code>method</code> function with optional <code>param</code> argument) to be processed just once for every existing subthread.\nIn other words, every subthread will call the task once.\nYou can get number of subthreads by calling <code>getThreadCount()</code> method.\nEvery subthread will process its task as soon as possible.\nIf there are no other tasks in the subthread’s queue, the task will be executed immediately.\nOtherwise it may wait until the other tasks in this subthread will finish.\n\n</p>\n<p>If you don&#39;t want the method definition to be remembered by future threads – use <code>doNotRemember</code>. It&#39;s <code>false</code> by default.\n\n</p>\n<p>Running tasks with <code>runOnce()</code> method will also get <code>emptyQueue</code> event fired.\n\n</p>\n<p>One of the cases for using <code>runOnce()</code> could be setting up a http server on each thread.\n\n</p>\n<pre><code class=\"js\">jxcore.tasks.runOnce( method, &quot;some parameter&quot;);</code></pre>\n<p>If for some reason any of the threads will be recreated (for example\n\n\n</p>\n"
+          "desc": "<p>Adds new task (the <code>method</code> function with optional <code>param</code> argument) to be processed just once for every existing subthread.\nIn other words, every subthread will call the task once.\nYou can get number of subthreads by calling <code>getThreadCount()</code> method.\nEvery subthread will process its task as soon as possible.\nIf there are no other tasks in the subthread’s queue, the task will be executed immediately.\nOtherwise it may wait until the other tasks in this subthread will finish.\n\n</p>\n<p>If you don&#39;t want the method definition to be remembered by future threads – use <code>doNotRemember</code>. It&#39;s <code>false</code> by default.\n\n</p>\n<p>Running tasks with <code>runOnce()</code> method will also get <code>emptyQueue</code> event fired.\n\n</p>\n<p>One of the cases for using <code>runOnce()</code> could be setting up a http server on each thread.\n\n</p>\n<pre><code class=\"js\">jxcore.tasks.runOnce(method, &quot;some parameter&quot;);</code></pre>\n",
+          "methods": [
+            {
+              "textRaw": "method.runOnce(param, doNotRemember)",
+              "type": "method",
+              "name": "runOnce",
+              "signatures": [
+                {
+                  "params": [
+                    {
+                      "textRaw": "`param` {Object} - Argument for that method. ",
+                      "name": "param",
+                      "type": "Object",
+                      "desc": "Argument for that method."
+                    },
+                    {
+                      "textRaw": "`doNotRemember` {Boolean} ",
+                      "name": "doNotRemember",
+                      "type": "Boolean"
+                    }
+                  ]
+                },
+                {
+                  "params": [
+                    {
+                      "name": "param"
+                    },
+                    {
+                      "name": "doNotRemember"
+                    }
+                  ]
+                }
+              ],
+              "desc": "<p>This is shorter alternative to <code>tasks.runOnce()</code>.\nJXcore adds <code>runOnce()</code> method to function&#39;s prototype, so each function can be added as a task directly by calling <code>method.runOnce()</code>:\n\n</p>\n<pre><code class=\"js\">var method = function (param) {\n    console.log(&quot;Subthread no &quot; + process.threadId + &quot;. Argument value is:&quot;, param);\n};\n\nmethod.runOnce(&quot;hello&quot;);</code></pre>\n"
+            }
+          ]
         },
         {
           "textRaw": "tasks.setThreadCount(value)",

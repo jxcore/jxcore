@@ -913,7 +913,7 @@
     {
       "textRaw": "API Java Client",
       "name": "api_java_client",
-      "desc": "<p>There is a tutorial showing, how to consume JXcore Messaging API from a <a href=\"http://jxcore.com/messaging-api/#post-665\">Java Client</a>.\n\n</p>\n",
+      "desc": "<p>There are some <a href=\"http://jxcore.com/messaging-api/\">tutorials</a> available, and they show how to consume JXcore Messaging API from a Java Client.\n\n</p>\n",
       "modules": [
         {
           "textRaw": "Events",
@@ -1028,7 +1028,7 @@
               ]
             }
           ],
-          "desc": "<p>Creates an instance of JXcore Java Client with specified application name <code>appName</code> and application key <code>appKey</code> (which is obtainable from web control panel).\nThe <code>url</code> parameter specifies JXcore server URL, e.g. <em>sampledomain.com</em> or <em>120.1.2.3</em>. You can also enable SSL support with <code>secure</code> parameter.\n\n</p>\n<p>Setting <code>resetUID</code> as <code>true</code> will reset the unique instance id (session id).\n\n</p>\n<p>The first argument <code>localTarget</code> is an instance of a local class, which will be answering the calls from server.\nIn that class you will specify client methods, which will be callable by other clients or the server itself.\n\n</p>\n<pre><code class=\"java\">import jxcore.*;\n\nClient client = new Client(new CustomMethods(), &quot;channels&quot;,\n    &quot;NUBISA-STANDARD-KEY-CHANGE-THIS&quot;, &quot;localhost&quot;, 8000, false, true);</code></pre>\n"
+          "desc": "<p>Creates an instance of JXcore Java Client with specified application name <code>appName</code> and application key <code>appKey</code>.\nThe <code>url</code> parameter specifies JXcore server URL, e.g. <em>sampledomain.com</em> or <em>120.1.2.3</em>. You can also enable SSL support with <code>secure</code> parameter.\n\n</p>\n<p>Setting <code>resetUID</code> as <code>true</code> will reset the unique instance id (session id).\n\n</p>\n<p>The first argument <code>localTarget</code> is an instance of a local class, which will be answering the calls from server.\nIn that class you will specify client methods, which will be callable by other clients or the server itself.\n\n</p>\n<pre><code class=\"java\">import jxcore.*;\n\nClient client = new Client(new CustomMethods(), &quot;channels&quot;,\n    &quot;NUBISA-STANDARD-KEY-CHANGE-THIS&quot;, &quot;localhost&quot;, 8000, false, true);</code></pre>\n<p>and <em>CustomMethods</em> may look like this:\n\n</p>\n<pre><code class=\"java\">package com.jxcore.messagingAPI;\nimport jxcore.Client;\n\npublic class CustomMethods {\n\n    public CustomMethods() { }\n\n    public void clientsMethod(Object response) {\n        System.out.println(&quot;Received message from the group: &quot; + response.toString());\n    }\n}</code></pre>\n<p>You may also inherit your custom method&#39;s class from JXcore’s internal <code>CustomMethodBase</code> class,\nand this gives you for example access to the <code>super.client</code> instance of the <code>Client</code> object. For example:\n\n</p>\n<pre><code class=\"java\">package com.jxcore.messagingAPI;\n\nimport jxcore.Client;\nimport jxcore.CustomMethodsBase;\n\npublic class CustomMethods extends CustomMethodsBase {\n\n    public CustomMethods() { }\n\n    public void clientsMethod(Object response) {\n        System.out.println(&quot;Received message from the group: &quot; + response.toString());\n        super.client.Close();\n    }\n}</code></pre>\n"
         }
       ],
       "methods": [
