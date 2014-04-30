@@ -12,43 +12,48 @@ There are some tutorials for using JXcore Messaging available here: [Hello World
 
 ## Configuration
 
-All of the server's settings listed below may be changed using `setConfig()` method.
+All server settings listed below may be changed using `setConfig()` method. For example:
+
+```js
+server.setConfig("enableClientSideSubscription", true);
+```
 
 ### chunked
 
 * {Boolean} default `true`
 
-Enables messaging server to send multiple messages at once to the client. This increases performance of JXcore Messaging.
-There are some browser versions, however, which don't support this feature (for example IE below v8).
-In this case, chunked mode is internally disabled, even if server's `chunked` option is set to `true`.
+Enables the messaging server to send multiple messages at once to the client.
+This increases the performance of JXcore Messaging.
+There are some browser versions, however, that don't support this feature (for example IE below v8).
+In this case, chunked mode is internally disabled, even if the `chunked` option in server is set to `true`.
 
 ### collectorLatency
 
 * {Number} default 50
 
 Defines interval in milliseconds for pushing messages to the clients.
-Each message, that client has sent to the server or other clients is not processed immediately.
-Instead it is queued and processed together with other messages collected within `collectorLatency` period.
-This way server stays more responsive, because doesn't have to deal with each message separately.
+Messages, that client has sent to the server or other clients are not processed immediately.
+Instead, they are queued and processed together with other messages collected within `collectorLatency` period.
+This way the server stays more responsive, because it doesn't have to deal with each message separately.
 
 ### console
 
 * {Boolean} default `true`
 
-When enabled, displays log and error messages to the console output.
+When enabled, the running server displays log and error messages to the console output.
 
 ### consoleInfo
 
 * {Boolean} default `false`
 
-When enabled, displays additional (informative) log messages to the console output.
+When enabled, the running server displays additional (informative) log messages to the console output.
 
 ### consoleThreadNumber
 
 * {Boolean} default `true`
 
-When JXcore Messaging server runs in multi-threaded mode and this option is enabled, each of log and error messages displayed to the console
-contains information about thread ID, from which the message comes.
+When JXcore Messaging server runs in multi-threaded mode and this option is enabled,
+each of the log and error messages displayed to the console contains information about thread ID, from which the message comes.
 
 Example output:
 
@@ -64,63 +69,63 @@ Thread#0 HTTP  -> http://192.168.1.11:8000/test
 * {Boolean} default `false`
 
 When this option is set to `false` (and it is by default), the client's methods `Subscribe()` and `Unsubscribe()` are disabled.
-They still exist in client's API, but invoking them will have no effect, since the calls will be ignored on the server-side.
-Client's are still able to send messages to the groups, but since they cannot subscribe o them, it should be done by the server.
+However, they still exist in client's API, but invoking them will have no effect, since the calls will be ignored on the server-side.
+Clients are still able to send messages to the groups, but since they cannot subscribe to them, it should be done by the server.
 See server-side methods `subscribeClient()` and `unSubscribeClient()`.
 
 ### encoding
 
 * {String} default "UTF-8"
 
-Defines encoding type of messages being sent both ways between server and client's.
+Defines encoding type of messages being sent both ways between server and clients.
 
 ### httpsCertLocation
 ### httpsKeyLocation
 
 * {String} default null
 
-Those both options define locations for SSL certificate files. See also: `httpsServerPort` option.
+Both these options define locations for SSL certificate files. See also: `httpsServerPort` option.
 
 ### httpServerPor
 
 * {Number} default 8000
 
-Defines port for HTTP server of JXcore Messaging Server.
+Defines port for HTTP server of JXcore Messaging backend.
 
 ### httpsServerPort
 
 * {Number} default 0
 
 Defines port for HTTPS (SSL) server of JXcore Messaging.
-The default value 0 also disables SSL support and it means, that JXcore Messaging backend will run based on regular HTTP protocol.
-When `httpsServerPort` is set to a number, both `httpsCertLocation` and `httpsKeyLocation` should be provided and be a valid file paths,
+The default value 0 also disables SSL support and it means that JXcore Messaging backend will run based on regular HTTP protocol.
+When `httpsServerPort` is set to a number, both `httpsCertLocation` and `httpsKeyLocation` should be provided and they must be valid file paths,
 otherwise SSL support will not be enabled.
 
 ### IPAddress
 
 * {String} default "localhost";
 
-Defines the IP address, on which JXcore Messaging backend's HTTP or HTTPS server will be running.
-By default it's "localhost", but you may also use any valid IP address, like "192.168.1.11" or any other.
+Defines the IP address, on which HTTP or HTTPS server of JXcore Messaging backend will be running.
+By default it's "localhost", but you may also use any other valid IP address, like "192.168.1.11" or any other.
 
-Client's will use this value to connect to the server, so the IP should be always accessible for them.
+Clients will use this value to connect to the server, so the IP address should be always accessible for them.
 For example, you should avoid situations in which JXcore Messaging server is configured for IP set to "localhost" or "127.0.0.1",
-but client's are connecting from remote machines using server's public address.
-Although this might work, and client's might connect it might also generate errors.
+but clients are connecting from remote machines using server's public address.
+Although this might work, and clients might connect it but this process may generate errors.
 For example some browsers may fail to use WebSockets and will try to switch to older HTTP protocols.
 
 ### listenerTimeout
 
 * {Number} default 60000
 
-Defines long polling request time in milliseconds. The maximum value is should not be greater that 120000 (120 seconds).
+Defines long polling request time in milliseconds. The maximum value should not be greater that 120000 (120 seconds).
 
 ### mapiVersion
 
 * {String}
 
 Contains version number of JXcore Messaging Server. For example "0.22".
-It is used mostly for informational purpose and is displayed for example when server starts from tthe console window.
+It is used mostly for informational purpose and is displayed for example, when server starts from the console window.
 
 ## Events
 
@@ -133,16 +138,16 @@ It is used mostly for informational purpose and is displayed for example when se
     * `groups` {Array} - names of the groups, to which user already belongs
 * `allow` {Function}
 
-Condition for this event to be fired is that server-side [`enableClientSideSubscription`](#enableclientsidesubscription) option should enabled.
-By default it is set to false, and it means, that client's cannot subscribe to a channels nor unsubscribe from them.
-In that case the event `subscribe` is never raised.
+Condition for this event to be fired is that server-side [`enableClientSideSubscription`](#enableclientsidesubscription) option should be enabled.
+By default it is set to false, and it means, that clients cannot subscribe to channels nor unsubscribe from them.
+In such cases, the event `subscribe` is never raised.
 
 When `enableClientSideSubscription` is set to true, the `subscribe` event fires whenever client subscribes to a `group` by calling its `Subscribe()` method.
-If no listener is attached to this event, user subscribes always.
+If no listener is attached to this event, the user always subscribes.
 
 Attaching to this event gives you control, whether to allow the user to be subscribed or not.
-The `allow` argument is a function, which should be called if you want to accept user's subscription request.
-Otherwise user will not be subscribed to a `group`, and client's callback will not be invoked.
+The `allow` argument is a function, which should be called upon if you want to accept the user's subscription request.
+Otherwise the user will not be subscribed to a `group`, and client's callback will not be invoked.
 
 client-side (index.html):
 
@@ -156,6 +161,8 @@ jxcore.Subscribe("group1", callback);
 
 server-side (my_server.js):
 ```js
+server.setConfig("enableClientSideSubscription", true);
+
 server.on("subscribe", function(env, params, allow) {
     // don't ever subscribe to "admin_group"
     if (params.group !== "admin_group") {
@@ -173,12 +180,12 @@ server.on("subscribe", function(env, params, allow) {
     * `groups` {Array}
 * `allow` {Function}
 
-Condition for this event to be fired is that server-side [`enableClientSideSubscription`](#enableclientsidesubscription) option should enabled.
-By default it is set to false, and it means, that client's cannot subscribe to a channels nor unsubscribe from them.
-In that case the event `subscribe` is never raised.
+Condition for this event to be fired is that server-side [`enableClientSideSubscription`](#enableclientsidesubscription) option should be enabled.
+By default it is set to false, and it means, that clients cannot subscribe to channels nor unsubscribe from them.
+In such cases, the event `unsubscribe` is never raised.
 
 When `enableClientSideSubscription` is set to true, the `unsubscribe` event fires whenever client unsubscribes from a `group` by calling its `Unsubscribe()` method.
-If no listener is attached to this event, user unsubscribes always.
+If no listener is attached to this event, the user always unsubscribes.
 
 Attaching to this event gives you control, whether to allow the user to be unsubscribed or not.
 
@@ -197,9 +204,9 @@ See also [Event: 'subscribe'](#subscribe)
 This event fires, whenever user calls `SendToGroup()` method.
 If no listener is attached to this event, messages are always sent.
 
-Attaching to this event gives you control, whether to allow for sending particular message or not.
+Attaching to this event gives you control, whether to allow a particular message to be sent or not.
 
-The `allow` argument is a function, which should be called if you want to let the message to be sent.
+The `allow` argument is a function, which should be called upon if you want to let the message to be sent.
 
 client-side (index.html):
 
@@ -227,7 +234,7 @@ server.on('sendToGroup', function(env, params, allow) {
 * `Index` {number}
 
 This object is passed to some of the methods described in this document. It contains information about a call made from a client's side.
-For example, when a client invokes server's method by using `Call()`, the server's method will receive `env` object apart from argument passed to `Call()`.
+For example, when a client invokes server's method by using `Call()`, the server's method will receive `env` object apart from the argument passed to `Call()`.
 
 `Index` represents id of client's callback and is used by `sendCallback()` method.
 
@@ -464,10 +471,10 @@ Starts JXcore application with optional `options` for the server. Once started, 
 * `env` {Object} - see [Object: `env`](#object-env)
 * `groupName` {String}
 
-Subscribes the client to a `groupName`, or channel. This is server-side equivalent of `Subscribe()` method from client's API.
+Subscribes the client to a `groupName`, or channel. This is the server-side equivalent of `Subscribe()` method from client's API.
 
 From now on, messages sent to that group by any other subscriber or server will be received by the client.
-Also the client can send messages to this group – see `SendToGroup()` method.
+Also, the client can send the messages to this group – see `SendToGroup()` method.
 
 This method should be used in one of server's custom method defined with `addJSMethod()`,
 because it requires the [`env`](#object-env) object containing information about client's call.
@@ -488,17 +495,17 @@ server.addJSMethod("someMethod", function(env, param) {
 });
 ```
 
-Of course you may apply any logic or algorithm for making decision, whether subscribe the client and how.
+Of course you may apply any logic or algorithm for making the decision, whether to subscribe the client or how to allow the subscription to occur.
 
 ## unSubscribeClient(env, groupName)
 
 * `env` {Object} - see [Object: `env`](#object-env)
 * `groupName` {String}
 
-Unsubscribes the client from a `groupName`, or channel. This is server-side equivalent of `Unsubscribe()` method from client's API.
+Unsubscribes the client from a `groupName`, or channel. This is the server-side equivalent of `Unsubscribe()` method from client's API.
 
 From now on, messages sent to that group cannot be received by this client.
-Also, the client cannot messages to that group.
+Also, the client cannot send messages to that group.
 
 The usage is analogous to the `subscribeClient()` method.
 
@@ -601,12 +608,12 @@ jxcore.OnError = function (err) {
 * `subscribed` {Boolean}
 * `groupName` {String}
 
-This event is raised when client gets subscribed to a group or unsubscribed from it by a call made from a server-side (`subscribeClient()` or `unSubscribeClient()` methods).
+This event is raised when client gets subscribed to a group or unsubscribes from it by a call made from a server-side (`subscribeClient()` or `unSubscribeClient()` methods).
 
-The `subscribed` value indicates, whether this event was raised as a result of subscription (`true`) or unsubscription (`false`) request.
+The `subscribed` value indicates whether this event was raised as a result of subscription (`true`) or unsubscription (`false`) request.
 The `groupName` is the name of the group, for which the event occurred.
 
-When subscription/unsubscription request was made by a client's method `Subscribe()` or `Unsubscribe()`,
+When subscription/un-subscription request is made by a client's method `Subscribe()` or `Unsubscribe()`,
 the event `OnSubscription` is not raised, but instead you may provide the callback for those methods.
 Please refer to their description for more details.
 
@@ -730,7 +737,7 @@ document.onjxready = function () {
 
 Subscribes the client to a `groupName`, or channel. From now on, messages sent to that group by any other subscriber will be received by the client.
 Also the client can send messages to this group – see `SendToGroup()` method.
-After the server will successfully subscribe the client to the `groupName`, the client's `callback` will be called.
+After the server successfully subscribes the client to the `groupName`, the client's `callback` will be called.
 
 ```js
 jxcore.Subscribe("programmers", function(groupName) {
@@ -745,7 +752,7 @@ jxcore.Subscribe("programmers", function(groupName) {
     * `groupName` {String}
 
 Unsubscribes the client from a `groupName`, or channel. From now on, messages sent to that group cannot be received by this client.
-After the server will successfully unsubscribe the client from the `groupName`, the client's `callback` will be called.
+After the server successfully unsubscribes the client from the `groupName`, the client's `callback` will be called.
 
 ```js
 jxcore.Unsubscribe("programmers", function(groupName) {
@@ -948,7 +955,8 @@ client.SendToGroup("programmers", "addText", "Hello from client!");
 
 Subscribes the client to a `groupName`, or channel. From now on, messages sent to that group by any other subscriber will be received by the client.
 Also the client can send messages to this group – see `SendToGroup()` method.
-After the server will successfully subscribe the client to the `groupName`, the client's `callback` will be called.
+After the server successfully subscribes the client to the `groupName`, the client's `callback` will be called.
+
 
 ```java
 try {
@@ -972,7 +980,7 @@ try {
     * `groupName` {String}
 
 Unsubscribes the client from a `groupName`, or channel. From now on, messages sent to that group cannot be received by this client.
-After the server will successfully unsubscribe the client from the `groupName`, the client's `callback` will be called.
+After the server successfully unsubscribes the client from the `groupName`, the client's `callback` will be called.
 
 ```java
 try {

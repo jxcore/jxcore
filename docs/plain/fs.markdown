@@ -267,7 +267,7 @@ Asynchronous readdir(3).  Reads the contents of a directory.
 The callback gets two arguments `(err, files)` where `files` is an array of
 the names of the files in the directory excluding `'.'` and `'..'`.
 
-When called from inside a JX package, it also reads contents of embedded directory.
+When called from inside a JX package, and the path was not found on the file system, it reads the contents of embedded directory if it was compiled into the package.
 See [Accessing files and assets from inside a package](jxcore-feature-packaging-code-protection.markdown#accessing-files-and-assets-from-inside-a-package).
 
 ## fs.readdirSync(path)
@@ -432,7 +432,7 @@ contents of the file.
 
 If no encoding is specified, then the raw buffer is returned.
 
-When called from inside a JX package, it also reads contents of file embedded in `assets` array.
+When called from inside a JX package, and the path was not found on the file system, it reads the contents of embedded file if it was compiled into the package.
 See [Accessing files and assets from inside a package](jxcore-feature-packaging-code-protection.markdown#accessing-files-and-assets-from-inside-a-package).
 
 ## fs.readFileSync(filename, [options])
@@ -608,6 +608,8 @@ In particular, checking if a file exists before opening it is an anti-pattern
 that leaves you vulnerable to race conditions: another process may remove the
 file between the calls to `fs.exists()` and `fs.open()`.  Just open the file
 and handle the error when it's not there.
+
+When called from inside a JX package, and the path was not found on file system, JXcore searches through assets of the package.
 
 ## fs.existsSync(path)
 

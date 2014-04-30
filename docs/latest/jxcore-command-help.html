@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>JXcore Command Help JXcore Manual &amp; Documentation</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/sh.css">
+</head>
+<body class="alt apidoc" id="api-section-jxcore-command-help">
+    <div id="header_bar">
+        <div id="logo_bar">
+            <a href="http://jxcore.com/" title="Go back to the home page">
+                <img id="logo" src="assets/main-logo_white.png" alt="jxcore">
+            </a>
+        </div>
+    </div>
+    <div id="content" class="clearfix">
+
+        <div id="column2" class="interior">
+            <ul>
+                <li><a href="http://jxcore.com/" class="home">Home</a></li>
+                <li><a href="http://jxcore.com/downloads/" class="download">Download</a></li>
+                <li><a href="index.html" class="docs current">Docs</a></li>
+                <li><a href="http://jxcore.com/tutorials/" class="docs current">Tutorials</a></li>
+                <li><a href="https://github.com/Nubisa/jxdocs/issues/" class="about">Issues</a></li>
+                <li><a href="http://jxcore.com/blog" class="blog">Blog</a></li>
+            </ul>
+            <p class="twitter"><a href="https://twitter.com/nodejx">Follow us</a></p>
+        </div>
+
+        <div id="column1" class="interior">
+            <div class="intro_text">
+                JXcore is a multithreaded Node.JS distribution with additional features.
+                <br/>
+                <br/>
+                <strong>The Node.JS contents here is synced from Node.JS Github Repository.</strong>
+            </div>
+          <header>
+            <h1>JXcore Manual &amp; Documentation</h1>
+            <div id="gtoc">
+              <p>
+                <a href="index.html" name="toc">Index</a> |
+                <a href="all.html">View on single page</a> |
+                <a href="jxcore-command-help.json">View as JSON</a>
+              </p>
+            </div>
+            <hr>
+          </header>
+
+          <div id="toc">
+            <h2>Table of Contents</h2>
+            <ul>
+<li><a href="#jxcore_command_help_jxcore_command_help">JXcore Command Help</a><ul>
+<li><a href="#jxcore_command_help_usage">Usage</a></li>
+<li><a href="#jxcore_command_help_options">Options</a></li>
+<li><a href="#jxcore_command_help_environment_variables">Environment variables</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+
+          <div id="apicontent">
+            <h1>JXcore Command Help<span><a class="mark" href="#jxcore_command_help_jxcore_command_help" id="jxcore_command_help_jxcore_command_help">#</a></span></h1>
+<p>Executing <code>jx</code> binary with <code>--help</code> option displays list of possible commands.
+
+</p>
+<pre><code>&gt; jx --help</code></pre>
+<h2>Usage<span><a class="mark" href="#jxcore_command_help_usage" id="jxcore_command_help_usage">#</a></span></h2>
+<pre><code class="bash">jx [options] [ -e script | script.js ] [arguments]
+jx debug script.js [arguments]</code></pre>
+<h2>Options<span><a class="mark" href="#jxcore_command_help_options" id="jxcore_command_help_options">#</a></span></h2>
+<p>Many of the options are thoroughly documented in separate sections of the documentation:
+
+</p>
+<ul>
+<li><a href="jxcore-feature-packaging-code-protection.html#jxcore_features_package_manager_compile">compile</a> - compile jx file from jxp project</li>
+<li><a href="jxcore-command-install.html">install</a> - installs a module from the repository</li>
+<li><a href="jxcore-command-mt.html">mt</a> - multithread the given application (no-keep)</li>
+<li><a href="jxcore-command-mt.html">mt-keep</a> - multithread the given application (keep alive)</li>
+<li><a href="jxcore-feature-packaging-code-protection.html#jxcore_features_package_manager_package">package</a> - create jxp project from the folder (recursive)</li>
+</ul>
+<p>Other options are:
+
+</p>
+<ul>
+<li><code>-jxv</code>, <code>--jxversion</code> - print jxcore&#39;s version</li>
+<li><code>-v</code>, <code>--version</code> - print corresponding node&#39;s version</li>
+<li><code>-e</code>, <code>--eval</code> - script evaluate script</li>
+<li><code>-p</code>, <code>--print</code> - evaluate script and print result</li>
+<li><code>-i</code>, <code>--interactive</code> - always enter the REPL even if stdin does not appear to be a terminal</li>
+<li><code>--no-deprecation</code> - silence deprecation warnings</li>
+<li><code>--trace-deprecation</code> - show stack traces on deprecations</li>
+<li><code>--v8-options</code> - print v8 command line options</li>
+<li><code>--max-stack-size=val</code> - set max v8 stack size (bytes)</li>
+</ul>
+<h2>Environment variables<span><a class="mark" href="#jxcore_command_help_environment_variables" id="jxcore_command_help_environment_variables">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>NODE_PATH</code>              &#39;:&#39;-separated list of directories prefixed to the module search path.</li>
+<li><code>NODE_MODULE_CONTEXTS</code>   - Set to 1 to load modules in their own global contexts.</li>
+<li><code>NODE_DISABLE_COLORS</code>    - Set to 1 to disable colors in the REPL</li>
+</div></ul>
+
+          </div>
+        </div>
+    </div>
+    <div id="footer">
+        <a href="http://nubisa.com" class="nubisa">Nubisa</a>
+        <ul class="clearfix">
+            <li><a href="http://jxcore.com/" class="home">Home</a></li>
+            <li><a href="http://jxcore.com/downloads/" class="download">Download</a></li>
+            <li><a href="index.html" class="docs current">Docs</a></li>
+            <li><a href="http://jxcore.com/tutorials/" class="docs current">Tutorials</a></li>
+            <li><a href="https://github.com/Nubisa/jxdocs/issues/" class="about">Issues</a></li>
+            <li><a href="http://jxcore.com/blog" class="blog">Blog</a></li>
+            <li><a href="https://twitter.com/nodejx" class="twitter">Follow us on Twitter</a></li>
+        </ul>
+
+        <p>Copyright <a href="http://nubisa.com/">Nubisa, Inc.</a> 2014. View <a href="http://jxcore.com/document/eula/">license</a>.</p>
+    </div>
+
+  <script src="assets/sh_main.js"></script>
+  <script src="assets/sh_javascript.min.js"></script>
+  <script>highlight(undefined, undefined, 'pre');</script>
+    <script>
+        var _gaq=[['_setAccount','UA-47144445-1'],['_trackPageview']];
+        (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+            g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
+            s.parentNode.insertBefore(g,s)}(document,'script'));
+    </script>
+</body>
+</html>
+

@@ -4,20 +4,20 @@
     {
       "textRaw": "Process Monitor",
       "name": "process_monitor",
-      "desc": "<p>JXcore offers embedded process monitoring tool. It checks regularly whether monitored process/processes still exist and respawns them if needed.\nWhen the monitor is running, then your applications can subscribe to it and start being monitored.\n\n</p>\n<p>Apart from this feature, JXcore offers also <a href=\"jxcore-feature-internal-recovery.html\">Internal Recovery</a>.\nPlease refer there for complementary information.\n\n</p>\n",
+      "desc": "<p>JXcore offers embedded process monitoring tool. It checks regularly whether the monitored process/processes still exist and restarts them, if required.\nWhen the monitor is running, your applications can subscribe to it and start being monitored.\n\n</p>\n<p>Apart from this feature, JXcore offers also <a href=\"jxcore-feature-internal-recovery.html\">Internal Recovery</a>.\nPlease refer there for complementary information.\n\n</p>\n",
       "modules": [
         {
           "textRaw": "Commands",
           "name": "commands",
           "desc": "<p>This section describes list of options, which can be used from the command line for controlling the monitor&#39;s process.\n\n</p>\n",
-          "type": "module",
-          "displayName": "Commands"
-        },
-        {
-          "textRaw": "run",
-          "name": "run",
-          "desc": "<pre><code>&gt; jx monitor run application_file.js</code></pre>\n<p>Launches given application and subscribes it for being monitored (invokes <code>followMe()</code> method).\nThe monitor itself should be already running (see <code>start</code> command).\n\n</p>\n<p>Please note, that not every application is a good candidate for being monitored.\nEspecially those apps, which are not designed for constant running - probably they should not be monitored,\nbut that depends on developer and application&#39;s purpose.\n\n</p>\n<p>For more information about this, see <a href=\"jxcore-monitor.html\">Process Monitor API</a>.\n\n</p>\n",
           "modules": [
+            {
+              "textRaw": "run",
+              "name": "run",
+              "desc": "<pre><code>&gt; jx monitor run application_file.js</code></pre>\n<p>Launches a given application and subscribes it for being monitored (invokes <code>followMe()</code> method).\nThe monitor itself should be already running (see <code>start</code> command).\n\n</p>\n<p>Please note: not every application is a good candidate for being monitored.\nEspecially those apps, which are not designed for constant running - they should probably not be monitored,\nbut that depends on the developer and application&#39;s purpose.\n\n</p>\n<p>For more information about this, see <a href=\"jxcore-monitor.html\">Process Monitor API</a>.\n\n</p>\n",
+              "type": "module",
+              "displayName": "run"
+            },
             {
               "textRaw": "start",
               "name": "start",
@@ -35,13 +35,13 @@
             {
               "textRaw": "restart",
               "name": "restart",
-              "desc": "<pre><code>&gt; jx monitor restart</code></pre>\n<p>Restarts the monitor. Find the monitor&#39;s process and shuts it down together with all monitored applications. After that starts new and fresh monitor&#39;s process.\n\n</p>\n",
+              "desc": "<pre><code>&gt; jx monitor restart</code></pre>\n<p>Restarts the monitor. Finds the monitor&#39;s process and shuts it down together with all monitored applications.\nAfter that it starts new and fresh monitor&#39;s process.\n\n</p>\n",
               "type": "module",
               "displayName": "restart"
             }
           ],
           "type": "module",
-          "displayName": "run"
+          "displayName": "Commands"
         },
         {
           "textRaw": "Web access",
@@ -60,7 +60,7 @@
         {
           "textRaw": "Config file",
           "name": "config_file",
-          "desc": "<p>Process Monitor can be configured with <em>jx.config</em> file. If you want to use it, you should save it into the same folder, where lies the <em>jx</em> executable file.\nBelow is example of <em>jx.config</em> file.\n\n</p>\n<p><em>jx.config</em>\n\n</p>\n<pre><code class=\"js\">{\n    &quot;monitor&quot;: {\n        &quot;port&quot;: 17777,\n        &quot;check_interval&quot;: 1000,\n        &quot;start_delay&quot;: 2000,\n        &quot;log_path&quot;: &quot;monitor_[WEEKOFYEAR]_[YEAR].log&quot;,\n    }\n}</code></pre>\n<ul>\n<li><strong>port</strong> - it is an http port, which is used by monitored applications to communicate with the monitor. Default value: 17777.</li>\n<li><strong>check_interval</strong> - how often (in milliseconds) should the monitor check if monitored applications processes still exist. Default value: 1000.</li>\n<li><strong>start_delay</strong> - how late (in milliseconds) should the application subscribe to the monitor. Default value: 2000.</li>\n<li><strong>log_path</strong> - path and/or name of the log file. If it&#39;s only a name (without directory part), it will be written in current working directory, which means the place, from where you started the monitor&#39;s process.\nYou can use some predefined tags inside the log_path. Supported tags are [WEEKOFYEAR], [DAYOFMONTH], [DAYOFYEAR], [YEAR], [MONTH], [MINUTE], [HOUR].</li>\n</ul>\n",
+          "desc": "<p>Process Monitor can be configured with a <em>jx.config</em> file. If you want to use it, you should save it in the same folder,\nwhere the <em>jx</em> executable file is located. Below is an example of a <em>jx.config</em> file.\n\n</p>\n<p><em>jx.config</em>\n\n</p>\n<pre><code class=\"js\">{\n    &quot;monitor&quot;: {\n        &quot;port&quot;: 17777,\n        &quot;check_interval&quot;: 1000,\n        &quot;start_delay&quot;: 2000,\n        &quot;log_path&quot;: &quot;monitor_[WEEKOFYEAR]_[YEAR].log&quot;,\n    }\n}</code></pre>\n<ul>\n<li><strong>port</strong> - it is an http port, which is used by monitored applications to communicate with the monitor. Default value: 17777.</li>\n<li><strong>check_interval</strong> - how often (in milliseconds) should the monitor check monitored applications&#39; processes\nto determine whether they still exist or not. Default value: 1000.</li>\n<li><strong>start_delay</strong> - how late (in milliseconds) should the application subscribe to the monitor. Default value: 2000.</li>\n<li><strong>log_path</strong> - path and/or name of the log file. If it is only a name (without directory part),\nit will be written in current working directory, which means the place from where you started the monitor&#39;s process.\nYou can use some predefined tags inside the log_path. Supported tags are [WEEKOFYEAR], [DAYOFMONTH], [DAYOFYEAR], [YEAR], [MONTH], [MINUTE], [HOUR].</li>\n</ul>\n",
           "type": "module",
           "displayName": "Config file"
         }

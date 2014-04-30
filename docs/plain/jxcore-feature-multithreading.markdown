@@ -63,7 +63,7 @@ There are two ways of executing your JavaScript code in multiple threads with JX
 
 ### Multithreading from the command line
 
-The first and the easiest is just to use `mt` or `mt-keep` option in the command-line for jx:
+The first and the easiest one is just to use `mt` or `mt-keep` option in the command-line for jx:
 
     > jx mt-keep:4 easy1.js
 
@@ -78,10 +78,10 @@ Then you run the application without any jx’s options:
 
 The main difference between those two methods is, that with mt/mt-keep approach you have to do absolutely nothing
 to run the application multithreaded. However, the same code is running separately for each thread
-and you don’t really have any control to change the thread’s job, once the application started.
+and you don’t really have any control over changing the thread’s job, once the application started.
 
 With the second (the “tasks”) approach it’s all about adding jobs to the queue of the thread pool.
-Tasks start and finish, you can always add more tasks in the runtime.
+Tasks start and finish while you can add more tasks in the runtime.
 In this model you always have the main thread and the subthreads.
 You can also get notified, when all task are completed.
 See the API for reference.

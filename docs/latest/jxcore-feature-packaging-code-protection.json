@@ -123,26 +123,26 @@
           "displayName": "JXP project file"
         },
         {
-          "textRaw": "Accessing files and assets from a package",
+          "textRaw": "Accessing Files and Assets from a Package",
           "name": "accessing_files_and_assets_from_a_package",
           "modules": [
             {
               "textRaw": "assets",
               "name": "assets",
-              "desc": "<p>There are few native methods in <a href=\"fs.html\">FileSystem</a> module, that you can use to access assets embedded inside a JX package.\n\n</p>\n<ul>\n<li><code>readFile()</code></li>\n<li><code>readFileSync()</code></li>\n<li><code>readdir()</code></li>\n<li><code>readdirSync()</code></li>\n</ul>\n<p>When called, each of these methods try to find a given file or folder in the real file system in first place.\nIf nothing was found, JXcore searches through assets from JX package.\n\n</p>\n<p>Assets can be always referenced relatively to <code>__dirname</code> or <code>./</code>.\n\n</p>\n<p>Let&#39;s consider JX package containing the following directory structure:\n\n</p>\n<ul>\n<li>folder<ul>\n<li>file2.html</li>\n<li>module.js</li>\n</ul>\n</li>\n<li>index.html</li>\n<li>package.json</li>\n<li>test.js</li>\n</ul>\n<p>After creating a package with the command:\n\n</p>\n<pre><code>&gt; jx package test.js my_package</code></pre>\n<p>we can perform accessing package&#39;s assets from inside <em>test.js</em> file, and this would be like this:\n\n</p>\n<pre><code class=\"js\">var fs = require(&#39;fs&#39;);\n\n// gets index.html file from package&#39;s assets, if it does not exists on the disk.\nvar index = fs.readFileSync(__dirname + &#39;/index.html&#39;);\n\n// asset from subfolder:\nvar file = fs.readFileSync(__dirname + &#39;/folder/file2.html&#39;);</code></pre>\n<p>The following sample works as expected and it returns file system&#39;s directory contents. readdirSync and readdir only\nreturn from JX package when the given path does not exist on real file system. Calling one of these methods for the main\nfolder of the JX package will return the results from actual file system. In order to reach asset files using one of these\nmethods, you should consider putting them into a sub folder.\n\n</p>\n<pre><code class=\"js\">var fs = require(&#39;fs&#39;);\nvar index1 = fs.readdirSync(&#39;./folder&#39;);</code></pre>\n",
+              "desc": "<p>There are a few native methods in the <a href=\"fs.html\">FileSystem</a> module that you can use to access assets embedded inside a JX package.\n\n</p>\n<ul>\n<li><code>readFile()</code></li>\n<li><code>readFileSync()</code></li>\n<li><code>readdir()</code></li>\n<li><code>readdirSync()</code></li>\n</ul>\n<p>When called, each of these methods tries to find a given file or a folder in the real file system in the first place.\nIf nothing is found, JXcore searches through assets from the JX package.\n\n</p>\n<p>Assets can always be referenced relatively to <code>__dirname</code> or <code>./</code>.\n\n</p>\n<p>Let&#39;s consider a JX package containing the following directory structure:\n\n</p>\n<ul>\n<li>folder<ul>\n<li>file2.html</li>\n<li>module.js</li>\n</ul>\n</li>\n<li>index.html</li>\n<li>package.json</li>\n<li>test.js</li>\n</ul>\n<p>After creating a package with the command:\n\n</p>\n<pre><code>&gt; jx package test.js my_package</code></pre>\n<p>we can access the assets of the package from inside the <em>test.js</em> file, and this would be like this:\n\n</p>\n<pre><code class=\"js\">var fs = require(&#39;fs&#39;);\n\n// gets index.html file from package&#39;s assets, if it does not exists on the disk.\nvar index = fs.readFileSync(__dirname + &#39;/index.html&#39;);\n\n// asset from subfolder:\nvar file = fs.readFileSync(__dirname + &#39;/folder/file2.html&#39;);</code></pre>\n<p>The following sample works as expected, returns the directory contents of the file system. <code>readdir()</code> and <code>readdirSync()</code>\nreturn from the JX package only when the given path does not exist on real file system. Calling one of these methods for the main\nfolder of the JX package will return the results from actual file system. In order to reach asset files using one of these\nmethods, you should consider putting them into a sub folder.\n\n</p>\n<pre><code class=\"js\">var fs = require(&#39;fs&#39;);\nvar index1 = fs.readdirSync(&#39;./folder&#39;);</code></pre>\n",
               "type": "module",
               "displayName": "assets"
             },
             {
               "textRaw": "files",
               "name": "files",
-              "desc": "<p>readFile and readFileSync methods can be used to reach any files inside a JX package but the sources.\nJavaScript files inside a JX package can be accessed only by using <code>require()</code> method. In other words,\nyou can not read the source files using readFile or readFileSync.\n\n</p>\n<p>Example below shows how to load <em>module.js</em> file contained inside <em>folder</em> directory of JX package:\n\n</p>\n<pre><code class=\"js\">var lib = require(&quot;./folder/module.js&quot;);\nconsole.log(&quot;lib.value&quot;, lib.value);</code></pre>\n",
+              "desc": "<p><code>readFile()</code> and <code>readFileSync()</code> methods can be used to reach any files inside a JX package except for the source files.\nJavaScript files inside a JX package can be accessed only by using <code>require()</code> method. In other words,\nyou can not read the source files using <code>readFile()</code> or <code>readFileSync()</code>.\n\n</p>\n<p>Example below shows how to load <em>module.js</em> file contained inside <em>folder</em> directory of JX package:\n\n</p>\n<pre><code class=\"js\">var lib = require(&quot;./folder/module.js&quot;);\nconsole.log(&quot;lib.value&quot;, lib.value);</code></pre>\n",
               "type": "module",
               "displayName": "files"
             }
           ],
           "type": "module",
-          "displayName": "Accessing files and assets from a package"
+          "displayName": "Accessing Files and Assets from a Package"
         }
       ],
       "type": "module",

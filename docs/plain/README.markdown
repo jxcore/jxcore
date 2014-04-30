@@ -11,6 +11,7 @@
 
 # Sorted by Commands
 
+* [--help](jxcore-command-help.markdown)
 * [compile](jxcore-feature-packaging-code-protection.markdown#jxcore-features-package-manager-compile)
 * [install](jxcore-command-install.markdown)
 * [monitor](jxcore-command-monitor.markdown)

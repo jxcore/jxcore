@@ -50,14 +50,14 @@
             {
               "textRaw": "Multithreading from the command line",
               "name": "multithreading_from_the_command_line",
-              "desc": "<p>The first and the easiest is just to use <code>mt</code> or <code>mt-keep</code> option in the command-line for jx:\n\n</p>\n<pre><code>&gt; jx mt-keep:4 easy1.js</code></pre>\n<p>This topic is fully described here: <a href=\"jxcore-command-mt.html\">mt / mt-keep</a>\n\n</p>\n",
+              "desc": "<p>The first and the easiest one is just to use <code>mt</code> or <code>mt-keep</code> option in the command-line for jx:\n\n</p>\n<pre><code>&gt; jx mt-keep:4 easy1.js</code></pre>\n<p>This topic is fully described here: <a href=\"jxcore-command-mt.html\">mt / mt-keep</a>\n\n</p>\n",
               "type": "module",
               "displayName": "Multithreading from the command line"
             },
             {
               "textRaw": "Multithreaded Javascript Tasks",
               "name": "multithreaded_javascript_tasks",
-              "desc": "<p>The second one is by using <code>jxcore.tasks</code> object. It requires you to implement all the multithreaded logic by yourself.\nThen you run the application without any jx’s options:\n\n</p>\n<pre><code>&gt; jx tasks_way.js</code></pre>\n<p>The main difference between those two methods is, that with mt/mt-keep approach you have to do absolutely nothing\nto run the application multithreaded. However, the same code is running separately for each thread\nand you don’t really have any control to change the thread’s job, once the application started.\n\n</p>\n<p>With the second (the “tasks”) approach it’s all about adding jobs to the queue of the thread pool.\nTasks start and finish, you can always add more tasks in the runtime.\nIn this model you always have the main thread and the subthreads.\nYou can also get notified, when all task are completed.\nSee the API for reference.\n\n</p>\n<p>This topic is fully described here: <a href=\"jxcore-tasks.html\">Tasks</a>\n</p>\n",
+              "desc": "<p>The second one is by using <code>jxcore.tasks</code> object. It requires you to implement all the multithreaded logic by yourself.\nThen you run the application without any jx’s options:\n\n</p>\n<pre><code>&gt; jx tasks_way.js</code></pre>\n<p>The main difference between those two methods is, that with mt/mt-keep approach you have to do absolutely nothing\nto run the application multithreaded. However, the same code is running separately for each thread\nand you don’t really have any control over changing the thread’s job, once the application started.\n\n</p>\n<p>With the second (the “tasks”) approach it’s all about adding jobs to the queue of the thread pool.\nTasks start and finish while you can add more tasks in the runtime.\nIn this model you always have the main thread and the subthreads.\nYou can also get notified, when all task are completed.\nSee the API for reference.\n\n</p>\n<p>This topic is fully described here: <a href=\"jxcore-tasks.html\">Tasks</a>\n</p>\n",
               "type": "module",
               "displayName": "Multithreaded Javascript Tasks"
             }

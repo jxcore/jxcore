@@ -1,13 +1,13 @@
 # Internal Recovery
 
-In addition to recovering of crashed applications' processes by external [monitoring process](jxcore-command-monitor.markdown),
+In addition to recovering the process of a crashed applications by external [monitoring process](jxcore-command-monitor.markdown),
 JXcore also provides automatic Internal Process Recovery as well as Internal Thread Recovery (for code running in multi-threaded mode).
 
 ## Internal Process Recovery
 
-Attaching any callback to `restart` event **inside a main thread** enables Internal Process Recovery.
-When an exception occurs inside the application, the callback is invoked and there you may decide if to allow restart of the entire process or not.
-Also this is a good opportunity to save some data used by the application, because after it will crash, normally they would be lost.
+Internal Process Recovery  can be enabled by attaching any callback to `restart` event **inside a main thread**.
+When an exception occurs inside the application, the callback is invoked and you can decide if to allow restart of the entire process or not.
+Also, this is a good opportunity to save some data used by the application, which would otherwise be lost after the crash.
 
 ```js
 process.on('restart', function (restartCallback, newExitCode) {
@@ -24,12 +24,12 @@ Arguments for the callback:
 * `currentExitCode` {Number}
 
 The `restartCallback` is a function, which should be invoked if you want to allow for application restart/recovery.
-If you will not call it, the process will exit (after all it has just crashed) but not restart.
+Unless it's used, the process will exit (after all it has just crashed) without restart.
 
-Any tasks, that you want to perform, like saving some application's data (objects, variables etc) into database, must be done before calling `restartCallback`.
+Any tasks like saving application's data (objects, variables etc) into database, must be done before calling `restartCallback`.
 
-When invoking this callback, you can pass an `newExitCode`, that you want the application's process to be restarted with:
-the current process will exit with this code and after that the application will be relaunched as a new process.
+When invoking this callback, you can pass an `newExitCode`, that you want the application's process to be restarted with.
+Current process will exit with this code and the application will be relaunched as a new process.
 `newExitCode` for the callback is optional. When omitted, the current application's exit code will be used.
 
 `currentExitCode` - holds current exit code of the application, which is just about to crash.
@@ -37,7 +37,7 @@ the current process will exit with this code and after that the application will
 In the example below we are throwing an exception, which causes `restart` event to be fired. Just before the restart, we're adding new parameter to `process.argv`, and this is the way to pass an argument to the new process.
 We do this in order to prevent circular recoveries.
 
-The code should be launched as single threaded (without mt/mt-keep parameter), because it handles recovery of the main process:
+The code should be launched as single-threaded (without `mt`/`mt-keep` parameter), because it handles the recovery of the main process:
 
     > jx sample.js
 
@@ -70,17 +70,17 @@ setTimeout(function () {
 
 There are two situations, when Internal Process Recovery is not performed:
 
-1. application was alive less than 5000 milliseconds. This value will be configurable, but for now it's a constant.
-2. when any listener is attached to `process.on("uncaughtException")` event, the thread recovery is not active,
-because it makes sense only for uncaught exceptions, which in this case are actually caught by `uncaughtException` event.
+1. Application was alive for less than 5000 milliseconds. This value will be configurable in the future, but for now it's a constant.
+2. When any listener is attached to `process.on("uncaughtException")` event, the thread recovery is not active.
+It makes sense only for uncaught exceptions, which in this case are actually caught by `uncaughtException` event.
 
 ## Internal Thread Recovery
 
-This is analogous to [Internal Process Recovery](#internal-process-recovery), except that it concerns a **single thread** rather than entire application's process.
+This is analogous to [Internal Process Recovery](#internal-process-recovery), except that it concerns a **single thread** rather than entire application process.
 
 Attaching any callback to this event inside a code running in a subthread enables internal thread recovery.
-When an exception occurs inside the subthread, the callback is invoked and there you may decide if to allow restart of the thread or not.
-Also this is a good opportunity to save some data used by this thread, because after it will crash, normally they would be lost.
+When an exception occurs inside the subthread, the callback is invoked. You can then decide to allow restart of the thread or not.
+Also this is a good opportunity to save some data used by this thread which would otherwise be lost after the crash.
 
 ```js
 process.on('restart', function (restartCallback) {
@@ -94,11 +94,11 @@ Argument for the callback:
 
 * `restartCallback` {Function}
 
-This is a function, which should be invoked if you want to allow for thread recovery. If you will not call it, the thread will die but not restart.
-Any tasks, that you want to perform, like saving some thread's data (objects, variables etc) into database or even shared memory store, must be done before calling `restartCallback`.
+This function should be invoked to allow for thread recovery. Unless it is called, the thread will die without restart.
+Any tasks, like saving some thread's data (objects, variables etc) into database or even shared memory store, must be done before calling `restartCallback`.
 
-In the example below we are throwing an exception, which causes `restart` event to be fired.
-Also we are counting how many times thread was restarted, and based on that we decide if to allow for another restart or not.
+In the example below we are throwing an exception, which causes restart event to be fired.
+Also we are counting how many times the thread was restarted. Based on that value we decide when to stop.
 
 The code should be run with mt-keep parameter:
 
@@ -147,7 +147,8 @@ Please note, that when any listener is attached to `process.on("uncaughtExceptio
 # Internal Recovery vs Process Monitor
 
 Process Monitor and Internal Process Recovery should not be used simultaneously. Both of them perform restart of the application's process,
-so they could interfere with each other leading to unexpected behaviour. For example, the application could be respawned into multiple instances, or fall into uncontrolled loop of restarting.
+so they could interfere with each other leading to an unexpected behavior.
+For example, the application could be respawned into multiple instances, or fall into uncontrolled loop of restarting.
 
 On the other hand, when your application is running in multi-threaded mode, you can still use Internal Thread Recovery
 (which allows to restart crashed threads, not the application's process) together with Process Monitor.

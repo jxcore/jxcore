@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Multithreading from the command line JXcore Manual &amp; Documentation</title>
+  <title>Multithreading from the Command Line JXcore Manual &amp; Documentation</title>
   <link rel="stylesheet" href="assets/style.css">
   <link rel="stylesheet" href="assets/sh.css">
 </head>
@@ -50,7 +50,7 @@
           <div id="toc">
             <h2>Table of Contents</h2>
             <ul>
-<li><a href="#jxcore_command_mt_multithreading_from_the_command_line">Multithreading from the command line</a><ul>
+<li><a href="#jxcore_command_mt_multithreading_from_the_command_line">Multithreading from the Command Line</a><ul>
 <li><a href="#jxcore_command_mt_maximum_number_of_threads">Maximum number of threads</a></li>
 <li><a href="#jxcore_command_mt_commands">Commands</a><ul>
 <li><a href="#jxcore_command_mt_mt_number">mt[:number]</a></li>
@@ -64,7 +64,7 @@
           </div>
 
           <div id="apicontent">
-            <h1>Multithreading from the command line<span><a class="mark" href="#jxcore_command_mt_multithreading_from_the_command_line" id="jxcore_command_mt_multithreading_from_the_command_line">#</a></span></h1>
+            <h1>Multithreading from the Command Line<span><a class="mark" href="#jxcore_command_mt_multithreading_from_the_command_line" id="jxcore_command_mt_multithreading_from_the_command_line">#</a></span></h1>
 <p>Generally, there are two ways of executing your JavaScript code in multiple threads with JXcore.
 You can read about both of them here: <a href="jxcore-feature-multithreading.html#jxcore_feature_multithreading_how_to_run_multithreaded_code">How to run multithreaded code?</a>,
 but right now we will focus only on running multi-threaded code from the command line.
@@ -85,15 +85,16 @@ This is different to maximum thread count value when set with <a href="jxcore-ta
 <p>Runs the code in multiple threads. Each thread executes the code independently.
 
 </p>
-<p>JXcore by default will create 2 threads in the pool for that application, however you can change this value by supplying desired <code>number</code> of threads after the colon, like:
+<p>JXcore by default will create 2 threads in the pool for that application.
+However you can change this value by supplying desired <code>number</code> of threads after the colon, like:
 
 </p>
 <pre><code>&gt; jx mt:4 file.js</code></pre>
-<p>It this case four threads will be created.
+<p>In this case, four threads will be created.
 
 </p>
-<p>Using the <code>mt</code> command suits the best, when your code does not execute any delayed or async jobs,
-otherwise the application may exit, before those jobs will have chance to complete.
+<p>Using the <code>mt</code> command suits best when your code does not execute any delayed or async jobs,
+otherwise the application may exit, before those jobs are completed.
 
 </p>
 <p>Let&#39;s consider the following example (<em>test.js</em>):
@@ -108,10 +109,10 @@ console.log(&quot;I&#39;m here immediately.&quot;);</code></pre>
 
 </p>
 <pre><code>&gt; jx mt test.js</code></pre>
-<p>the process will not last for 20 seconds, because it will end after the last line of the code executes.
+<p>the process will not last for 20 seconds, because it will end after the last line of the code gets executed.
 
 </p>
-<p>To keep the process alive and waiting for any delayed tasks, you have two options:
+<p>To keep the process alive and wait for any delayed tasks, you have two options:
 
 </p>
 <p>1) call <a href="jxcore-process.html#jxcore_process_process_keepalive_timeout"><code>process.keepAlive()</code></a> in the code above
@@ -135,8 +136,8 @@ console.log(&quot;I&#39;m here immediately.&quot;);</code></pre>
 
 </p>
 <pre><code>&gt; jx mt-keep:7 file.js</code></pre>
-<p>Does exactly the same thing as <code>mt</code> command, except that internally calls <a href="jxcore-process.html#jxcore_process_process_keepalive_timeout"><code>process.keepAlive()</code></a> for each of the threads.
-It means, that the whole application won&#39;t exit, unless for each of those threads you won&#39;t call  <a href="jxcore-process.html#jxcore_process_process_release"><code>process.release()</code></a>.
+<p><code>mt-keep</code> does exactly the same thing as <code>mt</code> command, except that it internally calls <a href="jxcore-process.html#jxcore_process_process_keepalive_timeout"><code>process.keepAlive()</code></a> for each of the threads.
+It means, that the whole application won&#39;t exit, unless for each of those threads you call upon <a href="jxcore-process.html#jxcore_process_process_release"><code>process.release()</code></a>.
 
 </p>
 <pre><code class="js">var delay = 1000 * (process.threadId + 1 );
@@ -158,7 +159,7 @@ console.log(&quot;I&#39;m here immediately. ThreadID: &quot; + process.threadId)
 // I&#39;m here immediately. ThreadID: 1
 // I&#39;m here after 1 secs. ThreadID: 0
 // I&#39;m here after 2 secs. ThreadID: 1</code></pre>
-<p>As you can see, we have released each thread individually (at different delay), and when the last thread becomes released, the main application&#39;s thread exits.
+<p>As you can see, we have released each thread individually (at different delays), and when the last thread is released, the main application&#39;s thread exits.
 </p>
 
           </div>

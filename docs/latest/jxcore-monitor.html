@@ -64,18 +64,18 @@
 
           <div id="apicontent">
             <h1>Process Monitor<span><a class="mark" href="#jxcore_monitor_process_monitor" id="jxcore_monitor_process_monitor">#</a></span></h1>
-<p>JXcore offers embedded process monitoring tool. It checks regularly whether monitored process/processes still exist and respawns them if needed.
-When the monitor is running, then your applications can subscribe to it and start being monitored.
+<p>JXcore offers embedded process monitoring tool. It checks regularly whether the monitored process/processes still exist and restarts them, if required.
+When the monitor is running, your applications can subscribe to it and start being monitored.
 
 </p>
-<p>The Process Monitor is a global and can be referenced from anywhere:
+<p>The Process Monitor is global and can be referenced from anywhere:
 
 </p>
 <pre><code class="js">var mon = jxcore.monitor;</code></pre>
-<p>You can control monitor&#39;s process also from the <a href="jxcore-command-monitor.html">command line</a>.
+<p>You can control monitor&#39;s process from the <a href="jxcore-command-monitor.html">command line</a> also.
 
 </p>
-<p>Apart from this feature, JXcore offers also <a href="jxcore-feature-internal-recovery.html">Internal Recovery</a>.
+<p>Apart from this feature, JXcore also offers <a href="jxcore-feature-internal-recovery.html">Internal Recovery</a>.
 
 </p>
 <h2>API<span><a class="mark" href="#jxcore_monitor_api" id="jxcore_monitor_api">#</a></span></h2>
@@ -91,14 +91,14 @@ When the monitor is running, then your applications can subscribe to it and star
 </ul>
 </li>
 </ul>
-<p>When process monitor is already running (started from command line) you can subscribe your application for being monitored.
+<p>Subscribes the application for being monitored. The monitor itself should be already running (started from command line).
 The <code>callback</code> will be invoked when the operation completes, whether with success or failure.
 
 </p>
-<p>There is also another argument: <code>waitCallback</code>. It is invoked in the case, when subscription to the monitor is configured to be delayed
+<p>There is also another argument: <code>waitCallback</code>. It is invoked in the case when subscription to the monitor is configured to be delayed
 (check <code>start_delay</code> in <a href="jxcore-command-monitor.html#jxcore_command_monitor_config_file">Config file</a> section).
-In that case <code>waitCallback</code> will be called before the <code>callback</code> and it will receive one argument with value equal to <code>start_delay</code> param.
-Please note, that even if you didn&#39;t explicitly define this param in a <em>jx.config</em> file, the default value will be used.
+In that case <code>waitCallback</code> will be called before the <code>callback</code> and it will receive one argument with value equal to <code>start_delay</code> parameter.
+Please note: even if you didn&#39;t explicitly define this parameter in a <em>jx.config</em> file, the default value will be used.
 
 </p>
 <p>The following code tries to subscribe to the monitor:
@@ -113,7 +113,7 @@ Please note, that even if you didn&#39;t explicitly define this param in a <em>j
 }, function (delay) {
     console.log(&quot;Subscribing is delayed by %d ms.&quot;, delay);
 });</code></pre>
-<p>Please note, that in this sample, the application does nothing else except for subscribing to the monitor, and after that - it just exists.
+<p>Please note, in this sample, the application does nothing else except for subscribing to the monitor, and after that - it just exists.
 There are few things to be explained here:
 
 </p>
@@ -122,8 +122,8 @@ There are few things to be explained here:
 It waits for defined amount of time before really subscribing to the monitor.
 In this particular example, because the application ends before <code>start_delay</code> elapses - it does not perform subscription for being monitored.</p>
 </li>
-<li><p>Having said that, we can conclude, that there is no point to monitor such an application which is not designed for constant running.
-If purpose of that application is to just run a task and exit - the monitor unnecessarily would respawn it again and again.</p>
+<li><p>Having said that, we can conclude that there is no point to monitor such an application which is not designed for constant running.
+If purpose of that application is to just run a task and exit - the monitor unnecessarily would restart it again and again.</p>
 </li>
 </ol>
 <h3>monitor.leaveMe(callback)<span><a class="mark" href="#jxcore_monitor_monitor_leaveme_callback" id="jxcore_monitor_monitor_leaveme_callback">#</a></span></h3>
@@ -134,7 +134,7 @@ If purpose of that application is to just run a task and exit - the monitor unne
 </ul>
 </li>
 </div></ul>
-<p>Unsubscribes the application from the process.monitor. The <code>callback</code> will be invoked when the operation completes, whether with success or failure.
+<p>Unsubscribes the application from the monitor. The <code>callback</code> will be invoked when the operation completes, whether with success or failure.
 
 </p>
 <pre><code class="js">jxcore.monitor.leaveMe(function (err, txt) {

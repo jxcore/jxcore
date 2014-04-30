@@ -422,7 +422,7 @@ The callback gets two arguments <code>(err, files)</code> where <code>files</cod
 the names of the files in the directory excluding <code>&#39;.&#39;</code> and <code>&#39;..&#39;</code>.
 
 </p>
-<p>When called from inside a JX package, it also reads contents of embedded directory.
+<p>When called from inside a JX package, and the path was not found on the file system, it reads the contents of embedded directory if it was compiled into the package.
 See <a href="jxcore-feature-packaging-code-protection.html#jxcore_feature_packaging_code_protection_accessing_files_and_assets_from_inside_a_package">Accessing files and assets from inside a package</a>.
 
 </p>
@@ -607,7 +607,7 @@ contents of the file.
 <p>If no encoding is specified, then the raw buffer is returned.
 
 </p>
-<p>When called from inside a JX package, it also reads contents of file embedded in <code>assets</code> array.
+<p>When called from inside a JX package, and the path was not found on the file system, it reads the contents of embedded file if it was compiled into the package.
 See <a href="jxcore-feature-packaging-code-protection.html#jxcore_feature_packaging_code_protection_accessing_files_and_assets_from_inside_a_package">Accessing files and assets from inside a package</a>.
 
 </p>
@@ -794,6 +794,9 @@ There should almost never be a reason to use it in your own code.
 that leaves you vulnerable to race conditions: another process may remove the
 file between the calls to <code>fs.exists()</code> and <code>fs.open()</code>.  Just open the file
 and handle the error when it&#39;s not there.
+
+</p>
+<p>When called from inside a JX package, and the path was not found on file system, JXcore searches through assets of the package.
 
 </p>
 <h2>fs.existsSync(path)<span><a class="mark" href="#fs_fs_existssync_path" id="fs_fs_existssync_path">#</a></span></h2>

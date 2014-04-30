@@ -262,23 +262,23 @@ if (exports.$JXP.Release) {
 
 However, `files` and `assets` members are not accessible from exports.$JXP
 
-## Accessing files and assets from a package
+## Accessing Files and Assets from a Package
 
 ### assets
 
-There are few native methods in [FileSystem](fs.markdown) module, that you can use to access assets embedded inside a JX package.
+There are a few native methods in the [FileSystem](fs.markdown) module that you can use to access assets embedded inside a JX package.
 
 * `readFile()`
 * `readFileSync()`
 * `readdir()`
 * `readdirSync()`
 
-When called, each of these methods try to find a given file or folder in the real file system in first place.
-If nothing was found, JXcore searches through assets from JX package.
+When called, each of these methods tries to find a given file or a folder in the real file system in the first place.
+If nothing is found, JXcore searches through assets from the JX package.
 
-Assets can be always referenced relatively to `__dirname` or `./`.
+Assets can always be referenced relatively to `__dirname` or `./`.
 
-Let's consider JX package containing the following directory structure:
+Let's consider a JX package containing the following directory structure:
 
 - folder
   - file2.html
@@ -291,7 +291,7 @@ After creating a package with the command:
 
     > jx package test.js my_package
 
-we can perform accessing package's assets from inside *test.js* file, and this would be like this:
+we can access the assets of the package from inside the *test.js* file, and this would be like this:
 
 ```js
 var fs = require('fs');
@@ -303,8 +303,8 @@ var index = fs.readFileSync(__dirname + '/index.html');
 var file = fs.readFileSync(__dirname + '/folder/file2.html');
 ```
 
-The following sample works as expected and it returns file system's directory contents. readdirSync and readdir only
-return from JX package when the given path does not exist on real file system. Calling one of these methods for the main
+The following sample works as expected, returns the directory contents of the file system. `readdir()` and `readdirSync()`
+return from the JX package only when the given path does not exist on real file system. Calling one of these methods for the main
 folder of the JX package will return the results from actual file system. In order to reach asset files using one of these
 methods, you should consider putting them into a sub folder.
 
@@ -315,9 +315,9 @@ var index1 = fs.readdirSync('./folder');
 
 ### files
 
-readFile and readFileSync methods can be used to reach any files inside a JX package but the sources.
+`readFile()` and `readFileSync()` methods can be used to reach any files inside a JX package except for the source files.
 JavaScript files inside a JX package can be accessed only by using `require()` method. In other words,
-you can not read the source files using readFile or readFileSync.
+you can not read the source files using `readFile()` or `readFileSync()`.
 
 Example below shows how to load *module.js* file contained inside *folder* directory of JX package:
 
