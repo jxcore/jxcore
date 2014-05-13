@@ -1,6 +1,5 @@
 # Sorted by Features
 * [Memory Store](jxcore-store.markdown)
-* [Messaging](jxcore-messaging.markdown)
 * [Multithreading](jxcore-feature-multithreading.markdown)
 * Package Manager:
     * [Module Installer](jxcore-command-install.markdown)
@@ -8,6 +7,7 @@
 * Process & Thread Recovery:
     * [Internal Recovery](jxcore-feature-internal-recovery.markdown)
     * [Process Monitor](jxcore-command-monitor.markdown)
+* [JXM.io Messaging Backend](jxcore-messaging.markdown)
 
 # Sorted by Commands
 
@@ -19,7 +19,6 @@
 * [package](jxcore-feature-packaging-code-protection.markdown#jxcore-features-package-manager-package)
 
 # Sorted by Modules API
-* [Messaging](jxcore-messaging.markdown)
 * [Monitor](jxcore-monitor.markdown)
 * [Store](jxcore-store.markdown)
 * [Tasks](jxcore-tasks.markdown)

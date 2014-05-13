@@ -1,12 +1,12 @@
-# Messaging
+# JXM.io Messaging Backend
 
-Using JXcore Messaging, your clients can easily communicate with the server (backend service) as well as with other clients.
+Using JXM.io, your clients can easily communicate with the server (backend service) as well as with other clients.
 
 Simply create a custom method. It can be invoked either by any of the clients or by the server itself.
 
-If you want to create an online game, chat application, or any other project for multiple users – JXcore Messaging is for you.
+If you want to create an online game, chat application, or any other project for multiple users – JXM.io is for you.
 
-There are some tutorials for using JXcore Messaging available here: [Hello World](http://jxcore.com/messaging-api/#cat-32).
+There are some tutorials for using JXM.io available here: [jxm.io](http://jxm.io).
 
 # API Server
 
@@ -23,7 +23,7 @@ server.setConfig("enableClientSideSubscription", true);
 * {Boolean} default `true`
 
 Enables the messaging server to send multiple messages at once to the client.
-This increases the performance of JXcore Messaging.
+This increases the performance of JXM.io.
 There are some browser versions, however, that don't support this feature (for example IE below v8).
 In this case, chunked mode is internally disabled, even if the `chunked` option in server is set to `true`.
 
@@ -52,14 +52,14 @@ When enabled, the running server displays additional (informative) log messages 
 
 * {Boolean} default `true`
 
-When JXcore Messaging server runs in multi-threaded mode and this option is enabled,
+When JXM.io server runs in multi-threaded mode and this option is enabled,
 each of the log and error messages displayed to the console contains information about thread ID, from which the message comes.
 
 Example output:
 
 ```
-Thread#1 JXcore Messaging v0.22
-Thread#0 JXcore Messaging v0.22
+Thread#1 jxm.io v0.22
+Thread#0 jxm.io v0.22
 Thread#1 HTTP  -> http://192.168.1.11:8000/test
 Thread#0 HTTP  -> http://192.168.1.11:8000/test
 ```
@@ -90,14 +90,14 @@ Both these options define locations for SSL certificate files. See also: `httpsS
 
 * {Number} default 8000
 
-Defines port for HTTP server of JXcore Messaging backend.
+Defines port for HTTP server of JXM.io backend.
 
 ### httpsServerPort
 
 * {Number} default 0
 
-Defines port for HTTPS (SSL) server of JXcore Messaging.
-The default value 0 also disables SSL support and it means that JXcore Messaging backend will run based on regular HTTP protocol.
+Defines port for HTTPS (SSL) server of JXM.io.
+The default value 0 also disables SSL support and it means that JXM.io backend will run based on regular HTTP protocol.
 When `httpsServerPort` is set to a number, both `httpsCertLocation` and `httpsKeyLocation` should be provided and they must be valid file paths,
 otherwise SSL support will not be enabled.
 
@@ -105,11 +105,11 @@ otherwise SSL support will not be enabled.
 
 * {String} default "localhost";
 
-Defines the IP address, on which HTTP or HTTPS server of JXcore Messaging backend will be running.
+Defines the IP address, on which HTTP or HTTPS server of JXM.io backend will be running.
 By default it's "localhost", but you may also use any other valid IP address, like "192.168.1.11" or any other.
 
 Clients will use this value to connect to the server, so the IP address should be always accessible for them.
-For example, you should avoid situations in which JXcore Messaging server is configured for IP set to "localhost" or "127.0.0.1",
+For example, you should avoid situations in which JXM.io server is configured for IP set to "localhost" or "127.0.0.1",
 but clients are connecting from remote machines using server's public address.
 Although this might work, and clients might connect it but this process may generate errors.
 For example some browsers may fail to use WebSockets and will try to switch to older HTTP protocols.
@@ -124,7 +124,7 @@ Defines long polling request time in milliseconds. The maximum value should not 
 
 * {String}
 
-Contains version number of JXcore Messaging Server. For example "0.22".
+Contains version number of JXM.io server. For example "0.22".
 It is used mostly for informational purpose and is displayed for example, when server starts from the console window.
 
 ## Events
@@ -370,7 +370,7 @@ Now, the both combine into "/chat/app".
 
 Allows linking multiple resources recursively from a given directory.
 
-Adding the whole ./assets directory (relative path from JXcore server's working directory).
+Adding the whole ./assets directory (relative path from JXM.io server's working directory).
 
 ```js
 server.linkResourcesFromPath("/assets/", "./assets/");
@@ -423,7 +423,7 @@ server.addJSMethod("sendFromServer", function (env, params) {
 
 Defines new application with specified `applicationName` and default root `urlPath`. Every assets or resources added to this application will start from this path.
 
-The `secretKey` parameter is for encrypting the client locator and can be obtained from jxcore control panel.
+The `secretKey` parameter is for encrypting the client locator and can be obtained from JXM.io control panel.
 
 Server-side (*my_server.js*):
 
@@ -464,7 +464,7 @@ Defines the server engine (like express)...
 
 * `options` {Object}
 
-Starts JXcore application with optional `options` for the server. Once started, it will be accessible to all clients.
+Starts JXM.io application with optional `options` for the server. Once started, it will be accessible to all clients.
 
 ## subscribeClient(env, groupName)
 
@@ -641,7 +641,7 @@ server.addJSMethod("someMethod", function(env, param) {
 });
 ```
 
-## Call(methodName, json, cb)
+## Call(methodName, json, callback)
 
 * `methodName` {String}
 * `json` {Object}
@@ -671,14 +671,14 @@ jxcore.Call("serverMethod", "hello", function(param) {
 });
 ```
 
-## Close(tx)
+## Close(silent)
 
-* `tx` {Boolean}
+* `silent` {Boolean}
 
 Closes client and disconnects from the server.
 
-The `tx` parameter is optional. If set to `false`, the `OnClose` event will also be invoked with `false` value as an argument: `OnClose(false)`.
-If `true` - then `OnClose` event will not get invoked.
+The `silent` parameter is optional.
+If `true` - then `OnClose` event will not get invoked, otherwise the `OnClose` event will also be invoked with `false` value as an argument: `OnClose(false)`.
 
 ## GetClientId()
 
@@ -707,12 +707,12 @@ document.getElementById("btnSend").onclick = function(){
 The "addText" method should be available on every client which is subscribed to "programmers" group.
 While invoking the "addText" method at each client, the server will pass { obj : "value" } as an argument.
 
-## Start(cb)
+## Start(callback)
 
 * `callback` {Function}
     * `status` {Boolean}
 
-Starts JXcore client. Connects to the server, and when it succeeds - the client’s callback `callback` is called.
+Starts JXM.io client. Connects to the server, and when it succeeds - the client’s callback `callback` is called.
 
 ```js
 document.onjxready = function () {
@@ -762,7 +762,7 @@ jxcore.Unsubscribe("programmers", function(groupName) {
 
 # API Java Client
 
-There are some [tutorials](http://jxcore.com/messaging-api/) available, and they show how to consume JXcore Messaging API from a Java Client.
+There are some [tutorials](http://jxm.io) available, and they show how to consume JXM.io server from a Java Client.
 
 ## Events
 
@@ -770,19 +770,19 @@ Messaging module for Java defines events in a separate class `ClientEvents`.
 In order to listen for client's events, we need to instantiate this class and assign to `client.Events` property:
 
 ```java
-import jxcore.*;
+import jxm.*;
 
-jxcore.ClientEvents events = new ClientEvents(){
+jxm.ClientEvents events = new ClientEvents(){
     @Override
-    public void OnErrorReceived(Client c, String Message) {
+    public void OnError(Client c, String Message) {
         // Error received
     }
     @Override
-    public void OnClientConnected(Client c) {
+    public void OnConnect(Client c) {
         // Client is connected
     }
     @Override
-    public void OnClientDisconnected(Client c) {
+    public void OnClose(Client c) {
         // Client is disconnected
     }
     @Override
@@ -799,36 +799,36 @@ jxcore.ClientEvents events = new ClientEvents(){
 client.Events = event;
 ```
 
-### OnErrorReceived
+### OnError
 
-* `client` {jxcore.Client}
+* `client` {jxm.Client}
 * `message` {String}
 
 This event is emitted whenever an error occurs at the `client`.
 
-### OnClientConnected
+### OnConnect
 
-* `client` {jxcore.Client}
+* `client` {jxm.Client}
 
 This event is emitted after the `client` successfully connects to the server.
 
-### OnClientDisconnected
+### OnClose
 
-* `client` {jxcore.Client}
+* `client` {jxm.Client}
 
 This event is emitted when the `client` loses its connection with the server.
 
 ### OnEventLog
 
-* `client` {jxcore.Client}
+* `client` {jxm.Client}
 * `log` {String}
-* `level` {jxcore.LogLevel}
+* `level` {jxm.LogLevel}
 
 This event is fired whenever the `client` logs an information `log` message. The `level` parameter is an enumeration value and can have one of the following: *Informative* or *Critical*.
 
 ### OnSubscription
 
-* `client` {jxcore.Client}
+* `client` {jxm.Client}
 * `subscribed` {Boolean}
 * `groupName` {String}
 
@@ -850,8 +850,8 @@ Please refer to their description for more details.
 * `secure` {boolean}
 * `resetUID` {boolean}
 
-Creates an instance of JXcore Java Client with specified application name `appName` and application key `appKey`.
-The `url` parameter specifies JXcore server URL, e.g. *sampledomain.com* or *120.1.2.3*. You can also enable SSL support with `secure` parameter.
+Creates an instance of JXM.io Java Client with specified application name `appName` and application key `appKey`.
+The `url` parameter specifies JXM.io server URL, e.g. *sampledomain.com* or *120.1.2.3*. You can also enable SSL support with `secure` parameter.
 
 Setting `resetUID` as `true` will reset the unique instance id (session id).
 
@@ -859,7 +859,7 @@ The first argument `localTarget` is an instance of a local class, which will be 
 In that class you will specify client methods, which will be callable by other clients or the server itself.
 
 ```java
-import jxcore.*;
+import jxm.*;
 
 Client client = new Client(new CustomMethods(), "channels",
     "NUBISA-STANDARD-KEY-CHANGE-THIS", "localhost", 8000, false, true);
@@ -868,8 +868,8 @@ Client client = new Client(new CustomMethods(), "channels",
 and *CustomMethods* may look like this:
 
 ```java
-package com.jxcore.messagingAPI;
-import jxcore.Client;
+package io.jxm;
+import jxm.Client;
 
 public class CustomMethods {
 
@@ -881,14 +881,14 @@ public class CustomMethods {
 }
 ```
 
-You may also inherit your custom method's class from JXcore’s internal `CustomMethodBase` class,
+You may also inherit your custom method's class from JXM.io’s internal `CustomMethodBase` class,
 and this gives you for example access to the `super.client` instance of the `Client` object. For example:
 
 ```java
-package com.jxcore.messagingAPI;
+package io.jxm;
 
-import jxcore.Client;
-import jxcore.CustomMethodsBase;
+import jxm.Client;
+import jxm.CustomMethodsBase;
 
 public class CustomMethods extends CustomMethodsBase {
 
@@ -905,7 +905,7 @@ public class CustomMethods extends CustomMethodsBase {
 
 * `methodName` {String}
 * `params` {Object}
-* `callback` {jxcore.Callback}
+* `callback` {jxm.Callback}
 
 Invokes specific custom method `methodName` defined on the server-side and passes to it `params` value. The `methodName` should also contain the class name and the namespace, e.g. *com.example.MyClass.MyMethod*.
 
@@ -928,7 +928,7 @@ if (client.Connect()) {
 }
 ```
 
-## getClientId()
+## GetClientId()
 
 Gets the string containing unique id of the client.
 
@@ -950,7 +950,7 @@ client.SendToGroup("programmers", "addText", "Hello from client!");
 ## Subscribe(groupName, callback)
 
 * `groupName` {String}
-* `callback` {jxcore.Callback}
+* `callback` {jxm.Callback}
     * `groupName` {String}
 
 Subscribes the client to a `groupName`, or channel. From now on, messages sent to that group by any other subscriber will be received by the client.
@@ -976,7 +976,7 @@ try {
 ## Unsubscribe(group, callback)
 
 * `groupName` {String}
-* `callback` {jxcore.Callback}
+* `callback` {jxm.Callback}
     * `groupName` {String}
 
 Unsubscribes the client from a `groupName`, or channel. From now on, messages sent to that group cannot be received by this client.
@@ -993,4 +993,281 @@ try {
 } catch (Exception e) {
      System.out.println("Cannot unsubscribe.");
 }
+```
+
+# API JXcore Client
+
+This section describes JXM.io server for JXcore client. It is based on API JavaScript client for browsers and is also written in JavaScript.
+But the difference is, that JXcore clients do not use browsers - they can be launched from a command line, just like any other JXcore application.
+
+The following sample creates one JXM.io server and client in one script file:
+
+```js
+// -------------   server
+
+var server = require("./messaging.jx");
+server.setApplication("TestApp", "/test", "myKey");
+
+server.addJSMethod("server_method", function (env, param) {
+    server.sendCallBack(env, "Hello back!");
+    server.sendToAll("client_method", "Message sent to all.");
+});
+
+
+server.setConfig({ "IPAddress": "localhost", "httpServerPort": 8000 });
+server.start();
+
+// -------------   client
+
+// client's custom methods.
+// this is the way to receive messages from sendToGroup() or sendToAll()
+var methods = {
+    client_method: function (client, str) {
+        console.log('Received message from sendToGroup() or sendToll():', str);
+    }
+};
+
+var client = server.createClient(methods, "test", "myKey", "localhost", 8000, false);
+
+client.on("connect", function (client) {
+    console.log("Client connected.");
+    client.Call("server_method", "Hello", function (param) {
+        console.log("Client received callback with message", param);
+    });
+});
+
+client.on('error', function (client, err) {
+    console.error("Client error: " + err);
+});
+
+client.Connect();
+```
+
+## Events
+
+### connect
+
+* `client` {Object}
+
+This event occurs each time a client connects to the server (also when reconnects)
+
+```js
+client.on("connect", function (client) {
+    console.log("Client connected.")
+});
+```
+
+### close
+
+* `client` {Object}
+* `reconnecting` {Boolean}
+
+This event is fired every time a client loses connection with the server.
+The `reconnecting` parameter has a `true` value, if a client already tries to reconnect.
+
+```js
+client.on("close", function (client, reconnecting) {
+    console.log("Client disconnected. Reconnecting ?", reconnecting);
+});
+```
+
+### error
+
+* `client` {Object}
+* `err` {String}
+
+This event is produced every time an error occurs.
+
+```js
+client.on('error', function (client, err) {
+    console.error("Client error: " + err);
+});
+```
+
+### subscription
+
+* `client` {Object}
+* `subscribed` {Boolean}
+* `groupName` {String}
+
+This event is raised when a client gets subscribed to a group or unsubscribed from it by a call made from a server-side code
+(`subscribeClient()` or `unSubscribeClient()` methods).
+
+The `subscribed` value indicates whether this event was raised as a result of a subscription (`true`) or un-subscription (`false`) request.
+The `groupName` is the name of the group, for which the event occurred.
+
+When subscription/un-subscription request is made by a client's method `Subscribe()` or `Unsubscribe()`,
+the event `OnSubscription` is not raised, but instead you can provide the callback for those methods.
+Please refer to their description for more details.
+
+client-side:
+
+```js
+client.on("connect", function (client) {
+    // this invokes server's method
+    client.Call("server_method", null);
+});
+
+client.on('subscription', function (client, subscribed, group) {
+    var status = subscribed ? "subscribed" : "unsubscribed";
+    console.log("client", status, "to a group", group);
+});
+```
+
+server-side:
+
+```js
+server.addJSMethod("server_method", function (env, params) {
+    server.subscribeClient(env, groupName);
+});
+```
+
+## new Client(localTarget, appName, appKey, url, port, secure)
+
+* `localTarget` {Object}
+* `appName` {String}
+* `appKey` {String}
+* `url` {String}
+* `port` {int}
+* `secure` {boolean}
+* `resetUID` {boolean}
+
+Creates an instance of JXcore Client with specified application name `appName` and application key `appKey`.
+The `url` parameter specifies JXM.io server URL, e.g. *sampledomain.com* or *120.1.2.3*.
+You can also enable SSL support with `secure` parameter.
+
+The first argument `localTarget` is an object containing custom methods, which will be answering the calls from server.
+In that object you will define client methods, which can be called by other clients or the server itself.
+
+```js
+// client's custom methods.
+// this is the way to receive messages from sendToGroup() or sendToAll()
+var customMethods = {
+    client_method: function (client, str) {
+        console.log('Received message from sendToGroup() or sendToll():', str);
+    }
+};
+
+var client = server.createClient(customMethods,
+                "test", "myKey", "localhost", 8000, false);
+```
+
+## Call(methodName, json, callback)
+
+* `methodName` {String}
+* `json` {Object}
+* `callback` {Function}
+    * `param` {Object}
+
+Invokes a specific custom method named `methodName` defined on the server-side and passes one parameter `json`.
+The client's `callback` is optional, but when provided, it will be called after server completes invoking the method
+and will receive `param` argument sent from the server-side.
+
+In the example below we call the server-side method "serverMethod" from the client-side.
+In turn, as a response, the backend service will invoke the client's local `callback` function:
+
+client-side:
+
+```js
+client.on("connect", function (client) {
+    client.Call("server_method", "Hello", function(param) {
+        console.log("Client received callback with message", param);
+    });
+});
+```
+
+server-side:
+
+```js
+server.addJSMethod("server_method", function(env, param) {
+    server.sendCallBack(env, "Hello back!");
+});
+```
+
+## Close(silent)
+
+* `silent` {Boolean}
+
+Closes client and disconnects from the server.
+
+If `true` - then `OnClose` event will not get invoked, otherwise the `OnClose` event will also be invoked with `false` value as an argument: `OnClose(false)`.
+
+## Connect()
+
+Starts JXcore client. Connects to the JXM.io server, and when it succeeds - the client’s event `on('connect')` will be raised.
+
+```js
+client.on("connect", function (client) {
+    console.log("Client connected.")
+});
+
+client.on('error', function (client, err) {
+    console.error("Client error: " + err);
+});
+
+client.Connect();
+```
+
+## GetClientId()
+
+Gets the id of the client, which is a unique string value.
+
+## ReConnect()
+
+Forces the client to reconnect to the server.
+
+## SendToGroup(groupName, methodName, json)
+
+* `groupName` {String}
+* `methodName` {String}
+* `json` {Object}
+
+Sends message to all of the clients, which have already subscribed to the specific `groupName`.
+The message is passed as `json` argument to the target's method named `methodName`.
+The message can be any value, primitive (string, number, etc.) or json literal object.
+
+```js
+client.on("connect", function (client) {
+    client.Subscribe(groupName, function (group) {
+        client.SendToGroup("programmers", "client_method", { obj : "value" });
+    });
+});
+```
+
+The "client_method" method should be available on every client which is subscribed to "programmers" group.
+While invoking the "client_method" method at each client, the server will pass { obj : "value" } as an argument.
+
+## Subscribe(groupName, callback)
+
+* `groupName` {String}
+* `callback` {Function}
+    * `groupName` {String}
+
+Subscribes the client to a `groupName`, or channel. Subsequently, messages sent to that group by any other subscriber will be received by the client.
+Also the client can send messages to this group – see `SendToGroup()` method.
+After the server successfully subscribes the client to the `groupName`, the client's `callback` will be called.
+
+```js
+client.on("connect", function (client) {
+    client.Subscribe("programmers", function (group) {
+        console.log("Subscribed to a " + group);
+    });
+});
+```
+
+## Unsubscribe(groupName, callback)
+
+* `groupName` {String}
+* `callback` {Function}
+    * `groupName` {String}
+
+Unsubscribes the client from a `groupName`, or channel. Subsequently, messages sent to that group cannot be received by this client.
+After the server successfully unsubscribes the client from the `groupName`, the client's `callback` will be called.
+
+```js
+client.on("connect", function (client) {
+    client.UnSubscribe("programmers", function (group) {
+        console.log("Unsubscribed from a " + group);
+    });
+});
 ```
