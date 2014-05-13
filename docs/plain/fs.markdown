@@ -267,7 +267,7 @@ Asynchronous readdir(3).  Reads the contents of a directory.
 The callback gets two arguments `(err, files)` where `files` is an array of
 the names of the files in the directory excluding `'.'` and `'..'`.
 
-When called from inside a JX package, and the path was not found on the file system, it reads the contents of embedded directory if it was compiled into the package.
+It will be checking the JX package when the path was not found on the file system.
 See [Accessing files and assets from inside a package](jxcore-feature-packaging-code-protection.markdown#accessing-files-and-assets-from-inside-a-package).
 
 ## fs.readdirSync(path)
@@ -275,7 +275,7 @@ See [Accessing files and assets from inside a package](jxcore-feature-packaging-
 Synchronous readdir(3). Returns an array of filenames excluding `'.'` and
 `'..'`.
 
-When called from inside a JX package, it also reads contents of embedded directory.
+It will be checking the JX package when the path was not found on the file system.
 
 ## fs.close(fd, callback)
 
@@ -432,7 +432,7 @@ contents of the file.
 
 If no encoding is specified, then the raw buffer is returned.
 
-When called from inside a JX package, and the path was not found on the file system, it reads the contents of embedded file if it was compiled into the package.
+It will be checking the JX package when the path was not found on the file system.
 See [Accessing files and assets from inside a package](jxcore-feature-packaging-code-protection.markdown#accessing-files-and-assets-from-inside-a-package).
 
 ## fs.readFileSync(filename, [options])
@@ -609,7 +609,7 @@ that leaves you vulnerable to race conditions: another process may remove the
 file between the calls to `fs.exists()` and `fs.open()`.  Just open the file
 and handle the error when it's not there.
 
-When called from inside a JX package, and the path was not found on file system, JXcore searches through assets of the package.
+It will be checking the JX package when the path was not found on the file system.
 
 ## fs.existsSync(path)
 

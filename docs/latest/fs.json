@@ -747,7 +747,7 @@
           "textRaw": "fs.readdir(path, callback)",
           "type": "method",
           "name": "readdir",
-          "desc": "<p>Asynchronous readdir(3).  Reads the contents of a directory.\nThe callback gets two arguments <code>(err, files)</code> where <code>files</code> is an array of\nthe names of the files in the directory excluding <code>&#39;.&#39;</code> and <code>&#39;..&#39;</code>.\n\n</p>\n<p>When called from inside a JX package, and the path was not found on the file system, it reads the contents of embedded directory if it was compiled into the package.\nSee <a href=\"jxcore-feature-packaging-code-protection.html#jxcore_feature_packaging_code_protection_accessing_files_and_assets_from_inside_a_package\">Accessing files and assets from inside a package</a>.\n\n</p>\n",
+          "desc": "<p>Asynchronous readdir(3).  Reads the contents of a directory.\nThe callback gets two arguments <code>(err, files)</code> where <code>files</code> is an array of\nthe names of the files in the directory excluding <code>&#39;.&#39;</code> and <code>&#39;..&#39;</code>.\n\n</p>\n<p>It will be checking the JX package when the path was not found on the file system.\nSee <a href=\"jxcore-feature-packaging-code-protection.html#jxcore_feature_packaging_code_protection_accessing_files_and_assets_from_inside_a_package\">Accessing files and assets from inside a package</a>.\n\n</p>\n",
           "signatures": [
             {
               "params": [
@@ -765,7 +765,7 @@
           "textRaw": "fs.readdirSync(path)",
           "type": "method",
           "name": "readdirSync",
-          "desc": "<p>Synchronous readdir(3). Returns an array of filenames excluding <code>&#39;.&#39;</code> and\n<code>&#39;..&#39;</code>.\n\n</p>\n<p>When called from inside a JX package, it also reads contents of embedded directory.\n\n</p>\n",
+          "desc": "<p>Synchronous readdir(3). Returns an array of filenames excluding <code>&#39;.&#39;</code> and\n<code>&#39;..&#39;</code>.\n\n</p>\n<p>It will be checking the JX package when the path was not found on the file system.\n\n</p>\n",
           "signatures": [
             {
               "params": [
@@ -1173,7 +1173,7 @@
               ]
             }
           ],
-          "desc": "<p>Asynchronously reads the entire contents of a file. Example:\n\n</p>\n<pre><code>fs.readFile(&#39;/etc/passwd&#39;, function (err, data) {\n  if (err) throw err;\n  console.log(data);\n});</code></pre>\n<p>The callback is passed two arguments <code>(err, data)</code>, where <code>data</code> is the\ncontents of the file.\n\n</p>\n<p>If no encoding is specified, then the raw buffer is returned.\n\n</p>\n<p>When called from inside a JX package, and the path was not found on the file system, it reads the contents of embedded file if it was compiled into the package.\nSee <a href=\"jxcore-feature-packaging-code-protection.html#jxcore_feature_packaging_code_protection_accessing_files_and_assets_from_inside_a_package\">Accessing files and assets from inside a package</a>.\n\n</p>\n"
+          "desc": "<p>Asynchronously reads the entire contents of a file. Example:\n\n</p>\n<pre><code>fs.readFile(&#39;/etc/passwd&#39;, function (err, data) {\n  if (err) throw err;\n  console.log(data);\n});</code></pre>\n<p>The callback is passed two arguments <code>(err, data)</code>, where <code>data</code> is the\ncontents of the file.\n\n</p>\n<p>If no encoding is specified, then the raw buffer is returned.\n\n</p>\n<p>It will be checking the JX package when the path was not found on the file system.\nSee <a href=\"jxcore-feature-packaging-code-protection.html#jxcore_feature_packaging_code_protection_accessing_files_and_assets_from_inside_a_package\">Accessing files and assets from inside a package</a>.\n\n</p>\n"
         },
         {
           "textRaw": "fs.readFileSync(filename, [options])",
@@ -1474,7 +1474,7 @@
           "textRaw": "fs.exists(path, callback)",
           "type": "method",
           "name": "exists",
-          "desc": "<p>Test whether or not the given path exists by checking with the file system.\nThen call the <code>callback</code> argument with either true or false.  Example:\n\n</p>\n<pre><code>fs.exists(&#39;/etc/passwd&#39;, function (exists) {\n  util.debug(exists ? &quot;it&#39;s there&quot; : &quot;no passwd!&quot;);\n});</code></pre>\n<p><code>fs.exists()</code> is an anachronism and exists only for historical reasons.\nThere should almost never be a reason to use it in your own code.\n\n</p>\n<p>In particular, checking if a file exists before opening it is an anti-pattern\nthat leaves you vulnerable to race conditions: another process may remove the\nfile between the calls to <code>fs.exists()</code> and <code>fs.open()</code>.  Just open the file\nand handle the error when it&#39;s not there.\n\n</p>\n<p>When called from inside a JX package, and the path was not found on file system, JXcore searches through assets of the package.\n\n</p>\n",
+          "desc": "<p>Test whether or not the given path exists by checking with the file system.\nThen call the <code>callback</code> argument with either true or false.  Example:\n\n</p>\n<pre><code>fs.exists(&#39;/etc/passwd&#39;, function (exists) {\n  util.debug(exists ? &quot;it&#39;s there&quot; : &quot;no passwd!&quot;);\n});</code></pre>\n<p><code>fs.exists()</code> is an anachronism and exists only for historical reasons.\nThere should almost never be a reason to use it in your own code.\n\n</p>\n<p>In particular, checking if a file exists before opening it is an anti-pattern\nthat leaves you vulnerable to race conditions: another process may remove the\nfile between the calls to <code>fs.exists()</code> and <code>fs.open()</code>.  Just open the file\nand handle the error when it&#39;s not there.\n\n</p>\n<p>It will be checking the JX package when the path was not found on the file system.\n\n</p>\n",
           "signatures": [
             {
               "params": [
