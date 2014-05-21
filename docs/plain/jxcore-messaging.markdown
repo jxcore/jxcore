@@ -670,7 +670,7 @@ server.addJSMethod("someMethod", function(env, param) {
 Invokes specific custom method named `methodName` defined on the server-side and passes to it one parameter `json`.
 The client's `callback` is optional, but when provided, it will be called after server completes invoking the method
 and will receive `param` argument sent from the server-side.
-If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].
+If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes](#error-codes).
 
 In the example below we call the server-side method "serverMethod" from the client-side.
 In turn, as a response, the backend service will invoke the client's local `callback` function:
@@ -723,12 +723,14 @@ The message can be any value, primitive (string, number, etc.) or json literal o
 The `callback` is optional, but when provided, it will be called after server sends the message to other clients.
 Please note, that this is not a confirmation, whether the clients have received the message or not.
 It just informs, that the server processed the message with success or failure.
-If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal to 0 (zero). See [error codes][].
+If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal to 0 (zero). See [error codes](#error-codes).
 
 ```js
 document.getElementById("btnSend").onclick = function(){
     jxcore.SendToGroup("programmers", "addText", { obj : "value" }, function(err) {
-
+        if (!err) {
+            alert("Message sent!");
+        }
     });
 };
 ```
@@ -768,7 +770,7 @@ document.onjxready = function () {
 Subscribes the client to a `groupName`, or channel. From now on, messages sent to that group by any other subscriber will be received by the client.
 Also the client can send messages to this group – see `SendToGroup()` method.
 After the server successfully subscribes the client to the `groupName`, the client's `callback` will be called.
-If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].
+If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes](#error-codes).
 
 ```js
 jxcore.Subscribe("programmers", function (groupName, err) {
@@ -789,7 +791,7 @@ jxcore.Subscribe("programmers", function (groupName, err) {
 
 Unsubscribes the client from a `groupName`, or channel. From now on, messages sent to that group cannot be received by this client.
 After the server successfully unsubscribes the client from the `groupName`, the client's `callback` will be called.
-If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].
+If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes](#error-codes).
 
 ```js
 jxcore.Unsubscribe("programmers", function(groupName, err) {
@@ -954,7 +956,7 @@ Invokes specific custom method `methodName` defined on the server-side and passe
 The `methodName` should also contain the class name and the namespace, e.g. *com.example.MyClass.MyMethod*.
 
 The optional parameter `callback` is the client’s function, which will be called after server completes invoking the method.
-If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].
+If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes](#error-codes).
 
 In the example below we call the server-side method *serverMethod* from the client-side.
 In turn, as a response, the backend service will invoke the client's local `callback` function:
@@ -1010,7 +1012,7 @@ Subscribes the client to a `groupName`, or channel. From now on, messages sent t
 Also the client can send messages to this group – see `SendToGroup()` method.
 
 After the server successfully subscribes the client to the `groupName`, the client's `callback` will be called.
-If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].
+If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes](#error-codes).
 
 ```java
 try {
@@ -1037,7 +1039,7 @@ try {
 Unsubscribes the client from a `groupName`, or channel. From now on, messages sent to that group cannot be received by this client.
 
 After the server successfully unsubscribes the client from the `groupName`, the client's `callback` will be called.
-If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].
+If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes](#error-codes).
 
 ```java
 try {
@@ -1226,7 +1228,7 @@ and will receive `param` argument sent from the server-side.
 In the example below we call the server-side method "serverMethod" from the client-side.
 In turn, as a response, the backend service will invoke the client's local `callback` function.
 
-If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].
+If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes](#error-codes).
 
 client-side:
 
@@ -1320,7 +1322,7 @@ Subscribes the client to a `groupName`, or channel. Subsequently, messages sent 
 Also the client can send messages to this group – see `SendToGroup()` method.
 
 After the server successfully subscribes the client to the `groupName`, the client's `callback` will be called.
-If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].
+If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes](#error-codes).
 
 ```js
 client.on("connect", function (client) {
@@ -1340,7 +1342,7 @@ client.on("connect", function (client) {
 Unsubscribes the client from a `groupName`, or channel. Subsequently, messages sent to that group cannot be received by this client.
 
 After the server successfully unsubscribes the client from the `groupName`, the client's `callback` will be called.
-If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].
+If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes](#error-codes).
 
 ```js
 client.on("connect", function (client) {
@@ -1349,7 +1351,3 @@ client.on("connect", function (client) {
     });
 });
 ```
-
-
-
-[error codes]: #jxcore_messaging_error_codes

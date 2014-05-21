@@ -898,7 +898,9 @@ If error occurs, <code>err</code> parameter will have integer code of the error.
 </p>
 <pre><code class="js">document.getElementById(&quot;btnSend&quot;).onclick = function(){
     jxcore.SendToGroup(&quot;programmers&quot;, &quot;addText&quot;, { obj : &quot;value&quot; }, function(err) {
-
+        if (!err) {
+            alert(&quot;Message sent!&quot;);
+        }
     });
 };</code></pre>
 <p>The &quot;addText&quot; method should be available on every client which is subscribed to &quot;programmers&quot; group.
