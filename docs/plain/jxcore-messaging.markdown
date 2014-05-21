@@ -127,6 +127,24 @@ Defines long polling request time in milliseconds. The maximum value should not 
 Contains version number of JXM.io server. For example "0.22".
 It is used mostly for informational purpose and is displayed for example, when server starts from the console window.
 
+## Error codes
+
+Below are listed error codes (and they textual meanings) used by JXM.io.
+Whenever an error occurs while processing a request from the client-side, JXM.io server does not send the full error description back to the client.
+Instead it sends the error code as an integer number.
+
+Error codes are defined in JMI.io settings file.
+
+* `1` - The client does not belong to **this** group. This error occurs when a client tries to send a message to the group, to which is not subscribed.
+* `2` - The client does not belong to **any** group.
+* `3` - The client tries to subscribe to a group or on-subscribe from it, but the server's option [`enableClientSideSubscription`](#enableclientsidesubscription) is disabled,
+* `4` - The client is already subscribed to a specific group.
+* `5` - Group information parsing problem. This error occurs, when server is unable to parse group information sent from a client.
+* `6` - Group name must be a non empty string. When client tries to subscribe to a group, but provided an empty string as a group name - then the error occurs.
+* `7` - Name of the method was not provided. Invoking client's `Call()` method with an empty string as a method name generates this error.
+* `8` - Server's custom method error. This error occurs when custom method defined on the server-side generates an exception.
+* `9` - Method is not defined on the server side. The most often reason fo this error is misspelled server's custom method name.
+
 ## Events
 
 ### subscribe
@@ -647,16 +665,18 @@ server.addJSMethod("someMethod", function(env, param) {
 * `json` {Object}
 * `callback` {Function}
     * `param` {Object}
+    * `err` {Number}
 
 Invokes specific custom method named `methodName` defined on the server-side and passes to it one parameter `json`.
 The client's `callback` is optional, but when provided, it will be called after server completes invoking the method
 and will receive `param` argument sent from the server-side.
+If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].
 
 In the example below we call the server-side method "serverMethod" from the client-side.
 In turn, as a response, the backend service will invoke the client's local `callback` function:
 
 ```js
-var callback = function(param) {
+var callback = function(param, err) {
     alert(param);
 }
 
@@ -666,8 +686,8 @@ jxcore.Call("serverMethod", "hello", callback);
 or simply:
 
 ```js
-jxcore.Call("serverMethod", "hello", function(param) {
-    alert(param);
+jxcore.Call("serverMethod", "hello", function(param, err) {
+    alert(err ? "Error code: " + err : param);
 });
 ```
 
@@ -688,19 +708,28 @@ Gets the id of the client, which is an unique string value.
 
 Forces the client to reconnect to the server.
 
-## SendToGroup(groupName, methodName, json)
+## SendToGroup(groupName, methodName, json, callback)
 
 * `groupName` {String}
 * `methodName` {String}
 * `json` {Object}
+* `callback` {Function}
+    * `err` {Number}
 
 Sends message to all of the clients, that have already subscribed to the specific `groupName`.
 The message is passed as `json` argument to the target's method named `methodName`.
 The message can be any value, primitive (string, number, etc.) or json literal object.
 
+The `callback` is optional, but when provided, it will be called after server sends the message to other clients.
+Please note, that this is not a confirmation, whether the clients have received the message or not.
+It just informs, that the server processed the message with success or failure.
+If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal to 0 (zero). See [error codes][].
+
 ```js
 document.getElementById("btnSend").onclick = function(){
-    jxcore.SendToGroup("programmers", "addText", { obj : "value" } );
+    jxcore.SendToGroup("programmers", "addText", { obj : "value" }, function(err) {
+
+    });
 };
 ```
 
@@ -734,14 +763,20 @@ document.onjxready = function () {
 * `groupName` {String}
 * `callback` {Function}
     * `groupName` {String}
+    * `err` {Number}
 
 Subscribes the client to a `groupName`, or channel. From now on, messages sent to that group by any other subscriber will be received by the client.
 Also the client can send messages to this group – see `SendToGroup()` method.
 After the server successfully subscribes the client to the `groupName`, the client's `callback` will be called.
+If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].
 
 ```js
-jxcore.Subscribe("programmers", function(groupName) {
-    alert("subscribed to group: " + groupName);
+jxcore.Subscribe("programmers", function (groupName, err) {
+    if (err) {
+        alert("Error while subscribing. Code: " + err);
+    } else {
+        alert("subscribed to group: " + groupName);
+    }
 });
 ```
 
@@ -750,13 +785,19 @@ jxcore.Subscribe("programmers", function(groupName) {
 * `groupName` {String}
 * `callback` {Function}
     * `groupName` {String}
+    * `err` {Number}
 
 Unsubscribes the client from a `groupName`, or channel. From now on, messages sent to that group cannot be received by this client.
 After the server successfully unsubscribes the client from the `groupName`, the client's `callback` will be called.
+If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].
 
 ```js
-jxcore.Unsubscribe("programmers", function(groupName) {
-    alert("unsubscribed from a group:" + groupName);
+jxcore.Unsubscribe("programmers", function(groupName, err) {
+    if (err) {
+        alert("Error while un-subscribing. Code: " + err);
+    } else {
+        alert("unsubscribed from a group: " + groupName);
+    }
 });
 ```
 
@@ -906,10 +947,14 @@ public class CustomMethods extends CustomMethodsBase {
 * `methodName` {String}
 * `params` {Object}
 * `callback` {jxm.Callback}
+    * `obj` {Object}
+    * `err` {integer}
 
-Invokes specific custom method `methodName` defined on the server-side and passes to it `params` value. The `methodName` should also contain the class name and the namespace, e.g. *com.example.MyClass.MyMethod*.
+Invokes specific custom method `methodName` defined on the server-side and passes to it `params` value.
+The `methodName` should also contain the class name and the namespace, e.g. *com.example.MyClass.MyMethod*.
 
 The optional parameter `callback` is the client’s function, which will be called after server completes invoking the method.
+If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].
 
 In the example below we call the server-side method *serverMethod* from the client-side.
 In turn, as a response, the backend service will invoke the client's local `callback` function:
@@ -937,8 +982,15 @@ Gets the string containing unique id of the client.
 * `groupName` {String}
 * `methodName` {String}
 * `params` {Object}
+* `callback` {jxm.Callback}
+    * `obj` {Object}
+    * `err` {integer}
 
 Sends message to all clients, that have already subscribed to the specific `groupName`. The message is passed as `params` argument to the target's method named `methodName`.
+
+The `callback` is optional, but when provided, it will be called after server sends the message to other clients.
+Please note, that this is not a confirmation, whether the clients have received the message or not.
+It just informs, that the server processed the message with success or failure.
 
 The "addText" method should be available on every client, which is subscribed to *programmers* group.
 While invoking the *addText* method at each client, the server will pass "Hello from client!" as an argument.
@@ -952,11 +1004,13 @@ client.SendToGroup("programmers", "addText", "Hello from client!");
 * `groupName` {String}
 * `callback` {jxm.Callback}
     * `groupName` {String}
+    * `err` {integer}
 
 Subscribes the client to a `groupName`, or channel. From now on, messages sent to that group by any other subscriber will be received by the client.
 Also the client can send messages to this group – see `SendToGroup()` method.
-After the server successfully subscribes the client to the `groupName`, the client's `callback` will be called.
 
+After the server successfully subscribes the client to the `groupName`, the client's `callback` will be called.
+If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].
 
 ```java
 try {
@@ -978,9 +1032,12 @@ try {
 * `groupName` {String}
 * `callback` {jxm.Callback}
     * `groupName` {String}
+    * `err` {integer}
 
 Unsubscribes the client from a `groupName`, or channel. From now on, messages sent to that group cannot be received by this client.
+
 After the server successfully unsubscribes the client from the `groupName`, the client's `callback` will be called.
+If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].
 
 ```java
 try {
@@ -995,10 +1052,10 @@ try {
 }
 ```
 
-# API JXcore Client
+# API JXcore / Node.JS Client
 
-This section describes JXM.io server for JXcore client. It is based on API JavaScript client for browsers and is also written in JavaScript.
-But the difference is, that JXcore clients do not use browsers - they can be launched from a command line, just like any other JXcore application.
+This section describes JXM.io server for JXcore or Node.JS client. It is based on API JavaScript client for browsers and is also written in JavaScript.
+But the difference is, that JXcore / Node.JS clients do not use browsers - they can be launched from a command line, just like any other JXcore / Node.JS application.
 
 The following sample creates one JXM.io server and client in one script file:
 
@@ -1031,8 +1088,10 @@ var client = server.createClient(methods, "test", "myKey", "localhost", 8000, fa
 
 client.on("connect", function (client) {
     console.log("Client connected.");
-    client.Call("server_method", "Hello", function (param) {
-        console.log("Client received callback with message", param);
+    client.Call("server_method", "Hello", function (param, err) {
+        if (!err) {
+            console.log("Client received callback with message", param);
+        }
     });
 });
 
@@ -1132,7 +1191,7 @@ server.addJSMethod("server_method", function (env, params) {
 * `secure` {boolean}
 * `resetUID` {boolean}
 
-Creates an instance of JXcore Client with specified application name `appName` and application key `appKey`.
+Creates an instance of the client with specified application name `appName` and application key `appKey`.
 The `url` parameter specifies JXM.io server URL, e.g. *sampledomain.com* or *120.1.2.3*.
 You can also enable SSL support with `secure` parameter.
 
@@ -1158,13 +1217,16 @@ var client = server.createClient(customMethods,
 * `json` {Object}
 * `callback` {Function}
     * `param` {Object}
+    * `err` {Number}
 
 Invokes a specific custom method named `methodName` defined on the server-side and passes one parameter `json`.
 The client's `callback` is optional, but when provided, it will be called after server completes invoking the method
 and will receive `param` argument sent from the server-side.
 
 In the example below we call the server-side method "serverMethod" from the client-side.
-In turn, as a response, the backend service will invoke the client's local `callback` function:
+In turn, as a response, the backend service will invoke the client's local `callback` function.
+
+If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].
 
 client-side:
 
@@ -1194,7 +1256,7 @@ If `true` - then `OnClose` event will not get invoked, otherwise the `OnClose` e
 
 ## Connect()
 
-Starts JXcore client. Connects to the JXM.io server, and when it succeeds - the client’s event `on('connect')` will be raised.
+Starts JXcore / Node.JS client. Connects to the JXM.io server, and when it succeeds - the client’s event `on('connect')` will be raised.
 
 ```js
 client.on("connect", function (client) {
@@ -1221,15 +1283,25 @@ Forces the client to reconnect to the server.
 * `groupName` {String}
 * `methodName` {String}
 * `json` {Object}
+* `callback` {Function}
+    * `param` {Object}
+    * `err` {Number}
 
 Sends message to all of the clients, which have already subscribed to the specific `groupName`.
 The message is passed as `json` argument to the target's method named `methodName`.
 The message can be any value, primitive (string, number, etc.) or json literal object.
 
+The `callback` is optional, but when provided, it will be called after server sends the message to other clients.
+Please note, that this is not a confirmation, whether the clients have received the message or not.
+It just informs, that the server processed the message with success or failure.
+
+
 ```js
 client.on("connect", function (client) {
-    client.Subscribe(groupName, function (group) {
-        client.SendToGroup("programmers", "client_method", { obj : "value" });
+    client.Subscribe(groupName, function (group, err) {
+        if (!err) {
+            client.SendToGroup("programmers", "client_method", { obj : "value" });
+        }
     });
 });
 ```
@@ -1242,10 +1314,13 @@ While invoking the "client_method" method at each client, the server will pass {
 * `groupName` {String}
 * `callback` {Function}
     * `groupName` {String}
+    * `err` {Number}
 
 Subscribes the client to a `groupName`, or channel. Subsequently, messages sent to that group by any other subscriber will be received by the client.
 Also the client can send messages to this group – see `SendToGroup()` method.
+
 After the server successfully subscribes the client to the `groupName`, the client's `callback` will be called.
+If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].
 
 ```js
 client.on("connect", function (client) {
@@ -1260,9 +1335,12 @@ client.on("connect", function (client) {
 * `groupName` {String}
 * `callback` {Function}
     * `groupName` {String}
+    * `err` {Number}
 
 Unsubscribes the client from a `groupName`, or channel. Subsequently, messages sent to that group cannot be received by this client.
+
 After the server successfully unsubscribes the client from the `groupName`, the client's `callback` will be called.
+If error occurs, `err` parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].
 
 ```js
 client.on("connect", function (client) {
@@ -1271,3 +1349,7 @@ client.on("connect", function (client) {
     });
 });
 ```
+
+
+
+[error codes]: #jxcore_messaging_error_codes

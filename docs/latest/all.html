@@ -1235,6 +1235,7 @@
 <li><a href="#all_mapiversion">mapiVersion</a></li>
 </ul>
 </li>
+<li><a href="#all_error_codes_1">Error codes</a></li>
 <li><a href="#all_events_2">Events</a><ul>
 <li><a href="#all_subscribe">subscribe</a></li>
 <li><a href="#all_unsubscribe">unsubscribe</a></li>
@@ -1271,7 +1272,7 @@
 <li><a href="#all_close_silent">Close(silent)</a></li>
 <li><a href="#all_getclientid">GetClientId()</a></li>
 <li><a href="#all_reconnect">ReConnect()</a></li>
-<li><a href="#all_sendtogroup_groupname_methodname_json">SendToGroup(groupName, methodName, json)</a></li>
+<li><a href="#all_sendtogroup_groupname_methodname_json_callback">SendToGroup(groupName, methodName, json, callback)</a></li>
 <li><a href="#all_start_callback">Start(callback)</a></li>
 <li><a href="#all_subscribe_groupname_callback">Subscribe(groupName, callback)</a></li>
 <li><a href="#all_unsubscribe_groupname_callback">Unsubscribe(groupName, callback)</a></li>
@@ -1295,7 +1296,7 @@
 <li><a href="#all_unsubscribe_group_callback">Unsubscribe(group, callback)</a></li>
 </ul>
 </li>
-<li><a href="#all_api_jxcore_client">API JXcore Client</a><ul>
+<li><a href="#all_api_jxcore_node_js_client">API JXcore / Node.JS Client</a><ul>
 <li><a href="#all_events_5">Events</a><ul>
 <li><a href="#all_connect_1">connect</a></li>
 <li><a href="#all_close">close</a></li>
@@ -1309,7 +1310,7 @@
 <li><a href="#all_connect_2">Connect()</a></li>
 <li><a href="#all_getclientid_2">GetClientId()</a></li>
 <li><a href="#all_reconnect_1">ReConnect()</a></li>
-<li><a href="#all_sendtogroup_groupname_methodname_json_1">SendToGroup(groupName, methodName, json)</a></li>
+<li><a href="#all_sendtogroup_groupname_methodname_json">SendToGroup(groupName, methodName, json)</a></li>
 <li><a href="#all_subscribe_groupname_callback_2">Subscribe(groupName, callback)</a></li>
 <li><a href="#all_unsubscribe_groupname_callback_1">Unsubscribe(groupName, callback)</a></li>
 </ul>
@@ -15821,7 +15822,10 @@ It means, if you want to package your project into a JX package, you need to cre
     ],
     &quot;library&quot;: false,
     &quot;license_file&quot;: null,
-    &quot;readme_file&quot;: null
+    &quot;readme_file&quot;: null,
+    &quot;preInstall&quot; : [
+        &quot;mkdir new_folder&quot;
+    ]
 }</code></pre>
 <p>You can access this object in a runtime of your JX package by:
 
@@ -15870,6 +15874,38 @@ When a license or readme file is specified, it can be also displayed in a consol
 </p>
 <pre><code>&gt; jx package.jx readme</code></pre>
 <ul>
+<li><strong>preInstall</strong>
+This is an array, where you can define system commands to be executed right before jx package execution.
+For example, this might be creating a folder, installing an additional package/module or just anything.
+Commands are executed in the same order as the array is defined.</li>
+</ul>
+<p>There is a special keyword <code>JX_BINARY</code> which is replaced during runtime with current <code>jx</code> executable path.
+
+</p>
+<p>For example, we have the following commands in JXP file:
+
+</p>
+<pre><code class="js">&quot;preInstall&quot; : [
+    &quot;which JX_BINARY &gt; log.txt&quot;,
+    &quot;JX_BINARY -jxv &gt;&gt; log.txt&quot;
+]</code></pre>
+<p>Those commands will be executed for the first time, when we run the package:
+
+</p>
+<pre><code>&gt; jx package.jx</code></pre>
+<p>or
+
+</p>
+<pre><code class="js">var module = require(&quot;./package.jx&quot;);</code></pre>
+<p>In this example, the first commands writes the full path string of jx binary to the <em>log.txt</em> file, while the second one - executes <code>jx -jxv</code>
+and appends the result (the jx version number) to the same file.
+
+</p>
+<p>When all of the commands are executed, there will be a file created <code>your_module.installed</code> preventing subsequent execution of pre-install section.
+If you want to run it again, simply remove that file.
+
+</p>
+<ul>
 <li><strong>custom_fields</strong></li>
 </ul>
 <p>You can also define your own constants, as many as you want, for example:
@@ -15899,7 +15935,7 @@ When a license or readme file is specified, it can be also displayed in a consol
 } else {
     console.log(&quot;This code is still under development.&quot;);
 }</code></pre>
-<p>However, <code>files</code> and <code>assets</code> members are not accessible from exports.$JXP
+<p>However, <code>files</code> members are not accessible from exports.$JXP.
 
 </p>
 <h2>Accessing Files and Assets from a Package<span><a class="mark" href="#all_accessing_files_and_assets_from_a_package" id="all_accessing_files_and_assets_from_a_package">#</a></span></h2>
@@ -16106,6 +16142,26 @@ For example some browsers may fail to use WebSockets and will try to switch to o
 It is used mostly for informational purpose and is displayed for example, when server starts from the console window.
 
 </p>
+<h2>Error codes<span><a class="mark" href="#all_error_codes_1" id="all_error_codes_1">#</a></span></h2>
+<p>Below are listed error codes (and they textual meanings) used by JXM.io.
+Whenever an error occurs while processing a request from the client-side, JXM.io server does not send the full error description back to the client.
+Instead it sends the error code as an integer number.
+
+</p>
+<p>Error codes are defined in JMI.io settings file.
+
+</p>
+<ul>
+<li><code>1</code> - The client does not belong to <strong>this</strong> group. This error occurs when a client tries to send a message to the group, to which is not subscribed.</li>
+<li><code>2</code> - The client does not belong to <strong>any</strong> group.</li>
+<li><code>3</code> - The client tries to subscribe to a group or on-subscribe from it, but the server&#39;s option <a href="#jxcore_messaging_enableclientsidesubscription"><code>enableClientSideSubscription</code></a> is disabled,</li>
+<li><code>4</code> - The client is already subscribed to a specific group.</li>
+<li><code>5</code> - Group information parsing problem. This error occurs, when server is unable to parse group information sent from a client.</li>
+<li><code>6</code> - Group name must be a non empty string. When client tries to subscribe to a group, but provided an empty string as a group name - then the error occurs.</li>
+<li><code>7</code> - Name of the method was not provided. Invoking client&#39;s <code>Call()</code> method with an empty string as a method name generates this error.</li>
+<li><code>8</code> - Server&#39;s custom method error. This error occurs when custom method defined on the server-side generates an exception.</li>
+<li><code>9</code> - Method is not defined on the server side. The most often reason fo this error is misspelled server&#39;s custom method name.</li>
+</ul>
 <h2>Events<span><a class="mark" href="#all_events_2" id="all_events_2">#</a></span></h2>
 <h3>subscribe<span><a class="mark" href="#all_subscribe" id="all_subscribe">#</a></span></h3>
 <ul>
@@ -16623,19 +16679,21 @@ jxcore.OnSubscription = function (subscribed,  group) {
 <li><code>json</code> <span class="type">Object</span></li>
 <li><code>callback</code> <span class="type">Function</span><ul>
 <li><code>param</code> <span class="type">Object</span></li>
+<li><code>err</code> <span class="type">Number</span></li>
 </ul>
 </li>
 </div></ul>
 <p>Invokes specific custom method named <code>methodName</code> defined on the server-side and passes to it one parameter <code>json</code>.
 The client&#39;s <code>callback</code> is optional, but when provided, it will be called after server completes invoking the method
 and will receive <code>param</code> argument sent from the server-side.
+If error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
 
 </p>
 <p>In the example below we call the server-side method &quot;serverMethod&quot; from the client-side.
 In turn, as a response, the backend service will invoke the client&#39;s local <code>callback</code> function:
 
 </p>
-<pre><code class="js">var callback = function(param) {
+<pre><code class="js">var callback = function(param, err) {
     alert(param);
 }
 
@@ -16643,8 +16701,8 @@ jxcore.Call(&quot;serverMethod&quot;, &quot;hello&quot;, callback);</code></pre>
 <p>or simply:
 
 </p>
-<pre><code class="js">jxcore.Call(&quot;serverMethod&quot;, &quot;hello&quot;, function(param) {
-    alert(param);
+<pre><code class="js">jxcore.Call(&quot;serverMethod&quot;, &quot;hello&quot;, function(param, err) {
+    alert(err ? &quot;Error code: &quot; + err : param);
 });</code></pre>
 <h2>Close(silent)<span><a class="mark" href="#all_close_silent" id="all_close_silent">#</a></span></h2>
 <div class="signature"><ul>
@@ -16665,19 +16723,31 @@ If <code>true</code> - then <code>OnClose</code> event will not get invoked, oth
 <p>Forces the client to reconnect to the server.
 
 </p>
-<h2>SendToGroup(groupName, methodName, json)<span><a class="mark" href="#all_sendtogroup_groupname_methodname_json" id="all_sendtogroup_groupname_methodname_json">#</a></span></h2>
+<h2>SendToGroup(groupName, methodName, json, callback)<span><a class="mark" href="#all_sendtogroup_groupname_methodname_json_callback" id="all_sendtogroup_groupname_methodname_json_callback">#</a></span></h2>
 <div class="signature"><ul>
 <li><code>groupName</code> <span class="type">String</span></li>
 <li><code>methodName</code> <span class="type">String</span></li>
 <li><code>json</code> <span class="type">Object</span></li>
+<li><code>callback</code> <span class="type">Function</span><ul>
+<li><code>err</code> <span class="type">Number</span></li>
+</ul>
+</li>
 </div></ul>
 <p>Sends message to all of the clients, that have already subscribed to the specific <code>groupName</code>.
 The message is passed as <code>json</code> argument to the target&#39;s method named <code>methodName</code>.
 The message can be any value, primitive (string, number, etc.) or json literal object.
 
 </p>
+<p>The <code>callback</code> is optional, but when provided, it will be called after server sends the message to other clients.
+Please note, that this is not a confirmation, whether the clients have received the message or not.
+It just informs, that the server processed the message with success or failure.
+If error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal to 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
+
+</p>
 <pre><code class="js">document.getElementById(&quot;btnSend&quot;).onclick = function(){
-    jxcore.SendToGroup(&quot;programmers&quot;, &quot;addText&quot;, { obj : &quot;value&quot; } );
+    jxcore.SendToGroup(&quot;programmers&quot;, &quot;addText&quot;, { obj : &quot;value&quot; }, function(err) {
+
+    });
 };</code></pre>
 <p>The &quot;addText&quot; method should be available on every client which is subscribed to &quot;programmers&quot; group.
 While invoking the &quot;addText&quot; method at each client, the server will pass { obj : &quot;value&quot; } as an argument.
@@ -16710,31 +16780,43 @@ While invoking the &quot;addText&quot; method at each client, the server will pa
 <li><code>groupName</code> <span class="type">String</span></li>
 <li><code>callback</code> <span class="type">Function</span><ul>
 <li><code>groupName</code> <span class="type">String</span></li>
+<li><code>err</code> <span class="type">Number</span></li>
 </ul>
 </li>
 </div></ul>
 <p>Subscribes the client to a <code>groupName</code>, or channel. From now on, messages sent to that group by any other subscriber will be received by the client.
 Also the client can send messages to this group – see <code>SendToGroup()</code> method.
 After the server successfully subscribes the client to the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.
+If error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
 
 </p>
-<pre><code class="js">jxcore.Subscribe(&quot;programmers&quot;, function(groupName) {
-    alert(&quot;subscribed to group: &quot; + groupName);
+<pre><code class="js">jxcore.Subscribe(&quot;programmers&quot;, function (groupName, err) {
+    if (err) {
+        alert(&quot;Error while subscribing. Code: &quot; + err);
+    } else {
+        alert(&quot;subscribed to group: &quot; + groupName);
+    }
 });</code></pre>
 <h2>Unsubscribe(groupName, callback)<span><a class="mark" href="#all_unsubscribe_groupname_callback" id="all_unsubscribe_groupname_callback">#</a></span></h2>
 <div class="signature"><ul>
 <li><code>groupName</code> <span class="type">String</span></li>
 <li><code>callback</code> <span class="type">Function</span><ul>
 <li><code>groupName</code> <span class="type">String</span></li>
+<li><code>err</code> <span class="type">Number</span></li>
 </ul>
 </li>
 </div></ul>
 <p>Unsubscribes the client from a <code>groupName</code>, or channel. From now on, messages sent to that group cannot be received by this client.
 After the server successfully unsubscribes the client from the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.
+If error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
 
 </p>
-<pre><code class="js">jxcore.Unsubscribe(&quot;programmers&quot;, function(groupName) {
-    alert(&quot;unsubscribed from a group:&quot; + groupName);
+<pre><code class="js">jxcore.Unsubscribe(&quot;programmers&quot;, function(groupName, err) {
+    if (err) {
+        alert(&quot;Error while un-subscribing. Code: &quot; + err);
+    } else {
+        alert(&quot;unsubscribed from a group: &quot; + groupName);
+    }
 });</code></pre>
 <h1>API Java Client<span><a class="mark" href="#all_api_java_client" id="all_api_java_client">#</a></span></h1>
 <p>There are some <a href="http://jxm.io">tutorials</a> available, and they show how to consume JXM.io server from a Java Client.
@@ -16881,12 +16963,18 @@ public class CustomMethods extends CustomMethodsBase {
 <div class="signature"><ul>
 <li><code>methodName</code> <span class="type">String</span></li>
 <li><code>params</code> <span class="type">Object</span></li>
-<li><code>callback</code> <span class="type">jxm.Callback</span></li>
+<li><code>callback</code> <span class="type">jxm.Callback</span><ul>
+<li><code>obj</code> <span class="type">Object</span></li>
+<li><code>err</code> <span class="type">integer</span></li>
+</ul>
+</li>
 </div></ul>
-<p>Invokes specific custom method <code>methodName</code> defined on the server-side and passes to it <code>params</code> value. The <code>methodName</code> should also contain the class name and the namespace, e.g. <em>com.example.MyClass.MyMethod</em>.
+<p>Invokes specific custom method <code>methodName</code> defined on the server-side and passes to it <code>params</code> value.
+The <code>methodName</code> should also contain the class name and the namespace, e.g. <em>com.example.MyClass.MyMethod</em>.
 
 </p>
 <p>The optional parameter <code>callback</code> is the client’s function, which will be called after server completes invoking the method.
+If error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
 
 </p>
 <p>In the example below we call the server-side method <em>serverMethod</em> from the client-side.
@@ -16910,8 +16998,18 @@ In turn, as a response, the backend service will invoke the client&#39;s local <
 <li><code>groupName</code> <span class="type">String</span></li>
 <li><code>methodName</code> <span class="type">String</span></li>
 <li><code>params</code> <span class="type">Object</span></li>
+<li><code>callback</code> <span class="type">jxm.Callback</span><ul>
+<li><code>obj</code> <span class="type">Object</span></li>
+<li><code>err</code> <span class="type">integer</span></li>
+</ul>
+</li>
 </div></ul>
 <p>Sends message to all clients, that have already subscribed to the specific <code>groupName</code>. The message is passed as <code>params</code> argument to the target&#39;s method named <code>methodName</code>.
+
+</p>
+<p>The <code>callback</code> is optional, but when provided, it will be called after server sends the message to other clients.
+Please note, that this is not a confirmation, whether the clients have received the message or not.
+It just informs, that the server processed the message with success or failure.
 
 </p>
 <p>The &quot;addText&quot; method should be available on every client, which is subscribed to <em>programmers</em> group.
@@ -16924,13 +17022,16 @@ While invoking the <em>addText</em> method at each client, the server will pass 
 <li><code>groupName</code> <span class="type">String</span></li>
 <li><code>callback</code> <span class="type">jxm.Callback</span><ul>
 <li><code>groupName</code> <span class="type">String</span></li>
+<li><code>err</code> <span class="type">integer</span></li>
 </ul>
 </li>
 </div></ul>
 <p>Subscribes the client to a <code>groupName</code>, or channel. From now on, messages sent to that group by any other subscriber will be received by the client.
 Also the client can send messages to this group – see <code>SendToGroup()</code> method.
-After the server successfully subscribes the client to the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.
 
+</p>
+<p>After the server successfully subscribes the client to the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.
+If error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
 
 </p>
 <pre><code class="java">try {
@@ -16950,11 +17051,15 @@ After the server successfully subscribes the client to the <code>groupName</code
 <li><code>groupName</code> <span class="type">String</span></li>
 <li><code>callback</code> <span class="type">jxm.Callback</span><ul>
 <li><code>groupName</code> <span class="type">String</span></li>
+<li><code>err</code> <span class="type">integer</span></li>
 </ul>
 </li>
 </div></ul>
 <p>Unsubscribes the client from a <code>groupName</code>, or channel. From now on, messages sent to that group cannot be received by this client.
-After the server successfully unsubscribes the client from the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.
+
+</p>
+<p>After the server successfully unsubscribes the client from the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.
+If error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
 
 </p>
 <pre><code class="java">try {
@@ -16967,9 +17072,9 @@ After the server successfully unsubscribes the client from the <code>groupName</
 } catch (Exception e) {
      System.out.println(&quot;Cannot unsubscribe.&quot;);
 }</code></pre>
-<h1>API JXcore Client<span><a class="mark" href="#all_api_jxcore_client" id="all_api_jxcore_client">#</a></span></h1>
-<p>This section describes JXM.io server for JXcore client. It is based on API JavaScript client for browsers and is also written in JavaScript.
-But the difference is, that JXcore clients do not use browsers - they can be launched from a command line, just like any other JXcore application.
+<h1>API JXcore / Node.JS Client<span><a class="mark" href="#all_api_jxcore_node_js_client" id="all_api_jxcore_node_js_client">#</a></span></h1>
+<p>This section describes JXM.io server for JXcore or Node.JS client. It is based on API JavaScript client for browsers and is also written in JavaScript.
+But the difference is, that JXcore / Node.JS clients do not use browsers - they can be launched from a command line, just like any other JXcore / Node.JS application.
 
 </p>
 <p>The following sample creates one JXM.io server and client in one script file:
@@ -17003,8 +17108,10 @@ var client = server.createClient(methods, &quot;test&quot;, &quot;myKey&quot;, &
 
 client.on(&quot;connect&quot;, function (client) {
     console.log(&quot;Client connected.&quot;);
-    client.Call(&quot;server_method&quot;, &quot;Hello&quot;, function (param) {
-        console.log(&quot;Client received callback with message&quot;, param);
+    client.Call(&quot;server_method&quot;, &quot;Hello&quot;, function (param, err) {
+        if (!err) {
+            console.log(&quot;Client received callback with message&quot;, param);
+        }
     });
 });
 
@@ -17094,7 +17201,7 @@ client.on(&#39;subscription&#39;, function (client, subscribed, group) {
 <li><code>secure</code> <span class="type">boolean</span></li>
 <li><code>resetUID</code> <span class="type">boolean</span></li>
 </div></ul>
-<p>Creates an instance of JXcore Client with specified application name <code>appName</code> and application key <code>appKey</code>.
+<p>Creates an instance of the client with specified application name <code>appName</code> and application key <code>appKey</code>.
 The <code>url</code> parameter specifies JXM.io server URL, e.g. <em>sampledomain.com</em> or <em>120.1.2.3</em>.
 You can also enable SSL support with <code>secure</code> parameter.
 
@@ -17119,6 +17226,7 @@ var client = server.createClient(customMethods,
 <li><code>json</code> <span class="type">Object</span></li>
 <li><code>callback</code> <span class="type">Function</span><ul>
 <li><code>param</code> <span class="type">Object</span></li>
+<li><code>err</code> <span class="type">Number</span></li>
 </ul>
 </li>
 </div></ul>
@@ -17128,7 +17236,10 @@ and will receive <code>param</code> argument sent from the server-side.
 
 </p>
 <p>In the example below we call the server-side method &quot;serverMethod&quot; from the client-side.
-In turn, as a response, the backend service will invoke the client&#39;s local <code>callback</code> function:
+In turn, as a response, the backend service will invoke the client&#39;s local <code>callback</code> function.
+
+</p>
+<p>If error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
 
 </p>
 <p>client-side:
@@ -17156,7 +17267,7 @@ In turn, as a response, the backend service will invoke the client&#39;s local <
 
 </p>
 <h2>Connect()<span><a class="mark" href="#all_connect_2" id="all_connect_2">#</a></span></h2>
-<p>Starts JXcore client. Connects to the JXM.io server, and when it succeeds - the client’s event <code>on(&#39;connect&#39;)</code> will be raised.
+<p>Starts JXcore / Node.JS client. Connects to the JXM.io server, and when it succeeds - the client’s event <code>on(&#39;connect&#39;)</code> will be raised.
 
 </p>
 <pre><code class="js">client.on(&quot;connect&quot;, function (client) {
@@ -17176,20 +17287,33 @@ client.Connect();</code></pre>
 <p>Forces the client to reconnect to the server.
 
 </p>
-<h2>SendToGroup(groupName, methodName, json)<span><a class="mark" href="#all_sendtogroup_groupname_methodname_json_1" id="all_sendtogroup_groupname_methodname_json_1">#</a></span></h2>
+<h2>SendToGroup(groupName, methodName, json)<span><a class="mark" href="#all_sendtogroup_groupname_methodname_json" id="all_sendtogroup_groupname_methodname_json">#</a></span></h2>
 <div class="signature"><ul>
 <li><code>groupName</code> <span class="type">String</span></li>
 <li><code>methodName</code> <span class="type">String</span></li>
 <li><code>json</code> <span class="type">Object</span></li>
+<li><code>callback</code> <span class="type">Function</span><ul>
+<li><code>param</code> <span class="type">Object</span></li>
+<li><code>err</code> <span class="type">Number</span></li>
+</ul>
+</li>
 </div></ul>
 <p>Sends message to all of the clients, which have already subscribed to the specific <code>groupName</code>.
 The message is passed as <code>json</code> argument to the target&#39;s method named <code>methodName</code>.
 The message can be any value, primitive (string, number, etc.) or json literal object.
 
 </p>
+<p>The <code>callback</code> is optional, but when provided, it will be called after server sends the message to other clients.
+Please note, that this is not a confirmation, whether the clients have received the message or not.
+It just informs, that the server processed the message with success or failure.
+
+
+</p>
 <pre><code class="js">client.on(&quot;connect&quot;, function (client) {
-    client.Subscribe(groupName, function (group) {
-        client.SendToGroup(&quot;programmers&quot;, &quot;client_method&quot;, { obj : &quot;value&quot; });
+    client.Subscribe(groupName, function (group, err) {
+        if (!err) {
+            client.SendToGroup(&quot;programmers&quot;, &quot;client_method&quot;, { obj : &quot;value&quot; });
+        }
     });
 });</code></pre>
 <p>The &quot;client_method&quot; method should be available on every client which is subscribed to &quot;programmers&quot; group.
@@ -17201,12 +17325,16 @@ While invoking the &quot;client_method&quot; method at each client, the server w
 <li><code>groupName</code> <span class="type">String</span></li>
 <li><code>callback</code> <span class="type">Function</span><ul>
 <li><code>groupName</code> <span class="type">String</span></li>
+<li><code>err</code> <span class="type">Number</span></li>
 </ul>
 </li>
 </div></ul>
 <p>Subscribes the client to a <code>groupName</code>, or channel. Subsequently, messages sent to that group by any other subscriber will be received by the client.
 Also the client can send messages to this group – see <code>SendToGroup()</code> method.
-After the server successfully subscribes the client to the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.
+
+</p>
+<p>After the server successfully subscribes the client to the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.
+If error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
 
 </p>
 <pre><code class="js">client.on(&quot;connect&quot;, function (client) {
@@ -17219,11 +17347,15 @@ After the server successfully subscribes the client to the <code>groupName</code
 <li><code>groupName</code> <span class="type">String</span></li>
 <li><code>callback</code> <span class="type">Function</span><ul>
 <li><code>groupName</code> <span class="type">String</span></li>
+<li><code>err</code> <span class="type">Number</span></li>
 </ul>
 </li>
 </div></ul>
 <p>Unsubscribes the client from a <code>groupName</code>, or channel. Subsequently, messages sent to that group cannot be received by this client.
-After the server successfully unsubscribes the client from the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.
+
+</p>
+<p>After the server successfully unsubscribes the client from the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.
+If error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
 
 </p>
 <pre><code class="js">client.on(&quot;connect&quot;, function (client) {

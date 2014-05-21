@@ -261,7 +261,10 @@ It means, if you want to package your project into a JX package, you need to cre
     ],
     &quot;library&quot;: false,
     &quot;license_file&quot;: null,
-    &quot;readme_file&quot;: null
+    &quot;readme_file&quot;: null,
+    &quot;preInstall&quot; : [
+        &quot;mkdir new_folder&quot;
+    ]
 }</code></pre>
 <p>You can access this object in a runtime of your JX package by:
 
@@ -310,6 +313,38 @@ When a license or readme file is specified, it can be also displayed in a consol
 </p>
 <pre><code>&gt; jx package.jx readme</code></pre>
 <ul>
+<li><strong>preInstall</strong>
+This is an array, where you can define system commands to be executed right before jx package execution.
+For example, this might be creating a folder, installing an additional package/module or just anything.
+Commands are executed in the same order as the array is defined.</li>
+</ul>
+<p>There is a special keyword <code>JX_BINARY</code> which is replaced during runtime with current <code>jx</code> executable path.
+
+</p>
+<p>For example, we have the following commands in JXP file:
+
+</p>
+<pre><code class="js">&quot;preInstall&quot; : [
+    &quot;which JX_BINARY &gt; log.txt&quot;,
+    &quot;JX_BINARY -jxv &gt;&gt; log.txt&quot;
+]</code></pre>
+<p>Those commands will be executed for the first time, when we run the package:
+
+</p>
+<pre><code>&gt; jx package.jx</code></pre>
+<p>or
+
+</p>
+<pre><code class="js">var module = require(&quot;./package.jx&quot;);</code></pre>
+<p>In this example, the first commands writes the full path string of jx binary to the <em>log.txt</em> file, while the second one - executes <code>jx -jxv</code>
+and appends the result (the jx version number) to the same file.
+
+</p>
+<p>When all of the commands are executed, there will be a file created <code>your_module.installed</code> preventing subsequent execution of pre-install section.
+If you want to run it again, simply remove that file.
+
+</p>
+<ul>
 <li><strong>custom_fields</strong></li>
 </ul>
 <p>You can also define your own constants, as many as you want, for example:
@@ -339,7 +374,7 @@ When a license or readme file is specified, it can be also displayed in a consol
 } else {
     console.log(&quot;This code is still under development.&quot;);
 }</code></pre>
-<p>However, <code>files</code> and <code>assets</code> members are not accessible from exports.$JXP
+<p>However, <code>files</code> members are not accessible from exports.$JXP.
 
 </p>
 <h2>Accessing Files and Assets from a Package<span><a class="mark" href="#jxcore_feature_packaging_code_protection_accessing_files_and_assets_from_a_package" id="jxcore_feature_packaging_code_protection_accessing_files_and_assets_from_a_package">#</a></span></h2>

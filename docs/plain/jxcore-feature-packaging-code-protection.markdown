@@ -173,7 +173,10 @@ The JXP project file is simple text file that contains package description writt
     ],
     "library": false,
     "license_file": null,
-    "readme_file": null
+    "readme_file": null,
+    "preInstall" : [
+        "mkdir new_folder"
+    ]
 }
 ```
 
@@ -225,6 +228,38 @@ will display the licence file to the console without executing the package. The 
 
     > jx package.jx readme
 
+* **preInstall**
+This is an array, where you can define system commands to be executed right before jx package execution.
+For example, this might be creating a folder, installing an additional package/module or just anything.
+Commands are executed in the same order as the array is defined.
+
+There is a special keyword `JX_BINARY` which is replaced during runtime with current `jx` executable path.
+
+For example, we have the following commands in JXP file:
+
+```js
+"preInstall" : [
+    "which JX_BINARY > log.txt",
+    "JX_BINARY -jxv >> log.txt"
+]
+```
+
+Those commands will be executed for the first time, when we run the package:
+
+    > jx package.jx
+
+or
+
+```js
+var module = require("./package.jx");
+```
+
+In this example, the first commands writes the full path string of jx binary to the *log.txt* file, while the second one - executes `jx -jxv`
+and appends the result (the jx version number) to the same file.
+
+When all of the commands are executed, there will be a file created `your_module.installed` preventing subsequent execution of pre-install section.
+If you want to run it again, simply remove that file.
+
 * **custom_fields**
 
 You can also define your own constants, as many as you want, for example:
@@ -260,7 +295,7 @@ if (exports.$JXP.Release) {
 }
 ```
 
-However, `files` and `assets` members are not accessible from exports.$JXP
+However, `files` members are not accessible from exports.$JXP.
 
 ## Accessing Files and Assets from a Package
 

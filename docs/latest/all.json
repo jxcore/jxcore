@@ -14554,7 +14554,7 @@
             {
               "textRaw": "File structure",
               "name": "file_structure",
-              "desc": "<p>The JXP project file is simple text file that contains package description written as json literal object:\n\n</p>\n<pre><code class=\"js\">{\n    &quot;name&quot;: &quot;Hello World&quot;,\n    &quot;version&quot;: &quot;1.0&quot;,\n    &quot;author&quot;: &quot;&quot;,\n    &quot;description&quot;: &quot;&quot;,\n    &quot;company&quot;: &quot;&quot;,\n    &quot;website&quot; : &quot;&quot;,\n    &quot;package&quot;: null,\n    &quot;startup&quot;: &quot;helloworld.js&quot;,\n    &quot;execute&quot;: null,\n    &quot;extract&quot;: false,\n    &quot;output&quot;: &quot;helloworld.jx&quot;,\n    &quot;files&quot;: [\n        &quot;helloworld.js&quot;\n    ],\n    &quot;assets&quot;: [\n        &quot;index.html&quot;\n    ],\n    &quot;library&quot;: false,\n    &quot;license_file&quot;: null,\n    &quot;readme_file&quot;: null\n}</code></pre>\n<p>You can access this object in a runtime of your JX package by:\n\n</p>\n<pre><code class=\"js\">var obj = exports.$JXP;</code></pre>\n<p>And the single field:\n\n</p>\n<pre><code class=\"js\">var name = obj.name;</code></pre>\n<p>Below you can find explanation for all supported fields:\n\n</p>\n<ul>\n<li><strong>name</strong>, <strong>version</strong>, <strong>author</strong>, <strong>description</strong>, <strong>company</strong>, <strong>website</strong>\nThese are all string values.</li>\n<li><strong>startup</strong>\nName of the main project file. If execute parameter is not defined, this file will be executed first when you run the package.</li>\n<li><strong>execute</strong>\nName of the main execution file. If this parameter is omitted or null – the value from startup will be used.\nThis parameter has different meaning depending on the library value.\nWhen the package is compiled with <code>library</code> = <code>false</code>, and you run the compiled package, this execute file will be executed first.\nIf <code>library</code> is <code>true</code>, and the package is called with <code>require()</code> method, the execute file will be returned by the latter.</li>\n<li><strong>extract</strong>\nThis is a boolean value: true or false. When it&#39;s set to true, all package contents will be extracted at first run of the compiled package. There will be a new folder created with the name parameter. All files and assets embedded inside the package will be saved with full directory structure preserved.</li>\n<li><strong>output</strong>\nName of the output JX package.</li>\n<li><strong>files</strong>\nThis is an array, where you can define, which script files from your project will be included into the JX package. Only <code>*.js</code> and <code>*.json</code> files are allowed there.</li>\n<li><strong>assets</strong>\nThis is the array with static resource files. You can embed as an asset any file of the type: html, css, txt, xml, log, types, ini, json.</li>\n<li><strong>library</strong>\nIt is a boolean value: true or false. Value set to true means that JX package can be treated as a library and it can be used from inside another JX package (with <code>require()</code> method).\nSetting this value to false is a good way of preventing its usage as an external module (and then <code>require()</code> will not be possible).</li>\n<li><strong>licence_file</strong>\nName of the file containing the licensing information – it is generally a simple text file. If this parameter is omitted or null and if a file named “LICENSE” exists in the directory from where you compile the package – it will be embedded automatically.</li>\n<li><strong>readme_file</strong>\nName of the file containing additional notes about the package. If this parameter is omitted or null and if a file named “README” or “README.md” exists in the directory from where you compile the package – it will be embedded automatically.\nWhen a license or readme file is specified, it can be also displayed in a console window directly from the package.</li>\n</ul>\n<p>For example, running the following command:\n\n</p>\n<pre><code>&gt; jx package.jx license</code></pre>\n<p>will display the licence file to the console without executing the package. The same applies to:\n\n</p>\n<pre><code>&gt; jx package.jx readme</code></pre>\n<ul>\n<li><strong>custom_fields</strong></li>\n</ul>\n<p>You can also define your own constants, as many as you want, for example:\n\n</p>\n<pre><code class=\"js\">{\n    // ...\n    // ...\n    // ...\n    field1 : &quot;one&quot;,\n    myField2 : &quot;two&quot;,\n    someObject : {\n        PI : 3.14159265359,\n        userArray : [ 1, 2 ]\n    },\n    Release : true\n}</code></pre>\n<p>Similarly, accessing those values in a runtime of your JX package is also easy:\n\n</p>\n<pre><code class=\"js\">var pi = exports.$JXP.someObject.PI;</code></pre>\n<p>One of the usage examples for those custom fields can be:\n\n</p>\n<pre><code class=\"js\">if (exports.$JXP.Release) {\n    console.log(&quot;This is the final release of the product.&quot;);\n} else {\n    console.log(&quot;This code is still under development.&quot;);\n}</code></pre>\n<p>However, <code>files</code> and <code>assets</code> members are not accessible from exports.$JXP\n\n</p>\n",
+              "desc": "<p>The JXP project file is simple text file that contains package description written as json literal object:\n\n</p>\n<pre><code class=\"js\">{\n    &quot;name&quot;: &quot;Hello World&quot;,\n    &quot;version&quot;: &quot;1.0&quot;,\n    &quot;author&quot;: &quot;&quot;,\n    &quot;description&quot;: &quot;&quot;,\n    &quot;company&quot;: &quot;&quot;,\n    &quot;website&quot; : &quot;&quot;,\n    &quot;package&quot;: null,\n    &quot;startup&quot;: &quot;helloworld.js&quot;,\n    &quot;execute&quot;: null,\n    &quot;extract&quot;: false,\n    &quot;output&quot;: &quot;helloworld.jx&quot;,\n    &quot;files&quot;: [\n        &quot;helloworld.js&quot;\n    ],\n    &quot;assets&quot;: [\n        &quot;index.html&quot;\n    ],\n    &quot;library&quot;: false,\n    &quot;license_file&quot;: null,\n    &quot;readme_file&quot;: null,\n    &quot;preInstall&quot; : [\n        &quot;mkdir new_folder&quot;\n    ]\n}</code></pre>\n<p>You can access this object in a runtime of your JX package by:\n\n</p>\n<pre><code class=\"js\">var obj = exports.$JXP;</code></pre>\n<p>And the single field:\n\n</p>\n<pre><code class=\"js\">var name = obj.name;</code></pre>\n<p>Below you can find explanation for all supported fields:\n\n</p>\n<ul>\n<li><strong>name</strong>, <strong>version</strong>, <strong>author</strong>, <strong>description</strong>, <strong>company</strong>, <strong>website</strong>\nThese are all string values.</li>\n<li><strong>startup</strong>\nName of the main project file. If execute parameter is not defined, this file will be executed first when you run the package.</li>\n<li><strong>execute</strong>\nName of the main execution file. If this parameter is omitted or null – the value from startup will be used.\nThis parameter has different meaning depending on the library value.\nWhen the package is compiled with <code>library</code> = <code>false</code>, and you run the compiled package, this execute file will be executed first.\nIf <code>library</code> is <code>true</code>, and the package is called with <code>require()</code> method, the execute file will be returned by the latter.</li>\n<li><strong>extract</strong>\nThis is a boolean value: true or false. When it&#39;s set to true, all package contents will be extracted at first run of the compiled package. There will be a new folder created with the name parameter. All files and assets embedded inside the package will be saved with full directory structure preserved.</li>\n<li><strong>output</strong>\nName of the output JX package.</li>\n<li><strong>files</strong>\nThis is an array, where you can define, which script files from your project will be included into the JX package. Only <code>*.js</code> and <code>*.json</code> files are allowed there.</li>\n<li><strong>assets</strong>\nThis is the array with static resource files. You can embed as an asset any file of the type: html, css, txt, xml, log, types, ini, json.</li>\n<li><strong>library</strong>\nIt is a boolean value: true or false. Value set to true means that JX package can be treated as a library and it can be used from inside another JX package (with <code>require()</code> method).\nSetting this value to false is a good way of preventing its usage as an external module (and then <code>require()</code> will not be possible).</li>\n<li><strong>licence_file</strong>\nName of the file containing the licensing information – it is generally a simple text file. If this parameter is omitted or null and if a file named “LICENSE” exists in the directory from where you compile the package – it will be embedded automatically.</li>\n<li><strong>readme_file</strong>\nName of the file containing additional notes about the package. If this parameter is omitted or null and if a file named “README” or “README.md” exists in the directory from where you compile the package – it will be embedded automatically.\nWhen a license or readme file is specified, it can be also displayed in a console window directly from the package.</li>\n</ul>\n<p>For example, running the following command:\n\n</p>\n<pre><code>&gt; jx package.jx license</code></pre>\n<p>will display the licence file to the console without executing the package. The same applies to:\n\n</p>\n<pre><code>&gt; jx package.jx readme</code></pre>\n<ul>\n<li><strong>preInstall</strong>\nThis is an array, where you can define system commands to be executed right before jx package execution.\nFor example, this might be creating a folder, installing an additional package/module or just anything.\nCommands are executed in the same order as the array is defined.</li>\n</ul>\n<p>There is a special keyword <code>JX_BINARY</code> which is replaced during runtime with current <code>jx</code> executable path.\n\n</p>\n<p>For example, we have the following commands in JXP file:\n\n</p>\n<pre><code class=\"js\">&quot;preInstall&quot; : [\n    &quot;which JX_BINARY &gt; log.txt&quot;,\n    &quot;JX_BINARY -jxv &gt;&gt; log.txt&quot;\n]</code></pre>\n<p>Those commands will be executed for the first time, when we run the package:\n\n</p>\n<pre><code>&gt; jx package.jx</code></pre>\n<p>or\n\n</p>\n<pre><code class=\"js\">var module = require(&quot;./package.jx&quot;);</code></pre>\n<p>In this example, the first commands writes the full path string of jx binary to the <em>log.txt</em> file, while the second one - executes <code>jx -jxv</code>\nand appends the result (the jx version number) to the same file.\n\n</p>\n<p>When all of the commands are executed, there will be a file created <code>your_module.installed</code> preventing subsequent execution of pre-install section.\nIf you want to run it again, simply remove that file.\n\n</p>\n<ul>\n<li><strong>custom_fields</strong></li>\n</ul>\n<p>You can also define your own constants, as many as you want, for example:\n\n</p>\n<pre><code class=\"js\">{\n    // ...\n    // ...\n    // ...\n    field1 : &quot;one&quot;,\n    myField2 : &quot;two&quot;,\n    someObject : {\n        PI : 3.14159265359,\n        userArray : [ 1, 2 ]\n    },\n    Release : true\n}</code></pre>\n<p>Similarly, accessing those values in a runtime of your JX package is also easy:\n\n</p>\n<pre><code class=\"js\">var pi = exports.$JXP.someObject.PI;</code></pre>\n<p>One of the usage examples for those custom fields can be:\n\n</p>\n<pre><code class=\"js\">if (exports.$JXP.Release) {\n    console.log(&quot;This is the final release of the product.&quot;);\n} else {\n    console.log(&quot;This code is still under development.&quot;);\n}</code></pre>\n<p>However, <code>files</code> members are not accessible from exports.$JXP.\n\n</p>\n",
               "type": "module",
               "displayName": "File structure"
             }
@@ -14705,6 +14705,13 @@
           ],
           "type": "module",
           "displayName": "Configuration"
+        },
+        {
+          "textRaw": "Error codes",
+          "name": "error_codes",
+          "desc": "<p>Below are listed error codes (and they textual meanings) used by JXM.io.\nWhenever an error occurs while processing a request from the client-side, JXM.io server does not send the full error description back to the client.\nInstead it sends the error code as an integer number.\n\n</p>\n<p>Error codes are defined in JMI.io settings file.\n\n</p>\n<ul>\n<li><code>1</code> - The client does not belong to <strong>this</strong> group. This error occurs when a client tries to send a message to the group, to which is not subscribed.</li>\n<li><code>2</code> - The client does not belong to <strong>any</strong> group.</li>\n<li><code>3</code> - The client tries to subscribe to a group or on-subscribe from it, but the server&#39;s option <a href=\"#jxcore_messaging_enableclientsidesubscription\"><code>enableClientSideSubscription</code></a> is disabled,</li>\n<li><code>4</code> - The client is already subscribed to a specific group.</li>\n<li><code>5</code> - Group information parsing problem. This error occurs, when server is unable to parse group information sent from a client.</li>\n<li><code>6</code> - Group name must be a non empty string. When client tries to subscribe to a group, but provided an empty string as a group name - then the error occurs.</li>\n<li><code>7</code> - Name of the method was not provided. Invoking client&#39;s <code>Call()</code> method with an empty string as a method name generates this error.</li>\n<li><code>8</code> - Server&#39;s custom method error. This error occurs when custom method defined on the server-side generates an exception.</li>\n<li><code>9</code> - Method is not defined on the server side. The most often reason fo this error is misspelled server&#39;s custom method name.</li>\n</ul>\n",
+          "type": "module",
+          "displayName": "Error codes"
         },
         {
           "textRaw": "Events",
@@ -15275,6 +15282,11 @@
                       "textRaw": "`param` {Object} ",
                       "name": "param",
                       "type": "Object"
+                    },
+                    {
+                      "textRaw": "`err` {Number} ",
+                      "name": "err",
+                      "type": "Number"
                     }
                   ],
                   "name": "callback",
@@ -15296,7 +15308,7 @@
               ]
             }
           ],
-          "desc": "<p>Invokes specific custom method named <code>methodName</code> defined on the server-side and passes to it one parameter <code>json</code>.\nThe client&#39;s <code>callback</code> is optional, but when provided, it will be called after server completes invoking the method\nand will receive <code>param</code> argument sent from the server-side.\n\n</p>\n<p>In the example below we call the server-side method &quot;serverMethod&quot; from the client-side.\nIn turn, as a response, the backend service will invoke the client&#39;s local <code>callback</code> function:\n\n</p>\n<pre><code class=\"js\">var callback = function(param) {\n    alert(param);\n}\n\njxcore.Call(&quot;serverMethod&quot;, &quot;hello&quot;, callback);</code></pre>\n<p>or simply:\n\n</p>\n<pre><code class=\"js\">jxcore.Call(&quot;serverMethod&quot;, &quot;hello&quot;, function(param) {\n    alert(param);\n});</code></pre>\n"
+          "desc": "<p>Invokes specific custom method named <code>methodName</code> defined on the server-side and passes to it one parameter <code>json</code>.\nThe client&#39;s <code>callback</code> is optional, but when provided, it will be called after server completes invoking the method\nand will receive <code>param</code> argument sent from the server-side.\nIf error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].\n\n</p>\n<p>In the example below we call the server-side method &quot;serverMethod&quot; from the client-side.\nIn turn, as a response, the backend service will invoke the client&#39;s local <code>callback</code> function:\n\n</p>\n<pre><code class=\"js\">var callback = function(param, err) {\n    alert(param);\n}\n\njxcore.Call(&quot;serverMethod&quot;, &quot;hello&quot;, callback);</code></pre>\n<p>or simply:\n\n</p>\n<pre><code class=\"js\">jxcore.Call(&quot;serverMethod&quot;, &quot;hello&quot;, function(param, err) {\n    alert(err ? &quot;Error code: &quot; + err : param);\n});</code></pre>\n"
         },
         {
           "textRaw": "Close(silent)",
@@ -15345,7 +15357,7 @@
           ]
         },
         {
-          "textRaw": "SendToGroup(groupName, methodName, json)",
+          "textRaw": "SendToGroup(groupName, methodName, json, callback)",
           "type": "method",
           "name": "SendToGroup",
           "signatures": [
@@ -15365,6 +15377,18 @@
                   "textRaw": "`json` {Object} ",
                   "name": "json",
                   "type": "Object"
+                },
+                {
+                  "textRaw": "`callback` {Function} ",
+                  "options": [
+                    {
+                      "textRaw": "`err` {Number} ",
+                      "name": "err",
+                      "type": "Number"
+                    }
+                  ],
+                  "name": "callback",
+                  "type": "Function"
                 }
               ]
             },
@@ -15378,11 +15402,14 @@
                 },
                 {
                   "name": "json"
+                },
+                {
+                  "name": "callback"
                 }
               ]
             }
           ],
-          "desc": "<p>Sends message to all of the clients, that have already subscribed to the specific <code>groupName</code>.\nThe message is passed as <code>json</code> argument to the target&#39;s method named <code>methodName</code>.\nThe message can be any value, primitive (string, number, etc.) or json literal object.\n\n</p>\n<pre><code class=\"js\">document.getElementById(&quot;btnSend&quot;).onclick = function(){\n    jxcore.SendToGroup(&quot;programmers&quot;, &quot;addText&quot;, { obj : &quot;value&quot; } );\n};</code></pre>\n<p>The &quot;addText&quot; method should be available on every client which is subscribed to &quot;programmers&quot; group.\nWhile invoking the &quot;addText&quot; method at each client, the server will pass { obj : &quot;value&quot; } as an argument.\n\n</p>\n"
+          "desc": "<p>Sends message to all of the clients, that have already subscribed to the specific <code>groupName</code>.\nThe message is passed as <code>json</code> argument to the target&#39;s method named <code>methodName</code>.\nThe message can be any value, primitive (string, number, etc.) or json literal object.\n\n</p>\n<p>The <code>callback</code> is optional, but when provided, it will be called after server sends the message to other clients.\nPlease note, that this is not a confirmation, whether the clients have received the message or not.\nIt just informs, that the server processed the message with success or failure.\nIf error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal to 0 (zero). See [error codes][].\n\n</p>\n<pre><code class=\"js\">document.getElementById(&quot;btnSend&quot;).onclick = function(){\n    jxcore.SendToGroup(&quot;programmers&quot;, &quot;addText&quot;, { obj : &quot;value&quot; }, function(err) {\n\n    });\n};</code></pre>\n<p>The &quot;addText&quot; method should be available on every client which is subscribed to &quot;programmers&quot; group.\nWhile invoking the &quot;addText&quot; method at each client, the server will pass { obj : &quot;value&quot; } as an argument.\n\n</p>\n"
         },
         {
           "textRaw": "Start(callback)",
@@ -15434,6 +15461,11 @@
                       "textRaw": "`groupName` {String} ",
                       "name": "groupName",
                       "type": "String"
+                    },
+                    {
+                      "textRaw": "`err` {Number} ",
+                      "name": "err",
+                      "type": "Number"
                     }
                   ],
                   "name": "callback",
@@ -15452,7 +15484,7 @@
               ]
             }
           ],
-          "desc": "<p>Subscribes the client to a <code>groupName</code>, or channel. From now on, messages sent to that group by any other subscriber will be received by the client.\nAlso the client can send messages to this group – see <code>SendToGroup()</code> method.\nAfter the server successfully subscribes the client to the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.\n\n</p>\n<pre><code class=\"js\">jxcore.Subscribe(&quot;programmers&quot;, function(groupName) {\n    alert(&quot;subscribed to group: &quot; + groupName);\n});</code></pre>\n"
+          "desc": "<p>Subscribes the client to a <code>groupName</code>, or channel. From now on, messages sent to that group by any other subscriber will be received by the client.\nAlso the client can send messages to this group – see <code>SendToGroup()</code> method.\nAfter the server successfully subscribes the client to the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.\nIf error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].\n\n</p>\n<pre><code class=\"js\">jxcore.Subscribe(&quot;programmers&quot;, function (groupName, err) {\n    if (err) {\n        alert(&quot;Error while subscribing. Code: &quot; + err);\n    } else {\n        alert(&quot;subscribed to group: &quot; + groupName);\n    }\n});</code></pre>\n"
         },
         {
           "textRaw": "Unsubscribe(groupName, callback)",
@@ -15473,6 +15505,11 @@
                       "textRaw": "`groupName` {String} ",
                       "name": "groupName",
                       "type": "String"
+                    },
+                    {
+                      "textRaw": "`err` {Number} ",
+                      "name": "err",
+                      "type": "Number"
                     }
                   ],
                   "name": "callback",
@@ -15491,7 +15528,7 @@
               ]
             }
           ],
-          "desc": "<p>Unsubscribes the client from a <code>groupName</code>, or channel. From now on, messages sent to that group cannot be received by this client.\nAfter the server successfully unsubscribes the client from the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.\n\n</p>\n<pre><code class=\"js\">jxcore.Unsubscribe(&quot;programmers&quot;, function(groupName) {\n    alert(&quot;unsubscribed from a group:&quot; + groupName);\n});</code></pre>\n"
+          "desc": "<p>Unsubscribes the client from a <code>groupName</code>, or channel. From now on, messages sent to that group cannot be received by this client.\nAfter the server successfully unsubscribes the client from the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.\nIf error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].\n\n</p>\n<pre><code class=\"js\">jxcore.Unsubscribe(&quot;programmers&quot;, function(groupName, err) {\n    if (err) {\n        alert(&quot;Error while un-subscribing. Code: &quot; + err);\n    } else {\n        alert(&quot;unsubscribed from a group: &quot; + groupName);\n    }\n});</code></pre>\n"
         }
       ],
       "type": "module",
@@ -15638,6 +15675,18 @@
                 },
                 {
                   "textRaw": "`callback` {jxm.Callback} ",
+                  "options": [
+                    {
+                      "textRaw": "`obj` {Object} ",
+                      "name": "obj",
+                      "type": "Object"
+                    },
+                    {
+                      "textRaw": "`err` {integer} ",
+                      "name": "err",
+                      "type": "integer"
+                    }
+                  ],
                   "name": "callback",
                   "type": "jxm.Callback"
                 }
@@ -15657,7 +15706,7 @@
               ]
             }
           ],
-          "desc": "<p>Invokes specific custom method <code>methodName</code> defined on the server-side and passes to it <code>params</code> value. The <code>methodName</code> should also contain the class name and the namespace, e.g. <em>com.example.MyClass.MyMethod</em>.\n\n</p>\n<p>The optional parameter <code>callback</code> is the client’s function, which will be called after server completes invoking the method.\n\n</p>\n<p>In the example below we call the server-side method <em>serverMethod</em> from the client-side.\nIn turn, as a response, the backend service will invoke the client&#39;s local <code>callback</code> function:\n\n</p>\n<pre><code class=\"java\">client.Call(&quot;serverMethod&quot;, &quot;Hello&quot;, callback);</code></pre>\n"
+          "desc": "<p>Invokes specific custom method <code>methodName</code> defined on the server-side and passes to it <code>params</code> value.\nThe <code>methodName</code> should also contain the class name and the namespace, e.g. <em>com.example.MyClass.MyMethod</em>.\n\n</p>\n<p>The optional parameter <code>callback</code> is the client’s function, which will be called after server completes invoking the method.\nIf error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].\n\n</p>\n<p>In the example below we call the server-side method <em>serverMethod</em> from the client-side.\nIn turn, as a response, the backend service will invoke the client&#39;s local <code>callback</code> function:\n\n</p>\n<pre><code class=\"java\">client.Call(&quot;serverMethod&quot;, &quot;Hello&quot;, callback);</code></pre>\n"
         },
         {
           "textRaw": "Connect()",
@@ -15702,6 +15751,23 @@
                   "textRaw": "`params` {Object} ",
                   "name": "params",
                   "type": "Object"
+                },
+                {
+                  "textRaw": "`callback` {jxm.Callback} ",
+                  "options": [
+                    {
+                      "textRaw": "`obj` {Object} ",
+                      "name": "obj",
+                      "type": "Object"
+                    },
+                    {
+                      "textRaw": "`err` {integer} ",
+                      "name": "err",
+                      "type": "integer"
+                    }
+                  ],
+                  "name": "callback",
+                  "type": "jxm.Callback"
                 }
               ]
             },
@@ -15719,7 +15785,7 @@
               ]
             }
           ],
-          "desc": "<p>Sends message to all clients, that have already subscribed to the specific <code>groupName</code>. The message is passed as <code>params</code> argument to the target&#39;s method named <code>methodName</code>.\n\n</p>\n<p>The &quot;addText&quot; method should be available on every client, which is subscribed to <em>programmers</em> group.\nWhile invoking the <em>addText</em> method at each client, the server will pass &quot;Hello from client!&quot; as an argument.\n\n</p>\n<pre><code class=\"java\">client.SendToGroup(&quot;programmers&quot;, &quot;addText&quot;, &quot;Hello from client!&quot;);</code></pre>\n"
+          "desc": "<p>Sends message to all clients, that have already subscribed to the specific <code>groupName</code>. The message is passed as <code>params</code> argument to the target&#39;s method named <code>methodName</code>.\n\n</p>\n<p>The <code>callback</code> is optional, but when provided, it will be called after server sends the message to other clients.\nPlease note, that this is not a confirmation, whether the clients have received the message or not.\nIt just informs, that the server processed the message with success or failure.\n\n</p>\n<p>The &quot;addText&quot; method should be available on every client, which is subscribed to <em>programmers</em> group.\nWhile invoking the <em>addText</em> method at each client, the server will pass &quot;Hello from client!&quot; as an argument.\n\n</p>\n<pre><code class=\"java\">client.SendToGroup(&quot;programmers&quot;, &quot;addText&quot;, &quot;Hello from client!&quot;);</code></pre>\n"
         },
         {
           "textRaw": "Subscribe(groupName, callback)",
@@ -15740,6 +15806,11 @@
                       "textRaw": "`groupName` {String} ",
                       "name": "groupName",
                       "type": "String"
+                    },
+                    {
+                      "textRaw": "`err` {integer} ",
+                      "name": "err",
+                      "type": "integer"
                     }
                   ],
                   "name": "callback",
@@ -15758,7 +15829,7 @@
               ]
             }
           ],
-          "desc": "<p>Subscribes the client to a <code>groupName</code>, or channel. From now on, messages sent to that group by any other subscriber will be received by the client.\nAlso the client can send messages to this group – see <code>SendToGroup()</code> method.\nAfter the server successfully subscribes the client to the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.\n\n\n</p>\n<pre><code class=\"java\">try {\n     client.Subscribe(&quot;programmers&quot;, new Callback() {\n         @Override\n         public void call(Object o) throws Exception {\n             System.out.println(&quot;Subscribed to &quot; + o.toString());\n             client.SendToGroup(&quot;programmers&quot;, &quot;clientMethod&quot;,\n             &quot;Hello from client!&quot;);\n         }\n     });\n} catch (Exception e) {\n     System.out.println(&quot;Cannot subscribe.&quot;);\n}</code></pre>\n"
+          "desc": "<p>Subscribes the client to a <code>groupName</code>, or channel. From now on, messages sent to that group by any other subscriber will be received by the client.\nAlso the client can send messages to this group – see <code>SendToGroup()</code> method.\n\n</p>\n<p>After the server successfully subscribes the client to the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.\nIf error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].\n\n</p>\n<pre><code class=\"java\">try {\n     client.Subscribe(&quot;programmers&quot;, new Callback() {\n         @Override\n         public void call(Object o) throws Exception {\n             System.out.println(&quot;Subscribed to &quot; + o.toString());\n             client.SendToGroup(&quot;programmers&quot;, &quot;clientMethod&quot;,\n             &quot;Hello from client!&quot;);\n         }\n     });\n} catch (Exception e) {\n     System.out.println(&quot;Cannot subscribe.&quot;);\n}</code></pre>\n"
         },
         {
           "textRaw": "Unsubscribe(group, callback)",
@@ -15779,6 +15850,11 @@
                       "textRaw": "`groupName` {String} ",
                       "name": "groupName",
                       "type": "String"
+                    },
+                    {
+                      "textRaw": "`err` {integer} ",
+                      "name": "err",
+                      "type": "integer"
                     }
                   ],
                   "name": "callback",
@@ -15797,16 +15873,16 @@
               ]
             }
           ],
-          "desc": "<p>Unsubscribes the client from a <code>groupName</code>, or channel. From now on, messages sent to that group cannot be received by this client.\nAfter the server successfully unsubscribes the client from the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.\n\n</p>\n<pre><code class=\"java\">try {\n     client.Unsubscribe(&quot;programmers&quot;, new Callback() {\n         @Override\n         public void call(Object o) throws Exception {\n             System.out.println(&quot;Unsubscribed from &quot; + o.toString());\n         }\n     });\n} catch (Exception e) {\n     System.out.println(&quot;Cannot unsubscribe.&quot;);\n}</code></pre>\n"
+          "desc": "<p>Unsubscribes the client from a <code>groupName</code>, or channel. From now on, messages sent to that group cannot be received by this client.\n\n</p>\n<p>After the server successfully unsubscribes the client from the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.\nIf error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].\n\n</p>\n<pre><code class=\"java\">try {\n     client.Unsubscribe(&quot;programmers&quot;, new Callback() {\n         @Override\n         public void call(Object o) throws Exception {\n             System.out.println(&quot;Unsubscribed from &quot; + o.toString());\n         }\n     });\n} catch (Exception e) {\n     System.out.println(&quot;Cannot unsubscribe.&quot;);\n}</code></pre>\n"
         }
       ],
       "type": "module",
       "displayName": "API Java Client"
     },
     {
-      "textRaw": "API JXcore Client",
-      "name": "api_jxcore_client",
-      "desc": "<p>This section describes JXM.io server for JXcore client. It is based on API JavaScript client for browsers and is also written in JavaScript.\nBut the difference is, that JXcore clients do not use browsers - they can be launched from a command line, just like any other JXcore application.\n\n</p>\n<p>The following sample creates one JXM.io server and client in one script file:\n\n</p>\n<pre><code class=\"js\">// -------------   server\n\nvar server = require(&quot;./messaging.jx&quot;);\nserver.setApplication(&quot;TestApp&quot;, &quot;/test&quot;, &quot;myKey&quot;);\n\nserver.addJSMethod(&quot;server_method&quot;, function (env, param) {\n    server.sendCallBack(env, &quot;Hello back!&quot;);\n    server.sendToAll(&quot;client_method&quot;, &quot;Message sent to all.&quot;);\n});\n\n\nserver.setConfig({ &quot;IPAddress&quot;: &quot;localhost&quot;, &quot;httpServerPort&quot;: 8000 });\nserver.start();\n\n// -------------   client\n\n// client&#39;s custom methods.\n// this is the way to receive messages from sendToGroup() or sendToAll()\nvar methods = {\n    client_method: function (client, str) {\n        console.log(&#39;Received message from sendToGroup() or sendToll():&#39;, str);\n    }\n};\n\nvar client = server.createClient(methods, &quot;test&quot;, &quot;myKey&quot;, &quot;localhost&quot;, 8000, false);\n\nclient.on(&quot;connect&quot;, function (client) {\n    console.log(&quot;Client connected.&quot;);\n    client.Call(&quot;server_method&quot;, &quot;Hello&quot;, function (param) {\n        console.log(&quot;Client received callback with message&quot;, param);\n    });\n});\n\nclient.on(&#39;error&#39;, function (client, err) {\n    console.error(&quot;Client error: &quot; + err);\n});\n\nclient.Connect();</code></pre>\n",
+      "textRaw": "API JXcore / Node.JS Client",
+      "name": "api_jxcore_/_node.js_client",
+      "desc": "<p>This section describes JXM.io server for JXcore or Node.JS client. It is based on API JavaScript client for browsers and is also written in JavaScript.\nBut the difference is, that JXcore / Node.JS clients do not use browsers - they can be launched from a command line, just like any other JXcore / Node.JS application.\n\n</p>\n<p>The following sample creates one JXM.io server and client in one script file:\n\n</p>\n<pre><code class=\"js\">// -------------   server\n\nvar server = require(&quot;./messaging.jx&quot;);\nserver.setApplication(&quot;TestApp&quot;, &quot;/test&quot;, &quot;myKey&quot;);\n\nserver.addJSMethod(&quot;server_method&quot;, function (env, param) {\n    server.sendCallBack(env, &quot;Hello back!&quot;);\n    server.sendToAll(&quot;client_method&quot;, &quot;Message sent to all.&quot;);\n});\n\n\nserver.setConfig({ &quot;IPAddress&quot;: &quot;localhost&quot;, &quot;httpServerPort&quot;: 8000 });\nserver.start();\n\n// -------------   client\n\n// client&#39;s custom methods.\n// this is the way to receive messages from sendToGroup() or sendToAll()\nvar methods = {\n    client_method: function (client, str) {\n        console.log(&#39;Received message from sendToGroup() or sendToll():&#39;, str);\n    }\n};\n\nvar client = server.createClient(methods, &quot;test&quot;, &quot;myKey&quot;, &quot;localhost&quot;, 8000, false);\n\nclient.on(&quot;connect&quot;, function (client) {\n    console.log(&quot;Client connected.&quot;);\n    client.Call(&quot;server_method&quot;, &quot;Hello&quot;, function (param, err) {\n        if (!err) {\n            console.log(&quot;Client received callback with message&quot;, param);\n        }\n    });\n});\n\nclient.on(&#39;error&#39;, function (client, err) {\n    console.error(&quot;Client error: &quot; + err);\n});\n\nclient.Connect();</code></pre>\n",
       "modules": [
         {
           "textRaw": "Events",
@@ -15913,7 +15989,7 @@
               ]
             }
           ],
-          "desc": "<p>Creates an instance of JXcore Client with specified application name <code>appName</code> and application key <code>appKey</code>.\nThe <code>url</code> parameter specifies JXM.io server URL, e.g. <em>sampledomain.com</em> or <em>120.1.2.3</em>.\nYou can also enable SSL support with <code>secure</code> parameter.\n\n</p>\n<p>The first argument <code>localTarget</code> is an object containing custom methods, which will be answering the calls from server.\nIn that object you will define client methods, which can be called by other clients or the server itself.\n\n</p>\n<pre><code class=\"js\">// client&#39;s custom methods.\n// this is the way to receive messages from sendToGroup() or sendToAll()\nvar customMethods = {\n    client_method: function (client, str) {\n        console.log(&#39;Received message from sendToGroup() or sendToll():&#39;, str);\n    }\n};\n\nvar client = server.createClient(customMethods,\n                &quot;test&quot;, &quot;myKey&quot;, &quot;localhost&quot;, 8000, false);</code></pre>\n"
+          "desc": "<p>Creates an instance of the client with specified application name <code>appName</code> and application key <code>appKey</code>.\nThe <code>url</code> parameter specifies JXM.io server URL, e.g. <em>sampledomain.com</em> or <em>120.1.2.3</em>.\nYou can also enable SSL support with <code>secure</code> parameter.\n\n</p>\n<p>The first argument <code>localTarget</code> is an object containing custom methods, which will be answering the calls from server.\nIn that object you will define client methods, which can be called by other clients or the server itself.\n\n</p>\n<pre><code class=\"js\">// client&#39;s custom methods.\n// this is the way to receive messages from sendToGroup() or sendToAll()\nvar customMethods = {\n    client_method: function (client, str) {\n        console.log(&#39;Received message from sendToGroup() or sendToll():&#39;, str);\n    }\n};\n\nvar client = server.createClient(customMethods,\n                &quot;test&quot;, &quot;myKey&quot;, &quot;localhost&quot;, 8000, false);</code></pre>\n"
         }
       ],
       "methods": [
@@ -15941,6 +16017,11 @@
                       "textRaw": "`param` {Object} ",
                       "name": "param",
                       "type": "Object"
+                    },
+                    {
+                      "textRaw": "`err` {Number} ",
+                      "name": "err",
+                      "type": "Number"
                     }
                   ],
                   "name": "callback",
@@ -15962,7 +16043,7 @@
               ]
             }
           ],
-          "desc": "<p>Invokes a specific custom method named <code>methodName</code> defined on the server-side and passes one parameter <code>json</code>.\nThe client&#39;s <code>callback</code> is optional, but when provided, it will be called after server completes invoking the method\nand will receive <code>param</code> argument sent from the server-side.\n\n</p>\n<p>In the example below we call the server-side method &quot;serverMethod&quot; from the client-side.\nIn turn, as a response, the backend service will invoke the client&#39;s local <code>callback</code> function:\n\n</p>\n<p>client-side:\n\n</p>\n<pre><code class=\"js\">client.on(&quot;connect&quot;, function (client) {\n    client.Call(&quot;server_method&quot;, &quot;Hello&quot;, function(param) {\n        console.log(&quot;Client received callback with message&quot;, param);\n    });\n});</code></pre>\n<p>server-side:\n\n</p>\n<pre><code class=\"js\">server.addJSMethod(&quot;server_method&quot;, function(env, param) {\n    server.sendCallBack(env, &quot;Hello back!&quot;);\n});</code></pre>\n"
+          "desc": "<p>Invokes a specific custom method named <code>methodName</code> defined on the server-side and passes one parameter <code>json</code>.\nThe client&#39;s <code>callback</code> is optional, but when provided, it will be called after server completes invoking the method\nand will receive <code>param</code> argument sent from the server-side.\n\n</p>\n<p>In the example below we call the server-side method &quot;serverMethod&quot; from the client-side.\nIn turn, as a response, the backend service will invoke the client&#39;s local <code>callback</code> function.\n\n</p>\n<p>If error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].\n\n</p>\n<p>client-side:\n\n</p>\n<pre><code class=\"js\">client.on(&quot;connect&quot;, function (client) {\n    client.Call(&quot;server_method&quot;, &quot;Hello&quot;, function(param) {\n        console.log(&quot;Client received callback with message&quot;, param);\n    });\n});</code></pre>\n<p>server-side:\n\n</p>\n<pre><code class=\"js\">server.addJSMethod(&quot;server_method&quot;, function(env, param) {\n    server.sendCallBack(env, &quot;Hello back!&quot;);\n});</code></pre>\n"
         },
         {
           "textRaw": "Close(silent)",
@@ -15992,7 +16073,7 @@
           "textRaw": "Connect()",
           "type": "method",
           "name": "Connect",
-          "desc": "<p>Starts JXcore client. Connects to the JXM.io server, and when it succeeds - the client’s event <code>on(&#39;connect&#39;)</code> will be raised.\n\n</p>\n<pre><code class=\"js\">client.on(&quot;connect&quot;, function (client) {\n    console.log(&quot;Client connected.&quot;)\n});\n\nclient.on(&#39;error&#39;, function (client, err) {\n    console.error(&quot;Client error: &quot; + err);\n});\n\nclient.Connect();</code></pre>\n",
+          "desc": "<p>Starts JXcore / Node.JS client. Connects to the JXM.io server, and when it succeeds - the client’s event <code>on(&#39;connect&#39;)</code> will be raised.\n\n</p>\n<pre><code class=\"js\">client.on(&quot;connect&quot;, function (client) {\n    console.log(&quot;Client connected.&quot;)\n});\n\nclient.on(&#39;error&#39;, function (client, err) {\n    console.error(&quot;Client error: &quot; + err);\n});\n\nclient.Connect();</code></pre>\n",
           "signatures": [
             {
               "params": []
@@ -16042,6 +16123,23 @@
                   "textRaw": "`json` {Object} ",
                   "name": "json",
                   "type": "Object"
+                },
+                {
+                  "textRaw": "`callback` {Function} ",
+                  "options": [
+                    {
+                      "textRaw": "`param` {Object} ",
+                      "name": "param",
+                      "type": "Object"
+                    },
+                    {
+                      "textRaw": "`err` {Number} ",
+                      "name": "err",
+                      "type": "Number"
+                    }
+                  ],
+                  "name": "callback",
+                  "type": "Function"
                 }
               ]
             },
@@ -16059,7 +16157,7 @@
               ]
             }
           ],
-          "desc": "<p>Sends message to all of the clients, which have already subscribed to the specific <code>groupName</code>.\nThe message is passed as <code>json</code> argument to the target&#39;s method named <code>methodName</code>.\nThe message can be any value, primitive (string, number, etc.) or json literal object.\n\n</p>\n<pre><code class=\"js\">client.on(&quot;connect&quot;, function (client) {\n    client.Subscribe(groupName, function (group) {\n        client.SendToGroup(&quot;programmers&quot;, &quot;client_method&quot;, { obj : &quot;value&quot; });\n    });\n});</code></pre>\n<p>The &quot;client_method&quot; method should be available on every client which is subscribed to &quot;programmers&quot; group.\nWhile invoking the &quot;client_method&quot; method at each client, the server will pass { obj : &quot;value&quot; } as an argument.\n\n</p>\n"
+          "desc": "<p>Sends message to all of the clients, which have already subscribed to the specific <code>groupName</code>.\nThe message is passed as <code>json</code> argument to the target&#39;s method named <code>methodName</code>.\nThe message can be any value, primitive (string, number, etc.) or json literal object.\n\n</p>\n<p>The <code>callback</code> is optional, but when provided, it will be called after server sends the message to other clients.\nPlease note, that this is not a confirmation, whether the clients have received the message or not.\nIt just informs, that the server processed the message with success or failure.\n\n\n</p>\n<pre><code class=\"js\">client.on(&quot;connect&quot;, function (client) {\n    client.Subscribe(groupName, function (group, err) {\n        if (!err) {\n            client.SendToGroup(&quot;programmers&quot;, &quot;client_method&quot;, { obj : &quot;value&quot; });\n        }\n    });\n});</code></pre>\n<p>The &quot;client_method&quot; method should be available on every client which is subscribed to &quot;programmers&quot; group.\nWhile invoking the &quot;client_method&quot; method at each client, the server will pass { obj : &quot;value&quot; } as an argument.\n\n</p>\n"
         },
         {
           "textRaw": "Subscribe(groupName, callback)",
@@ -16080,6 +16178,11 @@
                       "textRaw": "`groupName` {String} ",
                       "name": "groupName",
                       "type": "String"
+                    },
+                    {
+                      "textRaw": "`err` {Number} ",
+                      "name": "err",
+                      "type": "Number"
                     }
                   ],
                   "name": "callback",
@@ -16098,7 +16201,7 @@
               ]
             }
           ],
-          "desc": "<p>Subscribes the client to a <code>groupName</code>, or channel. Subsequently, messages sent to that group by any other subscriber will be received by the client.\nAlso the client can send messages to this group – see <code>SendToGroup()</code> method.\nAfter the server successfully subscribes the client to the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.\n\n</p>\n<pre><code class=\"js\">client.on(&quot;connect&quot;, function (client) {\n    client.Subscribe(&quot;programmers&quot;, function (group) {\n        console.log(&quot;Subscribed to a &quot; + group);\n    });\n});</code></pre>\n"
+          "desc": "<p>Subscribes the client to a <code>groupName</code>, or channel. Subsequently, messages sent to that group by any other subscriber will be received by the client.\nAlso the client can send messages to this group – see <code>SendToGroup()</code> method.\n\n</p>\n<p>After the server successfully subscribes the client to the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.\nIf error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].\n\n</p>\n<pre><code class=\"js\">client.on(&quot;connect&quot;, function (client) {\n    client.Subscribe(&quot;programmers&quot;, function (group) {\n        console.log(&quot;Subscribed to a &quot; + group);\n    });\n});</code></pre>\n"
         },
         {
           "textRaw": "Unsubscribe(groupName, callback)",
@@ -16119,6 +16222,11 @@
                       "textRaw": "`groupName` {String} ",
                       "name": "groupName",
                       "type": "String"
+                    },
+                    {
+                      "textRaw": "`err` {Number} ",
+                      "name": "err",
+                      "type": "Number"
                     }
                   ],
                   "name": "callback",
@@ -16137,11 +16245,11 @@
               ]
             }
           ],
-          "desc": "<p>Unsubscribes the client from a <code>groupName</code>, or channel. Subsequently, messages sent to that group cannot be received by this client.\nAfter the server successfully unsubscribes the client from the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.\n\n</p>\n<pre><code class=\"js\">client.on(&quot;connect&quot;, function (client) {\n    client.UnSubscribe(&quot;programmers&quot;, function (group) {\n        console.log(&quot;Unsubscribed from a &quot; + group);\n    });\n});</code></pre>\n"
+          "desc": "<p>Unsubscribes the client from a <code>groupName</code>, or channel. Subsequently, messages sent to that group cannot be received by this client.\n\n</p>\n<p>After the server successfully unsubscribes the client from the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.\nIf error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See [error codes][].\n\n</p>\n<pre><code class=\"js\">client.on(&quot;connect&quot;, function (client) {\n    client.UnSubscribe(&quot;programmers&quot;, function (group) {\n        console.log(&quot;Unsubscribed from a &quot; + group);\n    });\n});</code></pre>\n"
         }
       ],
       "type": "module",
-      "displayName": "API JXcore Client"
+      "displayName": "API JXcore / Node.JS Client"
     },
     {
       "textRaw": "Process Monitor",
