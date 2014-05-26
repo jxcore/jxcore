@@ -295,7 +295,7 @@ It is used mostly for informational purpose and is displayed for example, when s
 
 </p>
 <h2>Error codes<span><a class="mark" href="#jxcore_messaging_error_codes" id="jxcore_messaging_error_codes">#</a></span></h2>
-<p>Below are listed error codes (and they textual meanings) used by JXM.io.
+<p>Listed Below are the error codes (and their textual meanings) used by JXM.io.
 Whenever an error occurs while processing a request from the client-side, JXM.io server does not send the full error description back to the client.
 Instead it sends the error code as an integer number.
 
@@ -309,7 +309,7 @@ Instead it sends the error code as an integer number.
 <li><code>3</code> - The client tries to subscribe to a group or on-subscribe from it, but the server&#39;s option <a href="#jxcore_messaging_enableclientsidesubscription"><code>enableClientSideSubscription</code></a> is disabled,</li>
 <li><code>4</code> - The client is already subscribed to a specific group.</li>
 <li><code>5</code> - Group information parsing problem. This error occurs, when server is unable to parse group information sent from a client.</li>
-<li><code>6</code> - Group name must be a non empty string. When client tries to subscribe to a group, but provided an empty string as a group name - then the error occurs.</li>
+<li><code>6</code> - Group name must be a non-empty string. When client tries to subscribe to a group, but provided an empty string as a group name - then the error occurs.</li>
 <li><code>7</code> - Name of the method was not provided. Invoking client&#39;s <code>Call()</code> method with an empty string as a method name generates this error.</li>
 <li><code>8</code> - Server&#39;s custom method error. This error occurs when custom method defined on the server-side generates an exception.</li>
 <li><code>9</code> - Method is not defined on the server side. The most often reason fo this error is misspelled server&#39;s custom method name.</li>
@@ -838,7 +838,7 @@ jxcore.OnSubscription = function (subscribed,  group) {
 <p>Invokes specific custom method named <code>methodName</code> defined on the server-side and passes to it one parameter <code>json</code>.
 The client&#39;s <code>callback</code> is optional, but when provided, it will be called after server completes invoking the method
 and will receive <code>param</code> argument sent from the server-side.
-If error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
+If error occurs, <code>err</code> parameter will have an integer code of the error. Otherwise, it will be equal to 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
 
 </p>
 <p>In the example below we call the server-side method &quot;serverMethod&quot; from the client-side.
@@ -892,8 +892,8 @@ The message can be any value, primitive (string, number, etc.) or json literal o
 </p>
 <p>The <code>callback</code> is optional, but when provided, it will be called after server sends the message to other clients.
 Please note, that this is not a confirmation, whether the clients have received the message or not.
-It just informs, that the server processed the message with success or failure.
-If error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal to 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
+It just informs that the server processed the message with success or failure.
+If error occurs, <code>err</code> parameter will have an integer code of the error. Otherwise, it will be equal to 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
 
 </p>
 <pre><code class="js">document.getElementById(&quot;btnSend&quot;).onclick = function(){
@@ -941,7 +941,7 @@ While invoking the &quot;addText&quot; method at each client, the server will pa
 <p>Subscribes the client to a <code>groupName</code>, or channel. From now on, messages sent to that group by any other subscriber will be received by the client.
 Also the client can send messages to this group – see <code>SendToGroup()</code> method.
 After the server successfully subscribes the client to the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.
-If error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
+If error occurs, <code>err</code> parameter will have an integer code of the error. Otherwise, it will be equal to 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
 
 </p>
 <pre><code class="js">jxcore.Subscribe(&quot;programmers&quot;, function (groupName, err) {
@@ -962,7 +962,7 @@ If error occurs, <code>err</code> parameter will have integer code of the error.
 </div></ul>
 <p>Unsubscribes the client from a <code>groupName</code>, or channel. From now on, messages sent to that group cannot be received by this client.
 After the server successfully unsubscribes the client from the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.
-If error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
+If error occurs, <code>err</code> parameter will have an integer code of the error. Otherwise, it will be equal to 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
 
 </p>
 <pre><code class="js">jxcore.Unsubscribe(&quot;programmers&quot;, function(groupName, err) {
@@ -1128,7 +1128,7 @@ The <code>methodName</code> should also contain the class name and the namespace
 
 </p>
 <p>The optional parameter <code>callback</code> is the client’s function, which will be called after server completes invoking the method.
-If error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
+If error occurs, <code>err</code> parameter will have an integer code of the error. Otherwise, it will be equal to 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
 
 </p>
 <p>In the example below we call the server-side method <em>serverMethod</em> from the client-side.
@@ -1163,7 +1163,7 @@ In turn, as a response, the backend service will invoke the client&#39;s local <
 </p>
 <p>The <code>callback</code> is optional, but when provided, it will be called after server sends the message to other clients.
 Please note, that this is not a confirmation, whether the clients have received the message or not.
-It just informs, that the server processed the message with success or failure.
+It just informs that the server processed the message with success or failure.
 
 </p>
 <p>The &quot;addText&quot; method should be available on every client, which is subscribed to <em>programmers</em> group.
@@ -1185,7 +1185,7 @@ Also the client can send messages to this group – see <code>SendToGroup()</cod
 
 </p>
 <p>After the server successfully subscribes the client to the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.
-If error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
+If error occurs, <code>err</code> parameter will have an integer code of the error. Otherwise, it will be equal to 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
 
 </p>
 <pre><code class="java">try {
@@ -1213,7 +1213,7 @@ If error occurs, <code>err</code> parameter will have integer code of the error.
 
 </p>
 <p>After the server successfully unsubscribes the client from the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.
-If error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
+If error occurs, <code>err</code> parameter will have an integer code of the error. Otherwise, it will be equal to 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
 
 </p>
 <pre><code class="java">try {
@@ -1393,7 +1393,7 @@ and will receive <code>param</code> argument sent from the server-side.
 In turn, as a response, the backend service will invoke the client&#39;s local <code>callback</code> function.
 
 </p>
-<p>If error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
+<p>If error occurs, <code>err</code> parameter will have an integer code of the error. Otherwise, it will be equal to 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
 
 </p>
 <p>client-side:
@@ -1459,7 +1459,7 @@ The message can be any value, primitive (string, number, etc.) or json literal o
 </p>
 <p>The <code>callback</code> is optional, but when provided, it will be called after server sends the message to other clients.
 Please note, that this is not a confirmation, whether the clients have received the message or not.
-It just informs, that the server processed the message with success or failure.
+It just informs that the server processed the message with success or failure.
 
 
 </p>
@@ -1488,7 +1488,7 @@ Also the client can send messages to this group – see <code>SendToGroup()</cod
 
 </p>
 <p>After the server successfully subscribes the client to the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.
-If error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
+If error occurs, <code>err</code> parameter will have an integer code of the error. Otherwise, it will be equal to 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
 
 </p>
 <pre><code class="js">client.on(&quot;connect&quot;, function (client) {
@@ -1509,7 +1509,7 @@ If error occurs, <code>err</code> parameter will have integer code of the error.
 
 </p>
 <p>After the server successfully unsubscribes the client from the <code>groupName</code>, the client&#39;s <code>callback</code> will be called.
-If error occurs, <code>err</code> parameter will have integer code of the error. Otherwise, it will be equal 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
+If error occurs, <code>err</code> parameter will have an integer code of the error. Otherwise, it will be equal to 0 (zero). See <a href="#jxcore_messaging_error_codes">error codes</a>.
 
 </p>
 <pre><code class="js">client.on(&quot;connect&quot;, function (client) {

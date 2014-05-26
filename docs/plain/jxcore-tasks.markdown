@@ -350,17 +350,17 @@ method.runOnce("hello");
 
 Sets the number of subthreads that you want to have in the thread pool for the application.
 
-Generally, there is no need to use this method as JXcore by default will create 2 subthreads. In some scenarios you may want to change this number, but if you do, you must call `env.setThreadCount()` before the first use of `jxcore.tasks` object. After that, any subsequent calls of this method will be simply ignored.
+Generally, there is no need to use this method as JXcore by default will create 2 subthreads. In some scenarios you may want to change this number, but if you do, you must call `tasks.setThreadCount()` before the first use of `jxcore.tasks` object. After that, any subsequent calls of this method will be simply ignored.
 
 The minimum, and default value is 2. The maximum value is 63, but keep in mind, that this amount of subthreads may not always bring performance benefits. In the contrary – in some cases may do even worse, depending on the task implementation, so make sure that you always do some proper testing. Setting value outside this range will raise an exception.
 
 ```js
-jxcore.env.setThreadCount(5);
+jxcore.tasks.setThreadCount(5);
 var tasks = jxcore.tasks;
 
 // the call below will be ignored, since we have just referenced jxcore.tasks object
 // and the thread pool is already created.
-jxcore.env.setThreadCount(10)
+jxcore.tasks.setThreadCount(10)
 ```
 
 ## tasks.unloadThreads()
