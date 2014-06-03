@@ -131,6 +131,13 @@
           "name": "events",
           "modules": [
             {
+              "textRaw": "start",
+              "name": "start",
+              "desc": "<p>This event is raised after the server is successfully started.\nWhen the server is running in multithreaded mode (<a href=\"jxcore-command-mt.html\">mt /mt-keep</a> command), this event occurs for each of the subthreads.\n\n</p>\n<pre><code class=\"js\">server.on(&quot;start&quot;, function() {\n    console.log(&quot;Server started.&quot;);\n});</code></pre>\n",
+              "type": "module",
+              "displayName": "start"
+            },
+            {
               "textRaw": "subscribe",
               "name": "subscribe",
               "desc": "<p>Condition for this event to be fired is that server-side <a href=\"#enableclientsidesubscription\"><code>enableClientSideSubscription</code></a> option should be enabled.\nBy default it is set to false, and it means, that clients cannot subscribe to channels nor unsubscribe from them.\nIn such cases, the event <code>subscribe</code> is never raised.\n\n</p>\n<p>When <code>enableClientSideSubscription</code> is set to true, the <code>subscribe</code> event fires whenever client subscribes to a <code>group</code> by calling its <code>Subscribe()</code> method.\nIf no listener is attached to this event, the user always subscribes.\n\n</p>\n<p>Attaching to this event gives you control, whether to allow the user to be subscribed or not.\nThe <code>allow</code> argument is a function, which should be called upon if you want to accept the user&#39;s subscription request.\nOtherwise the user will not be subscribed to a <code>group</code>, and client&#39;s callback will not be invoked.\n\n</p>\n<p>client-side (index.html):\n\n</p>\n<pre><code class=\"js\">var callback = function(group) {\n    alert(&quot;subscribed to &quot; + group);\n};\n\njxcore.Subscribe(&quot;group1&quot;, callback);</code></pre>\n<p>server-side (my_server.js):\n</p>\n<pre><code class=\"js\">server.setConfig(&quot;enableClientSideSubscription&quot;, true);\n\nserver.on(&quot;subscribe&quot;, function(env, params, allow) {\n    // don&#39;t ever subscribe to &quot;admin_group&quot;\n    if (params.group !== &quot;admin_group&quot;) {\n        allow();\n    }\n});</code></pre>\n",

@@ -14253,6 +14253,13 @@
           "desc": "<p>This section describes list of options, which can be used from the command line for controlling the monitor&#39;s process.\n\n</p>\n",
           "modules": [
             {
+              "textRaw": "kill",
+              "name": "kill",
+              "desc": "<pre><code>&gt; jx monitor kill application_file.js</code></pre>\n<p>Unsubscribes an application from being monitored and then shuts it down.\n\n</p>\n<p>If the application was running in few instances, all of them would be killed. See the example below:\n\n</p>\n<pre><code>&gt; jx monitor start\n&gt; jx monitor run index.js\n&gt; jx monitor run index.js</code></pre>\n<p>We launch <code>index.js</code> application as two separate processes and call the following command to kill both of them:\n\n</p>\n<pre><code>&gt; jx monitor kill index.js</code></pre>\n<p>Other monitored applications as well as the monitor itself will still be running.\n\n</p>\n",
+              "type": "module",
+              "displayName": "kill"
+            },
+            {
               "textRaw": "run",
               "name": "run",
               "desc": "<pre><code>&gt; jx monitor run application_file.js</code></pre>\n<p>Launches a given application and subscribes it for being monitored (invokes <code>followMe()</code> method).\nThe monitor itself should be already running (see <code>start</code> command).\n\n</p>\n<p>Please note: not every application is a good candidate for being monitored.\nEspecially those apps, which are not designed for constant running - they should probably not be monitored,\nbut that depends on the developer and application&#39;s purpose.\n\n</p>\n<p>For more information about this, see <a href=\"jxcore-monitor.html\">Process Monitor API</a>.\n\n</p>\n",
@@ -14717,6 +14724,13 @@
           "textRaw": "Events",
           "name": "events",
           "modules": [
+            {
+              "textRaw": "start",
+              "name": "start",
+              "desc": "<p>This event is raised after the server is successfully started.\nWhen the server is running in multithreaded mode (<a href=\"jxcore-command-mt.html\">mt /mt-keep</a> command), this event occurs for each of the subthreads.\n\n</p>\n<pre><code class=\"js\">server.on(&quot;start&quot;, function() {\n    console.log(&quot;Server started.&quot;);\n});</code></pre>\n",
+              "type": "module",
+              "displayName": "start"
+            },
             {
               "textRaw": "subscribe",
               "name": "subscribe",
@@ -16681,7 +16695,7 @@
               ]
             }
           ],
-          "desc": "<p>Adds new task <strong>as a method</strong> to be processed in a separate thread. The task will be processed as soon as possible.\nIf there is any idle subthread, it will be used to execute the task immediately. Otherwise it may wait until the other tasks will finish or some of the subthreads will become idle.\n\n</p>\n<p>The task is the function <code>method</code> with optional <code>param</code> as an argument. After the method completes, the <code>callback</code> will be invoked.\nIt can receive one or twe arguments, depending if <code>obj</code> is provided or not.\n\n</p>\n<p><code>obj</code> is a context object from the main thread and it can contain any value. If it’s not provided, then the <code>callback</code> method will have only one argument, and it will be the result from the task <code>method</code>.\nOtherwise, the <code>callback</code> will contain two arguments. The first one is the <code>obj</code> object which we are describing right now, while the second argument is the result from the task <code>method</code>.\n\n</p>\n<p>There are few principles regarding adding the tasks, that you should be aware of:\n\n</p>\n<ol>\n<li>You cannot specify, in which of the subthreads your task will run. The subthread will be chosen automatically. You can find out, which subthread is used for that task only from inside the task itself (see <code>threadId</code> property in Subthreads API).</li>\n<li>If for example on your system <code>getThreadCount()</code> returns 3, and you add 3 tasks one after another, there is no guarantee, that each of them will run in its own subthread, but still it is one of the possibilities. But things can go also in many other ways: all of the 3 tasks can run in the same subthread, or two of them in one subthread, and the third in another, etc.</li>\n<li>Do not assume the tasks will be executed in the order of which they were added.</li>\n<li>When the task <code>method</code> returns from its execution block (for example by calling return statement), it is considered as completed. This means, that if you use in the task code any delayed execution with <code>setTimeout()</code> or <code>setInterval()</code>, or async calls, the task method may return faster, before those delayed/async jobs will have chance to complete. For gaining control over task’s execution time, please use <code>process.keepAlive()</code> and <code>process.release()</code> methods from Subthreads API.</li>\n</ol>\n<p>Adding a task with one-argument callback:\n\n</p>\n<pre><code class=\"js\">var method = function (param) {\n   console.log(&quot;We are in a subthread now. Argument value is:&quot;, param);\n   return &quot;ok&quot;;\n};\n\njxcore.tasks.addTask(method, { str: &quot;hello&quot; }, function (result) {\n   console.log(&quot;This is result from subthreaded method:&quot;, result);\n   // should display &quot;ok&quot;\n});</code></pre>\n<p>Adding a task with two-argument callback:\n\n</p>\n<pre><code class=\"js\">// we&#39;re going to pass some object from the main thread to the callback\nvar mainThreadVariable = {\n    log : function(txt) {\n        console.log(txt);\n    }\n};\n\nvar callback = function (obj, result) {\n    // now we can access mainThreadVariable (by obj argument)\n    obj.log(result);\n};\n\njxcore.tasks.addTask(method, { str: &quot;hello&quot; }, callback, mainThreadVariable);</code></pre>\n<p>There is also an alternative way to run a function as a task. See below for <code>method.runTask()</code>.\n\n</p>\n",
+          "desc": "<p>Adds new task <strong>as a method</strong> to be processed in a separate thread. The task will be processed as soon as possible.\nIf there is any idle subthread, it will be used to execute the task immediately. Otherwise it may wait until the other tasks will finish or some of the subthreads will become idle.\n\n</p>\n<p>The task is the function <code>method</code> with optional <code>param</code> as an argument. After the method completes, the <code>callback</code> will be invoked.\nIt can receive one or twe arguments, depending if <code>obj</code> is provided or not.\n\n</p>\n<p><code>obj</code> is a context object from the main thread and it can contain any value.\nIf it’s not provided, the <code>callback</code> method will have only one argument, and it will be the result of the task <code>method</code>.\nOtherwise, the <code>callback</code> will contain two arguments.\nThe first one is the <code>obj</code> object described here, while the second argument is the result of the task <code>method</code>.\n\n</p>\n<p>There are few principles regarding adding the tasks, that you should be aware of:\n\n</p>\n<ol>\n<li>You cannot specify, in which of the subthreads your task will run. The subthread will be chosen automatically. You can find out, which subthread is used for that task only from inside the task itself (see <code>threadId</code> property in Subthreads API).</li>\n<li>If for example on your system <code>getThreadCount()</code> returns 3, and you add 3 tasks one after another, there is no guarantee, that each of them will run in its own subthread, but still it is one of the possibilities. But things can go also in many other ways: all of the 3 tasks can run in the same subthread, or two of them in one subthread, and the third in another, etc.</li>\n<li>Do not assume the tasks will be executed in the order of which they were added.</li>\n<li>When the task <code>method</code> returns from its execution block (for example by calling return statement), it is considered as completed. This means, that if you use in the task code any delayed execution with <code>setTimeout()</code> or <code>setInterval()</code>, or async calls, the task method may return faster, before those delayed/async jobs will have chance to complete. For gaining control over task’s execution time, please use <code>process.keepAlive()</code> and <code>process.release()</code> methods from Subthreads API.</li>\n</ol>\n<p>Adding a task with one-argument callback:\n\n</p>\n<pre><code class=\"js\">var method = function (param) {\n   console.log(&quot;We are in a subthread now. Argument value is:&quot;, param);\n   return &quot;ok&quot;;\n};\n\njxcore.tasks.addTask(method, { str: &quot;hello&quot; }, function (result) {\n   console.log(&quot;This is result from subthreaded method:&quot;, result);\n   // should display &quot;ok&quot;\n});</code></pre>\n<p>Adding a task with two-argument callback:\n\n</p>\n<pre><code class=\"js\">// we&#39;re going to pass some object from the main thread to the callback\nvar mainThreadVariable = {\n    log : function(txt) {\n        console.log(txt);\n    }\n};\n\nvar callback = function (obj, result) {\n    // now we can access mainThreadVariable (by obj argument)\n    obj.log(result);\n};\n\njxcore.tasks.addTask(method, { str: &quot;hello&quot; }, callback, mainThreadVariable);</code></pre>\n<p>There is also an alternative way to run a function as a task. See below for <code>method.runTask()</code>.\n\n</p>\n",
           "methods": [
             {
               "textRaw": "method.runTask(param, callback, obj)",
@@ -16847,7 +16861,63 @@
               ]
             }
           ],
-          "desc": "<p>Adds new task (the <code>method</code> function with optional <code>param</code> argument) to be processed just once for every existing subthread.\nIn other words, every subthread will call the task once.\nYou can get number of subthreads by calling <code>getThreadCount()</code> method.\nEvery subthread will process its task as soon as possible.\nIf there are no other tasks in the subthread’s queue, the task will be executed immediately.\nOtherwise it may wait until the other tasks in this subthread will finish.\n\n</p>\n<p>If you don&#39;t want the method definition to be remembered by future threads – use <code>doNotRemember</code>. It&#39;s <code>false</code> by default.\n\n</p>\n<p>Running tasks with <code>runOnce()</code> method will also get <code>emptyQueue</code> event fired.\n\n</p>\n<p>One of the cases for using <code>runOnce()</code> could be setting up a http server on each thread.\n\n</p>\n<pre><code class=\"js\">jxcore.tasks.runOnce(method, &quot;some parameter&quot;);</code></pre>\n",
+          "desc": "<p>Adds new task (the <code>method</code> function with optional <code>param</code> argument) to be processed just once for every existing subthread.\nIn other words, every subthread will call the task once.\nYou can get number of subthreads by calling <code>getThreadCount()</code> method.\nEvery subthread will process its task as soon as possible.\nIf there are no other tasks in the subthread’s queue, the task will be executed immediately.\nOtherwise it may wait until the other tasks in this subthread will finish.\n\n</p>\n<p>If you don&#39;t want the method definition to be remembered by future threads – use <code>doNotRemember</code>. It&#39;s <code>false</code> by default.\n\n</p>\n<p>Running tasks with <code>runOnce()</code> method will also get <code>emptyQueue</code> event fired.\n\n</p>\n<p>One of the cases for using <code>runOnce()</code> could be setting up a http server on each thread.\n\n</p>\n<pre><code class=\"js\">jxcore.tasks.runOnce(method, &quot;some parameter&quot;);</code></pre>\n"
+        },
+        {
+          "textRaw": "tasks.runOnThread(threadId, method, param, callback, obj)",
+          "type": "method",
+          "name": "runOnThread",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "`threadId` {Number} ",
+                  "name": "threadId",
+                  "type": "Number"
+                },
+                {
+                  "textRaw": "`method` {Function} ",
+                  "name": "method",
+                  "type": "Function"
+                },
+                {
+                  "textRaw": "`param` {Object} ",
+                  "name": "param",
+                  "type": "Object"
+                },
+                {
+                  "textRaw": "`callback` {Function} ",
+                  "name": "callback",
+                  "type": "Function"
+                },
+                {
+                  "textRaw": "`obj` {Object} ",
+                  "name": "obj",
+                  "type": "Object"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "threadId"
+                },
+                {
+                  "name": "method"
+                },
+                {
+                  "name": "param"
+                },
+                {
+                  "name": "callback"
+                },
+                {
+                  "name": "obj"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Runs a task (<code>method</code> with <code>param</code> argument) on individual subthread no <code>threadId</code>.\n\n</p>\n<p>After the method completes, the <code>callback</code> will be invoked.\nIt can receive one or two arguments, depending on whether or not <code>obj</code> is provided.\n\n</p>\n<p><code>obj</code> is a context object from the main thread and it can contain any value.\nIf it’s not provided, the <code>callback</code> method will have only one argument, and it will be the result of the task <code>method</code>.\nOtherwise, the <code>callback</code> will contain two arguments.\nThe first one is the <code>obj</code> object described here, while the second argument is the result of the task <code>method</code>.\n\n\n</p>\n",
           "methods": [
             {
               "textRaw": "method.runOnce(param, doNotRemember)",

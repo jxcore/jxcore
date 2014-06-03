@@ -12,6 +12,13 @@
           "desc": "<p>This section describes list of options, which can be used from the command line for controlling the monitor&#39;s process.\n\n</p>\n",
           "modules": [
             {
+              "textRaw": "kill",
+              "name": "kill",
+              "desc": "<pre><code>&gt; jx monitor kill application_file.js</code></pre>\n<p>Unsubscribes an application from being monitored and then shuts it down.\n\n</p>\n<p>If the application was running in few instances, all of them would be killed. See the example below:\n\n</p>\n<pre><code>&gt; jx monitor start\n&gt; jx monitor run index.js\n&gt; jx monitor run index.js</code></pre>\n<p>We launch <code>index.js</code> application as two separate processes and call the following command to kill both of them:\n\n</p>\n<pre><code>&gt; jx monitor kill index.js</code></pre>\n<p>Other monitored applications as well as the monitor itself will still be running.\n\n</p>\n",
+              "type": "module",
+              "displayName": "kill"
+            },
+            {
               "textRaw": "run",
               "name": "run",
               "desc": "<pre><code>&gt; jx monitor run application_file.js</code></pre>\n<p>Launches a given application and subscribes it for being monitored (invokes <code>followMe()</code> method).\nThe monitor itself should be already running (see <code>start</code> command).\n\n</p>\n<p>Please note: not every application is a good candidate for being monitored.\nEspecially those apps, which are not designed for constant running - they should probably not be monitored,\nbut that depends on the developer and application&#39;s purpose.\n\n</p>\n<p>For more information about this, see <a href=\"jxcore-monitor.html\">Process Monitor API</a>.\n\n</p>\n",

@@ -55,6 +55,7 @@
 <li><a href="#jxcore_thread_process_keepalive_timeout">process.keepAlive(timeout)</a></li>
 <li><a href="#jxcore_thread_process_release">process.release()</a></li>
 <li><a href="#jxcore_thread_process_sendtomain_param">process.sendToMain(param)</a></li>
+<li><a href="#jxcore_thread_process_sendtothread_threadid_param">process.sendToThread(threadId, param)</a></li>
 <li><a href="#jxcore_thread_process_sendtothreads_param">process.sendToThreads(param)</a></li>
 <li><a href="#jxcore_thread_process_subthread">process.subThread</a></li>
 <li><a href="#jxcore_thread_process_threadid">process.threadId</a></li>
@@ -163,6 +164,16 @@ jxcore.tasks.on(&#39;message&#39;, function (threadId, param) {
    console.log(&#39;Main thread received a message from subthread no &#39; + threadId +
       &#39;. Message: &#39;, param);
 });</code></pre>
+<h2>process.sendToThread(threadId, param)<span><a class="mark" href="#jxcore_thread_process_sendtothread_threadid_param" id="jxcore_thread_process_sendtothread_threadid_param">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>threadId</code> <span class="type">Number</span></li>
+<li><code>param</code> <span class="type">Object</span></li>
+</div></ul>
+<p>Sends a message to the specific thread identified by <code>threadId</code>.
+The <code>param</code> can be any value, such as a string or json literal object.
+
+
+</p>
 <h2>process.sendToThreads(param)<span><a class="mark" href="#jxcore_thread_process_sendtothreads_param" id="jxcore_thread_process_sendtothreads_param">#</a></span></h2>
 <div class="signature"><ul>
 <li><code>param</code> <span class="type">Object</span></li>

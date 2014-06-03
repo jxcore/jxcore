@@ -1146,6 +1146,7 @@
 </li>
 <li><a href="#all_process_monitor">Process Monitor</a><ul>
 <li><a href="#all_commands">Commands</a><ul>
+<li><a href="#all_kill">kill</a></li>
 <li><a href="#all_run">run</a></li>
 <li><a href="#all_start">start</a></li>
 <li><a href="#all_stop">stop</a></li>
@@ -1237,6 +1238,7 @@
 </li>
 <li><a href="#all_error_codes_1">Error codes</a></li>
 <li><a href="#all_events_2">Events</a><ul>
+<li><a href="#all_start_1">start</a></li>
 <li><a href="#all_subscribe">subscribe</a></li>
 <li><a href="#all_unsubscribe">unsubscribe</a></li>
 <li><a href="#all_sendtogroup">sendToGroup</a></li>
@@ -1363,7 +1365,8 @@
 <li><a href="#all_tasks_getthreadcount">tasks.getThreadCount()</a></li>
 <li><a href="#all_tasks_jobcount">tasks.jobCount()</a></li>
 <li><a href="#all_tasks_killthread_threadid">tasks.killThread(threadId)</a></li>
-<li><a href="#all_tasks_runonce_method_param_donotremember">tasks.runOnce(method, param, doNotRemember)</a><ul>
+<li><a href="#all_tasks_runonce_method_param_donotremember">tasks.runOnce(method, param, doNotRemember)</a></li>
+<li><a href="#all_tasks_runonthread_threadid_method_param_callback_obj">tasks.runOnThread(threadId, method, param, callback, obj)</a><ul>
 <li><a href="#all_method_runonce_param_donotremember">method.runOnce(param, doNotRemember)</a></li>
 </ul>
 </li>
@@ -15215,6 +15218,24 @@ Please refer there for complementary information.
 <p>This section describes list of options, which can be used from the command line for controlling the monitor&#39;s process.
 
 </p>
+<h3>kill<span><a class="mark" href="#all_kill" id="all_kill">#</a></span></h3>
+<pre><code>&gt; jx monitor kill application_file.js</code></pre>
+<p>Unsubscribes an application from being monitored and then shuts it down.
+
+</p>
+<p>If the application was running in few instances, all of them would be killed. See the example below:
+
+</p>
+<pre><code>&gt; jx monitor start
+&gt; jx monitor run index.js
+&gt; jx monitor run index.js</code></pre>
+<p>We launch <code>index.js</code> application as two separate processes and call the following command to kill both of them:
+
+</p>
+<pre><code>&gt; jx monitor kill index.js</code></pre>
+<p>Other monitored applications as well as the monitor itself will still be running.
+
+</p>
 <h3>run<span><a class="mark" href="#all_run" id="all_run">#</a></span></h3>
 <pre><code>&gt; jx monitor run application_file.js</code></pre>
 <p>Launches a given application and subscribes it for being monitored (invokes <code>followMe()</code> method).
@@ -16163,17 +16184,25 @@ Instead it sends the error code as an integer number.
 <li><code>9</code> - Method is not defined on the server side. The most often reason fo this error is misspelled server&#39;s custom method name.</li>
 </ul>
 <h2>Events<span><a class="mark" href="#all_events_2" id="all_events_2">#</a></span></h2>
+<h3>start<span><a class="mark" href="#all_start_1" id="all_start_1">#</a></span></h3>
+<p>This event is raised after the server is successfully started.
+When the server is running in multithreaded mode (<a href="jxcore-command-mt.html">mt /mt-keep</a> command), this event occurs for each of the subthreads.
+
+</p>
+<pre><code class="js">server.on(&quot;start&quot;, function() {
+    console.log(&quot;Server started.&quot;);
+});</code></pre>
 <h3>subscribe<span><a class="mark" href="#all_subscribe" id="all_subscribe">#</a></span></h3>
-<ul>
-<li><code>env</code> {Object} - see <a href="#object-env">Object: <code>env</code></a></li>
-<li><code>params</code> {Object}<ul>
-<li><code>req</code> {Object} - object containing information about client&#39;s request</li>
-<li><code>group</code> {String} - name of the group, to which user subscribes</li>
-<li><code>groups</code> {Array} - names of the groups, to which user already belongs</li>
+<div class="signature"><ul>
+<li><code>env</code> <span class="type">Object</span> - see <a href="#object-env">Object: <code>env</code></a></li>
+<li><code>params</code> <span class="type">Object</span><ul>
+<li><code>req</code> <span class="type">Object</span> - object containing information about client&#39;s request</li>
+<li><code>group</code> <span class="type">String</span> - name of the group, to which user subscribes</li>
+<li><code>groups</code> <span class="type">Array</span> - names of the groups, to which user already belongs</li>
 </ul>
 </li>
-<li><code>allow</code> {Function}</li>
-</ul>
+<li><code>allow</code> <span class="type">Function</span></li>
+</div></ul>
 <p>Condition for this event to be fired is that server-side <a href="#enableclientsidesubscription"><code>enableClientSideSubscription</code></a> option should be enabled.
 By default it is set to false, and it means, that clients cannot subscribe to channels nor unsubscribe from them.
 In such cases, the event <code>subscribe</code> is never raised.
@@ -17799,8 +17828,10 @@ If there is any idle subthread, it will be used to execute the task immediately.
 It can receive one or twe arguments, depending if <code>obj</code> is provided or not.
 
 </p>
-<p><code>obj</code> is a context object from the main thread and it can contain any value. If it’s not provided, then the <code>callback</code> method will have only one argument, and it will be the result from the task <code>method</code>.
-Otherwise, the <code>callback</code> will contain two arguments. The first one is the <code>obj</code> object which we are describing right now, while the second argument is the result from the task <code>method</code>.
+<p><code>obj</code> is a context object from the main thread and it can contain any value.
+If it’s not provided, the <code>callback</code> method will have only one argument, and it will be the result of the task <code>method</code>.
+Otherwise, the <code>callback</code> will contain two arguments.
+The first one is the <code>obj</code> object described here, while the second argument is the result of the task <code>method</code>.
 
 </p>
 <p>There are few principles regarding adding the tasks, that you should be aware of:
@@ -18040,6 +18071,28 @@ Otherwise it may wait until the other tasks in this subthread will finish.
 
 </p>
 <pre><code class="js">jxcore.tasks.runOnce(method, &quot;some parameter&quot;);</code></pre>
+<h2>tasks.runOnThread(threadId, method, param, callback, obj)<span><a class="mark" href="#all_tasks_runonthread_threadid_method_param_callback_obj" id="all_tasks_runonthread_threadid_method_param_callback_obj">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>threadId</code> <span class="type">Number</span></li>
+<li><code>method</code> <span class="type">Function</span></li>
+<li><code>param</code> <span class="type">Object</span></li>
+<li><code>callback</code> <span class="type">Function</span></li>
+<li><code>obj</code> <span class="type">Object</span></li>
+</div></ul>
+<p>Runs a task (<code>method</code> with <code>param</code> argument) on individual subthread no <code>threadId</code>.
+
+</p>
+<p>After the method completes, the <code>callback</code> will be invoked.
+It can receive one or two arguments, depending on whether or not <code>obj</code> is provided.
+
+</p>
+<p><code>obj</code> is a context object from the main thread and it can contain any value.
+If it’s not provided, the <code>callback</code> method will have only one argument, and it will be the result of the task <code>method</code>.
+Otherwise, the <code>callback</code> will contain two arguments.
+The first one is the <code>obj</code> object described here, while the second argument is the result of the task <code>method</code>.
+
+
+</p>
 <h3>method.runOnce(param, doNotRemember)<span><a class="mark" href="#all_method_runonce_param_donotremember" id="all_method_runonce_param_donotremember">#</a></span></h3>
 <div class="signature"><ul>
 <li><code>param</code> <span class="type">Object</span> - Argument for that method.</li>

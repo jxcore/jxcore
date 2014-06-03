@@ -147,6 +147,17 @@ Error codes are defined in JMI.io settings file.
 
 ## Events
 
+### start
+
+This event is raised after the server is successfully started.
+When the server is running in multithreaded mode ([mt /mt-keep](jxcore-command-mt.markdown) command), this event occurs for each of the subthreads.
+
+```js
+server.on("start", function() {
+    console.log("Server started.");
+});
+```
+
 ### subscribe
 
 * `env` {Object} - see [Object: `env`](#object-env)

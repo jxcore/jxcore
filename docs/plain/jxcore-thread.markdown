@@ -89,6 +89,15 @@ jxcore.tasks.on('message', function (threadId, param) {
 });
 ```
 
+## process.sendToThread(threadId, param)
+
+* `threadId` {Number}
+* `param` {Object}
+
+Sends a message to the specific thread identified by `threadId`.
+The `param` can be any value, such as a string or json literal object.
+
+
 ## process.sendToThreads(param)
 
 * `param` {Object}

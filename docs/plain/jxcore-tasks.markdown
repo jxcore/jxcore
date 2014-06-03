@@ -88,8 +88,10 @@ If there is any idle subthread, it will be used to execute the task immediately.
 The task is the function `method` with optional `param` as an argument. After the method completes, the `callback` will be invoked.
 It can receive one or twe arguments, depending if `obj` is provided or not.
 
-`obj` is a context object from the main thread and it can contain any value. If it’s not provided, then the `callback` method will have only one argument, and it will be the result from the task `method`.
-Otherwise, the `callback` will contain two arguments. The first one is the `obj` object which we are describing right now, while the second argument is the result from the task `method`.
+`obj` is a context object from the main thread and it can contain any value.
+If it’s not provided, the `callback` method will have only one argument, and it will be the result of the task `method`.
+Otherwise, the `callback` will contain two arguments.
+The first one is the `obj` object described here, while the second argument is the result of the task `method`.
 
 There are few principles regarding adding the tasks, that you should be aware of:
 
@@ -327,6 +329,25 @@ One of the cases for using `runOnce()` could be setting up a http server on each
 ```js
 jxcore.tasks.runOnce(method, "some parameter");
 ```
+
+## tasks.runOnThread(threadId, method, param, callback, obj)
+
+* `threadId` {Number}
+* `method` {Function}
+* `param` {Object}
+* `callback` {Function}
+* `obj` {Object}
+
+Runs a task (`method` with `param` argument) on individual subthread no `threadId`.
+
+After the method completes, the `callback` will be invoked.
+It can receive one or two arguments, depending on whether or not `obj` is provided.
+
+`obj` is a context object from the main thread and it can contain any value.
+If it’s not provided, the `callback` method will have only one argument, and it will be the result of the task `method`.
+Otherwise, the `callback` will contain two arguments.
+The first one is the `obj` object described here, while the second argument is the result of the task `method`.
+
 
 ### method.runOnce(param, doNotRemember)
 

@@ -71,6 +71,7 @@
 </li>
 <li><a href="#jxcore_messaging_error_codes">Error codes</a></li>
 <li><a href="#jxcore_messaging_events">Events</a><ul>
+<li><a href="#jxcore_messaging_start">start</a></li>
 <li><a href="#jxcore_messaging_subscribe">subscribe</a></li>
 <li><a href="#jxcore_messaging_unsubscribe">unsubscribe</a></li>
 <li><a href="#jxcore_messaging_sendtogroup">sendToGroup</a></li>
@@ -315,17 +316,25 @@ Instead it sends the error code as an integer number.
 <li><code>9</code> - Method is not defined on the server side. The most often reason fo this error is misspelled server&#39;s custom method name.</li>
 </ul>
 <h2>Events<span><a class="mark" href="#jxcore_messaging_events" id="jxcore_messaging_events">#</a></span></h2>
+<h3>start<span><a class="mark" href="#jxcore_messaging_start" id="jxcore_messaging_start">#</a></span></h3>
+<p>This event is raised after the server is successfully started.
+When the server is running in multithreaded mode (<a href="jxcore-command-mt.html">mt /mt-keep</a> command), this event occurs for each of the subthreads.
+
+</p>
+<pre><code class="js">server.on(&quot;start&quot;, function() {
+    console.log(&quot;Server started.&quot;);
+});</code></pre>
 <h3>subscribe<span><a class="mark" href="#jxcore_messaging_subscribe" id="jxcore_messaging_subscribe">#</a></span></h3>
-<ul>
-<li><code>env</code> {Object} - see <a href="#object-env">Object: <code>env</code></a></li>
-<li><code>params</code> {Object}<ul>
-<li><code>req</code> {Object} - object containing information about client&#39;s request</li>
-<li><code>group</code> {String} - name of the group, to which user subscribes</li>
-<li><code>groups</code> {Array} - names of the groups, to which user already belongs</li>
+<div class="signature"><ul>
+<li><code>env</code> <span class="type">Object</span> - see <a href="#object-env">Object: <code>env</code></a></li>
+<li><code>params</code> <span class="type">Object</span><ul>
+<li><code>req</code> <span class="type">Object</span> - object containing information about client&#39;s request</li>
+<li><code>group</code> <span class="type">String</span> - name of the group, to which user subscribes</li>
+<li><code>groups</code> <span class="type">Array</span> - names of the groups, to which user already belongs</li>
 </ul>
 </li>
-<li><code>allow</code> {Function}</li>
-</ul>
+<li><code>allow</code> <span class="type">Function</span></li>
+</div></ul>
 <p>Condition for this event to be fired is that server-side <a href="#enableclientsidesubscription"><code>enableClientSideSubscription</code></a> option should be enabled.
 By default it is set to false, and it means, that clients cannot subscribe to channels nor unsubscribe from them.
 In such cases, the event <code>subscribe</code> is never raised.

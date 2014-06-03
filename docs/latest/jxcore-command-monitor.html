@@ -52,6 +52,7 @@
             <ul>
 <li><a href="#jxcore_command_monitor_process_monitor">Process Monitor</a><ul>
 <li><a href="#jxcore_command_monitor_commands">Commands</a><ul>
+<li><a href="#jxcore_command_monitor_kill">kill</a></li>
 <li><a href="#jxcore_command_monitor_run">run</a></li>
 <li><a href="#jxcore_command_monitor_start">start</a></li>
 <li><a href="#jxcore_command_monitor_stop">stop</a></li>
@@ -79,6 +80,24 @@ Please refer there for complementary information.
 </p>
 <h2>Commands<span><a class="mark" href="#jxcore_command_monitor_commands" id="jxcore_command_monitor_commands">#</a></span></h2>
 <p>This section describes list of options, which can be used from the command line for controlling the monitor&#39;s process.
+
+</p>
+<h3>kill<span><a class="mark" href="#jxcore_command_monitor_kill" id="jxcore_command_monitor_kill">#</a></span></h3>
+<pre><code>&gt; jx monitor kill application_file.js</code></pre>
+<p>Unsubscribes an application from being monitored and then shuts it down.
+
+</p>
+<p>If the application was running in few instances, all of them would be killed. See the example below:
+
+</p>
+<pre><code>&gt; jx monitor start
+&gt; jx monitor run index.js
+&gt; jx monitor run index.js</code></pre>
+<p>We launch <code>index.js</code> application as two separate processes and call the following command to kill both of them:
+
+</p>
+<pre><code>&gt; jx monitor kill index.js</code></pre>
+<p>Other monitored applications as well as the monitor itself will still be running.
 
 </p>
 <h3>run<span><a class="mark" href="#jxcore_command_monitor_run" id="jxcore_command_monitor_run">#</a></span></h3>

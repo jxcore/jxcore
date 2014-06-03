@@ -11,6 +11,24 @@ Please refer there for complementary information.
 
 This section describes list of options, which can be used from the command line for controlling the monitor's process.
 
+### kill
+
+    > jx monitor kill application_file.js
+
+Unsubscribes an application from being monitored and then shuts it down.
+
+If the application was running in few instances, all of them would be killed. See the example below:
+
+    > jx monitor start
+    > jx monitor run index.js
+    > jx monitor run index.js
+
+We launch `index.js` application as two separate processes and call the following command to kill both of them:
+
+    > jx monitor kill index.js
+
+Other monitored applications as well as the monitor itself will still be running.
+
 ### run
 
     > jx monitor run application_file.js

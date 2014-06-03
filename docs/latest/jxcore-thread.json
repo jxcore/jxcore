@@ -75,6 +75,38 @@
           "desc": "<blockquote>\n<p>This method is implemented only in the subthread context. When called from a main thread it does nothing.\n\n</p>\n</blockquote>\n<p>Sends a message to the main thread, and there it can be received by attaching to <a href=\"jxcore-tasks.html#jxcore_tasks_event_message\"><code>message</code></a> event.\nThe <code>param</code> can be any value, for example string or json literal object.\n\n</p>\n<pre><code class=\"js\">process.sendToMain( { obj: &quot;something&quot; } );\n\n// now the main thread can receive the message like this:\njxcore.tasks.on(&#39;message&#39;, function (threadId, param) {\n   console.log(&#39;Main thread received a message from subthread no &#39; + threadId +\n      &#39;. Message: &#39;, param);\n});</code></pre>\n"
         },
         {
+          "textRaw": "process.sendToThread(threadId, param)",
+          "type": "method",
+          "name": "sendToThread",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "`threadId` {Number} ",
+                  "name": "threadId",
+                  "type": "Number"
+                },
+                {
+                  "textRaw": "`param` {Object} ",
+                  "name": "param",
+                  "type": "Object"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "threadId"
+                },
+                {
+                  "name": "param"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Sends a message to the specific thread identified by <code>threadId</code>.\nThe <code>param</code> can be any value, such as a string or json literal object.\n\n\n</p>\n"
+        },
+        {
           "textRaw": "process.sendToThreads(param)",
           "type": "method",
           "name": "sendToThreads",
