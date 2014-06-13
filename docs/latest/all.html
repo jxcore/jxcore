@@ -343,6 +343,7 @@
 <li><a href="#all_new_stream_transform_options">new stream.Transform([options])</a></li>
 <li><a href="#all_transform_transform_chunk_encoding_callback">transform._transform(chunk, encoding, callback)</a></li>
 <li><a href="#all_transform_flush_callback">transform._flush(callback)</a></li>
+<li><a href="#all_events_finish_and_end">Events: &#39;finish&#39; and &#39;end&#39;</a></li>
 <li><a href="#all_example_simpleprotocol_parser_v2">Example: <code>SimpleProtocol</code> parser v2</a></li>
 </ul>
 </li>
@@ -3198,7 +3199,7 @@ descriptors.</li>
 </p>
 <pre><code>process.stdin.setEncoding(&#39;utf8&#39;);
 
-process.stdin.on(&#39;readable&#39;, function(chunk) {
+process.stdin.on(&#39;readable&#39;, function() {
   var chunk = process.stdin.read();
   if (chunk !== null) {
     process.stdout.write(&#39;data: &#39; + chunk);
@@ -3964,7 +3965,9 @@ server.removeListener(&#39;connection&#39;, callback);</code></pre>
 
 </p>
 <h3>emitter.removeAllListeners([event])<span><a class="mark" href="#all_emitter_removealllisteners_event" id="all_emitter_removealllisteners_event">#</a></span></h3>
-<p>Removes all listeners, or those of the specified event.
+<p>Removes all listeners, or those of the specified event. It&#39;s not a good idea to
+remove listeners that were added elsewhere in the code, especially when it&#39;s on
+an emitter that you didn&#39;t create (e.g. sockets or file streams).
 
 </p>
 <p>Returns emitter, so calls can be chained.
@@ -5414,7 +5417,7 @@ readable.on(&#39;data&#39;, function(chunk) {
   console.log(&#39;got %d bytes of data&#39;, chunk.length);
 })</code></pre>
 <h4>Event: &#39;end&#39;<span><a class="mark" href="#all_event_end" id="all_event_end">#</a></span></h4>
-<p>This event fires when no more data will be provided.
+<p>This event fires when there will be no more data to read.
 
 </p>
 <p>Note that the <code>end</code> event <strong>will not fire</strong> unless the data is
@@ -6397,6 +6400,14 @@ programs.  However, you <strong>are</strong> expected to override this method in
 your own extension classes.
 
 </p>
+<h4>Events: &#39;finish&#39; and &#39;end&#39;<span><a class="mark" href="#all_events_finish_and_end" id="all_events_finish_and_end">#</a></span></h4>
+<p>The <a href="#stream_event_finish"><code>finish</code></a> and <a href="#stream_event_end"><code>end</code></a> events are from the parent Writable
+and Readable classes respectively. The <code>finish</code> event is fired after
+<code>.end()</code> is called and all chunks have been processed by <code>_transform</code>,
+<code>end</code> is fired after all data has been output which is after the callback
+in <code>_flush</code> has been called.
+
+</p>
 <h4>Example: <code>SimpleProtocol</code> parser v2<span><a class="mark" href="#all_example_simpleprotocol_parser_v2" id="all_example_simpleprotocol_parser_v2">#</a></span></h4>
 <p>The example above of a simple protocol parser can be implemented
 simply by using the higher level <a href="#stream_class_stream_transform">Transform</a> stream class, similar to
@@ -7303,11 +7314,11 @@ Secure Socket Layer: encrypted stream communication.
 
 </p>
 <p>TLS/SSL is a public/private key infrastructure. Each client and each
-server must have a private key. A private key is created like this
+server must have a private key. A private key is created like this:
 
 </p>
 <pre><code>openssl genrsa -out ryans-key.pem 1024</code></pre>
-<p>All severs and some clients need to have a certificate. Certificates are public
+<p>All servers and some clients need to have a certificate. Certificates are public
 keys signed by a Certificate Authority or self-signed. The first step to
 getting a certificate is to create a &quot;Certificate Signing Request&quot; (CSR)
 file. This is done with:
@@ -7552,7 +7563,7 @@ creating a new socket. If this option is specified, <code>host</code> and <code>
 are ignored.</p>
 </li>
 <li><p><code>pfx</code>: A string or <code>Buffer</code> containing the private key, certificate and
-CA certs of the server in PFX or PKCS12 format.</p>
+CA certs of the client in PFX or PKCS12 format.</p>
 </li>
 <li><p><code>key</code>: A string or <code>Buffer</code> containing the private key of the client in
 PEM format.</p>
@@ -9135,7 +9146,7 @@ with <code>child_process.fork()</code>.
 
 </p>
 <h3>server.connections<span><a class="mark" href="#all_server_connections_1" id="all_server_connections_1">#</a></span></h3>
-<p>This function is <strong>deprecated</strong>; please use [server.getConnections()][] instead.
+<p>This function is <strong>deprecated</strong>; please use <a href="#net_server_getconnections_callback">server.getConnections()</a> instead.
 The number of concurrent connections on the server.
 
 </p>
@@ -9144,15 +9155,15 @@ The number of concurrent connections on the server.
 connections use asynchronous <code>server.getConnections</code> instead.
 
 </p>
-<p><code>net.Server</code> is an <a href="events.html#events_class_events_eventemitter">EventEmitter</a> with the following events:
-
-</p>
 <h3>server.getConnections(callback)<span><a class="mark" href="#all_server_getconnections_callback" id="all_server_getconnections_callback">#</a></span></h3>
 <p>Asynchronously get the number of concurrent connections on the server. Works
 when sockets were sent to forks.
 
 </p>
 <p>Callback should take two arguments <code>err</code> and <code>count</code>.
+
+</p>
+<p><code>net.Server</code> is an <a href="events.html#events_class_events_eventemitter">EventEmitter</a> with the following events:
 
 </p>
 <h3>Event: &#39;listening&#39;<span><a class="mark" href="#all_event_listening" id="all_event_listening">#</a></span></h3>
@@ -9389,7 +9400,7 @@ See <code>connect()</code>.
 </div></ul>
 <p>Emitted when data is received.  The argument <code>data</code> will be a <code>Buffer</code> or
 <code>String</code>.  Encoding of data is set by <code>socket.setEncoding()</code>.
-(See the <a href="stream.html#stream_readable_stream">Readable Stream</a> section for more information.)
+(See the <a href="stream.html#stream_class_stream_readable">Readable Stream</a> section for more information.)
 
 </p>
 <p>Note that the <strong>data will be lost</strong> if there is no listener when a <code>Socket</code>
@@ -10147,7 +10158,7 @@ connections.
 passed as the second parameter to the <code>&#39;request&#39;</code> event.
 
 </p>
-<p>The response implements the <a href="stream.html#stream_writable_stream">Writable Stream</a> interface. This is an
+<p>The response implements the <a href="stream.html#stream_class_stream_writable">Writable Stream</a> interface. This is an
 <a href="events.html#events_class_events_eventemitter">EventEmitter</a> with the following events:
 
 </p>
@@ -10543,7 +10554,7 @@ the data is read it will consume memory that can eventually lead to a
 which has been transmitted are equal or not.
 
 </p>
-<p>The request implements the <a href="stream.html#stream_writable_stream">Writable Stream</a> interface. This is an
+<p>The request implements the <a href="stream.html#stream_class_stream_writable">Writable Stream</a> interface. This is an
 <a href="events.html#events_class_events_eventemitter">EventEmitter</a> with the following events:
 
 </p>
@@ -10746,7 +10757,7 @@ and <code>&#39;response&#39;</code> event respectively. It may be used to access
 headers and data.
 
 </p>
-<p>It implements the <a href="stream.html#stream_readable_stream">Readable Stream</a> interface, as well as the
+<p>It implements the <a href="stream.html#stream_class_stream_readable">Readable Stream</a> interface, as well as the
 following additional events, methods, and properties.
 
 </p>
@@ -11091,6 +11102,9 @@ string will not be in the parsed object. Examples are shown for the URL
 <li><p><code>protocol</code>: The request protocol, lowercased.</p>
 <p>  Example: <code>&#39;http:&#39;</code></p>
 </li>
+<li><p><code>slashes</code>: The protocol requires slashes after the colon</p>
+<p>  Example: true or false</p>
+</li>
 <li><p><code>host</code>: The full lowercased host portion of the URL, including port
 information.</p>
 <p>  Example: <code>&#39;host.com:8080&#39;</code></p>
@@ -11146,11 +11160,16 @@ Defaults to <code>false</code>.
 </p>
 <ul>
 <li><code>href</code> will be ignored.</li>
-<li><code>protocol</code>is treated the same with or without the trailing <code>:</code> (colon).<ul>
+<li><code>protocol</code> is treated the same with or without the trailing <code>:</code> (colon).<ul>
 <li>The protocols <code>http</code>, <code>https</code>, <code>ftp</code>, <code>gopher</code>, <code>file</code> will be
 postfixed with <code>://</code> (colon-slash-slash).</li>
 <li>All other protocols <code>mailto</code>, <code>xmpp</code>, <code>aim</code>, <code>sftp</code>, <code>foo</code>, etc will
 be postfixed with <code>:</code> (colon)</li>
+</ul>
+</li>
+<li><code>slashes</code> set to <code>true</code> if the protocol requires <code>://</code> (colon-slash-slash)<ul>
+<li>Only needs to be set for protocols not previously listed as requiring
+slashes, such as <code>mongodb://localhost:8000/</code></li>
 </ul>
 </li>
 <li><code>auth</code> will be used if present.</li>
@@ -12362,7 +12381,8 @@ child, and it is no longer possible to send messages.
 of being received, most likely immediately.
 
 </p>
-<p>Note that you can also call <code>process.disconnect()</code> in the child process.
+<p>Note that you can also call <code>process.disconnect()</code> in the child process when the
+child process has any open IPC channels with the parent (i.e <code>fork()</code>).
 
 </p>
 <h2>child_process.spawn(command, [args], [options])<span><a class="mark" href="#all_child_process_spawn_command_args_options" id="all_child_process_spawn_command_args_options">#</a></span></h2>
@@ -12724,7 +12744,7 @@ access it with <code>require(&#39;assert&#39;)</code>.
 
 </p>
 <h2>assert.throws(block, [error], [message])<span><a class="mark" href="#all_assert_throws_block_error_message" id="all_assert_throws_block_error_message">#</a></span></h2>
-<p>Expects <code>block</code> to throw an error. <code>error</code> can be constructor, regexp or 
+<p>Expects <code>block</code> to throw an error. <code>error</code> can be constructor, <code>RegExp</code> or
 validation function.
 
 </p>
@@ -12761,7 +12781,7 @@ validation function.
   &quot;unexpected error&quot;
 );</code></pre>
 <h2>assert.doesNotThrow(block, [message])<span><a class="mark" href="#all_assert_doesnotthrow_block_message" id="all_assert_doesnotthrow_block_message">#</a></span></h2>
-<p>Expects <code>block</code> not to throw an error, see assert.throws for details.
+<p>Expects <code>block</code> not to throw an error, see <code>assert.throws</code> for details.
 
 </p>
 <h2>assert.ifError(value)<span><a class="mark" href="#all_assert_iferror_value" id="all_assert_iferror_value">#</a></span></h2>
@@ -15221,6 +15241,7 @@ Please refer there for complementary information.
 <h3>kill<span><a class="mark" href="#all_kill" id="all_kill">#</a></span></h3>
 <pre><code>&gt; jx monitor kill application_file.js</code></pre>
 <p>Unsubscribes an application from being monitored and then shuts it down.
+On linux systems, this command can be executed only by the user which have started the monitor.
 
 </p>
 <p>If the application was running in few instances, all of them would be killed. See the example below:
@@ -15259,6 +15280,7 @@ The monitor internally creates an http server on <a href="http://127.0.0.1:port"
 <h3>stop<span><a class="mark" href="#all_stop" id="all_stop">#</a></span></h3>
 <pre><code>&gt; jx monitor stop</code></pre>
 <p>Stops the monitor - shuts down the monitor&#39;s process together with all monitored applications.
+On linux systems, this command can be executed only by the user which have started the monitor.
 
 </p>
 <h3>restart<span><a class="mark" href="#all_restart" id="all_restart">#</a></span></h3>

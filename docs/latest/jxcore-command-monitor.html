@@ -85,6 +85,7 @@ Please refer there for complementary information.
 <h3>kill<span><a class="mark" href="#jxcore_command_monitor_kill" id="jxcore_command_monitor_kill">#</a></span></h3>
 <pre><code>&gt; jx monitor kill application_file.js</code></pre>
 <p>Unsubscribes an application from being monitored and then shuts it down.
+On linux systems, this command can be executed only by the user which have started the monitor.
 
 </p>
 <p>If the application was running in few instances, all of them would be killed. See the example below:
@@ -123,6 +124,7 @@ The monitor internally creates an http server on <a href="http://127.0.0.1:port"
 <h3>stop<span><a class="mark" href="#jxcore_command_monitor_stop" id="jxcore_command_monitor_stop">#</a></span></h3>
 <pre><code>&gt; jx monitor stop</code></pre>
 <p>Stops the monitor - shuts down the monitor&#39;s process together with all monitored applications.
+On linux systems, this command can be executed only by the user which have started the monitor.
 
 </p>
 <h3>restart<span><a class="mark" href="#jxcore_command_monitor_restart" id="jxcore_command_monitor_restart">#</a></span></h3>

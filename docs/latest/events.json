@@ -101,7 +101,7 @@
               "textRaw": "emitter.removeAllListeners([event])",
               "type": "method",
               "name": "removeAllListeners",
-              "desc": "<p>Removes all listeners, or those of the specified event.\n\n</p>\n<p>Returns emitter, so calls can be chained.\n\n</p>\n",
+              "desc": "<p>Removes all listeners, or those of the specified event. It&#39;s not a good idea to\nremove listeners that were added elsewhere in the code, especially when it&#39;s on\nan emitter that you didn&#39;t create (e.g. sockets or file streams).\n\n</p>\n<p>Returns emitter, so calls can be chained.\n\n</p>\n",
               "signatures": [
                 {
                   "params": [

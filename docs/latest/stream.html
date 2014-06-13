@@ -104,6 +104,7 @@
 <li><a href="#stream_new_stream_transform_options">new stream.Transform([options])</a></li>
 <li><a href="#stream_transform_transform_chunk_encoding_callback">transform._transform(chunk, encoding, callback)</a></li>
 <li><a href="#stream_transform_flush_callback">transform._flush(callback)</a></li>
+<li><a href="#stream_events_finish_and_end">Events: &#39;finish&#39; and &#39;end&#39;</a></li>
 <li><a href="#stream_example_simpleprotocol_parser_v2">Example: <code>SimpleProtocol</code> parser v2</a></li>
 </ul>
 </li>
@@ -292,7 +293,7 @@ readable.on(&#39;data&#39;, function(chunk) {
   console.log(&#39;got %d bytes of data&#39;, chunk.length);
 })</code></pre>
 <h4>Event: &#39;end&#39;<span><a class="mark" href="#stream_event_end" id="stream_event_end">#</a></span></h4>
-<p>This event fires when no more data will be provided.
+<p>This event fires when there will be no more data to read.
 
 </p>
 <p>Note that the <code>end</code> event <strong>will not fire</strong> unless the data is
@@ -1273,6 +1274,14 @@ complete.
 the class that defines it, and should not be called directly by user
 programs.  However, you <strong>are</strong> expected to override this method in
 your own extension classes.
+
+</p>
+<h4>Events: &#39;finish&#39; and &#39;end&#39;<span><a class="mark" href="#stream_events_finish_and_end" id="stream_events_finish_and_end">#</a></span></h4>
+<p>The <a href="#stream_event_finish"><code>finish</code></a> and <a href="#stream_event_end"><code>end</code></a> events are from the parent Writable
+and Readable classes respectively. The <code>finish</code> event is fired after
+<code>.end()</code> is called and all chunks have been processed by <code>_transform</code>,
+<code>end</code> is fired after all data has been output which is after the callback
+in <code>_flush</code> has been called.
 
 </p>
 <h4>Example: <code>SimpleProtocol</code> parser v2<span><a class="mark" href="#stream_example_simpleprotocol_parser_v2" id="stream_example_simpleprotocol_parser_v2">#</a></span></h4>

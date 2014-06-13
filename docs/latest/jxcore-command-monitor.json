@@ -14,7 +14,7 @@
             {
               "textRaw": "kill",
               "name": "kill",
-              "desc": "<pre><code>&gt; jx monitor kill application_file.js</code></pre>\n<p>Unsubscribes an application from being monitored and then shuts it down.\n\n</p>\n<p>If the application was running in few instances, all of them would be killed. See the example below:\n\n</p>\n<pre><code>&gt; jx monitor start\n&gt; jx monitor run index.js\n&gt; jx monitor run index.js</code></pre>\n<p>We launch <code>index.js</code> application as two separate processes and call the following command to kill both of them:\n\n</p>\n<pre><code>&gt; jx monitor kill index.js</code></pre>\n<p>Other monitored applications as well as the monitor itself will still be running.\n\n</p>\n",
+              "desc": "<pre><code>&gt; jx monitor kill application_file.js</code></pre>\n<p>Unsubscribes an application from being monitored and then shuts it down.\nOn linux systems, this command can be executed only by the user which have started the monitor.\n\n</p>\n<p>If the application was running in few instances, all of them would be killed. See the example below:\n\n</p>\n<pre><code>&gt; jx monitor start\n&gt; jx monitor run index.js\n&gt; jx monitor run index.js</code></pre>\n<p>We launch <code>index.js</code> application as two separate processes and call the following command to kill both of them:\n\n</p>\n<pre><code>&gt; jx monitor kill index.js</code></pre>\n<p>Other monitored applications as well as the monitor itself will still be running.\n\n</p>\n",
               "type": "module",
               "displayName": "kill"
             },
@@ -35,7 +35,7 @@
             {
               "textRaw": "stop",
               "name": "stop",
-              "desc": "<pre><code>&gt; jx monitor stop</code></pre>\n<p>Stops the monitor - shuts down the monitor&#39;s process together with all monitored applications.\n\n</p>\n",
+              "desc": "<pre><code>&gt; jx monitor stop</code></pre>\n<p>Stops the monitor - shuts down the monitor&#39;s process together with all monitored applications.\nOn linux systems, this command can be executed only by the user which have started the monitor.\n\n</p>\n",
               "type": "module",
               "displayName": "stop"
             },

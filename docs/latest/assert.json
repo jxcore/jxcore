@@ -193,7 +193,7 @@
           "textRaw": "assert.throws(block, [error], [message])",
           "type": "method",
           "name": "throws",
-          "desc": "<p>Expects <code>block</code> to throw an error. <code>error</code> can be constructor, regexp or \nvalidation function.\n\n</p>\n<p>Validate instanceof using constructor:\n\n</p>\n<pre><code>assert.throws(\n  function() {\n    throw new Error(&quot;Wrong value&quot;);\n  },\n  Error\n);</code></pre>\n<p>Validate error message using RegExp:\n\n</p>\n<pre><code>assert.throws(\n  function() {\n    throw new Error(&quot;Wrong value&quot;);\n  },\n  /value/\n);</code></pre>\n<p>Custom error validation:\n\n</p>\n<pre><code>assert.throws(\n  function() {\n    throw new Error(&quot;Wrong value&quot;);\n  },\n  function(err) {\n    if ( (err instanceof Error) &amp;&amp; /value/.test(err) ) {\n      return true;\n    }\n  },\n  &quot;unexpected error&quot;\n);</code></pre>\n",
+          "desc": "<p>Expects <code>block</code> to throw an error. <code>error</code> can be constructor, <code>RegExp</code> or\nvalidation function.\n\n</p>\n<p>Validate instanceof using constructor:\n\n</p>\n<pre><code>assert.throws(\n  function() {\n    throw new Error(&quot;Wrong value&quot;);\n  },\n  Error\n);</code></pre>\n<p>Validate error message using RegExp:\n\n</p>\n<pre><code>assert.throws(\n  function() {\n    throw new Error(&quot;Wrong value&quot;);\n  },\n  /value/\n);</code></pre>\n<p>Custom error validation:\n\n</p>\n<pre><code>assert.throws(\n  function() {\n    throw new Error(&quot;Wrong value&quot;);\n  },\n  function(err) {\n    if ( (err instanceof Error) &amp;&amp; /value/.test(err) ) {\n      return true;\n    }\n  },\n  &quot;unexpected error&quot;\n);</code></pre>\n",
           "signatures": [
             {
               "params": [
@@ -216,7 +216,7 @@
           "textRaw": "assert.doesNotThrow(block, [message])",
           "type": "method",
           "name": "doesNotThrow",
-          "desc": "<p>Expects <code>block</code> not to throw an error, see assert.throws for details.\n\n</p>\n",
+          "desc": "<p>Expects <code>block</code> not to throw an error, see <code>assert.throws</code> for details.\n\n</p>\n",
           "signatures": [
             {
               "params": [

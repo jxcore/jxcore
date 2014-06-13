@@ -373,7 +373,7 @@
               "textRaw": "server.getConnections(callback)",
               "type": "method",
               "name": "getConnections",
-              "desc": "<p>Asynchronously get the number of concurrent connections on the server. Works\nwhen sockets were sent to forks.\n\n</p>\n<p>Callback should take two arguments <code>err</code> and <code>count</code>.\n\n</p>\n",
+              "desc": "<p>Asynchronously get the number of concurrent connections on the server. Works\nwhen sockets were sent to forks.\n\n</p>\n<p>Callback should take two arguments <code>err</code> and <code>count</code>.\n\n</p>\n<p><code>net.Server</code> is an [EventEmitter][] with the following events:\n\n</p>\n",
               "signatures": [
                 {
                   "params": [
@@ -394,7 +394,7 @@
             {
               "textRaw": "server.connections",
               "name": "connections",
-              "desc": "<p>This function is <strong>deprecated</strong>; please use [server.getConnections()][] instead.\nThe number of concurrent connections on the server.\n\n</p>\n<p>This becomes <code>null</code> when sending a socket to a child with\n<code>child_process.fork()</code>. To poll forks and get current number of active\nconnections use asynchronous <code>server.getConnections</code> instead.\n\n</p>\n<p><code>net.Server</code> is an [EventEmitter][] with the following events:\n\n</p>\n"
+              "desc": "<p>This function is <strong>deprecated</strong>; please use [server.getConnections()][] instead.\nThe number of concurrent connections on the server.\n\n</p>\n<p>This becomes <code>null</code> when sending a socket to a child with\n<code>child_process.fork()</code>. To poll forks and get current number of active\nconnections use asynchronous <code>server.getConnections</code> instead.\n\n</p>\n"
             }
           ],
           "events": [

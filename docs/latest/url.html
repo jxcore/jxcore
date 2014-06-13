@@ -81,6 +81,9 @@ string will not be in the parsed object. Examples are shown for the URL
 <li><p><code>protocol</code>: The request protocol, lowercased.</p>
 <p>  Example: <code>&#39;http:&#39;</code></p>
 </li>
+<li><p><code>slashes</code>: The protocol requires slashes after the colon</p>
+<p>  Example: true or false</p>
+</li>
 <li><p><code>host</code>: The full lowercased host portion of the URL, including port
 information.</p>
 <p>  Example: <code>&#39;host.com:8080&#39;</code></p>
@@ -136,11 +139,16 @@ Defaults to <code>false</code>.
 </p>
 <ul>
 <li><code>href</code> will be ignored.</li>
-<li><code>protocol</code>is treated the same with or without the trailing <code>:</code> (colon).<ul>
+<li><code>protocol</code> is treated the same with or without the trailing <code>:</code> (colon).<ul>
 <li>The protocols <code>http</code>, <code>https</code>, <code>ftp</code>, <code>gopher</code>, <code>file</code> will be
 postfixed with <code>://</code> (colon-slash-slash).</li>
 <li>All other protocols <code>mailto</code>, <code>xmpp</code>, <code>aim</code>, <code>sftp</code>, <code>foo</code>, etc will
 be postfixed with <code>:</code> (colon)</li>
+</ul>
+</li>
+<li><code>slashes</code> set to <code>true</code> if the protocol requires <code>://</code> (colon-slash-slash)<ul>
+<li>Only needs to be set for protocols not previously listed as requiring
+slashes, such as <code>mongodb://localhost:8000/</code></li>
 </ul>
 </li>
 <li><code>auth</code> will be used if present.</li>

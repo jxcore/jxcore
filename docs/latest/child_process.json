@@ -143,7 +143,7 @@
               "textRaw": "child.disconnect()",
               "type": "method",
               "name": "disconnect",
-              "desc": "<p>Close the IPC channel between parent and child, allowing the child to exit\ngracefully once there are no other connections keeping it alive. After calling\nthis method the <code>.connected</code> flag will be set to <code>false</code> in both the parent and\nchild, and it is no longer possible to send messages.\n\n</p>\n<p>The &#39;disconnect&#39; event will be emitted when there are no messages in the process\nof being received, most likely immediately.\n\n</p>\n<p>Note that you can also call <code>process.disconnect()</code> in the child process.\n\n</p>\n",
+              "desc": "<p>Close the IPC channel between parent and child, allowing the child to exit\ngracefully once there are no other connections keeping it alive. After calling\nthis method the <code>.connected</code> flag will be set to <code>false</code> in both the parent and\nchild, and it is no longer possible to send messages.\n\n</p>\n<p>The &#39;disconnect&#39; event will be emitted when there are no messages in the process\nof being received, most likely immediately.\n\n</p>\n<p>Note that you can also call <code>process.disconnect()</code> in the child process when the\nchild process has any open IPC channels with the parent (i.e <code>fork()</code>).\n\n</p>\n",
               "signatures": [
                 {
                   "params": []

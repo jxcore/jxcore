@@ -283,7 +283,7 @@ descriptors.</li>
 </p>
 <pre><code>process.stdin.setEncoding(&#39;utf8&#39;);
 
-process.stdin.on(&#39;readable&#39;, function(chunk) {
+process.stdin.on(&#39;readable&#39;, function() {
   var chunk = process.stdin.read();
   if (chunk !== null) {
     process.stdout.write(&#39;data: &#39; + chunk);

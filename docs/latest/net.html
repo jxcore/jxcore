@@ -363,7 +363,7 @@ with <code>child_process.fork()</code>.
 
 </p>
 <h3>server.connections<span><a class="mark" href="#net_server_connections" id="net_server_connections">#</a></span></h3>
-<p>This function is <strong>deprecated</strong>; please use [server.getConnections()][] instead.
+<p>This function is <strong>deprecated</strong>; please use <a href="#net_server_getconnections_callback">server.getConnections()</a> instead.
 The number of concurrent connections on the server.
 
 </p>
@@ -372,15 +372,15 @@ The number of concurrent connections on the server.
 connections use asynchronous <code>server.getConnections</code> instead.
 
 </p>
-<p><code>net.Server</code> is an <a href="events.html#events_class_events_eventemitter">EventEmitter</a> with the following events:
-
-</p>
 <h3>server.getConnections(callback)<span><a class="mark" href="#net_server_getconnections_callback" id="net_server_getconnections_callback">#</a></span></h3>
 <p>Asynchronously get the number of concurrent connections on the server. Works
 when sockets were sent to forks.
 
 </p>
 <p>Callback should take two arguments <code>err</code> and <code>count</code>.
+
+</p>
+<p><code>net.Server</code> is an <a href="events.html#events_class_events_eventemitter">EventEmitter</a> with the following events:
 
 </p>
 <h3>Event: &#39;listening&#39;<span><a class="mark" href="#net_event_listening" id="net_event_listening">#</a></span></h3>

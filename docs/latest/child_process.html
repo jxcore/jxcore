@@ -405,7 +405,8 @@ child, and it is no longer possible to send messages.
 of being received, most likely immediately.
 
 </p>
-<p>Note that you can also call <code>process.disconnect()</code> in the child process.
+<p>Note that you can also call <code>process.disconnect()</code> in the child process when the
+child process has any open IPC channels with the parent (i.e <code>fork()</code>).
 
 </p>
 <h2>child_process.spawn(command, [args], [options])<span><a class="mark" href="#child_process_child_process_spawn_command_args_options" id="child_process_child_process_spawn_command_args_options">#</a></span></h2>

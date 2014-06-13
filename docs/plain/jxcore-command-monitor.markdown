@@ -16,6 +16,7 @@ This section describes list of options, which can be used from the command line 
     > jx monitor kill application_file.js
 
 Unsubscribes an application from being monitored and then shuts it down.
+On linux systems, this command can be executed only by the user which have started the monitor.
 
 If the application was running in few instances, all of them would be killed. See the example below:
 
@@ -54,6 +55,7 @@ The monitor internally creates an http server on http://127.0.0.1:port (the port
     > jx monitor stop
 
 Stops the monitor - shuts down the monitor's process together with all monitored applications.
+On linux systems, this command can be executed only by the user which have started the monitor.
 
 ### restart
 
