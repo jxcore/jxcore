@@ -33,13 +33,23 @@
 #define NODE12
 #endif
 
-#include "v8.h"
 #include "node.h"
 #include <string.h>
 
 namespace JX{
-
-using v8::Isolate;
+#ifndef JS_ENGINE_NO_V8
+  #define JX_ISOLATE v8::Isolate*
+  #define JX_CURRENT_ENGINE() v8::Isolate::GetCurrent()
+  #ifdef NODE12
+    #define JX_GET_ENGINE_DATA(x) x->GetData(0)
+  #else
+    #define JX_GET_ENGINE_DATA(x) x->GetData();
+  #endif
+#else
+  #define JX_ISOLATE ENGINE_MARKER
+  #define JX_CURRENT_ENGINE() JS_GET_ENGINE()
+  #define JX_GET_ENGINE_DATA(x) JS_GET_ENGINE_DATA(x)
+#endif
 
 #define MAX_JX_THREADS 64 //JXcore support max 64 v8 threads per process
 
@@ -47,59 +57,73 @@ template <class T>
 class ThreadStore{
   static bool mted, checked;
 
-
   void initStore(){
     if(!ThreadStore::checked){
-	  checked = true;
-      ThreadStore::mted = node::get_builtin_module("JX") != NULL; // referenced from Node.H
+      const int tid = _threadId();
+      if(tid>=-1){
+        checked = true;
+        ThreadStore::mted = tid != -1;
+      }
+      else{ // Isolate not ready, be safe
+        templates = new T[MAX_JX_THREADS];
+        return;
+      }
 	}
 
-	if(ThreadStore::mted){
-	  templates = new T[MAX_JX_THREADS];
-	}
-	else{
+    if(ThreadStore::mted){
+      templates = new T[MAX_JX_THREADS];
+    }
+    else{
       templates = new T[1];
-	}
+    }
+  }
+
+
+  int _threadId() const{
+    if(!ThreadStore::mted)
+      return -1;
+
+    JX_ISOLATE iso = JX_CURRENT_ENGINE();
+
+    if(iso == NULL)
+      return -2;
+
+    void *id = JX_GET_ENGINE_DATA(iso);
+
+    if(id == NULL) //it is NULL for Node.JS
+      return -1;
+    else
+      return *((int*)id);
   }
 
 public:
-  T *templates;
+    T *templates;
 
-  ThreadStore()
-  {
-    initStore();
-  }
+    ThreadStore()
+    {
+      initStore();
+    }
 
-  ThreadStore(T val)
-  {
-	initStore();
-    
-    const int tc = mted ? MAX_JX_THREADS:1;
-	
-	for(int i=0;i<tc;i++){
-	  templates[i] = val;
-	}
-  }
+
+    ThreadStore(T val)
+    {
+	  initStore();
+
+      const int tc = mted ? MAX_JX_THREADS:1;
+
+	  for(int i=0;i<tc;i++){
+	    templates[i] = val;
+	  }
+    }
+
 
     //JXcore keeps the thread id inside the isolate data slot
-  int getThreadId(){
-    if(!ThreadStore::mted)
-      return 0;
-
-    Isolate *iso = Isolate::GetCurrent(); //reintroduced back to 3.24.x / 3.25
-
-    if(iso == NULL)
-      return 0;
-#ifdef NODE12
-	  void *id = iso->GetData(0);
-#else
-	  void *id = iso->GetData();
-#endif
-
-	  if(id == NULL) //it is NULL for Node.JS
-	    return 0; // main thread
-	  else
-	    return *((int*)id);
+    int getThreadId(){
+      const int tid = _threadId();
+      if(tid<0)
+        return 0;
+      else
+        return tid;
     }
   };
 
@@ -110,4 +134,4 @@ public:
   bool ThreadStore<T>::checked;
 }
 
-#endif /* JX_PERSISTENT_STORE_H_ */ 
+#endif /* JX_PERSISTENT_STORE_H_ */
