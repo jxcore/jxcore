@@ -176,7 +176,11 @@ The first one is the <code>obj</code> object described here, while the second ar
 <li>You cannot specify, in which of the subthreads your task will run. The subthread will be chosen automatically. You can find out, which subthread is used for that task only from inside the task itself (see <code>threadId</code> property in Subthreads API).</li>
 <li>If for example on your system <code>getThreadCount()</code> returns 3, and you add 3 tasks one after another, there is no guarantee, that each of them will run in its own subthread, but still it is one of the possibilities. But things can go also in many other ways: all of the 3 tasks can run in the same subthread, or two of them in one subthread, and the third in another, etc.</li>
 <li>Do not assume the tasks will be executed in the order of which they were added.</li>
-<li>When the task <code>method</code> returns from its execution block (for example by calling return statement), it is considered as completed. This means, that if you use in the task code any delayed execution with <code>setTimeout()</code> or <code>setInterval()</code>, or async calls, the task method may return faster, before those delayed/async jobs will have chance to complete. For gaining control over task’s execution time, please use <code>process.keepAlive()</code> and <code>process.release()</code> methods from Subthreads API.</li>
+<li>When the task <code>method</code> returns from its execution block (for example by calling return statement),
+it is considered as completed.
+This means, that if you use in the task code any delayed execution with <code>setTimeout()</code> or <code>setInterval()</code>, or async calls,
+the task method may return faster, before those delayed/async jobs will have chance to complete.
+For gaining control over task’s execution time, please use <code>process.keepAlive()</code> and <code>process.release()</code> methods from Subthreads API.</li>
 </ol>
 <p>Adding a task with one-argument callback:
 

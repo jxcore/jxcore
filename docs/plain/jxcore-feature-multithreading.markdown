@@ -18,7 +18,7 @@ But there is another way – JXcore exposes special thread-safe [Memory Store](j
 
 Apart from that, there are also two other ways for subthread to communicate with the main thread:
 
-1. sending a message – `[process.sendToMain()`(jxcore-thread.html#jxcore_thread_process_sendtomain_param),
+1. sending a message – [`process.sendToMain()`](jxcore-thread.markdown#process-sendtomain-param),
 2. returning the result from the task, since this is the regular method.
 
 ### Defaults

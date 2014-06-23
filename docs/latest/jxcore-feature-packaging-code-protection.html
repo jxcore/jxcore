@@ -70,6 +70,7 @@
 <li><a href="#jxcore_feature_packaging_code_protection_jxp_project_file">JXP project file</a><ul>
 <li><a href="#jxcore_feature_packaging_code_protection_excluding_folders">Excluding folders</a></li>
 <li><a href="#jxcore_feature_packaging_code_protection_file_structure">File structure</a></li>
+<li><a href="#jxcore_feature_packaging_code_protection_supported_file_types">Supported file types</a></li>
 </ul>
 </li>
 <li><a href="#jxcore_feature_packaging_code_protection_accessing_files_and_assets_from_a_package">Accessing Files and Assets from a Package</a><ul>
@@ -102,7 +103,7 @@
 <h2>Command<span><a class="mark" href="#jxcore_feature_packaging_code_protection_command" id="jxcore_feature_packaging_code_protection_command">#</a></span></h2>
 <h3>package<span><a class="mark" href="#jxcore_feature_packaging_code_protection_package" id="jxcore_feature_packaging_code_protection_package">#</a></span></h3>
 <pre><code>&gt; jx package javascript_file name_of_the_package [-slim folder, folder2, ...]</code></pre>
-<p>This command recursively scans the current folder and generates a <code>JXP</code> package information file based on all the files in that directory.
+<p>This command recursively scans the current folder and generates a <code>JXP</code> package information file based on all files in that directory.
 After that compiles the <code>JXP</code> file (by invoking <code>compile</code> command).
 
 </p>
@@ -292,9 +293,9 @@ This is a boolean value: true or false. When it&#39;s set to true, all package c
 <li><strong>output</strong>
 Name of the output JX package.</li>
 <li><strong>files</strong>
-This is an array, where you can define, which script files from your project will be included into the JX package. Only <code>*.js</code> and <code>*.json</code> files are allowed there.</li>
+This is an array, where you can define, which script files from your project will be included into the JX package. Only <code>*.js</code> and <code>*.json</code> files are allowed here.</li>
 <li><strong>assets</strong>
-This is the array with static resource files. You can embed as an asset any file of the type: html, css, txt, xml, log, types, ini, json.</li>
+This is the array with static resource files. You can embed any asset file into the <code>jx</code> package.</li>
 <li><strong>library</strong>
 It is a boolean value: true or false. Value set to true means that JX package can be treated as a library and it can be used from inside another JX package (with <code>require()</code> method).
 Setting this value to false is a good way of preventing its usage as an external module (and then <code>require()</code> will not be possible).</li>
@@ -375,6 +376,29 @@ If you want to run it again, simply remove that file.
     console.log(&quot;This code is still under development.&quot;);
 }</code></pre>
 <p>However, <code>files</code> members are not accessible from exports.$JXP.
+
+</p>
+<h3>Supported file types<span><a class="mark" href="#jxcore_feature_packaging_code_protection_supported_file_types" id="jxcore_feature_packaging_code_protection_supported_file_types">#</a></span></h3>
+<p>You can embed any asset file (text and binary) into the <code>jx</code> package and it will be
+placed automatically into the <code>assets</code> array of <code>JXP</code> project file during execution of <code>jx package</code> command.
+
+</p>
+<p>However, there are two file types, which are treated by JXcore as source files rather than assets:
+
+</p>
+<ul>
+<li>js</li>
+<li>json</li>
+</ul>
+<p>The difference is, that source files cannot be read from a package during runtime.
+This is security feature of JXcore packaging.
+For more information see <a href="#jxcore_feature_packaging_code_protection_files">Accessing Files and Assets from a Package</a>.
+
+</p>
+<p>The <code>jx package</code> puts them into the <code>files</code> array of <code>JXP</code> project file during execution of <code>jx package</code> command.
+
+</p>
+<p>Even if you would edit the <code>JXP</code> project file manually and add <code>js</code> files into the <code>assets</code> array, JXcore removes them from the <code>assets</code> and treats them as source files.
 
 </p>
 <h2>Accessing Files and Assets from a Package<span><a class="mark" href="#jxcore_feature_packaging_code_protection_accessing_files_and_assets_from_a_package" id="jxcore_feature_packaging_code_protection_accessing_files_and_assets_from_a_package">#</a></span></h2>

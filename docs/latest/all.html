@@ -1209,6 +1209,7 @@
 <li><a href="#all_jxp_project_file">JXP project file</a><ul>
 <li><a href="#all_excluding_folders">Excluding folders</a></li>
 <li><a href="#all_file_structure">File structure</a></li>
+<li><a href="#all_supported_file_types">Supported file types</a></li>
 </ul>
 </li>
 <li><a href="#all_accessing_files_and_assets_from_a_package">Accessing Files and Assets from a Package</a><ul>
@@ -15174,57 +15175,35 @@ db.serialize(function () {
 <p>JXcore provides you with an easy and convenient way for downloading npm packages.
 
 </p>
-<p>Any of the packages supported by the <a href="https://www.npmjs.org/">npm</a> tool can be downloaded using the <strong>jx install</strong> tool.
-The difference is, that the most popular npm packages were packed into jx files and stored in JXcore repository.
-You can download a package as a single jx file and it is ready to be <code>required()</code> as regular npm module.
+<p>Any of the packages supported by the <a href="https://www.npmjs.org/">npm</a> tool can be downloaded using the <strong>jx install</strong> tool
+and the npm manager does not have to be installed in the system.
 
 </p>
 <h2>Command<span><a class="mark" href="#all_command" id="all_command">#</a></span></h2>
 <h3>install<span><a class="mark" href="#all_install" id="all_install">#</a></span></h3>
 <pre><code>&gt; jx install [-g] name_of_the_package[@version]</code></pre>
-<p>Downloads npm package specified by <code>name_of_the_package</code>. If this package exists in JXcore repository, it will be downloaded as single .jx file.
-Otherwise the nmp tool will be employed to install required package as a regular npm module.
+<p>Downloads npm package specified by <code>name_of_the_package</code>.
 
 </p>
-<p><code>-g</code> - enables global installation, the same as npm tool does. In fact, this switch is available only for npm packages:
-even if the package would be available on JXcore repository, it will not be installed when you use <code>-g</code> switch.
-Instead the package will be installed from the npm repository.
+<p><code>-g</code> - enables global installation, the same as npm tool does.
 
 </p>
-<p>Let’s discuss the following example: we would like to install the <a href="https://github.com/visionmedia/express">express</a> module.
+<p>Let’s see the following example: we would like to install the <a href="https://github.com/visionmedia/express">express</a> module.
 
 </p>
 <pre><code>&gt; jx install express</code></pre>
-<p>Because this package is also available in JXcore repository, the command will just download a single file <em>express.jx</em> to the current folder.
+<p>The command will just download the <em>express</em> package.
 Now this package is ready to be used inside of your application:
 
 </p>
-<pre><code class="js">var express = require(&quot;./express.jx&quot;);</code></pre>
+<pre><code class="js">var express = require(&quot;express&quot;);</code></pre>
 <p>In case if you would like to install different <code>version</code> of this package, you can type:
 
 </p>
 <pre><code>&gt; jx install express@3.3.3</code></pre>
-<p>Since this version (3.3.3) is not present in JXcore repository, the command will first download <em>npm.jx</em> file
-(which is in fact the npm tool packed into the jx file), and will try to use it to download the required version of the express package.
-Now you can use it like any other npm module:
+<p>Please note that you don’t need to have the npm tool installed on your machine.
 
 </p>
-<pre><code class="js">var express = require(&quot;express&quot;);</code></pre>
-<p>Please note that you don’t need to have the npm tool installed on your machine. JXcore will download it to the current local folder when needed. Once downloaded it can be used like npm.
-For example, instead of:
-
-</p>
-<pre><code>&gt; npm install -g express</code></pre>
-<p>You can do the same by:
-
-</p>
-<pre><code>&gt; jx npm.jx install -g express</code></pre>
-<p>In fact, any npm’s command can be passed this way:
-
-</p>
-<pre><code>&gt; jx npm.jx ls
-&gt; jx npm.jx uninstall express
-etc.</code></pre>
 <h1>Process Monitor<span><a class="mark" href="#all_process_monitor" id="all_process_monitor">#</a></span></h1>
 <p>JXcore offers embedded process monitoring tool. It checks regularly whether the monitored process/processes still exist and restarts them, if required.
 When the monitor is running, your applications can subscribe to it and start being monitored.
@@ -15355,41 +15334,27 @@ However you can change this value by supplying desired <code>number</code> of th
 <p>In this case, four threads will be created.
 
 </p>
-<p>Using the <code>mt</code> command suits best when your code does not execute any delayed or async jobs,
-otherwise the application may exit, before those jobs are completed.
+<p>Using the <code>mt</code> command works best when your code is supposed to perform some operations and exit (after the event loop becomes drained).
 
 </p>
 <p>Let&#39;s consider the following example (<em>test.js</em>):
 
 </p>
-<pre><code class="js">setTimeout(function() {
-    console.log(&quot;I&#39;m here after 20 secs.&quot;);
-}, 20000);
+<pre><code class="js">var delay = 1000 * (process.threadId + 1 );
 
-console.log(&quot;I&#39;m here immediately.&quot;);</code></pre>
-<p>When we&#39;ll run it with:
+setTimeout(function () {
+    console.log(&quot;I&#39;m here after &quot; + (delay / 1000) +
+        &quot; secs. ThreadId: &quot;, process.threadId);
+}, delay);
+
+console.log(&quot;I&#39;m here immediately. ThreadID: &quot; + process.threadId);</code></pre>
+<p>Now, we&#39;ll run it with the following command:
 
 </p>
 <pre><code>&gt; jx mt test.js</code></pre>
-<p>the process will not last for 20 seconds, because it will end after the last line of the code gets executed.
-
-</p>
-<p>To keep the process alive and wait for any delayed tasks, you have two options:
-
-</p>
-<p>1) call <a href="jxcore-process.html#jxcore_process_process_keepalive_timeout"><code>process.keepAlive()</code></a> in the code above
-(but then at some point also <a href="jxcore-process.html#jxcore_process_process_release"><code>process.release()</code></a> if you want to release the application&#39;s process), like:
-
-</p>
-<pre><code class="js">process.keepAlive();
-
-setTimeout(function() {
-    console.log(&quot;I&#39;m here after 20 secs.&quot;);
-    process.release();
-}, 20000);
-
-console.log(&quot;I&#39;m here immediately.&quot;);</code></pre>
-<p>2) or run the code with <code>mt-keep</code> command.
+<p>The process will stay alive as long as all of the threads last.
+Since this sample runs on 2 threads, one of them (<code>process.threadId</code> == 0) will occupy its own event loop for 1 second,
+while the other one for 2 seconds (<code>process.threadId</code> == 1), and only after that time the application will exit.
 
 </p>
 <h3>mt-keep[:number]<span><a class="mark" href="#all_mt_keep_number" id="all_mt_keep_number">#</a></span></h3>
@@ -15609,7 +15574,7 @@ Thus, there is no use for any global variable defined in a main thread – the s
 
 </p>
 <ol>
-<li>sending a message – <code>[process.sendToMain()</code>(jxcore-thread.html#jxcore_thread_process_sendtomain_param),</li>
+<li>sending a message – <a href="jxcore-thread.html#jxcore_thread_process_sendtomain_param"><code>process.sendToMain()</code></a>,</li>
 <li>returning the result from the task, since this is the regular method.</li>
 </ol>
 <h3>Defaults<span><a class="mark" href="#all_defaults" id="all_defaults">#</a></span></h3>
@@ -15706,7 +15671,7 @@ See the API for reference.
 <h2>Command<span><a class="mark" href="#all_command_1" id="all_command_1">#</a></span></h2>
 <h3>package<span><a class="mark" href="#all_package" id="all_package">#</a></span></h3>
 <pre><code>&gt; jx package javascript_file name_of_the_package [-slim folder, folder2, ...]</code></pre>
-<p>This command recursively scans the current folder and generates a <code>JXP</code> package information file based on all the files in that directory.
+<p>This command recursively scans the current folder and generates a <code>JXP</code> package information file based on all files in that directory.
 After that compiles the <code>JXP</code> file (by invoking <code>compile</code> command).
 
 </p>
@@ -15896,9 +15861,9 @@ This is a boolean value: true or false. When it&#39;s set to true, all package c
 <li><strong>output</strong>
 Name of the output JX package.</li>
 <li><strong>files</strong>
-This is an array, where you can define, which script files from your project will be included into the JX package. Only <code>*.js</code> and <code>*.json</code> files are allowed there.</li>
+This is an array, where you can define, which script files from your project will be included into the JX package. Only <code>*.js</code> and <code>*.json</code> files are allowed here.</li>
 <li><strong>assets</strong>
-This is the array with static resource files. You can embed as an asset any file of the type: html, css, txt, xml, log, types, ini, json.</li>
+This is the array with static resource files. You can embed any asset file into the <code>jx</code> package.</li>
 <li><strong>library</strong>
 It is a boolean value: true or false. Value set to true means that JX package can be treated as a library and it can be used from inside another JX package (with <code>require()</code> method).
 Setting this value to false is a good way of preventing its usage as an external module (and then <code>require()</code> will not be possible).</li>
@@ -15979,6 +15944,29 @@ If you want to run it again, simply remove that file.
     console.log(&quot;This code is still under development.&quot;);
 }</code></pre>
 <p>However, <code>files</code> members are not accessible from exports.$JXP.
+
+</p>
+<h3>Supported file types<span><a class="mark" href="#all_supported_file_types" id="all_supported_file_types">#</a></span></h3>
+<p>You can embed any asset file (text and binary) into the <code>jx</code> package and it will be
+placed automatically into the <code>assets</code> array of <code>JXP</code> project file during execution of <code>jx package</code> command.
+
+</p>
+<p>However, there are two file types, which are treated by JXcore as source files rather than assets:
+
+</p>
+<ul>
+<li>js</li>
+<li>json</li>
+</ul>
+<p>The difference is, that source files cannot be read from a package during runtime.
+This is security feature of JXcore packaging.
+For more information see <a href="#jxcore_feature_packaging_code_protection_files">Accessing Files and Assets from a Package</a>.
+
+</p>
+<p>The <code>jx package</code> puts them into the <code>files</code> array of <code>JXP</code> project file during execution of <code>jx package</code> command.
+
+</p>
+<p>Even if you would edit the <code>JXP</code> project file manually and add <code>js</code> files into the <code>assets</code> array, JXcore removes them from the <code>assets</code> and treats them as source files.
 
 </p>
 <h2>Accessing Files and Assets from a Package<span><a class="mark" href="#all_accessing_files_and_assets_from_a_package" id="all_accessing_files_and_assets_from_a_package">#</a></span></h2>
@@ -17863,7 +17851,11 @@ The first one is the <code>obj</code> object described here, while the second ar
 <li>You cannot specify, in which of the subthreads your task will run. The subthread will be chosen automatically. You can find out, which subthread is used for that task only from inside the task itself (see <code>threadId</code> property in Subthreads API).</li>
 <li>If for example on your system <code>getThreadCount()</code> returns 3, and you add 3 tasks one after another, there is no guarantee, that each of them will run in its own subthread, but still it is one of the possibilities. But things can go also in many other ways: all of the 3 tasks can run in the same subthread, or two of them in one subthread, and the third in another, etc.</li>
 <li>Do not assume the tasks will be executed in the order of which they were added.</li>
-<li>When the task <code>method</code> returns from its execution block (for example by calling return statement), it is considered as completed. This means, that if you use in the task code any delayed execution with <code>setTimeout()</code> or <code>setInterval()</code>, or async calls, the task method may return faster, before those delayed/async jobs will have chance to complete. For gaining control over task’s execution time, please use <code>process.keepAlive()</code> and <code>process.release()</code> methods from Subthreads API.</li>
+<li>When the task <code>method</code> returns from its execution block (for example by calling return statement),
+it is considered as completed.
+This means, that if you use in the task code any delayed execution with <code>setTimeout()</code> or <code>setInterval()</code>, or async calls,
+the task method may return faster, before those delayed/async jobs will have chance to complete.
+For gaining control over task’s execution time, please use <code>process.keepAlive()</code> and <code>process.release()</code> methods from Subthreads API.</li>
 </ol>
 <p>Adding a task with one-argument callback:
 

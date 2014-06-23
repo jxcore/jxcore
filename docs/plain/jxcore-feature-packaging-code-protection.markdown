@@ -18,7 +18,7 @@ instead of:
 
     > jx package javascript_file name_of_the_package [-slim folder, folder2, ...]
 
-This command recursively scans the current folder and generates a `JXP` package information file based on all the files in that directory.
+This command recursively scans the current folder and generates a `JXP` package information file based on all files in that directory.
 After that compiles the `JXP` file (by invoking `compile` command).
 
 * `javascript_file` - the main file, which will be executed when JX package will be launched with JXcore.
@@ -208,9 +208,9 @@ This is a boolean value: true or false. When it's set to true, all package conte
 * **output**
 Name of the output JX package.
 * **files**
-This is an array, where you can define, which script files from your project will be included into the JX package. Only `*.js` and `*.json` files are allowed there.
+This is an array, where you can define, which script files from your project will be included into the JX package. Only `*.js` and `*.json` files are allowed here.
 * **assets**
-This is the array with static resource files. You can embed as an asset any file of the type: html, css, txt, xml, log, types, ini, json.
+This is the array with static resource files. You can embed any asset file into the `jx` package.
 * **library**
 It is a boolean value: true or false. Value set to true means that JX package can be treated as a library and it can be used from inside another JX package (with `require()` method).
 Setting this value to false is a good way of preventing its usage as an external module (and then `require()` will not be possible).
@@ -296,6 +296,24 @@ if (exports.$JXP.Release) {
 ```
 
 However, `files` members are not accessible from exports.$JXP.
+
+### Supported file types
+
+You can embed any asset file (text and binary) into the `jx` package and it will be
+placed automatically into the `assets` array of `JXP` project file during execution of `jx package` command.
+
+However, there are two file types, which are treated by JXcore as source files rather than assets:
+
+* js
+* json
+
+The difference is, that source files cannot be read from a package during runtime.
+This is security feature of JXcore packaging.
+For more information see [Accessing Files and Assets from a Package](#files).
+
+The `jx package` puts them into the `files` array of `JXP` project file during execution of `jx package` command.
+
+Even if you would edit the `JXP` project file manually and add `js` files into the `assets` array, JXcore removes them from the `assets` and treats them as source files.
 
 ## Accessing Files and Assets from a Package
 

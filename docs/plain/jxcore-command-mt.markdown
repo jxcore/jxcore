@@ -29,42 +29,28 @@ However you can change this value by supplying desired `number` of threads after
 
 In this case, four threads will be created.
 
-Using the `mt` command suits best when your code does not execute any delayed or async jobs,
-otherwise the application may exit, before those jobs are completed.
+Using the `mt` command works best when your code is supposed to perform some operations and exit (after the event loop becomes drained).
 
 Let's consider the following example (*test.js*):
 
 ```js
-setTimeout(function() {
-    console.log("I'm here after 20 secs.");
-}, 20000);
+var delay = 1000 * (process.threadId + 1 );
 
-console.log("I'm here immediately.");
+setTimeout(function () {
+    console.log("I'm here after " + (delay / 1000) +
+        " secs. ThreadId: ", process.threadId);
+}, delay);
+
+console.log("I'm here immediately. ThreadID: " + process.threadId);
 ```
 
-When we'll run it with:
+Now, we'll run it with the following command:
 
     > jx mt test.js
 
-the process will not last for 20 seconds, because it will end after the last line of the code gets executed.
-
-To keep the process alive and wait for any delayed tasks, you have two options:
-
-1) call [`process.keepAlive()`](jxcore-process.markdown#jxcore-process-process-keepalive-timeout) in the code above
-(but then at some point also [`process.release()`](jxcore-process.markdown#jxcore-process-process-release) if you want to release the application's process), like:
-
-```js
-process.keepAlive();
-
-setTimeout(function() {
-    console.log("I'm here after 20 secs.");
-    process.release();
-}, 20000);
-
-console.log("I'm here immediately.");
-```
-
-2) or run the code with `mt-keep` command.
+The process will stay alive as long as all of the threads last.
+Since this sample runs on 2 threads, one of them (`process.threadId` == 0) will occupy its own event loop for 1 second,
+while the other one for 2 seconds (`process.threadId` == 1), and only after that time the application will exit.
 
 ### mt-keep[:number]
 

@@ -98,7 +98,11 @@ There are few principles regarding adding the tasks, that you should be aware of
 1. You cannot specify, in which of the subthreads your task will run. The subthread will be chosen automatically. You can find out, which subthread is used for that task only from inside the task itself (see `threadId` property in Subthreads API).
 2. If for example on your system `getThreadCount()` returns 3, and you add 3 tasks one after another, there is no guarantee, that each of them will run in its own subthread, but still it is one of the possibilities. But things can go also in many other ways: all of the 3 tasks can run in the same subthread, or two of them in one subthread, and the third in another, etc.
 3. Do not assume the tasks will be executed in the order of which they were added.
-4. When the task `method` returns from its execution block (for example by calling return statement), it is considered as completed. This means, that if you use in the task code any delayed execution with `setTimeout()` or `setInterval()`, or async calls, the task method may return faster, before those delayed/async jobs will have chance to complete. For gaining control over task’s execution time, please use `process.keepAlive()` and `process.release()` methods from Subthreads API.
+4. When the task `method` returns from its execution block (for example by calling return statement),
+it is considered as completed.
+This means, that if you use in the task code any delayed execution with `setTimeout()` or `setInterval()`, or async calls,
+the task method may return faster, before those delayed/async jobs will have chance to complete.
+For gaining control over task’s execution time, please use `process.keepAlive()` and `process.release()` methods from Subthreads API.
 
 Adding a task with one-argument callback:
 
