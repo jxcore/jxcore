@@ -54,3 +54,4 @@
 @include jxcore-store
 @include jxcore-tasks
 @include jxcore-thread
+@include jxconfig
