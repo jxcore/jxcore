@@ -211,6 +211,8 @@ Name of the output JX package.
 This is an array, where you can define, which script files from your project will be included into the JX package. Only `*.js` and `*.json` files are allowed here.
 * **assets**
 This is the array with static resource files. You can embed any asset file into the `jx` package.
+* **fs_reach_sources**
+Normally, `fs` can not reach the JavaScript files inside the package. If you need to access all the JavaScript files using `fs` module, you should set this parameter to 'true'. Otherwise you can either set it to 'false' or give the list of files expected to be reachable by 'fs' module. (i.e. { "lib/testfile.js":true, "lib/test2.js":true } )
 * **library**
 It is a boolean value: true or false. Value set to true means that JX package can be treated as a library and it can be used from inside another JX package (with `require()` method).
 Setting this value to false is a good way of preventing its usage as an external module (and then `require()` will not be possible).
