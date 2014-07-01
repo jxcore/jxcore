@@ -177,7 +177,7 @@ The JXP project file is simple text file that contains package description writt
     "preInstall" : [
         "mkdir new_folder"
     ],
-    "fs_reach_sources": true 
+    "fs_reach_sources": true
 }
 ```
 

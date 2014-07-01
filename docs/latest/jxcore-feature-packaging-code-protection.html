@@ -265,7 +265,8 @@ It means, if you want to package your project into a JX package, you need to cre
     &quot;readme_file&quot;: null,
     &quot;preInstall&quot; : [
         &quot;mkdir new_folder&quot;
-    ]
+    ],
+    &quot;fs_reach_sources&quot;: true
 }</code></pre>
 <p>You can access this object in a runtime of your JX package by:
 
@@ -296,6 +297,8 @@ Name of the output JX package.</li>
 This is an array, where you can define, which script files from your project will be included into the JX package. Only <code>*.js</code> and <code>*.json</code> files are allowed here.</li>
 <li><strong>assets</strong>
 This is the array with static resource files. You can embed any asset file into the <code>jx</code> package.</li>
+<li><strong>fs_reach_sources</strong>
+Normally, <code>fs</code> can not reach the JavaScript files inside the package. If you need to access all the JavaScript files using <code>fs</code> module, you should set this parameter to &#39;true&#39;. Otherwise you can either set it to &#39;false&#39; or give the list of files expected to be reachable by &#39;fs&#39; module. (i.e. { &quot;lib/testfile.js&quot;:true, &quot;lib/test2.js&quot;:true } )</li>
 <li><strong>library</strong>
 It is a boolean value: true or false. Value set to true means that JX package can be treated as a library and it can be used from inside another JX package (with <code>require()</code> method).
 Setting this value to false is a good way of preventing its usage as an external module (and then <code>require()</code> will not be possible).</li>

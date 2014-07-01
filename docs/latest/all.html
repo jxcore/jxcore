@@ -1376,6 +1376,18 @@
 <li><a href="#all_tasks_unloadthreads">tasks.unloadThreads()</a></li>
 </ul>
 </li>
+<li><a href="#all_process_2">Process</a><ul>
+<li><a href="#all_event_restart">Event: &#39;restart&#39;</a></li>
+<li><a href="#all_process_keepalive_timeout">process.keepAlive(timeout)</a></li>
+<li><a href="#all_process_release">process.release()</a></li>
+<li><a href="#all_process_sendtomain_param">process.sendToMain(param)</a></li>
+<li><a href="#all_process_sendtothread_threadid_param">process.sendToThread(threadId, param)</a></li>
+<li><a href="#all_process_sendtothreads_param">process.sendToThreads(param)</a></li>
+<li><a href="#all_process_subthread">process.subThread</a></li>
+<li><a href="#all_process_threadid">process.threadId</a></li>
+<li><a href="#all_process_unloadthread">process.unloadThread()</a></li>
+</ul>
+</li>
 </ul>
 
           </div>
@@ -15204,6 +15216,15 @@ Now this package is ready to be used inside of your application:
 <p>Please note that you don’t need to have the npm tool installed on your machine.
 
 </p>
+<p>For other <code>npm commands</code> you can call <code>jx install -[npm command]</code>
+
+</p>
+<p>for example;
+
+</p>
+<pre><code>&gt; jx install -ls
+&gt; jx install
+&gt; jx install --production</code></pre>
 <h1>Process Monitor<span><a class="mark" href="#all_process_monitor" id="all_process_monitor">#</a></span></h1>
 <p>JXcore offers embedded process monitoring tool. It checks regularly whether the monitored process/processes still exist and restarts them, if required.
 When the monitor is running, your applications can subscribe to it and start being monitored.
@@ -15833,7 +15854,8 @@ It means, if you want to package your project into a JX package, you need to cre
     &quot;readme_file&quot;: null,
     &quot;preInstall&quot; : [
         &quot;mkdir new_folder&quot;
-    ]
+    ],
+    &quot;fs_reach_sources&quot;: true
 }</code></pre>
 <p>You can access this object in a runtime of your JX package by:
 
@@ -15864,6 +15886,8 @@ Name of the output JX package.</li>
 This is an array, where you can define, which script files from your project will be included into the JX package. Only <code>*.js</code> and <code>*.json</code> files are allowed here.</li>
 <li><strong>assets</strong>
 This is the array with static resource files. You can embed any asset file into the <code>jx</code> package.</li>
+<li><strong>fs_reach_sources</strong>
+Normally, <code>fs</code> can not reach the JavaScript files inside the package. If you need to access all the JavaScript files using <code>fs</code> module, you should set this parameter to &#39;true&#39;. Otherwise you can either set it to &#39;false&#39; or give the list of files expected to be reachable by &#39;fs&#39; module. (i.e. { &quot;lib/testfile.js&quot;:true, &quot;lib/test2.js&quot;:true } )</li>
 <li><strong>library</strong>
 It is a boolean value: true or false. Value set to true means that JX package can be treated as a library and it can be used from inside another JX package (with <code>require()</code> method).
 Setting this value to false is a good way of preventing its usage as an external module (and then <code>require()</code> will not be possible).</li>
@@ -18145,7 +18169,156 @@ jxcore.tasks.setThreadCount(10)</code></pre>
 Otherwise it waits, until they finish their last tasks and removes them afterwards.
 
 </p>
-<p>@include jxcore-thread</p>
+<h1>Process<span><a class="mark" href="#all_process_2" id="all_process_2">#</a></span></h1>
+<p>This API is a collection of JXcore methods and properties for accessing from both main thread and a subthread.
+
+</p>
+<p>All of the methods described here are accessible from global <code>process</code> object, for example:
+
+</p>
+<pre><code class="js">process.keepAlive();</code></pre>
+<h2>Event: &#39;restart&#39;<span><a class="mark" href="#all_event_restart" id="all_event_restart">#</a></span></h2>
+<p>Attaching any callback to <code>restart</code> event, depending on the context in which it is performed, enables internal process or thread recovery.
+
+</p>
+<p>Internal Recovery is a separate section described <a href="jxcore-feature-internal-recovery.html">here</a>.
+
+</p>
+<h2>process.keepAlive(timeout)<span><a class="mark" href="#all_process_keepalive_timeout" id="all_process_keepalive_timeout">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>timeout</code> <span class="type">Number</span></li>
+</div></ul>
+<blockquote>
+<p>This method is implemented only in the subthread context. When called from a main thread it does nothing.
+
+</p>
+</blockquote>
+<p>Marks the main process to be alive. This will inform the thread pool,
+that the task has an intention to continue working (probably by doing some delayed or async work).
+
+</p>
+<p>Normally the thread pool knows, that the task is working only until it returns from the task method.
+But if you would use in the task code e.g. delayed execution with <code>setTimeout()</code> or <code>setInterval()</code>, or any async call,
+the task method may return faster, before those delayed/async jobs will have chance to complete.
+This is a moment, when <code>keepAlive()</code> comes in handy. Later in the code, you can call <code>release()</code> to signal the main thread, that the task has completed.
+
+</p>
+<p>The <code>timeout</code> parameter specifies, how many milliseconds the task should be kept alive, before automatic release will happen.
+This parameter is optional, and if you don’t provide it, task will be alive forever, or until <code>process.release()</code> will be called.
+
+</p>
+<pre><code class="js">var method = function (obj) {
+
+    setTimeout(function () {
+       console.log(&quot;I&#39;m here after 2000 ms. Can close now&quot;);
+       process.release();
+    }, 2000);
+
+    console.log(&quot;waiting for 2000 ms&quot;);
+
+    // without the line below, current task would return immediately
+    // and the method delayed with setTimeout() would not have chance to complete.
+    // try to comment the line below to test the behaviour, and you will see,
+    // that the application closes itself, since the task is not kept alive.
+    process.keepAlive();
+};
+
+jxcore.tasks.addTask(method);</code></pre>
+<p>The <code>keepAlive()</code> method even if is callable only from a subthread, does not really keep the subthread alive, but the main thread.
+
+</p>
+<p>Internally, it increments a counter. On the other hand, every <code>process.release()</code> invocation - decrements it.
+So when you want to end the application - you should call the <code>release()</code> method the same amount of times as you have called <code>keepAlive()</code>.
+When that counter is zero - the main process may exit now.
+
+</p>
+<h2>process.release()<span><a class="mark" href="#all_process_release" id="all_process_release">#</a></span></h2>
+<blockquote>
+<p>This method is implemented only in the subthread context. When called from a main thread it does nothing.
+
+</p>
+</blockquote>
+<p>Unmarks the current task (from which the method was called) from being alive. You can use this method to inform the thread pool, that the task finished its work.
+If you will do this for all of the tasks, the main thread could freely exit then, and the application may close itself naturally with exit code = 0.
+
+</p>
+<p>Please refer to <code>process.keepAlive()</code> method for full example.
+
+</p>
+<pre><code class="js">process.release();</code></pre>
+<h2>process.sendToMain(param)<span><a class="mark" href="#all_process_sendtomain_param" id="all_process_sendtomain_param">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>param</code> <span class="type">Object</span></li>
+</div></ul>
+<blockquote>
+<p>This method is implemented only in the subthread context. When called from a main thread it does nothing.
+
+</p>
+</blockquote>
+<p>Sends a message to the main thread, and there it can be received by attaching to <a href="jxcore-tasks.html#jxcore_tasks_event_message"><code>message</code></a> event.
+The <code>param</code> can be any value, for example string or json literal object.
+
+</p>
+<pre><code class="js">process.sendToMain( { obj: &quot;something&quot; } );
+
+// now the main thread can receive the message like this:
+jxcore.tasks.on(&#39;message&#39;, function (threadId, param) {
+   console.log(&#39;Main thread received a message from subthread no &#39; + threadId +
+      &#39;. Message: &#39;, param);
+});</code></pre>
+<h2>process.sendToThread(threadId, param)<span><a class="mark" href="#all_process_sendtothread_threadid_param" id="all_process_sendtothread_threadid_param">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>threadId</code> <span class="type">Number</span></li>
+<li><code>param</code> <span class="type">Object</span></li>
+</div></ul>
+<p>Sends a message to the specific thread identified by <code>threadId</code>.
+The <code>param</code> can be any value, such as a string or json literal object.
+
+
+</p>
+<h2>process.sendToThreads(param)<span><a class="mark" href="#all_process_sendtothreads_param" id="all_process_sendtothreads_param">#</a></span></h2>
+<div class="signature"><ul>
+<li><code>param</code> <span class="type">Object</span></li>
+</div></ul>
+<p>Similar to <code>sendToMain()</code>, except that it sends a message to all of the threads from the thread pool.
+
+</p>
+<h2>process.subThread<span><a class="mark" href="#all_process_subthread" id="all_process_subthread">#</a></span></h2>
+<p>This property returns <code>true</code>, if the current code block runs under the subthread, or <code>false</code> otherwise.
+
+</p>
+<pre><code class="js">if (process.subThread) {
+   console.log(&quot;we are in a subthread.&quot;);
+}</code></pre>
+<h2>process.threadId<span><a class="mark" href="#all_process_threadid" id="all_process_threadid">#</a></span></h2>
+<p>Returns the ID of the subthread. For multithreaded application it is a number between 0 and 62 (because the maximum amount of subthreads is 63).
+You can also control the number of subthreads for your application, see here for more information: <a href="jxcore-feature-multithreading.html#defaults">Defaults</a>.
+
+</p>
+<p>Since one of the subthreads can have its index equal to 0, we should not test it with:
+
+</p>
+<pre><code>if (process.threadId) {
+    // do something
+}</code></pre>
+<p>For a main thread, <code>threadId</code> always returns -1.
+
+</p>
+<h2>process.unloadThread()<span><a class="mark" href="#all_process_unloadthread" id="all_process_unloadthread">#</a></span></h2>
+<blockquote>
+<p>This method is implemented only in the subthread context. When called from a main thread it does nothing.
+
+</p>
+</blockquote>
+<p>This method marks the subthread to be removed from the thread pool and eventually removes it.
+The removal itself will happen as soon as the subthread finishes execution of its latest task.
+
+</p>
+<p>You may want to use this method to release subthread’s resources, if you don’t plan to use it soon.
+Adding any tasks later will create a fresh subthread automatically on demand.
+
+</p>
+<p>@include jxconfig</p>
 
           </div>
         </div>

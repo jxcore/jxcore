@@ -14239,7 +14239,7 @@
             {
               "textRaw": "install",
               "name": "install",
-              "desc": "<pre><code>&gt; jx install [-g] name_of_the_package[@version]</code></pre>\n<p>Downloads npm package specified by <code>name_of_the_package</code>.\n\n</p>\n<p><code>-g</code> - enables global installation, the same as npm tool does.\n\n</p>\n<p>Let’s see the following example: we would like to install the <a href=\"https://github.com/visionmedia/express\">express</a> module.\n\n</p>\n<pre><code>&gt; jx install express</code></pre>\n<p>The command will just download the <em>express</em> package.\nNow this package is ready to be used inside of your application:\n\n</p>\n<pre><code class=\"js\">var express = require(&quot;express&quot;);</code></pre>\n<p>In case if you would like to install different <code>version</code> of this package, you can type:\n\n</p>\n<pre><code>&gt; jx install express@3.3.3</code></pre>\n<p>Please note that you don’t need to have the npm tool installed on your machine.\n\n</p>\n",
+              "desc": "<pre><code>&gt; jx install [-g] name_of_the_package[@version]</code></pre>\n<p>Downloads npm package specified by <code>name_of_the_package</code>.\n\n</p>\n<p><code>-g</code> - enables global installation, the same as npm tool does.\n\n</p>\n<p>Let’s see the following example: we would like to install the <a href=\"https://github.com/visionmedia/express\">express</a> module.\n\n</p>\n<pre><code>&gt; jx install express</code></pre>\n<p>The command will just download the <em>express</em> package.\nNow this package is ready to be used inside of your application:\n\n</p>\n<pre><code class=\"js\">var express = require(&quot;express&quot;);</code></pre>\n<p>In case if you would like to install different <code>version</code> of this package, you can type:\n\n</p>\n<pre><code>&gt; jx install express@3.3.3</code></pre>\n<p>Please note that you don’t need to have the npm tool installed on your machine.\n\n</p>\n<p>For other <code>npm commands</code> you can call <code>jx install -[npm command]</code>\n\n</p>\n<p>for example;\n\n</p>\n<pre><code>&gt; jx install -ls\n&gt; jx install\n&gt; jx install --production</code></pre>\n",
               "type": "module",
               "displayName": "install"
             }
@@ -14570,7 +14570,7 @@
             {
               "textRaw": "File structure",
               "name": "file_structure",
-              "desc": "<p>The JXP project file is simple text file that contains package description written as json literal object:\n\n</p>\n<pre><code class=\"js\">{\n    &quot;name&quot;: &quot;Hello World&quot;,\n    &quot;version&quot;: &quot;1.0&quot;,\n    &quot;author&quot;: &quot;&quot;,\n    &quot;description&quot;: &quot;&quot;,\n    &quot;company&quot;: &quot;&quot;,\n    &quot;website&quot; : &quot;&quot;,\n    &quot;package&quot;: null,\n    &quot;startup&quot;: &quot;helloworld.js&quot;,\n    &quot;execute&quot;: null,\n    &quot;extract&quot;: false,\n    &quot;output&quot;: &quot;helloworld.jx&quot;,\n    &quot;files&quot;: [\n        &quot;helloworld.js&quot;\n    ],\n    &quot;assets&quot;: [\n        &quot;index.html&quot;\n    ],\n    &quot;library&quot;: false,\n    &quot;license_file&quot;: null,\n    &quot;readme_file&quot;: null,\n    &quot;preInstall&quot; : [\n        &quot;mkdir new_folder&quot;\n    ]\n}</code></pre>\n<p>You can access this object in a runtime of your JX package by:\n\n</p>\n<pre><code class=\"js\">var obj = exports.$JXP;</code></pre>\n<p>And the single field:\n\n</p>\n<pre><code class=\"js\">var name = obj.name;</code></pre>\n<p>Below you can find explanation for all supported fields:\n\n</p>\n<ul>\n<li><strong>name</strong>, <strong>version</strong>, <strong>author</strong>, <strong>description</strong>, <strong>company</strong>, <strong>website</strong>\nThese are all string values.</li>\n<li><strong>startup</strong>\nName of the main project file. If execute parameter is not defined, this file will be executed first when you run the package.</li>\n<li><strong>execute</strong>\nName of the main execution file. If this parameter is omitted or null – the value from startup will be used.\nThis parameter has different meaning depending on the library value.\nWhen the package is compiled with <code>library</code> = <code>false</code>, and you run the compiled package, this execute file will be executed first.\nIf <code>library</code> is <code>true</code>, and the package is called with <code>require()</code> method, the execute file will be returned by the latter.</li>\n<li><strong>extract</strong>\nThis is a boolean value: true or false. When it&#39;s set to true, all package contents will be extracted at first run of the compiled package. There will be a new folder created with the name parameter. All files and assets embedded inside the package will be saved with full directory structure preserved.</li>\n<li><strong>output</strong>\nName of the output JX package.</li>\n<li><strong>files</strong>\nThis is an array, where you can define, which script files from your project will be included into the JX package. Only <code>*.js</code> and <code>*.json</code> files are allowed here.</li>\n<li><strong>assets</strong>\nThis is the array with static resource files. You can embed any asset file into the <code>jx</code> package.</li>\n<li><strong>library</strong>\nIt is a boolean value: true or false. Value set to true means that JX package can be treated as a library and it can be used from inside another JX package (with <code>require()</code> method).\nSetting this value to false is a good way of preventing its usage as an external module (and then <code>require()</code> will not be possible).</li>\n<li><strong>licence_file</strong>\nName of the file containing the licensing information – it is generally a simple text file. If this parameter is omitted or null and if a file named “LICENSE” exists in the directory from where you compile the package – it will be embedded automatically.</li>\n<li><strong>readme_file</strong>\nName of the file containing additional notes about the package. If this parameter is omitted or null and if a file named “README” or “README.md” exists in the directory from where you compile the package – it will be embedded automatically.\nWhen a license or readme file is specified, it can be also displayed in a console window directly from the package.</li>\n</ul>\n<p>For example, running the following command:\n\n</p>\n<pre><code>&gt; jx package.jx license</code></pre>\n<p>will display the licence file to the console without executing the package. The same applies to:\n\n</p>\n<pre><code>&gt; jx package.jx readme</code></pre>\n<ul>\n<li><strong>preInstall</strong>\nThis is an array, where you can define system commands to be executed right before jx package execution.\nFor example, this might be creating a folder, installing an additional package/module or just anything.\nCommands are executed in the same order as the array is defined.</li>\n</ul>\n<p>There is a special keyword <code>JX_BINARY</code> which is replaced during runtime with current <code>jx</code> executable path.\n\n</p>\n<p>For example, we have the following commands in JXP file:\n\n</p>\n<pre><code class=\"js\">&quot;preInstall&quot; : [\n    &quot;which JX_BINARY &gt; log.txt&quot;,\n    &quot;JX_BINARY -jxv &gt;&gt; log.txt&quot;\n]</code></pre>\n<p>Those commands will be executed for the first time, when we run the package:\n\n</p>\n<pre><code>&gt; jx package.jx</code></pre>\n<p>or\n\n</p>\n<pre><code class=\"js\">var module = require(&quot;./package.jx&quot;);</code></pre>\n<p>In this example, the first commands writes the full path string of jx binary to the <em>log.txt</em> file, while the second one - executes <code>jx -jxv</code>\nand appends the result (the jx version number) to the same file.\n\n</p>\n<p>When all of the commands are executed, there will be a file created <code>your_module.installed</code> preventing subsequent execution of pre-install section.\nIf you want to run it again, simply remove that file.\n\n</p>\n<ul>\n<li><strong>custom_fields</strong></li>\n</ul>\n<p>You can also define your own constants, as many as you want, for example:\n\n</p>\n<pre><code class=\"js\">{\n    // ...\n    // ...\n    // ...\n    field1 : &quot;one&quot;,\n    myField2 : &quot;two&quot;,\n    someObject : {\n        PI : 3.14159265359,\n        userArray : [ 1, 2 ]\n    },\n    Release : true\n}</code></pre>\n<p>Similarly, accessing those values in a runtime of your JX package is also easy:\n\n</p>\n<pre><code class=\"js\">var pi = exports.$JXP.someObject.PI;</code></pre>\n<p>One of the usage examples for those custom fields can be:\n\n</p>\n<pre><code class=\"js\">if (exports.$JXP.Release) {\n    console.log(&quot;This is the final release of the product.&quot;);\n} else {\n    console.log(&quot;This code is still under development.&quot;);\n}</code></pre>\n<p>However, <code>files</code> members are not accessible from exports.$JXP.\n\n</p>\n",
+              "desc": "<p>The JXP project file is simple text file that contains package description written as json literal object:\n\n</p>\n<pre><code class=\"js\">{\n    &quot;name&quot;: &quot;Hello World&quot;,\n    &quot;version&quot;: &quot;1.0&quot;,\n    &quot;author&quot;: &quot;&quot;,\n    &quot;description&quot;: &quot;&quot;,\n    &quot;company&quot;: &quot;&quot;,\n    &quot;website&quot; : &quot;&quot;,\n    &quot;package&quot;: null,\n    &quot;startup&quot;: &quot;helloworld.js&quot;,\n    &quot;execute&quot;: null,\n    &quot;extract&quot;: false,\n    &quot;output&quot;: &quot;helloworld.jx&quot;,\n    &quot;files&quot;: [\n        &quot;helloworld.js&quot;\n    ],\n    &quot;assets&quot;: [\n        &quot;index.html&quot;\n    ],\n    &quot;library&quot;: false,\n    &quot;license_file&quot;: null,\n    &quot;readme_file&quot;: null,\n    &quot;preInstall&quot; : [\n        &quot;mkdir new_folder&quot;\n    ],\n    &quot;fs_reach_sources&quot;: true\n}</code></pre>\n<p>You can access this object in a runtime of your JX package by:\n\n</p>\n<pre><code class=\"js\">var obj = exports.$JXP;</code></pre>\n<p>And the single field:\n\n</p>\n<pre><code class=\"js\">var name = obj.name;</code></pre>\n<p>Below you can find explanation for all supported fields:\n\n</p>\n<ul>\n<li><strong>name</strong>, <strong>version</strong>, <strong>author</strong>, <strong>description</strong>, <strong>company</strong>, <strong>website</strong>\nThese are all string values.</li>\n<li><strong>startup</strong>\nName of the main project file. If execute parameter is not defined, this file will be executed first when you run the package.</li>\n<li><strong>execute</strong>\nName of the main execution file. If this parameter is omitted or null – the value from startup will be used.\nThis parameter has different meaning depending on the library value.\nWhen the package is compiled with <code>library</code> = <code>false</code>, and you run the compiled package, this execute file will be executed first.\nIf <code>library</code> is <code>true</code>, and the package is called with <code>require()</code> method, the execute file will be returned by the latter.</li>\n<li><strong>extract</strong>\nThis is a boolean value: true or false. When it&#39;s set to true, all package contents will be extracted at first run of the compiled package. There will be a new folder created with the name parameter. All files and assets embedded inside the package will be saved with full directory structure preserved.</li>\n<li><strong>output</strong>\nName of the output JX package.</li>\n<li><strong>files</strong>\nThis is an array, where you can define, which script files from your project will be included into the JX package. Only <code>*.js</code> and <code>*.json</code> files are allowed here.</li>\n<li><strong>assets</strong>\nThis is the array with static resource files. You can embed any asset file into the <code>jx</code> package.</li>\n<li><strong>fs_reach_sources</strong>\nNormally, <code>fs</code> can not reach the JavaScript files inside the package. If you need to access all the JavaScript files using <code>fs</code> module, you should set this parameter to &#39;true&#39;. Otherwise you can either set it to &#39;false&#39; or give the list of files expected to be reachable by &#39;fs&#39; module. (i.e. { &quot;lib/testfile.js&quot;:true, &quot;lib/test2.js&quot;:true } )</li>\n<li><strong>library</strong>\nIt is a boolean value: true or false. Value set to true means that JX package can be treated as a library and it can be used from inside another JX package (with <code>require()</code> method).\nSetting this value to false is a good way of preventing its usage as an external module (and then <code>require()</code> will not be possible).</li>\n<li><strong>licence_file</strong>\nName of the file containing the licensing information – it is generally a simple text file. If this parameter is omitted or null and if a file named “LICENSE” exists in the directory from where you compile the package – it will be embedded automatically.</li>\n<li><strong>readme_file</strong>\nName of the file containing additional notes about the package. If this parameter is omitted or null and if a file named “README” or “README.md” exists in the directory from where you compile the package – it will be embedded automatically.\nWhen a license or readme file is specified, it can be also displayed in a console window directly from the package.</li>\n</ul>\n<p>For example, running the following command:\n\n</p>\n<pre><code>&gt; jx package.jx license</code></pre>\n<p>will display the licence file to the console without executing the package. The same applies to:\n\n</p>\n<pre><code>&gt; jx package.jx readme</code></pre>\n<ul>\n<li><strong>preInstall</strong>\nThis is an array, where you can define system commands to be executed right before jx package execution.\nFor example, this might be creating a folder, installing an additional package/module or just anything.\nCommands are executed in the same order as the array is defined.</li>\n</ul>\n<p>There is a special keyword <code>JX_BINARY</code> which is replaced during runtime with current <code>jx</code> executable path.\n\n</p>\n<p>For example, we have the following commands in JXP file:\n\n</p>\n<pre><code class=\"js\">&quot;preInstall&quot; : [\n    &quot;which JX_BINARY &gt; log.txt&quot;,\n    &quot;JX_BINARY -jxv &gt;&gt; log.txt&quot;\n]</code></pre>\n<p>Those commands will be executed for the first time, when we run the package:\n\n</p>\n<pre><code>&gt; jx package.jx</code></pre>\n<p>or\n\n</p>\n<pre><code class=\"js\">var module = require(&quot;./package.jx&quot;);</code></pre>\n<p>In this example, the first commands writes the full path string of jx binary to the <em>log.txt</em> file, while the second one - executes <code>jx -jxv</code>\nand appends the result (the jx version number) to the same file.\n\n</p>\n<p>When all of the commands are executed, there will be a file created <code>your_module.installed</code> preventing subsequent execution of pre-install section.\nIf you want to run it again, simply remove that file.\n\n</p>\n<ul>\n<li><strong>custom_fields</strong></li>\n</ul>\n<p>You can also define your own constants, as many as you want, for example:\n\n</p>\n<pre><code class=\"js\">{\n    // ...\n    // ...\n    // ...\n    field1 : &quot;one&quot;,\n    myField2 : &quot;two&quot;,\n    someObject : {\n        PI : 3.14159265359,\n        userArray : [ 1, 2 ]\n    },\n    Release : true\n}</code></pre>\n<p>Similarly, accessing those values in a runtime of your JX package is also easy:\n\n</p>\n<pre><code class=\"js\">var pi = exports.$JXP.someObject.PI;</code></pre>\n<p>One of the usage examples for those custom fields can be:\n\n</p>\n<pre><code class=\"js\">if (exports.$JXP.Release) {\n    console.log(&quot;This is the final release of the product.&quot;);\n} else {\n    console.log(&quot;This code is still under development.&quot;);\n}</code></pre>\n<p>However, <code>files</code> members are not accessible from exports.$JXP.\n\n</p>\n",
               "type": "module",
               "displayName": "File structure"
             },
@@ -16998,7 +16998,7 @@
           "textRaw": "tasks.unloadThreads()",
           "type": "method",
           "name": "unloadThreads",
-          "desc": "<p>Marks all subthreads to be removed from the thread pool. If they are idle – the method removes them immediately.\nOtherwise it waits, until they finish their last tasks and removes them afterwards.\n\n</p>\n<p>@include jxcore-thread</p>\n",
+          "desc": "<p>Marks all subthreads to be removed from the thread pool. If they are idle – the method removes them immediately.\nOtherwise it waits, until they finish their last tasks and removes them afterwards.\n\n</p>\n",
           "signatures": [
             {
               "params": []
@@ -17008,6 +17008,162 @@
       ],
       "type": "module",
       "displayName": "API"
+    },
+    {
+      "textRaw": "Process",
+      "name": "process",
+      "desc": "<p>This API is a collection of JXcore methods and properties for accessing from both main thread and a subthread.\n\n</p>\n<p>All of the methods described here are accessible from global <code>process</code> object, for example:\n\n</p>\n<pre><code class=\"js\">process.keepAlive();</code></pre>\n",
+      "events": [
+        {
+          "textRaw": "Event: 'restart'",
+          "type": "event",
+          "name": "restart",
+          "desc": "<p>Attaching any callback to <code>restart</code> event, depending on the context in which it is performed, enables internal process or thread recovery.\n\n</p>\n<p>Internal Recovery is a separate section described <a href=\"jxcore-feature-internal-recovery.html\">here</a>.\n\n</p>\n",
+          "params": []
+        }
+      ],
+      "methods": [
+        {
+          "textRaw": "process.keepAlive(timeout)",
+          "type": "method",
+          "name": "keepAlive",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "`timeout` {Number} ",
+                  "name": "timeout",
+                  "type": "Number"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "timeout"
+                }
+              ]
+            }
+          ],
+          "desc": "<blockquote>\n<p>This method is implemented only in the subthread context. When called from a main thread it does nothing.\n\n</p>\n</blockquote>\n<p>Marks the main process to be alive. This will inform the thread pool,\nthat the task has an intention to continue working (probably by doing some delayed or async work).\n\n</p>\n<p>Normally the thread pool knows, that the task is working only until it returns from the task method.\nBut if you would use in the task code e.g. delayed execution with <code>setTimeout()</code> or <code>setInterval()</code>, or any async call,\nthe task method may return faster, before those delayed/async jobs will have chance to complete.\nThis is a moment, when <code>keepAlive()</code> comes in handy. Later in the code, you can call <code>release()</code> to signal the main thread, that the task has completed.\n\n</p>\n<p>The <code>timeout</code> parameter specifies, how many milliseconds the task should be kept alive, before automatic release will happen.\nThis parameter is optional, and if you don’t provide it, task will be alive forever, or until <code>process.release()</code> will be called.\n\n</p>\n<pre><code class=\"js\">var method = function (obj) {\n\n    setTimeout(function () {\n       console.log(&quot;I&#39;m here after 2000 ms. Can close now&quot;);\n       process.release();\n    }, 2000);\n\n    console.log(&quot;waiting for 2000 ms&quot;);\n\n    // without the line below, current task would return immediately\n    // and the method delayed with setTimeout() would not have chance to complete.\n    // try to comment the line below to test the behaviour, and you will see,\n    // that the application closes itself, since the task is not kept alive.\n    process.keepAlive();\n};\n\njxcore.tasks.addTask(method);</code></pre>\n<p>The <code>keepAlive()</code> method even if is callable only from a subthread, does not really keep the subthread alive, but the main thread.\n\n</p>\n<p>Internally, it increments a counter. On the other hand, every <code>process.release()</code> invocation - decrements it.\nSo when you want to end the application - you should call the <code>release()</code> method the same amount of times as you have called <code>keepAlive()</code>.\nWhen that counter is zero - the main process may exit now.\n\n</p>\n"
+        },
+        {
+          "textRaw": "process.release()",
+          "type": "method",
+          "name": "release",
+          "desc": "<blockquote>\n<p>This method is implemented only in the subthread context. When called from a main thread it does nothing.\n\n</p>\n</blockquote>\n<p>Unmarks the current task (from which the method was called) from being alive. You can use this method to inform the thread pool, that the task finished its work.\nIf you will do this for all of the tasks, the main thread could freely exit then, and the application may close itself naturally with exit code = 0.\n\n</p>\n<p>Please refer to <code>process.keepAlive()</code> method for full example.\n\n</p>\n<pre><code class=\"js\">process.release();</code></pre>\n",
+          "signatures": [
+            {
+              "params": []
+            }
+          ]
+        },
+        {
+          "textRaw": "process.sendToMain(param)",
+          "type": "method",
+          "name": "sendToMain",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "`param` {Object} ",
+                  "name": "param",
+                  "type": "Object"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "param"
+                }
+              ]
+            }
+          ],
+          "desc": "<blockquote>\n<p>This method is implemented only in the subthread context. When called from a main thread it does nothing.\n\n</p>\n</blockquote>\n<p>Sends a message to the main thread, and there it can be received by attaching to <a href=\"jxcore-tasks.html#jxcore_tasks_event_message\"><code>message</code></a> event.\nThe <code>param</code> can be any value, for example string or json literal object.\n\n</p>\n<pre><code class=\"js\">process.sendToMain( { obj: &quot;something&quot; } );\n\n// now the main thread can receive the message like this:\njxcore.tasks.on(&#39;message&#39;, function (threadId, param) {\n   console.log(&#39;Main thread received a message from subthread no &#39; + threadId +\n      &#39;. Message: &#39;, param);\n});</code></pre>\n"
+        },
+        {
+          "textRaw": "process.sendToThread(threadId, param)",
+          "type": "method",
+          "name": "sendToThread",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "`threadId` {Number} ",
+                  "name": "threadId",
+                  "type": "Number"
+                },
+                {
+                  "textRaw": "`param` {Object} ",
+                  "name": "param",
+                  "type": "Object"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "threadId"
+                },
+                {
+                  "name": "param"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Sends a message to the specific thread identified by <code>threadId</code>.\nThe <code>param</code> can be any value, such as a string or json literal object.\n\n\n</p>\n"
+        },
+        {
+          "textRaw": "process.sendToThreads(param)",
+          "type": "method",
+          "name": "sendToThreads",
+          "signatures": [
+            {
+              "params": [
+                {
+                  "textRaw": "`param` {Object} ",
+                  "name": "param",
+                  "type": "Object"
+                }
+              ]
+            },
+            {
+              "params": [
+                {
+                  "name": "param"
+                }
+              ]
+            }
+          ],
+          "desc": "<p>Similar to <code>sendToMain()</code>, except that it sends a message to all of the threads from the thread pool.\n\n</p>\n"
+        },
+        {
+          "textRaw": "process.unloadThread()",
+          "type": "method",
+          "name": "unloadThread",
+          "desc": "<blockquote>\n<p>This method is implemented only in the subthread context. When called from a main thread it does nothing.\n\n</p>\n</blockquote>\n<p>This method marks the subthread to be removed from the thread pool and eventually removes it.\nThe removal itself will happen as soon as the subthread finishes execution of its latest task.\n\n</p>\n<p>You may want to use this method to release subthread’s resources, if you don’t plan to use it soon.\nAdding any tasks later will create a fresh subthread automatically on demand.\n\n</p>\n<p>@include jxconfig</p>\n",
+          "signatures": [
+            {
+              "params": []
+            }
+          ]
+        }
+      ],
+      "properties": [
+        {
+          "textRaw": "process.subThread",
+          "name": "subThread",
+          "desc": "<p>This property returns <code>true</code>, if the current code block runs under the subthread, or <code>false</code> otherwise.\n\n</p>\n<pre><code class=\"js\">if (process.subThread) {\n   console.log(&quot;we are in a subthread.&quot;);\n}</code></pre>\n"
+        },
+        {
+          "textRaw": "process.threadId",
+          "name": "threadId",
+          "desc": "<p>Returns the ID of the subthread. For multithreaded application it is a number between 0 and 62 (because the maximum amount of subthreads is 63).\nYou can also control the number of subthreads for your application, see here for more information: <a href=\"jxcore-feature-multithreading.html#defaults\">Defaults</a>.\n\n</p>\n<p>Since one of the subthreads can have its index equal to 0, we should not test it with:\n\n</p>\n<pre><code>if (process.threadId) {\n    // do something\n}</code></pre>\n<p>For a main thread, <code>threadId</code> always returns -1.\n\n</p>\n"
+        }
+      ],
+      "type": "module",
+      "displayName": "Process"
     }
   ],
   "stability": 3,

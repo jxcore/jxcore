@@ -7,21 +7,21 @@ You can set the below list of limitations per application & for entire system (a
     {
         "maxCPU":50
     }
-    
+
 The given config will be limiting all the node applications to 50 percent CPU cap. If you want to alter this configuration for a specific application (lets say `/test/myapp/index.js`)
 
 Create a `index.js.jxcore.config` file under `/test/myapp`
-    
+
     {
         "maxCPU":100
     }
-    
+
 The above sample can be more beneficial in combination with `jx monitor` since, JXcore monitor can automatically restart the application that reaching beyond the CPU limit.
 
 
 ## portTCP, portTCPS: (integer)
 
-Limits the application’s TCP listening port range to given port addresses. When this variable is defined, the process is restricted to the defined ports instead the ones given in the JavaScript code. 
+Limits the application’s TCP listening port range to given port addresses. When this variable is defined, the process is restricted to the defined ports instead the ones given in the JavaScript code.
 
 example:
 
@@ -58,7 +58,7 @@ example:
         "portTCP":9090
     }
 
-The process above will create an http server and listen to port 9090 automatically. On the other hand, if the same app creates a child process, the child process won’t be able to create an http server since the global rule applies to the apps with no special configuration. 
+The process above will create an http server and listen to port 9090 automatically. On the other hand, if the same app creates a child process, the child process won’t be able to create an http server since the global rule applies to the apps with no special configuration.
 
 JXcore also provides a ‘globalApplicationConfigPath’ option to keep applications from defining local configurations per applications.
 
@@ -79,7 +79,7 @@ example:
         "maxMemory":131072
     }
 
-Given the above sample, all the processes are limited to 64 Mb. memory except ‘tmp/test/index.js’ which can use up to 128 Mb. 
+Given the above sample, all the processes are limited to 64 Mb. memory except ‘tmp/test/index.js’ which can use up to 128 Mb.
 
 
 ## allowSysExec: (boolean)
@@ -89,7 +89,7 @@ Using this configuration parameter, the application can be restricted to create 
 
 ## maxCPU: (integer)
 
-Limits the maximum CPU usage per process. If the process reaches beyond the defined maximum CPU percentage, JXcore terminates it. The CPU usage comparison is based on the last two seconds of activations. (Configurable maxCPUInterval) This setting can be set on both global and application’s configuration file. 
+Limits the maximum CPU usage per process. If the process reaches beyond the defined maximum CPU percentage, JXcore terminates it. The CPU usage comparison is based on the last two seconds of activations. (Configurable maxCPUInterval) This setting can be set on both global and application’s configuration file.
 
 example:
 
@@ -105,7 +105,7 @@ example:
 
 Given the sample above, all processes are limited to 10% CPU usage except `tmp/test/index.js` . It can use up to 50%
 
-Please remind that the maximum number for the maxCPU parameter is not limited to hundred (100) on multi core systems. JXcore supports multithreaded node.JS execution hence the application may consume i.e %600 on an 8 core system. 
+Please remind that the maximum number for the maxCPU parameter is not limited to hundred (100) on multi core systems. JXcore supports multithreaded node.JS execution hence the application may consume i.e %600 on an 8 core system.
 
 
 ## maxCPUInterval: (integer)
@@ -128,12 +128,12 @@ This parameter can be useful on systems when the administrator wants to control 
 
 ## allowLocalNativeModules: (boolean)
 
-Limits the process from using custom native module (“.node file”) by forcing it to load the native module from jx.config’s ’globalModulePath’ . If the native module wasn’t installed on globalModulePath, the process will receive an exception saying that the file doesn’t exist. This setting can be set on both global and application’s configuration file. 
+Limits the process from using custom native module (“.node file”) by forcing it to load the native module from jx.config’s ’globalModulePath’ . If the native module wasn’t installed on globalModulePath, the process will receive an exception saying that the file doesn’t exist. This setting can be set on both global and application’s configuration file.
 
 
 ## globalApplicationConfigPath: (string)
 
-By default, JXcore reads the application config from its location. For example; if the application file `index.js` resides under `/temp/app` folder, JXcore simply searches for `/temp/app/index.js.jxcore.config` file right before the execution of the application file. Defining ‘globalApplicationConfigPath’ keeps JXcore from reading the local application folder instead JXcore searches for the config file under the configured location. This setting parameter is global only. 
+By default, JXcore reads the application config from its location. For example; if the application file `index.js` resides under `/temp/app` folder, JXcore simply searches for `/temp/app/index.js.jxcore.config` file right before the execution of the application file. Defining ‘globalApplicationConfigPath’ keeps JXcore from reading the local application folder instead JXcore searches for the config file under the configured location. This setting parameter is global only.
 
 Returning back to the scenario above, if the ‘globalApplicationConfigPath’ is defined as shown below;
 
@@ -148,7 +148,7 @@ and assuming the application is available from /temp/app/index.js, the config fi
 
 The rule is to replace all the [ /, \, : ] given special characters to `_` (underline) and save the configuration file into global path.
 
-The reasoning behind this option is to keep processes from defining their own configurations or overriding the global configuration.  
+The reasoning behind this option is to keep processes from defining their own configurations or overriding the global configuration.
 
 
 ## npmjxPath: (string)
