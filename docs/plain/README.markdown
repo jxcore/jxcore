@@ -1,4 +1,5 @@
 # Sorted by Features
+* [JXcore config](jxconfig.markdown)
 * [Memory Store](jxcore-store.markdown)
 * [Multithreading](jxcore-feature-multithreading.markdown)
 * Package Manager:
