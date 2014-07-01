@@ -31,3 +31,11 @@ In case if you would like to install different `version` of this package, you ca
     > jx install express@3.3.3
 
 Please note that you don’t need to have the npm tool installed on your machine.
+
+for other `npm commands` you can call `jx install -[npm command]` 
+
+for example;
+
+    > jx install -ls
+    > jx install
+    > jx install --production
