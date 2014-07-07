@@ -13,11 +13,11 @@
  *
  * Simply replace
  *
- * static Persistent<FunctionTemplate> SOMECLASS::constructor_template;
+ * static JS_PERSISTENT_FUNCTION_TEMPLATE SOMECLASS::constructor_template;
  *
  * To
  *
- * static ThreadStore<Persistent<FunctionTemplate> > SOMECLASS::c_constructor_template;
+ * static ThreadStore<JS_PERSISTENT_FUNCTION_TEMPLATE > SOMECLASS::c_constructor_template;
  *
  * Whenever the constructor_template is needed;
  *
@@ -46,42 +46,30 @@ namespace JX{
     #define JX_GET_ENGINE_DATA(x) x->GetData();
   #endif
 #else
-  #define JX_ISOLATE ENGINE_MARKER
-  #define JX_CURRENT_ENGINE() JS_GET_ENGINE()
-  #define JX_GET_ENGINE_DATA(x) JS_GET_ENGINE_DATA(x)
+  #define JX_ISOLATE JS_ENGINE_MARKER
+  #define JX_CURRENT_ENGINE() JS_CURRENT_ENGINE()
+  #define JX_GET_ENGINE_DATA(x) JS_CURRENT_ENGINE_DATA(x)
 #endif
 
 #define MAX_JX_THREADS 64 //JXcore support max 64 v8 threads per process
 
 template <class T>
 class ThreadStore{
-  static bool mted, checked;
+  static bool mted;
 
   void initStore(){
-    if(!ThreadStore::checked){
-      const int tid = _threadId();
-      if(tid>=-1){
-        checked = true;
-        ThreadStore::mted = tid != -1;
-      }
-      else{ // Isolate not ready, be safe
-        templates = new T[MAX_JX_THREADS];
-        return;
-      }
-	}
-
-    if(ThreadStore::mted){
-      templates = new T[MAX_JX_THREADS];
-    }
-    else{
-      templates = new T[1];
-    }
+#ifndef USES_JXCORE_ENGINE
+    templates = new T[1];
+    mted = false;
+#else
+    mted = true;
+    templates = new T[MAX_JX_THREADS];
+#endif
   }
 
 
   int _threadId() const{
-    if(!ThreadStore::mted)
-      return -1;
+    if(!mted) return 0;
 
     JX_ISOLATE iso = JX_CURRENT_ENGINE();
 
@@ -91,9 +79,13 @@ class ThreadStore{
     void *id = JX_GET_ENGINE_DATA(iso);
 
     if(id == NULL) //it is NULL for Node.JS
+    {
       return -1;
-    else
-      return *((int*)id);
+    }
+    else{
+      int tid = * ((int*)id);
+      return tid;
+    }
   }
 
 public:
@@ -107,13 +99,13 @@ public:
 
     ThreadStore(T val)
     {
-	  initStore();
+      initStore();
 
       const int tc = mted ? MAX_JX_THREADS:1;
-
-	  for(int i=0;i<tc;i++){
-	    templates[i] = val;
-	  }
+      
+      for(int i=0;i<tc;i++){
+        templates[i] = val;
+      }
     }
 
 
@@ -129,9 +121,6 @@ public:
 
   template<class T>
   bool ThreadStore<T>::mted;
-
-  template<class T>
-  bool ThreadStore<T>::checked;
 }
 
 #endif /* JX_PERSISTENT_STORE_H_ */
