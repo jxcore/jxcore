@@ -7,7 +7,9 @@ So far we have already embedded some of the most popular native modules into JXc
 One possible issue with native code multithreading is related to global/static variables. Before JXcore, the assumption was that only one instance of the native module would be available or instantiated per process. Each JXcore thread must be considered as a separate process hence using static/global variables may cause unexpected issues with the final execution.
 
 !! Applying below update doesn't change the behavior of the native module under Node.JS or single threaded JXcore
+
 !! In order to compile the module for multithreading. You should call "jx install [module_name]" 
+
 
 ** USAGE:
 
