@@ -78,9 +78,9 @@ process.sendToMain( { obj: "something" } );
 ## tasks.addTask(method, param, callback, obj)
 
 * `method` {Function}
-* `param` {Object}
-* `callback` {Function}
-* `obj` {Object}
+* `param` {Object} [optional]
+* `callback` {Function} [optional]
+* `obj` {Object} [optional]
 
 Adds new task **as a method** to be processed in a separate thread. The task will be processed as soon as possible.
 If there is any idle subthread, it will be used to execute the task immediately. Otherwise it may wait until the other tasks will finish or some of the subthreads will become idle.
@@ -141,8 +141,8 @@ There is also an alternative way to run a function as a task. See below for `met
 ### method.runTask(param, callback, obj)
 
 * `param` {Object}
-* `callback` {Function}
-* `obj` {Object}
+* `callback` {Function}  [optional]
+* `obj` {Object}  [optional]
 
 This is shorter alternative to `tasks.addTask()`.
 JXcore adds `runTask()` method to function's prototype, so each function can be added as a task directly by calling `method.runTask()`:
@@ -338,9 +338,9 @@ jxcore.tasks.runOnce(method, "some parameter");
 
 * `threadId` {Number}
 * `method` {Function}
-* `param` {Object}
-* `callback` {Function}
-* `obj` {Object}
+* `param` {Object} [optional]
+* `callback` {Function} [optional]
+* `obj` {Object} [optional]
 
 Runs a task (`method` with `param` argument) on individual subthread no `threadId`.
 
