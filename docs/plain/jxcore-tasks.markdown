@@ -141,8 +141,8 @@ There is also an alternative way to run a function as a task. See below for `met
 ### method.runTask(param, callback, obj)
 
 * `param` {Object}
-* `callback` {Function}  [optional]
-* `obj` {Object}  [optional]
+* `callback` {Function} [optional]
+* `obj` {Object} [optional]
 
 This is shorter alternative to `tasks.addTask()`.
 JXcore adds `runTask()` method to function's prototype, so each function can be added as a task directly by calling `method.runTask()`:
@@ -352,8 +352,8 @@ If it’s not provided, the `callback` method will have only one argument, and i
 Otherwise, the `callback` will contain two arguments.
 The first one is the `obj` object described here, while the second argument is the result of the task `method`.
 
-*Remind that, in case you provide the task in 'define/logic' form, runOnThread runs both of them every time. If this is not inconvinient for your scenario, you may check wheteher the define was called before on that particular thread by marking a global member.* 
-
+*Remind that, in case you provide the task in 'define/logic' form, runOnThread runs both of them every time.
+If this is not inconvenient for your scenario, you may check whether the define was called before on that particular thread by marking a global member.*
 
 ### method.runOnce(param, doNotRemember)
 

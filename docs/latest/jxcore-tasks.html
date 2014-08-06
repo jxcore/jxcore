@@ -151,9 +151,9 @@ process.sendToMain( { obj: &quot;something&quot; } );</code></pre>
 <h2>tasks.addTask(method, param, callback, obj)<span><a class="mark" href="#jxcore_tasks_tasks_addtask_method_param_callback_obj" id="jxcore_tasks_tasks_addtask_method_param_callback_obj">#</a></span></h2>
 <div class="signature"><ul>
 <li><code>method</code> <span class="type">Function</span></li>
-<li><code>param</code> <span class="type">Object</span></li>
-<li><code>callback</code> <span class="type">Function</span></li>
-<li><code>obj</code> <span class="type">Object</span></li>
+<li><code>param</code> <span class="type">Object</span> [optional]</li>
+<li><code>callback</code> <span class="type">Function</span> [optional]</li>
+<li><code>obj</code> <span class="type">Object</span> [optional]</li>
 </div></ul>
 <p>Adds new task <strong>as a method</strong> to be processed in a separate thread. The task will be processed as soon as possible.
 If there is any idle subthread, it will be used to execute the task immediately. Otherwise it may wait until the other tasks will finish or some of the subthreads will become idle.
@@ -216,8 +216,8 @@ jxcore.tasks.addTask(method, { str: &quot;hello&quot; }, callback, mainThreadVar
 <h3>method.runTask(param, callback, obj)<span><a class="mark" href="#jxcore_tasks_method_runtask_param_callback_obj" id="jxcore_tasks_method_runtask_param_callback_obj">#</a></span></h3>
 <div class="signature"><ul>
 <li><code>param</code> <span class="type">Object</span></li>
-<li><code>callback</code> <span class="type">Function</span></li>
-<li><code>obj</code> <span class="type">Object</span></li>
+<li><code>callback</code> <span class="type">Function</span> [optional]</li>
+<li><code>obj</code> <span class="type">Object</span> [optional]</li>
 </div></ul>
 <p>This is shorter alternative to <code>tasks.addTask()</code>.
 JXcore adds <code>runTask()</code> method to function&#39;s prototype, so each function can be added as a task directly by calling <code>method.runTask()</code>:
@@ -414,9 +414,9 @@ Otherwise it may wait until the other tasks in this subthread will finish.
 <div class="signature"><ul>
 <li><code>threadId</code> <span class="type">Number</span></li>
 <li><code>method</code> <span class="type">Function</span></li>
-<li><code>param</code> <span class="type">Object</span></li>
-<li><code>callback</code> <span class="type">Function</span></li>
-<li><code>obj</code> <span class="type">Object</span></li>
+<li><code>param</code> <span class="type">Object</span> [optional]</li>
+<li><code>callback</code> <span class="type">Function</span> [optional]</li>
+<li><code>obj</code> <span class="type">Object</span> [optional]</li>
 </div></ul>
 <p>Runs a task (<code>method</code> with <code>param</code> argument) on individual subthread no <code>threadId</code>.
 
@@ -430,6 +430,9 @@ If it’s not provided, the <code>callback</code> method will have only one argu
 Otherwise, the <code>callback</code> will contain two arguments.
 The first one is the <code>obj</code> object described here, while the second argument is the result of the task <code>method</code>.
 
+</p>
+<p><em>Remind that, in case you provide the task in &#39;define/logic&#39; form, runOnThread runs both of them every time.
+If this is not inconvenient for your scenario, you may check whether the define was called before on that particular thread by marking a global member.</em>
 
 </p>
 <h3>method.runOnce(param, doNotRemember)<span><a class="mark" href="#jxcore_tasks_method_runonce_param_donotremember" id="jxcore_tasks_method_runonce_param_donotremember">#</a></span></h3>

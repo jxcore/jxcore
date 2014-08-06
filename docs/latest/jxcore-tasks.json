@@ -41,19 +41,22 @@
                   "type": "Function"
                 },
                 {
-                  "textRaw": "`param` {Object} ",
+                  "textRaw": "`param` {Object} [optional] ",
                   "name": "param",
-                  "type": "Object"
+                  "type": "Object",
+                  "desc": "[optional]"
                 },
                 {
-                  "textRaw": "`callback` {Function} ",
+                  "textRaw": "`callback` {Function} [optional] ",
                   "name": "callback",
-                  "type": "Function"
+                  "type": "Function",
+                  "desc": "[optional]"
                 },
                 {
-                  "textRaw": "`obj` {Object} ",
+                  "textRaw": "`obj` {Object} [optional] ",
                   "name": "obj",
-                  "type": "Object"
+                  "type": "Object",
+                  "desc": "[optional]"
                 }
               ]
             },
@@ -89,14 +92,16 @@
                       "type": "Object"
                     },
                     {
-                      "textRaw": "`callback` {Function} ",
+                      "textRaw": "`callback` {Function} [optional] ",
                       "name": "callback",
-                      "type": "Function"
+                      "type": "Function",
+                      "desc": "[optional]"
                     },
                     {
-                      "textRaw": "`obj` {Object} ",
+                      "textRaw": "`obj` {Object} [optional] ",
                       "name": "obj",
-                      "type": "Object"
+                      "type": "Object",
+                      "desc": "[optional]"
                     }
                   ]
                 },
@@ -260,19 +265,22 @@
                   "type": "Function"
                 },
                 {
-                  "textRaw": "`param` {Object} ",
+                  "textRaw": "`param` {Object} [optional] ",
                   "name": "param",
-                  "type": "Object"
+                  "type": "Object",
+                  "desc": "[optional]"
                 },
                 {
-                  "textRaw": "`callback` {Function} ",
+                  "textRaw": "`callback` {Function} [optional] ",
                   "name": "callback",
-                  "type": "Function"
+                  "type": "Function",
+                  "desc": "[optional]"
                 },
                 {
-                  "textRaw": "`obj` {Object} ",
+                  "textRaw": "`obj` {Object} [optional] ",
                   "name": "obj",
-                  "type": "Object"
+                  "type": "Object",
+                  "desc": "[optional]"
                 }
               ]
             },
@@ -296,7 +304,7 @@
               ]
             }
           ],
-          "desc": "<p>Runs a task (<code>method</code> with <code>param</code> argument) on individual subthread no <code>threadId</code>.\n\n</p>\n<p>After the method completes, the <code>callback</code> will be invoked.\nIt can receive one or two arguments, depending on whether or not <code>obj</code> is provided.\n\n</p>\n<p><code>obj</code> is a context object from the main thread and it can contain any value.\nIf it’s not provided, the <code>callback</code> method will have only one argument, and it will be the result of the task <code>method</code>.\nOtherwise, the <code>callback</code> will contain two arguments.\nThe first one is the <code>obj</code> object described here, while the second argument is the result of the task <code>method</code>.\n\n\n</p>\n",
+          "desc": "<p>Runs a task (<code>method</code> with <code>param</code> argument) on individual subthread no <code>threadId</code>.\n\n</p>\n<p>After the method completes, the <code>callback</code> will be invoked.\nIt can receive one or two arguments, depending on whether or not <code>obj</code> is provided.\n\n</p>\n<p><code>obj</code> is a context object from the main thread and it can contain any value.\nIf it’s not provided, the <code>callback</code> method will have only one argument, and it will be the result of the task <code>method</code>.\nOtherwise, the <code>callback</code> will contain two arguments.\nThe first one is the <code>obj</code> object described here, while the second argument is the result of the task <code>method</code>.\n\n</p>\n<p><em>Remind that, in case you provide the task in &#39;define/logic&#39; form, runOnThread runs both of them every time.\nIf this is not inconvenient for your scenario, you may check whether the define was called before on that particular thread by marking a global member.</em>\n\n</p>\n",
           "methods": [
             {
               "textRaw": "method.runOnce(param, doNotRemember)",
