@@ -352,6 +352,8 @@ If it’s not provided, the `callback` method will have only one argument, and i
 Otherwise, the `callback` will contain two arguments.
 The first one is the `obj` object described here, while the second argument is the result of the task `method`.
 
+*Remind that, in case you provide the task in 'define/logic' form, runOnThread runs both of them every time. If this is not inconvinient for your scenario, you may check wheteher the define was called before on that particular thread by marking a global member.* 
+
 
 ### method.runOnce(param, doNotRemember)
 
