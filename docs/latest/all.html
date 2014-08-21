@@ -15725,10 +15725,9 @@ You can hide body of the function inside of a JX package, even if the function i
 
 </p>
 <h3>utils.hideMethod(fn)<span><a class="mark" href="#all_utils_hidemethod_fn" id="all_utils_hidemethod_fn">#</a></span></h3>
-<div class="signature"><ul>
-<li><code>fn</code> <span class="type">Function</span></li>
-</div></ul>
-<p>Hides body of a given <code>fn</code> function. It will remain invokable inside, but
+<pre><code>This method is depreciated. Use special comment described below.</code></pre>
+<h3>special comment<span><a class="mark" href="#all_special_comment" id="all_special_comment">#</a></span></h3>
+<p>Using a special comment <code>/*_jx_protected_*/</code> inside a function&#39;s body hides body of that function.
 
 </p>
 <p>Let’s discuss it by the example. We’ll create <em>hide_test.js</em> file with the following code:
@@ -15756,10 +15755,13 @@ But we don’t want it, especially when we talk about code protection.
 For this we implemented in JXcore mechanism to hide functions contents, but in the same time to have them still invokable.
 
 </p>
-<p>Just add the following line to the <em>hide_test.js</em>:
+<p>Just add a special comment <code>/*_jx_protected_*/</code> to the function:
 
 </p>
-<pre><code class="js">jxcore.utils.hideMethod(exports.myMethod);</code></pre>
+<pre><code class="js">exports.myMethod = function (id1) {
+    /*_jx_protected_*/
+    return &quot;this is some function. It returns &quot; + id1;
+};</code></pre>
 <p>and when you run the package again (after recompiling), the output will be different:
 
 </p>
@@ -15775,16 +15777,9 @@ For this we implemented in JXcore mechanism to hide functions contents, but in t
 </p>
 <p><img src="http://jxcore.com/wp-content/uploads/2014/01/jx_hiding_body3.gif" alt="">
 
-</p>
-<h3>special comment<span><a class="mark" href="#all_special_comment" id="all_special_comment">#</a></span></h3>
-<p>As an alternative to <code>jxcore.utils.hideMethod()</code> you can also use a special comment <code>/*_jx_protected_*/</code> inside a function&#39;s body:
 
 </p>
-<pre><code class="js">var func = function() {
-    /*_jx_protected_*/
-    console.log(&quot;hello&quot;);
-}</code></pre>
-<p>It can be placed anywhere, as far it is located between function&#39;s curly brackets.
+<p>The <code>/*_jx_protected_*/</code> comment can be placed anywhere, as far it is located between function&#39;s curly brackets.
 
 </p>
 <h2>JX package<span><a class="mark" href="#all_jx_package" id="all_jx_package">#</a></span></h2>

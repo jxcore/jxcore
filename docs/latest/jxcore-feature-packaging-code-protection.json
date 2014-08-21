@@ -37,16 +37,8 @@
               "textRaw": "utils.hideMethod(fn)",
               "type": "method",
               "name": "hideMethod",
+              "desc": "<pre><code>This method is depreciated. Use special comment described below.</code></pre>\n",
               "signatures": [
-                {
-                  "params": [
-                    {
-                      "textRaw": "`fn` {Function} ",
-                      "name": "fn",
-                      "type": "Function"
-                    }
-                  ]
-                },
                 {
                   "params": [
                     {
@@ -54,15 +46,14 @@
                     }
                   ]
                 }
-              ],
-              "desc": "<p>Hides body of a given <code>fn</code> function. It will remain invokable inside, but\n\n</p>\n<p>Let’s discuss it by the example. We’ll create <em>hide_test.js</em> file with the following code:\n\n</p>\n<pre><code class=\"js\">exports.myMethod = function (id1) {\n    return &quot;this is some function. It returns &quot; + id1;\n};</code></pre>\n<p>And compile it into JX package:\n\n</p>\n<pre><code>&gt; jx package hide_test.js &quot;HideTest&quot;</code></pre>\n<p>Now if we run it in the command window:\n\n</p>\n<pre><code>&gt; jx -e &#39;console.log(require(&quot;./hide_test.jx&quot;).myMethod.toString());&#39;</code></pre>\n<p>We’ll see the output:\n\n</p>\n<p><img src=\"http://jxcore.com/wp-content/uploads/2014/02/jx_hiding_body1.gif\" alt=\"\">\n\n</p>\n<p>As we can see, the whole content of <code>myMethod</code> is currently visible.\nBut we don’t want it, especially when we talk about code protection.\nFor this we implemented in JXcore mechanism to hide functions contents, but in the same time to have them still invokable.\n\n</p>\n<p>Just add the following line to the <em>hide_test.js</em>:\n\n</p>\n<pre><code class=\"js\">jxcore.utils.hideMethod(exports.myMethod);</code></pre>\n<p>and when you run the package again (after recompiling), the output will be different:\n\n</p>\n<p><img src=\"http://jxcore.com/wp-content/uploads/2014/02/jx_hiding_body2.gif\" alt=\"\">\n\n</p>\n<p>We can still call the method itself:\n\n</p>\n<pre><code>&gt; jx -e &#39;console.log(require(&quot;./hide_test.jx&quot;).myMethod(&quot;an arg&quot;));&#39;</code></pre>\n<p>and it displays regular function’s result:\n\n</p>\n<p><img src=\"http://jxcore.com/wp-content/uploads/2014/01/jx_hiding_body3.gif\" alt=\"\">\n\n</p>\n"
+              ]
             }
           ],
           "modules": [
             {
               "textRaw": "special comment",
               "name": "special_comment",
-              "desc": "<p>As an alternative to <code>jxcore.utils.hideMethod()</code> you can also use a special comment <code>/*_jx_protected_*/</code> inside a function&#39;s body:\n\n</p>\n<pre><code class=\"js\">var func = function() {\n    /*_jx_protected_*/\n    console.log(&quot;hello&quot;);\n}</code></pre>\n<p>It can be placed anywhere, as far it is located between function&#39;s curly brackets.\n\n</p>\n",
+              "desc": "<p>Using a special comment <code>/*_jx_protected_*/</code> inside a function&#39;s body hides body of that function.\n\n</p>\n<p>Let’s discuss it by the example. We’ll create <em>hide_test.js</em> file with the following code:\n\n</p>\n<pre><code class=\"js\">exports.myMethod = function (id1) {\n    return &quot;this is some function. It returns &quot; + id1;\n};</code></pre>\n<p>And compile it into JX package:\n\n</p>\n<pre><code>&gt; jx package hide_test.js &quot;HideTest&quot;</code></pre>\n<p>Now if we run it in the command window:\n\n</p>\n<pre><code>&gt; jx -e &#39;console.log(require(&quot;./hide_test.jx&quot;).myMethod.toString());&#39;</code></pre>\n<p>We’ll see the output:\n\n</p>\n<p><img src=\"http://jxcore.com/wp-content/uploads/2014/02/jx_hiding_body1.gif\" alt=\"\">\n\n</p>\n<p>As we can see, the whole content of <code>myMethod</code> is currently visible.\nBut we don’t want it, especially when we talk about code protection.\nFor this we implemented in JXcore mechanism to hide functions contents, but in the same time to have them still invokable.\n\n</p>\n<p>Just add a special comment <code>/*_jx_protected_*/</code> to the function:\n\n</p>\n<pre><code class=\"js\">exports.myMethod = function (id1) {\n    /*_jx_protected_*/\n    return &quot;this is some function. It returns &quot; + id1;\n};</code></pre>\n<p>and when you run the package again (after recompiling), the output will be different:\n\n</p>\n<p><img src=\"http://jxcore.com/wp-content/uploads/2014/02/jx_hiding_body2.gif\" alt=\"\">\n\n</p>\n<p>We can still call the method itself:\n\n</p>\n<pre><code>&gt; jx -e &#39;console.log(require(&quot;./hide_test.jx&quot;).myMethod(&quot;an arg&quot;));&#39;</code></pre>\n<p>and it displays regular function’s result:\n\n</p>\n<p><img src=\"http://jxcore.com/wp-content/uploads/2014/01/jx_hiding_body3.gif\" alt=\"\">\n\n\n</p>\n<p>The <code>/*_jx_protected_*/</code> comment can be placed anywhere, as far it is located between function&#39;s curly brackets.\n\n</p>\n",
               "type": "module",
               "displayName": "special comment"
             }
