@@ -52,6 +52,7 @@
             <ul>
 <li><a href="#jxconfig_jx_config">jx.config</a><ul>
 <li><a href="#jxconfig_porttcp_porttcps_integer">portTCP, portTCPS: (integer)</a></li>
+<li><a href="#jxconfig_allowmonitoringapi">allowMonitoringAPI</a></li>
 <li><a href="#jxconfig_allowcustomsocketport_boolean">allowCustomSocketPort: (boolean)</a></li>
 <li><a href="#jxconfig_maxmemory_integer">maxMemory: (integer)</a></li>
 <li><a href="#jxconfig_allowsysexec_boolean">allowSysExec: (boolean)</a></li>
@@ -111,8 +112,16 @@ res.end(&#39;Hello World\n&#39;);
 </p>
 <p>portTCP, and portTCPS has no effect on global configuration.
 
+</p>
+<h2>allowMonitoringAPI<span><a class="mark" href="#jxconfig_allowmonitoringapi" id="jxconfig_allowmonitoringapi">#</a></span></h2>
+<p>You may use this parameter to disable access to <a href="jxcore-monitor.html#jxcore_monitor_api"><code>jxcore.monitor</code></a> methods within an application.
+The default value is <em>true</em>.
 
 </p>
+<pre><code>jx.config:
+{
+    &quot;allowMonitoringAPI&quot;: false
+}</code></pre>
 <h2>allowCustomSocketPort: (boolean)<span><a class="mark" href="#jxconfig_allowcustomsocketport_boolean" id="jxconfig_allowcustomsocketport_boolean">#</a></span></h2>
 <p>This parameter defines whether the process can listen any socket or not. Setting this parameter to false keeps application from listening any socket but the ones given by portTCP, portTCPS. If the value is false and neither portTCP, portTCPS are defined, the application won’t be listening any port and the htttp/s server will fail. This setting can be set both global and per application.
 
@@ -198,8 +207,6 @@ res.end(&#39;Hello World\n&#39;);
     &quot;globalModulePath&quot;:&quot;/somefolder&quot;
 }</code></pre>
 <p>This parameter can be useful on systems when the administrator wants to control the node module pool.
-
-
 
 </p>
 <h2>allowLocalNativeModules: (boolean)<span><a class="mark" href="#jxconfig_allowlocalnativemodules_boolean" id="jxconfig_allowlocalnativemodules_boolean">#</a></span></h2>

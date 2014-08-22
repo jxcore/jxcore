@@ -52,7 +52,11 @@
             <ul>
 <li><a href="#jxcore_feature_packaging_code_protection_packaging_code_protection">Packaging &amp; Code Protection</a><ul>
 <li><a href="#jxcore_feature_packaging_code_protection_command">Command</a><ul>
-<li><a href="#jxcore_feature_packaging_code_protection_package">package</a></li>
+<li><a href="#jxcore_feature_packaging_code_protection_package">package</a><ul>
+<li><a href="#jxcore_feature_packaging_code_protection_slim">-slim</a></li>
+<li><a href="#jxcore_feature_packaging_code_protection_native">-native</a></li>
+</ul>
+</li>
 <li><a href="#jxcore_feature_packaging_code_protection_compile">compile</a></li>
 </ul>
 </li>
@@ -102,7 +106,7 @@
 <pre><code>&gt; jx helloworld.js</code></pre>
 <h2>Command<span><a class="mark" href="#jxcore_feature_packaging_code_protection_command" id="jxcore_feature_packaging_code_protection_command">#</a></span></h2>
 <h3>package<span><a class="mark" href="#jxcore_feature_packaging_code_protection_package" id="jxcore_feature_packaging_code_protection_package">#</a></span></h3>
-<pre><code>&gt; jx package javascript_file name_of_the_package [-slim folder, folder2, ...]</code></pre>
+<pre><code>&gt; jx package javascript_file name_of_the_package [-slim folder, folder2, ...] [-native]</code></pre>
 <p>This command recursively scans the current folder and generates a <code>JXP</code> package information file based on all files in that directory.
 After that compiles the <code>JXP</code> file (by invoking <code>compile</code> command).
 
@@ -110,20 +114,34 @@ After that compiles the <code>JXP</code> file (by invoking <code>compile</code> 
 <ul>
 <li><code>javascript_file</code> - the main file, which will be executed when JX package will be launched with JXcore.</li>
 <li><code>name_of_the_package</code> - indicates the name of the package file. For example, giving the value <em>MyPackage</em>  will create <em>mypackage.jx</em> file.</li>
-<li><code>-slim</code> - this optional parameters followed by folder names separated with comma - prevents adding those folders into the final JX package.</li>
 </ul>
 <p>Suppose you have a simple <em>Hello_World</em> project, with just two files: <em>helloworld.js</em> and <em>index.html</em>. When you call:
 
 </p>
 <pre><code>&gt; jx package helloworld.js &quot;Hello World&quot;</code></pre>
-<p>initially, the tool generates <code>JXP</code> project file (<em>helloworld.jxp</em>). Then it is used as an input for <code>compile</code> command, which will create the output JX package <em>helloworld.jx</em>.
+<p>initially, the tool generates <code>JXP</code> project file (<em>helloworld.jxp</em>). Then it is used as an input for <code>compile</code> command,
+which will create the output JX package <em>helloworld.jx</em>.
+
+</p>
+<p>Description of the switches:
+
+</p>
+<h4>-slim<span><a class="mark" href="#jxcore_feature_packaging_code_protection_slim" id="jxcore_feature_packaging_code_protection_slim">#</a></span></h4>
+<p>This optional parameters followed by folder names separated with comma - prevents adding those folders into the final JX package.
+
+</p>
+<h4>-native<span><a class="mark" href="#jxcore_feature_packaging_code_protection_native" id="jxcore_feature_packaging_code_protection_native">#</a></span></h4>
+<p>This parameter is optional. When provided, the package will be compiled as a self-executable.
 
 </p>
 <h3>compile<span><a class="mark" href="#jxcore_feature_packaging_code_protection_compile" id="jxcore_feature_packaging_code_protection_compile">#</a></span></h3>
 <p>When you already have a <code>JXP</code> project file (either created with <code>package</code> command or manually), you can call <code>compile</code> for generating JX package.
 
 </p>
-<pre><code>&gt; jx compile project_file.jxp</code></pre>
+<pre><code>&gt; jx compile project_file.jxp -native</code></pre>
+<p>When <code>-native</code> switch is provided, it overrides <code>native</code> parameter value from a <code>JXP</code> file.
+
+</p>
 <h2>Hiding body of functions<span><a class="mark" href="#jxcore_feature_packaging_code_protection_hiding_body_of_functions" id="jxcore_feature_packaging_code_protection_hiding_body_of_functions">#</a></span></h2>
 <p>As you may already know, a JavaScript function (like everything in JavaScript – <a href="http://www.w3schools.com">w3schools</a>) is an object.
 To be more precise, it is an instance of the <code>Function</code> which inherits from the <code>Object</code>.
@@ -261,7 +279,8 @@ It means, if you want to package your project into a JX package, you need to cre
     &quot;preInstall&quot; : [
         &quot;mkdir new_folder&quot;
     ],
-    &quot;fs_reach_sources&quot;: true
+    &quot;fs_reach_sources&quot;: true,
+    &quot;native&quot; : true
 }</code></pre>
 <p>You can access this object in a runtime of your JX package by:
 
@@ -292,8 +311,6 @@ Name of the output JX package.</li>
 This is an array, where you can define, which script files from your project will be included into the JX package. Only <code>*.js</code> and <code>*.json</code> files are allowed here.</li>
 <li><strong>assets</strong>
 This is the array with static resource files. You can embed any asset file into the <code>jx</code> package.</li>
-<li><strong>fs_reach_sources</strong>
-Normally, <code>fs</code> can not reach the JavaScript files inside the package. If you need to access all the JavaScript files using <code>fs</code> module, you should set this parameter to &#39;true&#39;. Otherwise you can either set it to &#39;false&#39; or give the list of files expected to be reachable by &#39;fs&#39; module. (i.e. { &quot;lib/testfile.js&quot;:true, &quot;lib/test2.js&quot;:true } )</li>
 <li><strong>library</strong>
 It is a boolean value: true or false. Value set to true means that JX package can be treated as a library and it can be used from inside another JX package (with <code>require()</code> method).
 Setting this value to false is a good way of preventing its usage as an external module (and then <code>require()</code> will not be possible).</li>
@@ -376,6 +393,15 @@ If you want to run it again, simply remove that file.
 <p>However, <code>files</code> members are not accessible from exports.$JXP.
 
 </p>
+<ul>
+<li><strong>fs_reach_sources</strong>
+Normally, <code>fs</code> can not reach the JavaScript files inside the package. If you need to access all the JavaScript files using <code>fs</code> module, you should set this parameter to &#39;true&#39;. Otherwise you can either set it to &#39;false&#39; or give the list of files expected to be reachable by &#39;fs&#39; module. (i.e. { &quot;lib/testfile.js&quot;:true, &quot;lib/test2.js&quot;:true } )</li>
+</ul>
+<ul>
+<li><strong>native</strong>
+When this parameter is set to &#39;true&#39;, the compilation process creates standalone, self-executable binary rather than a package.
+It acts exactly as <code>jx package</code> command called with <a href="jxcore-feature-packaging-code-protection.html#jxcore_feature_packaging_code_protection_native"><code>-native</code></a> switch.</li>
+</ul>
 <h3>Supported file types<span><a class="mark" href="#jxcore_feature_packaging_code_protection_supported_file_types" id="jxcore_feature_packaging_code_protection_supported_file_types">#</a></span></h3>
 <p>You can embed any asset file (text and binary) into the <code>jx</code> package and it will be
 placed automatically into the <code>assets</code> array of <code>JXP</code> project file during execution of <code>jx package</code> command.

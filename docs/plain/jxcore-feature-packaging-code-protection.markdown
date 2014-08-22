@@ -16,26 +16,38 @@ instead of:
 
 ### package
 
-    > jx package javascript_file name_of_the_package [-slim folder, folder2, ...]
+    > jx package javascript_file name_of_the_package [-slim folder, folder2, ...] [-native]
 
 This command recursively scans the current folder and generates a `JXP` package information file based on all files in that directory.
 After that compiles the `JXP` file (by invoking `compile` command).
 
 * `javascript_file` - the main file, which will be executed when JX package will be launched with JXcore.
 * `name_of_the_package` - indicates the name of the package file. For example, giving the value *MyPackage*  will create *mypackage.jx* file.
-* `-slim` - this optional parameters followed by folder names separated with comma - prevents adding those folders into the final JX package.
 
 Suppose you have a simple *Hello_World* project, with just two files: *helloworld.js* and *index.html*. When you call:
 
     > jx package helloworld.js "Hello World"
 
-initially, the tool generates `JXP` project file (*helloworld.jxp*). Then it is used as an input for `compile` command, which will create the output JX package *helloworld.jx*.
+initially, the tool generates `JXP` project file (*helloworld.jxp*). Then it is used as an input for `compile` command,
+which will create the output JX package *helloworld.jx*.
+
+Description of the switches:
+
+#### -slim
+
+This optional parameters followed by folder names separated with comma - prevents adding those folders into the final JX package.
+
+#### -native
+
+This parameter is optional. When provided, the package will be compiled as a self-executable.
 
 ### compile
 
 When you already have a `JXP` project file (either created with `package` command or manually), you can call `compile` for generating JX package.
 
-    > jx compile project_file.jxp
+    > jx compile project_file.jxp -native
+
+When `-native` switch is provided, it overrides `native` parameter value from a `JXP` file.
 
 ## Hiding body of functions
 
@@ -49,9 +61,11 @@ You can hide body of the function inside of a JX package, even if the function i
 
 ### utils.hideMethod(fn)
 
-* `fn` {Function}
+    This method is depreciated. Use special comment described below.
 
-Hides body of a given `fn` function. It will remain invokable inside, but
+### special comment
+
+Using a special comment `/*_jx_protected_*/` inside a function's body hides body of that function.
 
 Let’s discuss it by the example. We’ll create *hide_test.js* file with the following code:
 
@@ -77,10 +91,13 @@ As we can see, the whole content of `myMethod` is currently visible.
 But we don’t want it, especially when we talk about code protection.
 For this we implemented in JXcore mechanism to hide functions contents, but in the same time to have them still invokable.
 
-Just add the following line to the *hide_test.js*:
+Just add a special comment `/*_jx_protected_*/` to the function:
 
 ```js
-jxcore.utils.hideMethod(exports.myMethod);
+exports.myMethod = function (id1) {
+    /*_jx_protected_*/
+    return "this is some function. It returns " + id1;
+};
 ```
 
 and when you run the package again (after recompiling), the output will be different:
@@ -95,18 +112,8 @@ and it displays regular function’s result:
 
 ![](http://jxcore.com/wp-content/uploads/2014/01/jx_hiding_body3.gif)
 
-### special comment
 
-As an alternative to `jxcore.utils.hideMethod()` you can also use a special comment `/*_jx_protected_*/` inside a function's body:
-
-```js
-var func = function() {
-    /*_jx_protected_*/
-    console.log("hello");
-}
-```
-
-It can be placed anywhere, as far it is located between function's curly brackets.
+The `/*_jx_protected_*/` comment can be placed anywhere, as far it is located between function's curly brackets.
 
 ## JX package
 
@@ -177,7 +184,8 @@ The JXP project file is simple text file that contains package description writt
     "preInstall" : [
         "mkdir new_folder"
     ],
-    "fs_reach_sources": true
+    "fs_reach_sources": true,
+    "native" : true
 }
 ```
 
@@ -212,8 +220,6 @@ Name of the output JX package.
 This is an array, where you can define, which script files from your project will be included into the JX package. Only `*.js` and `*.json` files are allowed here.
 * **assets**
 This is the array with static resource files. You can embed any asset file into the `jx` package.
-* **fs_reach_sources**
-Normally, `fs` can not reach the JavaScript files inside the package. If you need to access all the JavaScript files using `fs` module, you should set this parameter to 'true'. Otherwise you can either set it to 'false' or give the list of files expected to be reachable by 'fs' module. (i.e. { "lib/testfile.js":true, "lib/test2.js":true } )
 * **library**
 It is a boolean value: true or false. Value set to true means that JX package can be treated as a library and it can be used from inside another JX package (with `require()` method).
 Setting this value to false is a good way of preventing its usage as an external module (and then `require()` will not be possible).
@@ -299,6 +305,13 @@ if (exports.$JXP.Release) {
 ```
 
 However, `files` members are not accessible from exports.$JXP.
+
+* **fs_reach_sources**
+Normally, `fs` can not reach the JavaScript files inside the package. If you need to access all the JavaScript files using `fs` module, you should set this parameter to 'true'. Otherwise you can either set it to 'false' or give the list of files expected to be reachable by 'fs' module. (i.e. { "lib/testfile.js":true, "lib/test2.js":true } )
+
+* **native**
+When this parameter is set to 'true', the compilation process creates standalone, self-executable binary rather than a package.
+It acts exactly as `jx package` command called with [`-native`](jxcore-feature-packaging-code-protection.markdown#native) switch.
 
 ### Supported file types
 

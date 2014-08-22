@@ -41,6 +41,16 @@ The sample JavaScript application above tries to listen port 1337. Since the pre
 
 portTCP, and portTCPS has no effect on global configuration.
 
+## allowMonitoringAPI
+
+You may use this parameter to disable access to [`jxcore.monitor`](jxcore-monitor.markdown#api) methods within an application.
+The default value is *true*.
+
+    jx.config:
+    {
+        "allowMonitoringAPI": false
+    }
+
 
 ## allowCustomSocketPort: (boolean)
 
@@ -123,8 +133,6 @@ Defines the system wide node.js module archive location. If this value is define
     }
 
 This parameter can be useful on systems when the administrator wants to control the node module pool.
-
-
 
 ## allowLocalNativeModules: (boolean)
 

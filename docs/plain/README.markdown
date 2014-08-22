@@ -24,6 +24,7 @@
 * [Store](jxcore-store.markdown)
 * [Tasks](jxcore-tasks.markdown)
 * [Process](jxcore-thread.markdown)
+* [Utils](jxcore-utils.markdown)
 
 # Native modules API
 * [Synopsis](synopsis.markdown)

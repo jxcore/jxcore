@@ -4,7 +4,7 @@
     {
       "textRaw": "Process Monitor",
       "name": "process_monitor",
-      "desc": "<p>JXcore offers embedded process monitoring tool. It checks regularly whether the monitored process/processes still exist and restarts them, if required.\nWhen the monitor is running, your applications can subscribe to it and start being monitored.\n\n</p>\n<p>The Process Monitor is global and can be referenced from anywhere:\n\n</p>\n<pre><code class=\"js\">var mon = jxcore.monitor;</code></pre>\n<p>You can control monitor&#39;s process from the <a href=\"jxcore-command-monitor.html\">command line</a> also.\n\n</p>\n<p>Apart from this feature, JXcore also offers <a href=\"jxcore-feature-internal-recovery.html\">Internal Recovery</a>.\n\n</p>\n",
+      "desc": "<p>JXcore offers embedded process monitoring tool. It checks regularly whether the monitored process/processes still exist and restarts them, if required.\nWhen the monitor is running, your applications can subscribe to it and start being monitored.\n\n</p>\n<p>The Process Monitor is global and can be referenced from anywhere:\n\n</p>\n<pre><code class=\"js\">var mon = jxcore.monitor;</code></pre>\n<p>You can control monitor&#39;s process from the <a href=\"jxcore-command-monitor.html\">command line</a> also.\n\n</p>\n<p>Apart from this feature, JXcore also offers <a href=\"jxcore-feature-internal-recovery.html\">Internal Recovery</a>.\n\n</p>\n<p>All <code>jxcore.monitor</code> methods can be disabled from <em>jx.config</em> file.\nSee <a href=\"jxconfig.html#jxconfig_allowmonitoringapi\"><code>allowMonitoringAPI</code></a>.\n\n</p>\n",
       "modules": [
         {
           "textRaw": "API",

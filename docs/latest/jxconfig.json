@@ -12,9 +12,16 @@
         {
           "textRaw": "portTCP, portTCPS: (integer)",
           "name": "porttcp,_porttcps:_(integer)",
-          "desc": "<p>Limits the application’s TCP listening port range to given port addresses. When this variable is defined, the process is restricted to the defined ports instead the ones given in the JavaScript code.\n\n</p>\n<p>example:\n\n</p>\n<pre><code>index.js.jxcore.config:\n{\n&quot;portTCP&quot;: 8080\n}\n\nindex.js:\nvar http = require(&#39;http&#39;);\nhttp.createServer(function (req, res) {\n    res.writeHead(200, {&#39;Content-Type&#39;: &#39;text/plain&#39;});\nres.end(&#39;Hello World\\n&#39;);\n}).listen(1337);</code></pre>\n<p>The sample JavaScript application above tries to listen port 1337. Since the predefined port for that process is 8080, the application automatically listens 8080 instead 1337. The application doesn’t know that it actually listening 8080 (this can be changed on later versions).  ‘portTCP’ affects both UDP and TCP connections. ‘portTCPS’ only affects the port number for ‘https’ module or secure socket connections.\n\n</p>\n<p>portTCP, and portTCPS has no effect on global configuration.\n\n\n</p>\n",
+          "desc": "<p>Limits the application’s TCP listening port range to given port addresses. When this variable is defined, the process is restricted to the defined ports instead the ones given in the JavaScript code.\n\n</p>\n<p>example:\n\n</p>\n<pre><code>index.js.jxcore.config:\n{\n&quot;portTCP&quot;: 8080\n}\n\nindex.js:\nvar http = require(&#39;http&#39;);\nhttp.createServer(function (req, res) {\n    res.writeHead(200, {&#39;Content-Type&#39;: &#39;text/plain&#39;});\nres.end(&#39;Hello World\\n&#39;);\n}).listen(1337);</code></pre>\n<p>The sample JavaScript application above tries to listen port 1337. Since the predefined port for that process is 8080, the application automatically listens 8080 instead 1337. The application doesn’t know that it actually listening 8080 (this can be changed on later versions).  ‘portTCP’ affects both UDP and TCP connections. ‘portTCPS’ only affects the port number for ‘https’ module or secure socket connections.\n\n</p>\n<p>portTCP, and portTCPS has no effect on global configuration.\n\n</p>\n",
           "type": "module",
           "displayName": "portTCP, portTCPS: (integer)"
+        },
+        {
+          "textRaw": "allowMonitoringAPI",
+          "name": "allowmonitoringapi",
+          "desc": "<p>You may use this parameter to disable access to <a href=\"jxcore-monitor.html#jxcore_monitor_api\"><code>jxcore.monitor</code></a> methods within an application.\nThe default value is <em>true</em>.\n\n</p>\n<pre><code>jx.config:\n{\n    &quot;allowMonitoringAPI&quot;: false\n}</code></pre>\n",
+          "type": "module",
+          "displayName": "allowMonitoringAPI"
         },
         {
           "textRaw": "allowCustomSocketPort: (boolean)",
@@ -54,7 +61,7 @@
         {
           "textRaw": "globalModulePath: (string)",
           "name": "globalmodulepath:_(string)",
-          "desc": "<p>Defines the system wide node.js module archive location. If this value is defined, all running JXcore Node.JS processes will be checking this folder for the required modules first. This setting is global only hence cannot be defined per application.\n\n</p>\n<pre><code>jx.config\n{\n    &quot;globalModulePath&quot;:&quot;/somefolder&quot;\n}</code></pre>\n<p>This parameter can be useful on systems when the administrator wants to control the node module pool.\n\n\n\n</p>\n",
+          "desc": "<p>Defines the system wide node.js module archive location. If this value is defined, all running JXcore Node.JS processes will be checking this folder for the required modules first. This setting is global only hence cannot be defined per application.\n\n</p>\n<pre><code>jx.config\n{\n    &quot;globalModulePath&quot;:&quot;/somefolder&quot;\n}</code></pre>\n<p>This parameter can be useful on systems when the administrator wants to control the node module pool.\n\n</p>\n",
           "type": "module",
           "displayName": "globalModulePath: (string)"
         },

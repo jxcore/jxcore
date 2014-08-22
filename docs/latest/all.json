@@ -14469,14 +14469,30 @@
             {
               "textRaw": "package",
               "name": "package",
-              "desc": "<pre><code>&gt; jx package javascript_file name_of_the_package [-slim folder, folder2, ...]</code></pre>\n<p>This command recursively scans the current folder and generates a <code>JXP</code> package information file based on all files in that directory.\nAfter that compiles the <code>JXP</code> file (by invoking <code>compile</code> command).\n\n</p>\n<ul>\n<li><code>javascript_file</code> - the main file, which will be executed when JX package will be launched with JXcore.</li>\n<li><code>name_of_the_package</code> - indicates the name of the package file. For example, giving the value <em>MyPackage</em>  will create <em>mypackage.jx</em> file.</li>\n<li><code>-slim</code> - this optional parameters followed by folder names separated with comma - prevents adding those folders into the final JX package.</li>\n</ul>\n<p>Suppose you have a simple <em>Hello_World</em> project, with just two files: <em>helloworld.js</em> and <em>index.html</em>. When you call:\n\n</p>\n<pre><code>&gt; jx package helloworld.js &quot;Hello World&quot;</code></pre>\n<p>initially, the tool generates <code>JXP</code> project file (<em>helloworld.jxp</em>). Then it is used as an input for <code>compile</code> command, which will create the output JX package <em>helloworld.jx</em>.\n\n</p>\n",
+              "desc": "<pre><code>&gt; jx package javascript_file name_of_the_package [-slim folder, folder2, ...] [-native]</code></pre>\n<p>This command recursively scans the current folder and generates a <code>JXP</code> package information file based on all files in that directory.\nAfter that compiles the <code>JXP</code> file (by invoking <code>compile</code> command).\n\n</p>\n<ul>\n<li><code>javascript_file</code> - the main file, which will be executed when JX package will be launched with JXcore.</li>\n<li><code>name_of_the_package</code> - indicates the name of the package file. For example, giving the value <em>MyPackage</em>  will create <em>mypackage.jx</em> file.</li>\n</ul>\n<p>Suppose you have a simple <em>Hello_World</em> project, with just two files: <em>helloworld.js</em> and <em>index.html</em>. When you call:\n\n</p>\n<pre><code>&gt; jx package helloworld.js &quot;Hello World&quot;</code></pre>\n<p>initially, the tool generates <code>JXP</code> project file (<em>helloworld.jxp</em>). Then it is used as an input for <code>compile</code> command,\nwhich will create the output JX package <em>helloworld.jx</em>.\n\n</p>\n<p>Description of the switches:\n\n</p>\n",
+              "modules": [
+                {
+                  "textRaw": "-slim",
+                  "name": "-slim",
+                  "desc": "<p>This optional parameters followed by folder names separated with comma - prevents adding those folders into the final JX package.\n\n</p>\n",
+                  "type": "module",
+                  "displayName": "-slim"
+                },
+                {
+                  "textRaw": "-native",
+                  "name": "-native",
+                  "desc": "<p>This parameter is optional. When provided, the package will be compiled as a self-executable.\n\n</p>\n",
+                  "type": "module",
+                  "displayName": "-native"
+                }
+              ],
               "type": "module",
               "displayName": "package"
             },
             {
               "textRaw": "compile",
               "name": "compile",
-              "desc": "<p>When you already have a <code>JXP</code> project file (either created with <code>package</code> command or manually), you can call <code>compile</code> for generating JX package.\n\n</p>\n<pre><code>&gt; jx compile project_file.jxp</code></pre>\n",
+              "desc": "<p>When you already have a <code>JXP</code> project file (either created with <code>package</code> command or manually), you can call <code>compile</code> for generating JX package.\n\n</p>\n<pre><code>&gt; jx compile project_file.jxp -native</code></pre>\n<p>When <code>-native</code> switch is provided, it overrides <code>native</code> parameter value from a <code>JXP</code> file.\n\n</p>\n",
               "type": "module",
               "displayName": "compile"
             }
@@ -14561,7 +14577,7 @@
             {
               "textRaw": "File structure",
               "name": "file_structure",
-              "desc": "<p>The JXP project file is simple text file that contains package description written as json literal object:\n\n</p>\n<pre><code class=\"js\">{\n    &quot;name&quot;: &quot;Hello World&quot;,\n    &quot;version&quot;: &quot;1.0&quot;,\n    &quot;author&quot;: &quot;&quot;,\n    &quot;description&quot;: &quot;&quot;,\n    &quot;company&quot;: &quot;&quot;,\n    &quot;website&quot; : &quot;&quot;,\n    &quot;package&quot;: null,\n    &quot;startup&quot;: &quot;helloworld.js&quot;,\n    &quot;execute&quot;: null,\n    &quot;extract&quot;: false,\n    &quot;output&quot;: &quot;helloworld.jx&quot;,\n    &quot;files&quot;: [\n        &quot;helloworld.js&quot;\n    ],\n    &quot;assets&quot;: [\n        &quot;index.html&quot;\n    ],\n    &quot;library&quot;: false,\n    &quot;license_file&quot;: null,\n    &quot;readme_file&quot;: null,\n    &quot;preInstall&quot; : [\n        &quot;mkdir new_folder&quot;\n    ],\n    &quot;fs_reach_sources&quot;: true\n}</code></pre>\n<p>You can access this object in a runtime of your JX package by:\n\n</p>\n<pre><code class=\"js\">var obj = exports.$JXP;</code></pre>\n<p>And the single field:\n\n</p>\n<pre><code class=\"js\">var name = obj.name;</code></pre>\n<p>Below you can find explanation for all supported fields:\n\n</p>\n<ul>\n<li><strong>name</strong>, <strong>version</strong>, <strong>author</strong>, <strong>description</strong>, <strong>company</strong>, <strong>website</strong>\nThese are all string values.</li>\n<li><strong>startup</strong>\nName of the main project file. If execute parameter is not defined, this file will be executed first when you run the package.</li>\n<li><strong>execute</strong>\nName of the main execution file. If this parameter is omitted or null – the value from startup will be used.\nThis parameter has different meaning depending on the library value.\nWhen the package is compiled with <code>library</code> = <code>false</code>, and you run the compiled package, this execute file will be executed first.\nIf <code>library</code> is <code>true</code>, and the package is called with <code>require()</code> method, the execute file will be returned by the latter.</li>\n<li><strong>extract</strong>\nThis is a boolean value: true or false. When it&#39;s set to true, all package contents will be extracted at first run of the compiled package. There will be a new folder created with the name parameter. All files and assets embedded inside the package will be saved with full directory structure preserved.</li>\n<li><strong>output</strong>\nName of the output JX package.</li>\n<li><strong>files</strong>\nThis is an array, where you can define, which script files from your project will be included into the JX package. Only <code>*.js</code> and <code>*.json</code> files are allowed here.</li>\n<li><strong>assets</strong>\nThis is the array with static resource files. You can embed any asset file into the <code>jx</code> package.</li>\n<li><strong>fs_reach_sources</strong>\nNormally, <code>fs</code> can not reach the JavaScript files inside the package. If you need to access all the JavaScript files using <code>fs</code> module, you should set this parameter to &#39;true&#39;. Otherwise you can either set it to &#39;false&#39; or give the list of files expected to be reachable by &#39;fs&#39; module. (i.e. { &quot;lib/testfile.js&quot;:true, &quot;lib/test2.js&quot;:true } )</li>\n<li><strong>library</strong>\nIt is a boolean value: true or false. Value set to true means that JX package can be treated as a library and it can be used from inside another JX package (with <code>require()</code> method).\nSetting this value to false is a good way of preventing its usage as an external module (and then <code>require()</code> will not be possible).</li>\n<li><strong>licence_file</strong>\nName of the file containing the licensing information – it is generally a simple text file. If this parameter is omitted or null and if a file named “LICENSE” exists in the directory from where you compile the package – it will be embedded automatically.</li>\n<li><strong>readme_file</strong>\nName of the file containing additional notes about the package. If this parameter is omitted or null and if a file named “README” or “README.md” exists in the directory from where you compile the package – it will be embedded automatically.\nWhen a license or readme file is specified, it can be also displayed in a console window directly from the package.</li>\n</ul>\n<p>For example, running the following command:\n\n</p>\n<pre><code>&gt; jx package.jx license</code></pre>\n<p>will display the licence file to the console without executing the package. The same applies to:\n\n</p>\n<pre><code>&gt; jx package.jx readme</code></pre>\n<ul>\n<li><strong>preInstall</strong>\nThis is an array, where you can define system commands to be executed right before jx package execution.\nFor example, this might be creating a folder, installing an additional package/module or just anything.\nCommands are executed in the same order as the array is defined.</li>\n</ul>\n<p>There is a special keyword <code>JX_BINARY</code> which is replaced during runtime with current <code>jx</code> executable path.\n\n</p>\n<p>For example, we have the following commands in JXP file:\n\n</p>\n<pre><code class=\"js\">&quot;preInstall&quot; : [\n    &quot;which JX_BINARY &gt; log.txt&quot;,\n    &quot;JX_BINARY -jxv &gt;&gt; log.txt&quot;\n]</code></pre>\n<p>Those commands will be executed for the first time, when we run the package:\n\n</p>\n<pre><code>&gt; jx package.jx</code></pre>\n<p>or\n\n</p>\n<pre><code class=\"js\">var module = require(&quot;./package.jx&quot;);</code></pre>\n<p>In this example, the first commands writes the full path string of jx binary to the <em>log.txt</em> file, while the second one - executes <code>jx -jxv</code>\nand appends the result (the jx version number) to the same file.\n\n</p>\n<p>When all of the commands are executed, there will be a file created <code>your_module.installed</code> preventing subsequent execution of pre-install section.\nIf you want to run it again, simply remove that file.\n\n</p>\n<ul>\n<li><strong>custom_fields</strong></li>\n</ul>\n<p>You can also define your own constants, as many as you want, for example:\n\n</p>\n<pre><code class=\"js\">{\n    // ...\n    // ...\n    // ...\n    field1 : &quot;one&quot;,\n    myField2 : &quot;two&quot;,\n    someObject : {\n        PI : 3.14159265359,\n        userArray : [ 1, 2 ]\n    },\n    Release : true\n}</code></pre>\n<p>Similarly, accessing those values in a runtime of your JX package is also easy:\n\n</p>\n<pre><code class=\"js\">var pi = exports.$JXP.someObject.PI;</code></pre>\n<p>One of the usage examples for those custom fields can be:\n\n</p>\n<pre><code class=\"js\">if (exports.$JXP.Release) {\n    console.log(&quot;This is the final release of the product.&quot;);\n} else {\n    console.log(&quot;This code is still under development.&quot;);\n}</code></pre>\n<p>However, <code>files</code> members are not accessible from exports.$JXP.\n\n</p>\n",
+              "desc": "<p>The JXP project file is simple text file that contains package description written as json literal object:\n\n</p>\n<pre><code class=\"js\">{\n    &quot;name&quot;: &quot;Hello World&quot;,\n    &quot;version&quot;: &quot;1.0&quot;,\n    &quot;author&quot;: &quot;&quot;,\n    &quot;description&quot;: &quot;&quot;,\n    &quot;company&quot;: &quot;&quot;,\n    &quot;website&quot; : &quot;&quot;,\n    &quot;package&quot;: null,\n    &quot;startup&quot;: &quot;helloworld.js&quot;,\n    &quot;execute&quot;: null,\n    &quot;extract&quot;: false,\n    &quot;output&quot;: &quot;helloworld.jx&quot;,\n    &quot;files&quot;: [\n        &quot;helloworld.js&quot;\n    ],\n    &quot;assets&quot;: [\n        &quot;index.html&quot;\n    ],\n    &quot;library&quot;: false,\n    &quot;license_file&quot;: null,\n    &quot;readme_file&quot;: null,\n    &quot;preInstall&quot; : [\n        &quot;mkdir new_folder&quot;\n    ],\n    &quot;fs_reach_sources&quot;: true,\n    &quot;native&quot; : true\n}</code></pre>\n<p>You can access this object in a runtime of your JX package by:\n\n</p>\n<pre><code class=\"js\">var obj = exports.$JXP;</code></pre>\n<p>And the single field:\n\n</p>\n<pre><code class=\"js\">var name = obj.name;</code></pre>\n<p>Below you can find explanation for all supported fields:\n\n</p>\n<ul>\n<li><strong>name</strong>, <strong>version</strong>, <strong>author</strong>, <strong>description</strong>, <strong>company</strong>, <strong>website</strong>\nThese are all string values.</li>\n<li><strong>startup</strong>\nName of the main project file. If execute parameter is not defined, this file will be executed first when you run the package.</li>\n<li><strong>execute</strong>\nName of the main execution file. If this parameter is omitted or null – the value from startup will be used.\nThis parameter has different meaning depending on the library value.\nWhen the package is compiled with <code>library</code> = <code>false</code>, and you run the compiled package, this execute file will be executed first.\nIf <code>library</code> is <code>true</code>, and the package is called with <code>require()</code> method, the execute file will be returned by the latter.</li>\n<li><strong>extract</strong>\nThis is a boolean value: true or false. When it&#39;s set to true, all package contents will be extracted at first run of the compiled package. There will be a new folder created with the name parameter. All files and assets embedded inside the package will be saved with full directory structure preserved.</li>\n<li><strong>output</strong>\nName of the output JX package.</li>\n<li><strong>files</strong>\nThis is an array, where you can define, which script files from your project will be included into the JX package. Only <code>*.js</code> and <code>*.json</code> files are allowed here.</li>\n<li><strong>assets</strong>\nThis is the array with static resource files. You can embed any asset file into the <code>jx</code> package.</li>\n<li><strong>library</strong>\nIt is a boolean value: true or false. Value set to true means that JX package can be treated as a library and it can be used from inside another JX package (with <code>require()</code> method).\nSetting this value to false is a good way of preventing its usage as an external module (and then <code>require()</code> will not be possible).</li>\n<li><strong>licence_file</strong>\nName of the file containing the licensing information – it is generally a simple text file. If this parameter is omitted or null and if a file named “LICENSE” exists in the directory from where you compile the package – it will be embedded automatically.</li>\n<li><strong>readme_file</strong>\nName of the file containing additional notes about the package. If this parameter is omitted or null and if a file named “README” or “README.md” exists in the directory from where you compile the package – it will be embedded automatically.\nWhen a license or readme file is specified, it can be also displayed in a console window directly from the package.</li>\n</ul>\n<p>For example, running the following command:\n\n</p>\n<pre><code>&gt; jx package.jx license</code></pre>\n<p>will display the licence file to the console without executing the package. The same applies to:\n\n</p>\n<pre><code>&gt; jx package.jx readme</code></pre>\n<ul>\n<li><strong>preInstall</strong>\nThis is an array, where you can define system commands to be executed right before jx package execution.\nFor example, this might be creating a folder, installing an additional package/module or just anything.\nCommands are executed in the same order as the array is defined.</li>\n</ul>\n<p>There is a special keyword <code>JX_BINARY</code> which is replaced during runtime with current <code>jx</code> executable path.\n\n</p>\n<p>For example, we have the following commands in JXP file:\n\n</p>\n<pre><code class=\"js\">&quot;preInstall&quot; : [\n    &quot;which JX_BINARY &gt; log.txt&quot;,\n    &quot;JX_BINARY -jxv &gt;&gt; log.txt&quot;\n]</code></pre>\n<p>Those commands will be executed for the first time, when we run the package:\n\n</p>\n<pre><code>&gt; jx package.jx</code></pre>\n<p>or\n\n</p>\n<pre><code class=\"js\">var module = require(&quot;./package.jx&quot;);</code></pre>\n<p>In this example, the first commands writes the full path string of jx binary to the <em>log.txt</em> file, while the second one - executes <code>jx -jxv</code>\nand appends the result (the jx version number) to the same file.\n\n</p>\n<p>When all of the commands are executed, there will be a file created <code>your_module.installed</code> preventing subsequent execution of pre-install section.\nIf you want to run it again, simply remove that file.\n\n</p>\n<ul>\n<li><strong>custom_fields</strong></li>\n</ul>\n<p>You can also define your own constants, as many as you want, for example:\n\n</p>\n<pre><code class=\"js\">{\n    // ...\n    // ...\n    // ...\n    field1 : &quot;one&quot;,\n    myField2 : &quot;two&quot;,\n    someObject : {\n        PI : 3.14159265359,\n        userArray : [ 1, 2 ]\n    },\n    Release : true\n}</code></pre>\n<p>Similarly, accessing those values in a runtime of your JX package is also easy:\n\n</p>\n<pre><code class=\"js\">var pi = exports.$JXP.someObject.PI;</code></pre>\n<p>One of the usage examples for those custom fields can be:\n\n</p>\n<pre><code class=\"js\">if (exports.$JXP.Release) {\n    console.log(&quot;This is the final release of the product.&quot;);\n} else {\n    console.log(&quot;This code is still under development.&quot;);\n}</code></pre>\n<p>However, <code>files</code> members are not accessible from exports.$JXP.\n\n</p>\n<ul>\n<li><strong>fs_reach_sources</strong>\nNormally, <code>fs</code> can not reach the JavaScript files inside the package. If you need to access all the JavaScript files using <code>fs</code> module, you should set this parameter to &#39;true&#39;. Otherwise you can either set it to &#39;false&#39; or give the list of files expected to be reachable by &#39;fs&#39; module. (i.e. { &quot;lib/testfile.js&quot;:true, &quot;lib/test2.js&quot;:true } )</li>\n</ul>\n<ul>\n<li><strong>native</strong>\nWhen this parameter is set to &#39;true&#39;, the compilation process creates standalone, self-executable binary rather than a package.\nIt acts exactly as <code>jx package</code> command called with <a href=\"jxcore-feature-packaging-code-protection.html#jxcore_feature_packaging_code_protection_native\"><code>-native</code></a> switch.</li>\n</ul>\n",
               "type": "module",
               "displayName": "File structure"
             },
@@ -16275,7 +16291,7 @@
     {
       "textRaw": "Process Monitor",
       "name": "process_monitor",
-      "desc": "<p>JXcore offers embedded process monitoring tool. It checks regularly whether the monitored process/processes still exist and restarts them, if required.\nWhen the monitor is running, your applications can subscribe to it and start being monitored.\n\n</p>\n<p>The Process Monitor is global and can be referenced from anywhere:\n\n</p>\n<pre><code class=\"js\">var mon = jxcore.monitor;</code></pre>\n<p>You can control monitor&#39;s process from the <a href=\"jxcore-command-monitor.html\">command line</a> also.\n\n</p>\n<p>Apart from this feature, JXcore also offers <a href=\"jxcore-feature-internal-recovery.html\">Internal Recovery</a>.\n\n</p>\n",
+      "desc": "<p>JXcore offers embedded process monitoring tool. It checks regularly whether the monitored process/processes still exist and restarts them, if required.\nWhen the monitor is running, your applications can subscribe to it and start being monitored.\n\n</p>\n<p>The Process Monitor is global and can be referenced from anywhere:\n\n</p>\n<pre><code class=\"js\">var mon = jxcore.monitor;</code></pre>\n<p>You can control monitor&#39;s process from the <a href=\"jxcore-command-monitor.html\">command line</a> also.\n\n</p>\n<p>Apart from this feature, JXcore also offers <a href=\"jxcore-feature-internal-recovery.html\">Internal Recovery</a>.\n\n</p>\n<p>All <code>jxcore.monitor</code> methods can be disabled from <em>jx.config</em> file.\nSee <a href=\"jxconfig.html#jxconfig_allowmonitoringapi\"><code>allowMonitoringAPI</code></a>.\n\n</p>\n",
       "modules": [
         {
           "textRaw": "API",
@@ -17141,7 +17157,7 @@
           "textRaw": "process.unloadThread()",
           "type": "method",
           "name": "unloadThread",
-          "desc": "<blockquote>\n<p>This method is implemented only in the subthread context. When called from a main thread it does nothing.\n\n</p>\n</blockquote>\n<p>This method marks the subthread to be removed from the thread pool and eventually removes it.\nThe removal itself will happen as soon as the subthread finishes execution of its latest task.\n\n</p>\n<p>You may want to use this method to release subthread’s resources, if you don’t plan to use it soon.\nAdding any tasks later will create a fresh subthread automatically on demand.\n\n</p>\n<p>@include jxconfig</p>\n",
+          "desc": "<blockquote>\n<p>This method is implemented only in the subthread context. When called from a main thread it does nothing.\n\n</p>\n</blockquote>\n<p>This method marks the subthread to be removed from the thread pool and eventually removes it.\nThe removal itself will happen as soon as the subthread finishes execution of its latest task.\n\n</p>\n<p>You may want to use this method to release subthread’s resources, if you don’t plan to use it soon.\nAdding any tasks later will create a fresh subthread automatically on demand.\n\n</p>\n",
           "signatures": [
             {
               "params": []
@@ -17163,6 +17179,224 @@
       ],
       "type": "module",
       "displayName": "Process"
+    },
+    {
+      "textRaw": "Utils",
+      "name": "utils",
+      "desc": "<p>Api methods described in this section are accessible any time within JXcore application from a global object:\n\n</p>\n<pre><code class=\"js\">var utils = jxcore.utils;</code></pre>\n",
+      "modules": [
+        {
+          "textRaw": "Flow Control",
+          "name": "flow_control",
+          "desc": "<p>JXcore exposes few methods to provide enhanced control over the application - pausing and resuming execution of the code.\nThis feature may be compared to <code>sleep()</code> function from other languages.\nThere is also a blog post on this subject: <a href=\"http://jxcore.com/pause-jump-and-continue/\">Pause, Jump, and Continue</a>.\n\n</p>\n",
+          "methods": [
+            {
+              "textRaw": "pause()",
+              "type": "method",
+              "name": "pause",
+              "desc": "<p>Stops the execution of JavaScript exactly on the line called.\nIt also stops processing all new IO events which may occur from now on. To be more precise, it doesn&#39;t poll from libuv events.\nAll events are received, but kept in libuv queue and stay unprocessed.\nTo resume the execution of the application and start processing the events, you need to call <code>continue()</code>.\n\n</p>\n<p>Below is an example of a simple <code>sleep</code> method implementation:\n\n</p>\n<pre><code class=\"js\">var sleep = function(timeout){\n    setTimeout(function(){ jxcore.utils.continue(); }, timeout);\n    jxcore.utils.pause();\n};</code></pre>\n<p>Then you can just call it:\n\n</p>\n<pre><code class=\"js\">console.log(&quot;Before Sleeping&quot;);\nsleep(2000);\nconsole.log(&quot;Hello Again!&quot;);</code></pre>\n<p>Please remind that actual pause may be somewhat longer (difference of few milliseconds) since pausing time depends on how busy is the system / current process.\nFor <code>sleep(2000)</code> this probably would not make a difference. But if you call <code>sleep(1)</code> - it may wait a little bit longer.\n\n</p>\n",
+              "signatures": [
+                {
+                  "params": []
+                }
+              ]
+            },
+            {
+              "textRaw": "jump()",
+              "type": "method",
+              "name": "jump",
+              "desc": "<p>This function acts similar to <code>pause()</code> except that it doesn&#39;t stop processing IO events.\n\n</p>\n",
+              "signatures": [
+                {
+                  "params": []
+                }
+              ]
+            },
+            {
+              "textRaw": "continue()",
+              "type": "method",
+              "name": "continue",
+              "desc": "<p>Resumes block execution paused by <code>pause()</code> or <code>jump()</code>;\n\n\n</p>\n",
+              "signatures": [
+                {
+                  "params": []
+                }
+              ]
+            }
+          ],
+          "type": "module",
+          "displayName": "Flow Control"
+        },
+        {
+          "textRaw": "Console Output",
+          "name": "console_output",
+          "methods": [
+            {
+              "textRaw": "console.log(data [, ...], color)",
+              "type": "method",
+              "name": "log",
+              "desc": "<p>This method of <code>jxcore.utils</code> object does the same thing as native <a href=\"console.html#console_console_log_data\"><code>console.log()</code></a>\n(prints the output to stdout with newline) except that it accepts a color name as the last parameter.\n\n</p>\n<p>The <code>color</code> parameter is not limited only for colorizing the output - it may also apply some simple formatting.\nValue of this parameter may be one of the following:\n\n</p>\n<ul>\n<li><p>RGB Colors</p>\n<ul>\n<li>red</li>\n<li>green</li>\n<li>blue</li>\n<li>white</li>\n</ul>\n</li>\n<li><p>CMYK Colors</p>\n<ul>\n<li>cyan</li>\n<li>magenta</li>\n<li>yellow</li>\n<li>black</li>\n</ul>\n</li>\n<li><p>Text Formatting</p>\n<ul>\n<li>bold</li>\n<li>underline</li>\n</ul>\n</li>\n</ul>\n<pre><code class=\"js\">var clog = jxcore.utils.console.log;\n\nclog(&quot;this is green&quot;, &quot;green&quot;);\nclog(&quot;this&quot;, &quot;is&quot;, &quot;also&quot;, &quot;green&quot;, &quot;green&quot;);\nclog(&quot;but&quot;, &quot;this&quot;, &quot;one&quot;, &quot;is bolded&quot;, &quot;bold&quot;);</code></pre>\n",
+              "signatures": [
+                {
+                  "params": [
+                    {
+                      "name": "data ["
+                    },
+                    {
+                      "name": "..."
+                    },
+                    {
+                      "name": "color"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "textRaw": "console.write(data [, ...], color)",
+              "type": "method",
+              "name": "write",
+              "desc": "<p>Same as <code>console.log()</code> except that it does not add a newline character at the end of the data.\n\n</p>\n<p>This way you can combine different colors and formats within the same line:\n\n</p>\n<pre><code class=\"js\">var cw = jxcore.utils.console.write;\ncw(&quot;bolded&quot;, &quot;bold&quot;);\ncw(&quot;normal&quot;);\ncw(&quot;bolded&quot;, &quot;again&quot;, &quot;bold&quot;);</code></pre>\n<p>Displays:\n\n</p>\n<p><strong>bolded</strong>normal<strong>bolded again</strong>\n\n\n</p>\n",
+              "signatures": [
+                {
+                  "params": [
+                    {
+                      "name": "data ["
+                    },
+                    {
+                      "name": "..."
+                    },
+                    {
+                      "name": "color"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "textRaw": "setColor(data, color)",
+              "type": "method",
+              "name": "setColor",
+              "desc": "<p>Returns the <code>data</code> string with specific <code>color</code> attribute added.\nSending this string to the console will result in colorized output.\n\n</p>\n<pre><code class=\"js\">var yellow = jxcore.utils.console.setColor(&quot;The yellow is here&quot;, &quot;yellow&quot;);\nconsole.log(yellow);</code></pre>\n",
+              "signatures": [
+                {
+                  "params": [
+                    {
+                      "name": "data"
+                    },
+                    {
+                      "name": "color"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "type": "module",
+          "displayName": "Console Output"
+        },
+        {
+          "textRaw": "System Info",
+          "name": "system_info",
+          "methods": [
+            {
+              "textRaw": "getCPU(cb, timeout)",
+              "type": "method",
+              "name": "getCPU",
+              "signatures": [
+                {
+                  "params": [
+                    {
+                      "textRaw": "`cb` {Function} - callback listener ",
+                      "options": [
+                        {
+                          "textRaw": "`percent` {Number} ",
+                          "name": "percent",
+                          "type": "Number"
+                        },
+                        {
+                          "textRaw": "`timeout` {Number} ",
+                          "name": "timeout",
+                          "type": "Number"
+                        }
+                      ],
+                      "name": "cb",
+                      "type": "Function",
+                      "desc": "callback listener"
+                    },
+                    {
+                      "textRaw": "`timeout` {Number} - probing time in milliseconds ",
+                      "name": "timeout",
+                      "type": "Number",
+                      "desc": "probing time in milliseconds"
+                    }
+                  ]
+                },
+                {
+                  "params": [
+                    {
+                      "name": "cb"
+                    },
+                    {
+                      "name": "timeout"
+                    }
+                  ]
+                }
+              ],
+              "desc": "<p>Adds <code>cb</code> callback listener that will be invoking regularly with a <code>timeout</code> interval.\nAs an argument it will receive <code>percent</code> amount of current CPU usage.\n\n</p>\n<p>Below example shows how to read CPU usage every 1 second:\n\n</p>\n<pre><code class=\"js\">jxcore.utils.getCPU(function (percent, timer) {\n    jxcore.utils.console.log(&quot;%d% CPU Percent Used in last %d ms&quot;,\n        percent, timer , &quot;green&quot;);\n}, 1000);</code></pre>\n<p>Beware that this method only supports a single listener instance at a time.\nIn order to clear the previous listener, call the method without any parameters:\n\n</p>\n<pre><code class=\"js\">jxcore.utils.getCPU();</code></pre>\n"
+            },
+            {
+              "textRaw": "OSInfo()",
+              "type": "method",
+              "name": "OSInfo",
+              "desc": "<p>This method is complementary to <a href=\"process.html#process_process_platform\"><code>process.platform</code></a> and <a href=\"process.html#process_process_arch\"><code>process.arch</code></a>.\nIt returns set of boolean values for the current system.\n\n</p>\n<pre><code class=\"js\">console.log(jxcore.utils.OSInfo());</code></pre>\n<p>For a MAC x64 it would return:\n\n</p>\n<pre><code class=\"js\">{ fullName: &#39;mac-x64&#39;,\n  isUbuntu: false,\n  isDebian: false,\n  isMac: true,\n  is64: true,\n  is32: false,\n  isARM: false,\n  isRH: false,\n  isSuse: false,\n  isBSD: false,\n  isArch: false,\n  isWindows: false,\n  OS_STR: &#39;osx64&#39; }</code></pre>\n",
+              "signatures": [
+                {
+                  "params": []
+                }
+              ]
+            }
+          ],
+          "type": "module",
+          "displayName": "System Info"
+        },
+        {
+          "textRaw": "Others",
+          "name": "others",
+          "methods": [
+            {
+              "textRaw": "smartRequire(moduleName)",
+              "type": "method",
+              "name": "smartRequire",
+              "desc": "<p>Same as <code>require()</code>, except that it installs packages (the ones which are not installed) from NPM during the runtime.\nIf the module is not found on the file system, <code>smartRequire()</code> installs it first and then invokes regular <code>require()</code> function.\n\n</p>\n<p>For example, let&#39;s consider using an npm&#39;s <code>express</code> package.\n\n</p>\n<p>Normally you would install it first:\n\n</p>\n<pre><code class=\"bash\">&gt; jx install express</code></pre>\n<p>and then application would call:\n\n</p>\n<pre><code class=\"js\">var express = require(&#39;express&#39;);</code></pre>\n<p>With <code>smartRequire()</code> it is much more simpler:\n\n</p>\n<pre><code class=\"js\">var smart_require = jxcore.utils.smartRequire(require);\n\n// express package doesn&#39;t have to be installed\nvar express = smart_require(&#39;express&#39;);\n// and it was installed just now</code></pre>\n",
+              "signatures": [
+                {
+                  "params": [
+                    {
+                      "name": "moduleName"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "textRaw": "uniqueId()",
+              "type": "method",
+              "name": "uniqueId",
+              "desc": "<p>Returns an integer number unique for current application instance.\nEach call of this method increments the counter and returns value greater by 1 (starting from 0).\n\n</p>\n<pre><code class=\"js\">for(var o=0; o&lt;3; o++) {\n    console.log(jxcore.utils.uniqueId());\n}</code></pre>\n<p>The above example displays:\n\n</p>\n<pre><code class=\"js\">0\n1\n2</code></pre>\n<p>Restarting the application will make the numbers count from 0 again.\n@include jxconfig</p>\n",
+              "signatures": [
+                {
+                  "params": []
+                }
+              ]
+            }
+          ],
+          "type": "module",
+          "displayName": "Others"
+        }
+      ],
+      "type": "module",
+      "displayName": "Utils"
     }
   ],
   "stability": 3,

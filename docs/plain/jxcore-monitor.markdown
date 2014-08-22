@@ -13,6 +13,9 @@ You can control monitor's process from the [command line](jxcore-command-monitor
 
 Apart from this feature, JXcore also offers [Internal Recovery](jxcore-feature-internal-recovery.markdown).
 
+All `jxcore.monitor` methods can be disabled from *jx.config* file.
+See [`allowMonitoringAPI`](jxconfig.html#jxconfig-allowmonitoringapi).
+
 ## API
 
 ### monitor.followMe(callback, waitCallback)

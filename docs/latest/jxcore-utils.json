@@ -1,0 +1,223 @@
+{
+  "source": "doc/api/jxcore-utils.markdown",
+  "modules": [
+    {
+      "textRaw": "Utils",
+      "name": "utils",
+      "desc": "<p>Api methods described in this section are accessible any time within JXcore application from a global object:\n\n</p>\n<pre><code class=\"js\">var utils = jxcore.utils;</code></pre>\n",
+      "modules": [
+        {
+          "textRaw": "Flow Control",
+          "name": "flow_control",
+          "desc": "<p>JXcore exposes few methods to provide enhanced control over the application - pausing and resuming execution of the code.\nThis feature may be compared to <code>sleep()</code> function from other languages.\nThere is also a blog post on this subject: <a href=\"http://jxcore.com/pause-jump-and-continue/\">Pause, Jump, and Continue</a>.\n\n</p>\n",
+          "methods": [
+            {
+              "textRaw": "pause()",
+              "type": "method",
+              "name": "pause",
+              "desc": "<p>Stops the execution of JavaScript exactly on the line called.\nIt also stops processing all new IO events which may occur from now on. To be more precise, it doesn&#39;t poll from libuv events.\nAll events are received, but kept in libuv queue and stay unprocessed.\nTo resume the execution of the application and start processing the events, you need to call <code>continue()</code>.\n\n</p>\n<p>Below is an example of a simple <code>sleep</code> method implementation:\n\n</p>\n<pre><code class=\"js\">var sleep = function(timeout){\n    setTimeout(function(){ jxcore.utils.continue(); }, timeout);\n    jxcore.utils.pause();\n};</code></pre>\n<p>Then you can just call it:\n\n</p>\n<pre><code class=\"js\">console.log(&quot;Before Sleeping&quot;);\nsleep(2000);\nconsole.log(&quot;Hello Again!&quot;);</code></pre>\n<p>Please remind that actual pause may be somewhat longer (difference of few milliseconds) since pausing time depends on how busy is the system / current process.\nFor <code>sleep(2000)</code> this probably would not make a difference. But if you call <code>sleep(1)</code> - it may wait a little bit longer.\n\n</p>\n",
+              "signatures": [
+                {
+                  "params": []
+                }
+              ]
+            },
+            {
+              "textRaw": "jump()",
+              "type": "method",
+              "name": "jump",
+              "desc": "<p>This function acts similar to <code>pause()</code> except that it doesn&#39;t stop processing IO events.\n\n</p>\n",
+              "signatures": [
+                {
+                  "params": []
+                }
+              ]
+            },
+            {
+              "textRaw": "continue()",
+              "type": "method",
+              "name": "continue",
+              "desc": "<p>Resumes block execution paused by <code>pause()</code> or <code>jump()</code>;\n\n\n</p>\n",
+              "signatures": [
+                {
+                  "params": []
+                }
+              ]
+            }
+          ],
+          "type": "module",
+          "displayName": "Flow Control"
+        },
+        {
+          "textRaw": "Console Output",
+          "name": "console_output",
+          "methods": [
+            {
+              "textRaw": "console.log(data [, ...], color)",
+              "type": "method",
+              "name": "log",
+              "desc": "<p>This method of <code>jxcore.utils</code> object does the same thing as native <a href=\"console.html#console_console_log_data\"><code>console.log()</code></a>\n(prints the output to stdout with newline) except that it accepts a color name as the last parameter.\n\n</p>\n<p>The <code>color</code> parameter is not limited only for colorizing the output - it may also apply some simple formatting.\nValue of this parameter may be one of the following:\n\n</p>\n<ul>\n<li><p>RGB Colors</p>\n<ul>\n<li>red</li>\n<li>green</li>\n<li>blue</li>\n<li>white</li>\n</ul>\n</li>\n<li><p>CMYK Colors</p>\n<ul>\n<li>cyan</li>\n<li>magenta</li>\n<li>yellow</li>\n<li>black</li>\n</ul>\n</li>\n<li><p>Text Formatting</p>\n<ul>\n<li>bold</li>\n<li>underline</li>\n</ul>\n</li>\n</ul>\n<pre><code class=\"js\">var clog = jxcore.utils.console.log;\n\nclog(&quot;this is green&quot;, &quot;green&quot;);\nclog(&quot;this&quot;, &quot;is&quot;, &quot;also&quot;, &quot;green&quot;, &quot;green&quot;);\nclog(&quot;but&quot;, &quot;this&quot;, &quot;one&quot;, &quot;is bolded&quot;, &quot;bold&quot;);</code></pre>\n",
+              "signatures": [
+                {
+                  "params": [
+                    {
+                      "name": "data ["
+                    },
+                    {
+                      "name": "..."
+                    },
+                    {
+                      "name": "color"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "textRaw": "console.write(data [, ...], color)",
+              "type": "method",
+              "name": "write",
+              "desc": "<p>Same as <code>console.log()</code> except that it does not add a newline character at the end of the data.\n\n</p>\n<p>This way you can combine different colors and formats within the same line:\n\n</p>\n<pre><code class=\"js\">var cw = jxcore.utils.console.write;\ncw(&quot;bolded&quot;, &quot;bold&quot;);\ncw(&quot;normal&quot;);\ncw(&quot;bolded&quot;, &quot;again&quot;, &quot;bold&quot;);</code></pre>\n<p>Displays:\n\n</p>\n<p><strong>bolded</strong>normal<strong>bolded again</strong>\n\n\n</p>\n",
+              "signatures": [
+                {
+                  "params": [
+                    {
+                      "name": "data ["
+                    },
+                    {
+                      "name": "..."
+                    },
+                    {
+                      "name": "color"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "textRaw": "setColor(data, color)",
+              "type": "method",
+              "name": "setColor",
+              "desc": "<p>Returns the <code>data</code> string with specific <code>color</code> attribute added.\nSending this string to the console will result in colorized output.\n\n</p>\n<pre><code class=\"js\">var yellow = jxcore.utils.console.setColor(&quot;The yellow is here&quot;, &quot;yellow&quot;);\nconsole.log(yellow);</code></pre>\n",
+              "signatures": [
+                {
+                  "params": [
+                    {
+                      "name": "data"
+                    },
+                    {
+                      "name": "color"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "type": "module",
+          "displayName": "Console Output"
+        },
+        {
+          "textRaw": "System Info",
+          "name": "system_info",
+          "methods": [
+            {
+              "textRaw": "getCPU(cb, timeout)",
+              "type": "method",
+              "name": "getCPU",
+              "signatures": [
+                {
+                  "params": [
+                    {
+                      "textRaw": "`cb` {Function} - callback listener ",
+                      "options": [
+                        {
+                          "textRaw": "`percent` {Number} ",
+                          "name": "percent",
+                          "type": "Number"
+                        },
+                        {
+                          "textRaw": "`timeout` {Number} ",
+                          "name": "timeout",
+                          "type": "Number"
+                        }
+                      ],
+                      "name": "cb",
+                      "type": "Function",
+                      "desc": "callback listener"
+                    },
+                    {
+                      "textRaw": "`timeout` {Number} - probing time in milliseconds ",
+                      "name": "timeout",
+                      "type": "Number",
+                      "desc": "probing time in milliseconds"
+                    }
+                  ]
+                },
+                {
+                  "params": [
+                    {
+                      "name": "cb"
+                    },
+                    {
+                      "name": "timeout"
+                    }
+                  ]
+                }
+              ],
+              "desc": "<p>Adds <code>cb</code> callback listener that will be invoking regularly with a <code>timeout</code> interval.\nAs an argument it will receive <code>percent</code> amount of current CPU usage.\n\n</p>\n<p>Below example shows how to read CPU usage every 1 second:\n\n</p>\n<pre><code class=\"js\">jxcore.utils.getCPU(function (percent, timer) {\n    jxcore.utils.console.log(&quot;%d% CPU Percent Used in last %d ms&quot;,\n        percent, timer , &quot;green&quot;);\n}, 1000);</code></pre>\n<p>Beware that this method only supports a single listener instance at a time.\nIn order to clear the previous listener, call the method without any parameters:\n\n</p>\n<pre><code class=\"js\">jxcore.utils.getCPU();</code></pre>\n"
+            },
+            {
+              "textRaw": "OSInfo()",
+              "type": "method",
+              "name": "OSInfo",
+              "desc": "<p>This method is complementary to <a href=\"process.html#process_process_platform\"><code>process.platform</code></a> and <a href=\"process.html#process_process_arch\"><code>process.arch</code></a>.\nIt returns set of boolean values for the current system.\n\n</p>\n<pre><code class=\"js\">console.log(jxcore.utils.OSInfo());</code></pre>\n<p>For a MAC x64 it would return:\n\n</p>\n<pre><code class=\"js\">{ fullName: &#39;mac-x64&#39;,\n  isUbuntu: false,\n  isDebian: false,\n  isMac: true,\n  is64: true,\n  is32: false,\n  isARM: false,\n  isRH: false,\n  isSuse: false,\n  isBSD: false,\n  isArch: false,\n  isWindows: false,\n  OS_STR: &#39;osx64&#39; }</code></pre>\n",
+              "signatures": [
+                {
+                  "params": []
+                }
+              ]
+            }
+          ],
+          "type": "module",
+          "displayName": "System Info"
+        },
+        {
+          "textRaw": "Others",
+          "name": "others",
+          "methods": [
+            {
+              "textRaw": "smartRequire(moduleName)",
+              "type": "method",
+              "name": "smartRequire",
+              "desc": "<p>Same as <code>require()</code>, except that it installs packages (the ones which are not installed) from NPM during the runtime.\nIf the module is not found on the file system, <code>smartRequire()</code> installs it first and then invokes regular <code>require()</code> function.\n\n</p>\n<p>For example, let&#39;s consider using an npm&#39;s <code>express</code> package.\n\n</p>\n<p>Normally you would install it first:\n\n</p>\n<pre><code class=\"bash\">&gt; jx install express</code></pre>\n<p>and then application would call:\n\n</p>\n<pre><code class=\"js\">var express = require(&#39;express&#39;);</code></pre>\n<p>With <code>smartRequire()</code> it is much more simpler:\n\n</p>\n<pre><code class=\"js\">var smart_require = jxcore.utils.smartRequire(require);\n\n// express package doesn&#39;t have to be installed\nvar express = smart_require(&#39;express&#39;);\n// and it was installed just now</code></pre>\n",
+              "signatures": [
+                {
+                  "params": [
+                    {
+                      "name": "moduleName"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "textRaw": "uniqueId()",
+              "type": "method",
+              "name": "uniqueId",
+              "desc": "<p>Returns an integer number unique for current application instance.\nEach call of this method increments the counter and returns value greater by 1 (starting from 0).\n\n</p>\n<pre><code class=\"js\">for(var o=0; o&lt;3; o++) {\n    console.log(jxcore.utils.uniqueId());\n}</code></pre>\n<p>The above example displays:\n\n</p>\n<pre><code class=\"js\">0\n1\n2</code></pre>\n<p>Restarting the application will make the numbers count from 0 again.</p>\n",
+              "signatures": [
+                {
+                  "params": []
+                }
+              ]
+            }
+          ],
+          "type": "module",
+          "displayName": "Others"
+        }
+      ],
+      "type": "module",
+      "displayName": "Utils"
+    }
+  ]
+}
