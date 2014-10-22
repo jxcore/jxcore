@@ -12,7 +12,7 @@ var fibo = {
 };
 
 
-var threadCount = 16;
+var threadCount = 16; // play with the numbers here
 jxcore.tasks.setThreadCount(threadCount);
 
 var start_time;
