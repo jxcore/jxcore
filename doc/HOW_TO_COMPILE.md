@@ -11,7 +11,7 @@ First clone the source codes from Github: (or Download as a .zip file)
 git clone https://github.com/Nubisa/jxcore.git
 ```
 
-See [Android](Android_Compile.md), or [iOS](iOS_Compile.md) for compilation details on mobile platforms supported.
+You may want to jump into [Android](Android_Compile.md), or [iOS](iOS_Compile.md) compilation details.
 
 To compile for desktop/server environments; 
 
