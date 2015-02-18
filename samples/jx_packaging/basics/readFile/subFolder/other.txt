@@ -1,1 +1,0 @@
-This is a string from other.txt file under a subFolder

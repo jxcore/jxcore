@@ -1,1 +1,0 @@
-This is a string from asset.txt file
