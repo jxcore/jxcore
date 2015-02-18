@@ -1,0 +1,23 @@
+{
+	"name": "test-assets-fs-createReadStream-source",
+	"version": "1.0",
+	"author": "",
+	"description": "",
+	"company": "",
+	"website": "",
+	"package": null,
+	"startup": "test-assets-fs-createReadStream-source.js",
+	"execute": null,
+	"extract": false,
+	"output": "test-assets-fs-createReadStream-source.jx",
+	"files": [
+		"test-assets-fs-createReadStream-source.js",
+		"assets/subfolder1/module1.js",
+		"assets/subfolder2/node_path_module/index.js"
+	],
+	"assets": [
+	],
+	"preInstall": null,
+	"library": true,
+	"fs_reach_sources": false
+}

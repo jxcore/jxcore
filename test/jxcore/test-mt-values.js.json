@@ -1,0 +1,6 @@
+{
+  "args": [
+    {"argv": "param1 param11 param123:123 someString"}
+  ],
+  "native": false
+}

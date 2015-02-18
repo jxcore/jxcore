@@ -1,0 +1,7 @@
+{
+  "args": [
+    {},
+    {"execArgv": "mt-keep:4"},
+    {"execArgv": "mt"}
+  ]
+}

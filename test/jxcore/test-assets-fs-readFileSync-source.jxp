@@ -1,0 +1,22 @@
+{
+	"name": "test-assets-fs-readFileSync-source.js",
+	"version": "1.0",
+	"author": "",
+	"description": "",
+	"company": "",
+	"website": "",
+	"package": null,
+	"startup": "test-assets-fs-readFileSync-source.js",
+	"execute": null,
+	"extract": false,
+	"output": "test-assets-fs-readFileSync-source.jx",
+	"files": [
+		"test-assets-fs-readFileSync-source.js",
+		"assets/subfolder1/module1.js"
+	],
+	"assets": [
+	],
+	"preInstall": null,
+	"library": true,
+	"fs_reach_sources": false
+}

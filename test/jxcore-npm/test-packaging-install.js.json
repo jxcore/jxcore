@@ -1,0 +1,12 @@
+{
+  "args": [
+    {"argv": "swig"},
+    {"argv": "dnode"},
+    {"argv": "boo"},
+    {"argv": "express"},
+    {"argv": "passport"},
+    {"argv": "mongoose"}
+  ],
+  "package": false,
+  "native": false
+}

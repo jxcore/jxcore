@@ -1,0 +1,1 @@
+this is contents of /assets/file.txt

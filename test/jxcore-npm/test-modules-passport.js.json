@@ -1,0 +1,8 @@
+{
+  "dependencies": [
+    "passport"
+  ],
+  "files": [
+    "node_modules/passport"
+  ]
+}

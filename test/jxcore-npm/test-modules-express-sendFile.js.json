@@ -1,0 +1,9 @@
+{
+  "dependencies": [
+    "express"
+  ],
+  "files": [
+    "node_modules/express",
+    "assets"
+  ]
+}

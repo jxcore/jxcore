@@ -1,0 +1,25 @@
+[eval]
+[eval]
+42
+42
+
+Error: hello
+ ([eval]:*:*)
+  at [eval]-wrapper:*:*
+  at Module.prototype._compile (module.js:*:*)
+  at evalScript (node.js:*:*)
+  at startup (node.js:*:*)
+  at node.js:*:*
+
+
+Error: hello
+ ([eval]:*:*)
+  at [eval]-wrapper:*:*
+  at Module.prototype._compile (module.js:*:*)
+  at evalScript (node.js:*:*)
+  at startup (node.js:*:*)
+  at node.js:*:*
+
+100
+100
+uncaught exception: 10uncaught exception: 10done

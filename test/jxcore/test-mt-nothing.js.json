@@ -1,0 +1,8 @@
+{
+  "args": [
+    {},
+    {"execArgv": "mt"},
+    {"execArgv": "mt-keep"}
+  ],
+  "native": false
+}
