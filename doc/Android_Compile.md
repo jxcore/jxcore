@@ -1,8 +1,8 @@
-JXcore is ready for `Android OS`. In this tutorial, we will give you step-by-step instruction on how to compile JXcore for Android target.
+JXcore is ready for `Android OS`. On this tutorial, we will give you step-by-step instruction on how to compile JXcore for Android target.
 
 First, you need `Android NDK`. You can download the latest NDK from [here](https://developer.android.com/tools/sdk/ndk/index.html)
 
-Assuming you have extracted the `Android NDK` into `~/androidNDK` folder, next step is to use our prebuilt script file to create Android toolchains before the compilation process.
+Assuming you have already extracted `Android NDK` into `~/androidNDK` folder, next step is to use our prebuilt script file to create Android toolchains before the compilation process.
 
 Go to root folder of jxcore project and;
 ```bash
@@ -21,4 +21,4 @@ Please keep in mind, these are 32 bit binaries. You can easily add 64 bit option
 
 Using `lipo` on unix, you could prepare your own fat binaries but for the sake of this document, it's not necessary.
 
-**The prebuilt scripts uses V8 engine for Android target. We are going to update them with SpiderMonkey after SM ARM-JIT proxy stabilization.**
+**The prebuilt scripts uses V8 engine for Android platform. We are going to update them with SpiderMonkey JIT after SM ARM-JIT proxy stabilization.**
