@@ -502,7 +502,9 @@
       'target_name': 'node_js2c',
       'type': 'none',
       'toolsets': ['host'],
-      'actions': [
+      'conditions': [
+        ['node_compress_internals!=1', {
+        'actions': [
         {
           'action_name': 'node_js2c',
           'inputs': [
@@ -530,13 +532,15 @@
             '<@(_outputs)',
             '<@(_inputs)',
           ]
-        },
-      ],
+        },],
+      }]],
     }, # end node_js2c
     {
       'target_name': 'jx_js2c',
       'type': 'none',
       'toolsets': ['cmp'],
+      'conditions': [
+      [ 'node_compress_internals==1', {
       'actions': [
         {
           'action_name': 'jx_js2c',
@@ -555,6 +559,7 @@
           ],
         },
       ],
+      }]],
     }, # end jx_js2c
     {
       'target_name': 'node_dtrace_header',
