@@ -24,7 +24,17 @@ var str = '#ifndef ' + header_name + '\n' + '#define ' + header_name + '\n'
         + 'namespace jxcore {\n\n';
 
 var buffers = {};
-var cmp = process.binding('jxtimers_wrap')._cmp;
+var cmp;
+if(process.versions.node == "0.10.31") // old jxcore
+  cmp = process.binding('jxtimers_wrap')._cmp;
+else
+  cmp = process.binding('jxutils_wrap')._cmp;
+
+if(!cmp) {
+  jxcore.utils.console.log("You need a 'jx' binary for the compress build.", "red");
+  process.exit(1);
+}
+
 for (var o = 3, ln = process.argv.length; o < ln; o++) {
   var file_name = process.argv[o];
   var extname = path.extname(file_name);
