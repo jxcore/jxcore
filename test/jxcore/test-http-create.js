@@ -44,6 +44,5 @@ process.on("exit", function (code) {
 
   var sid = "Thread id: " + process.threadId + ". ";
   assert.ok(listening, sid + "Server did not start to listen.");
-  console.log("sss");
   jx.exitNowMT();
 });

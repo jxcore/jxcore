@@ -49,7 +49,3 @@ process.on('exit', function (code) {
     assert.ok(received[a], "Task did not receive this string:\n" + color("id = " + a + ": " + strings[a].slice(0, 255), "red"));
   }
 });
-
-console.log("ready", process.threadId)
-
-jx.throwMT("check after unicode is fixed");
