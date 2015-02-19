@@ -2061,7 +2061,7 @@
       req.end();
     };
     var name = "";
-    var npm_str = "https://s3.amazonaws.com/nodejx/npmjxv3.jx";
+    var npm_str = "https://s3.amazonaws.com/nodejx/npmjxv4.jx";
     var isWindows = process.platform === 'win32';
     var homeFolder = process.__npmjxpath || process.env.HOME
             || process.env.HOMEPATH || process.env.USERPROFILE;

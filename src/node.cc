@@ -1855,6 +1855,7 @@ void SetupProcessObject(const int threadId) {
                       HTTP_PARSER_VERSION_MINOR)));
 
   JS_NAME_SET(versions, JS_STRING_ID("node"), STD_TO_STRING(NODE_VERSION + 1));
+  JS_NAME_SET(versions, JS_STRING_ID("jxcore"), STD_TO_STRING(JXCORE_VERSION + 2));
 #ifdef JS_ENGINE_V8
   JS_NAME_SET(versions, JS_STRING_ID("v8"),
               STD_TO_STRING(v8::V8::GetVersion()));
