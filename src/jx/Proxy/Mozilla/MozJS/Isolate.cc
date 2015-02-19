@@ -98,8 +98,9 @@ void Isolate::SetData(void* data) { return JS_SetContextPrivate(ctx_, data); }
 
 void Isolate::Dispose() {
   if (disposable_) {
-    assert(Isolates[threadId_] != NULL);
-    delete Isolates[threadId_];
+    if(Isolates[threadId_] != NULL) {
+      delete Isolates[threadId_];
+    }
     Isolates[threadId_] = NULL;
     runtimes[threadId_] = NULL;
   }

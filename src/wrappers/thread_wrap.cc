@@ -85,6 +85,15 @@ JS_METHOD(ThreadWrap, GetCPUCount) {
 }
 JS_METHOD_END
 
+
+JS_METHOD(ThreadWrap, ThreadCount) {
+  CHECK_EMBEDDED_THREADS()
+
+  RETURN_PARAM(STD_TO_INTEGER(getThreadCount()));
+}
+JS_METHOD_END
+
+
 JS_METHOD(ThreadWrap, SetExiting) {
   CHECK_EMBEDDED_THREADS()
 
@@ -114,6 +123,8 @@ JS_METHOD(ThreadWrap, AddTask) {
         "Missing parameters (addTask) expects (int, string, string, int, "
         "boolean).");
   }
+
+  bool skip_thread_creation = args.IsBoolean(5) ? args.GetBoolean(5) : false;
 
   int taskId = args.GetInteger(0);
   int mlen = -1, plen = -1;
@@ -159,7 +170,7 @@ JS_METHOD(ThreadWrap, AddTask) {
   }
 
   int rc = 0;
-  if (openThreads > 0) {
+  if (openThreads > 0 && !skip_thread_creation) {
     rc = jxcore::CreateInstances(node::commons::threadPoolCount);
   }
 

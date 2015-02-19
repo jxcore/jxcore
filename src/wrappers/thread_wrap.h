@@ -24,6 +24,8 @@ class ThreadWrap {
 
   static DEFINE_JS_METHOD(GetResults);
 
+  static DEFINE_JS_METHOD(ThreadCount);
+
   static DEFINE_JS_METHOD(GetCPUCount);
 
   static DEFINE_JS_METHOD(SetCPUCount);
@@ -41,7 +43,7 @@ class ThreadWrap {
   static void EmitOnMessage(const int tid);
 
   INIT_CLASS_MEMBERS_NO_COM() {
-    SET_CLASS_METHOD("addTask", AddTask, 5);
+    SET_CLASS_METHOD("addTask", AddTask, 6);
     SET_CLASS_METHOD("resetThread", ResetThread, 1);
     SET_CLASS_METHOD("shutDown", ShutDown, 0);
     SET_CLASS_METHOD("sendToAll", SendToThreads, 3);
@@ -49,6 +51,7 @@ class ThreadWrap {
     SET_CLASS_METHOD("jobsCount", JobsCount, 0);
     SET_CLASS_METHOD("setCPUCount", SetCPUCount, 1);
     SET_CLASS_METHOD("getCPUCount", GetCPUCount, 0);
+    SET_CLASS_METHOD("threadCount", ThreadCount, 0);
     SET_CLASS_METHOD("setProcessExiting", SetExiting, 2);
     SET_CLASS_METHOD("cpuCount", CpuCount, 0);
     SET_CLASS_METHOD("freeGC", Free, 0);
