@@ -55,9 +55,9 @@ global but rather local to each module.
 
 * {Function}
 
-Requires the modules with enabled Asm.js support. This is available only for JXcore compiled against SpiderMonkey (Mozilla) engine.
+Requires the modules with ASM.JS scripts inside. 
 
-For example, let's take the following method taken from [Asm.js specification](http://asmjs.org/spec/latest/) and write it to a file *test.js*
+For example, let's take the following script taken from [Asm.js specification](http://asmjs.org/spec/latest/) and write it to a file *test.js*
 
 ```js
 function geometricMean(start, end) {
@@ -70,9 +70,7 @@ function geometricMean(start, end) {
 geometricMean(10, 20);
 ```
 
-When called with `require("./test.js")` with JXcore SpiderMonkey - it will run just fine,
-however if we would want to benefit from ASM.JS performance, we should inform the engine script compiler,
-that we are going to do so. For this we should call `require.withAsmJS("./test.js")`.
+It is okay to require this script file using `require("./test.js")` but it won't have a special performance.  On the other hand, `require.withAsmJS("./test.js")` will bring the ASM.JS performance. This benefit only applies to SpiderMonkey builds.
 
 ### require.resolve()
 
