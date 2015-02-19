@@ -24,7 +24,7 @@ Macro API is available from [here](doc/native)
 
 ### Known issues 
 
-In addition to reported ones, the list of issues we are working on is available from [here](https://github.com/Nubisa/jxcore/blob/master/known_issues.md)
+In addition to reported ones, the list of issues we are working on is available from [here](https://github.com/jxcore/jxcore/blob/master/known_issues.md)
 
 Feel free to help us to implement them sooner! If you have a different opinion, let us know from `issues` section. 
 
