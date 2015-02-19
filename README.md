@@ -12,7 +12,7 @@ JXcore extends Node.JS™ with additional features for developing mobile and emb
   - Process Configuration & Monitor
   - In-memory File System
   - Application Packaging
-  - Support for the latest JavaScript features (ES6, ASM.JS ..)
+  - Support for the latest JavaScript features (ES6, [ASM.JS](https://github.com/jxcore/jxcore/blob/master/doc/api/globals.markdown#requirewithasmjs) ..)
 
 ### To build:
 
