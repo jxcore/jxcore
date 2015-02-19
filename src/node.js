@@ -261,7 +261,7 @@
         return;
       }
       co.log('Processing the project file..');
-      _jx(process.argv);
+      _jx(process.argv, __ops);
       return;
     } else if (__ops.package || __ops.packagetojx) {
       if (process.argv.length < 4) {
@@ -1470,7 +1470,7 @@
     return a.replace(repFrom, repTo);
   };
 
-  var _jx = function(argv) {
+  var _jx = function(argv, ops) {
     var contents = {
       pack: {},
       project: {},
@@ -1787,7 +1787,7 @@
     jxcore.tasks.forceGC();
 
     var op = process.argv[3];
-    if (!op) {
+    if (!op || (ops && ops.compile)) {
       op = contents.project.output;
     }
 
