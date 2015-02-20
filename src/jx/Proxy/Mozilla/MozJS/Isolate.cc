@@ -98,12 +98,13 @@ void* Isolate::GetData() { return JS_GetContextPrivate(ctx_); }
 void Isolate::SetData(void* data) { return JS_SetContextPrivate(ctx_, data); }
 
 void Isolate::Dispose() {
+  int tid = threadId_;
   if (disposable_) {
-    if (Isolates[threadId_] != NULL) {
-      delete Isolates[threadId_];
+    if (Isolates[tid] != NULL) {
+      delete Isolates[tid];
     }
-    Isolates[threadId_] = NULL;
-    runtimes[threadId_] = NULL;
+    Isolates[tid] = NULL;
+    runtimes[tid] = NULL;
   }
 }
 }  // namespace MozJS
