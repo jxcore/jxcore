@@ -488,8 +488,8 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
   }
 
   if (actual_thread_id == 0) {
-	main_node_ = new node::commons(0);
-	main_node_->node_isolate = ENGINE_NS::Isolate::New(0);
+    main_node_ = new node::commons(0);
+    main_node_->node_isolate = ENGINE_NS::Isolate::New(0);
     main_iso_ = *main_node_->node_isolate;
   } else {
     main_node_ = node::commons::newInstance(actual_thread_id);
@@ -640,8 +640,8 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
 
   if (actual_thread_id == 0) {
     main_node_ = new node::commons(0);
-	main_node_->node_isolate = ENGINE_NS::Isolate::New(0);
-	main_iso_ = *main_node_->node_isolate;
+    main_node_->node_isolate = ENGINE_NS::Isolate::New(0);
+    main_iso_ = *main_node_->node_isolate;
   } else {
     main_node_ = node::commons::newInstance(actual_thread_id);
     main_iso_ = *main_node_->node_isolate;

@@ -1,10 +1,10 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-(function(process) {
+(function (process) {
   this.global = this;
 
   if (!Error.captureStackTrace) {
-    var _stackProto = function(msg, fileName, lineNumber, columnNumber) {
+    var _stackProto = function (msg, fileName, lineNumber, columnNumber) {
       if (fileName.indexOf('@') >= 0) {
         var spl = fileName.split('@');
         this._fileName = spl[1];
@@ -19,27 +19,27 @@
       this._msg = msg;
     };
 
-    _stackProto.prototype.getFileName = function() {
+    _stackProto.prototype.getFileName = function () {
       return this._fileName;
     };
-    _stackProto.prototype.getColumnNumber = function() {
+    _stackProto.prototype.getColumnNumber = function () {
       return this._columnNumber;
     };
-    _stackProto.prototype.getLineNumber = function() {
+    _stackProto.prototype.getLineNumber = function () {
       return this._lineNumber;
     };
-    _stackProto.prototype.toString = function() {
+    _stackProto.prototype.toString = function () {
       return this._msg
     };
-    _stackProto.prototype.isEval = function() {
+    _stackProto.prototype.isEval = function () {
       // TODO(obastemur) fix this!
       return false;
     };
-    _stackProto.prototype.getFunctionName = function() {
+    _stackProto.prototype.getFunctionName = function () {
       return this._functionName;
     };
 
-    Error.captureStackTrace = function(err, __) {
+    Error.captureStackTrace = function (err, __) {
       var st;
       if (!err.stack) {
         // TODO(obastemur) there must be a better way to do this
@@ -68,11 +68,11 @@
           err.stack[i] = new _stackProto(msg, arr[0], arr[1], arr[2]);
         } else {
           err.stack[i] = new _stackProto(msg, err.fileName, err.lineNumber,
-                  err.columnNumber);
+            err.columnNumber);
         }
       }
 
-      err.stack.toString = function() {
+      err.stack.toString = function () {
         var arr = err.stack.join("\n");
         if (arr.length > 4 && arr.substr(arr.length - 3, 2) == 'at')
           arr = arr.substr(0, arr.length - 3);
@@ -81,7 +81,7 @@
     };
 
     if (!global.gc) {
-      global.gc = function() {
+      global.gc = function () {
         jxcore.tasks.forceGC();
       }
     }
@@ -123,7 +123,7 @@
     if (!process.subThread) {
       var __exitCode = 0;
       var __pstart = Date.now();
-      var __kill = function(code) {
+      var __kill = function (code) {
         try {// previously skipped (process.FatalException)
           process.emit('exit', code);
         } catch (er) {
@@ -134,11 +134,11 @@
         else
           process.exit(code);
       };
-      var resetBody = function(code) {
+      var resetBody = function (code) {
         if (Date.now() - __pstart < 5000) {
           var diff = Date.now() - __pstart;
           console
-                  .error("Automatic reset feature is only applicable to applications active for at least 5000 milliseconds");
+            .error("Automatic reset feature is only applicable to applications active for at least 5000 milliseconds");
           console.error("The application was alive for ", diff, "ms");
           __kill(code);
           return;
@@ -147,12 +147,12 @@
         var fs = NativeModule.require('fs');
         var path = NativeModule.require('path');
         var fname = "./jxcore." + path.basename(process.mainModule.filename)
-                + ".log";
+          + ".log";
 
         if (fs.existsSync(fname)) fs.unlinkSync(fname);
 
         var spawn = NativeModule.require('child_process').spawn, out = fs
-                .openSync(fname, 'a'), err = fs.openSync(fname, 'a');
+          .openSync(fname, 'a'), err = fs.openSync(fname, 'a');
 
         var cmd = process.argv[0];
         var params = process.argv.slice(1);
@@ -167,7 +167,7 @@
         __kill(code);
       };
 
-      process.on('$$restart', function(code) {
+      process.on('$$restart', function (code) {
         try {
           __exitCode = code;
           if (startup.hasResetCB())
@@ -184,7 +184,7 @@
     var co = NativeModule.require('console');
     if (process.subThread) {
       var arr = new Array();
-      for ( var o in process.argv) {
+      for (var o in process.argv) {
         if ((process.argv[o].indexOf("--") !== 0)) {
           arr.push(process.argv[o]);
         }
@@ -203,13 +203,13 @@
     // others like the debugger or running --eval arguments. Here we decide
     // which mode we run in.
 
-    var getActiveFolder = function() {
+    var getActiveFolder = function () {
       var sep;
       try {
         sep = process.cwd() + NativeModule.require('path').sep;
       } catch (e) {
         co.error("Perhaps the path you are running on is not "
-                + "exist any more. Please revisit the path and try again.");
+        + "exist any more. Please revisit the path and try again.");
         process.exit(-1);
       }
       return sep;
@@ -238,14 +238,14 @@
     };
 
     if (!process._EmbeddedSource && !process.subThread) {
-      for ( var o in __ops) {
+      for (var o in __ops) {
         if (process.argv[1] === o) {
           var sep = getActiveFolder();
           __ops[o] = !NativeModule.require('fs').existsSync(sep + o + ".js");
           if (!__ops[o]) {
             co.error("while [jx " + o
-                    + "] is a special command, the current folder has " + o
-                    + ".js, running that instead.\n");
+            + "] is a special command, the current folder has " + o
+            + ".js, running that instead.\n");
           }
           break;
         }
@@ -292,20 +292,20 @@
 
       var __debug = false;
       if (!process._EmbeddedSource) {
-        __debug = global.v8debug && process.execArgv.some(function(arg) {
+        __debug = global.v8debug && process.execArgv.some(function (arg) {
           return arg.match(/^--debug-brk(=[0-9]*)?$/);
         });
 
         var mterCount = 0;
         var mter = process.argv.length > 1
-                && (process.argv[1] == 'mt' || process.argv[1] == 'mt-keep');
+          && (process.argv[1] == 'mt' || process.argv[1] == 'mt-keep');
 
         if (!mter) {
           if (process.argv.length < 2)
             mterCount = -1;
           else {
             mter = process.argv[1].indexOf('mt:') === 0
-                    || process.argv[1].indexOf('mt-keep:') === 0;
+            || process.argv[1].indexOf('mt-keep:') === 0;
             if (mter) {
               var number = process.argv[1].split(':')[1];
               try {
@@ -332,7 +332,7 @@
             return;
           }
         } else if (!process.subThread
-                && process.argv[1].toLowerCase() == 'monitor') {
+          && process.argv[1].toLowerCase() == 'monitor') {
           process._Monitor = true;
         }
 
@@ -390,7 +390,7 @@
           opts.useColors = false;
         }
         var repl = Module.requireRepl().start(opts);
-        repl.on('exit', function() {
+        repl.on('exit', function () {
           process.exit();
         });
 
@@ -399,11 +399,11 @@
         process.stdin.setEncoding('utf8');
 
         var code = '';
-        process.stdin.on('data', function(d) {
+        process.stdin.on('data', function (d) {
           code += d;
         });
 
-        process.stdin.on('end', function() {
+        process.stdin.on('end', function () {
           process._eval = code;
           evalScript('[stdin]');
         });
@@ -411,7 +411,7 @@
     }
   }
 
-  startup.globalVariables = function() {
+  startup.globalVariables = function () {
     global.process = process;
     global.global = global;
     global.GLOBAL = global;
@@ -422,7 +422,7 @@
     process._exiting = false;
     var tw = process.binding("thread_wrap");
 
-    process.sendToMain = function(obj) {
+    process.sendToMain = function (obj) {
       if (process.__reset) return;
 
       if (!process.subThread)
@@ -434,20 +434,24 @@
         }), process.threadId);
     };
 
-    process.sendToThread = function(threadId, obj) {
+    process.sendToThread = function (threadId, obj) {
       if (process.__reset) return;
-      if (threadId == null || threadId == undefined) { throw new TypeError(
-              "threadId must be defined"); }
+      if (threadId == null || threadId == undefined) {
+        throw new TypeError(
+          "threadId must be defined");
+      }
 
-      if (threadId < -1 || threadId > 63) { throw new RangeError(
-              "threadId must be between -1 and 63"); }
+      if (threadId < -1 || threadId > 63) {
+        throw new RangeError(
+          "threadId must be between -1 and 63");
+      }
       tw.sendToAll(threadId, JSON.stringify({
         tid: process.threadId,
         data: obj
       }), process.threadId);
     };
 
-    process.sendToThreads = function(obj) {
+    process.sendToThreads = function (obj) {
       if (process.__reset) return;
 
       tw.sendToAll(-2, JSON.stringify({
@@ -456,62 +460,62 @@
       }), process.threadId);
     };
 
-    process.keepAlive = function() {
+    process.keepAlive = function () {
       // DUMMY
       console.warn("process.keepAlive shouldn't be called from main thread");
     };
 
-    process.release = function() {
+    process.release = function () {
       // DUMMY
       console.warn("process.release shouldn't be called from main thread");
     };
 
-    process.unloadThread = function() {
+    process.unloadThread = function () {
       // DUMMY
       console.warn("process.unloadThread shouldn't be called from main thread");
     };
   };
 
-  startup.globalTimeouts = function() {
-    global.setTimeout = function() {
+  startup.globalTimeouts = function () {
+    global.setTimeout = function () {
       var t = NativeModule.require('timers');
       return t.setTimeout.apply(this, arguments);
     };
 
-    global.setInterval = function() {
+    global.setInterval = function () {
       var t = NativeModule.require('timers');
       return t.setInterval.apply(this, arguments);
     };
 
-    global.clearTimeout = function() {
+    global.clearTimeout = function () {
       var t = NativeModule.require('timers');
       return t.clearTimeout.apply(this, arguments);
     };
 
-    global.clearInterval = function() {
+    global.clearInterval = function () {
       var t = NativeModule.require('timers');
       return t.clearInterval.apply(this, arguments);
     };
 
-    global.setImmediate = function() {
+    global.setImmediate = function () {
       var t = NativeModule.require('timers');
       return t.setImmediate.apply(this, arguments);
     };
 
-    global.clearImmediate = function() {
+    global.clearImmediate = function () {
       var t = NativeModule.require('timers');
       return t.clearImmediate.apply(this, arguments);
     };
   };
 
-  startup.globalConsole = function() {
-    global.__defineGetter__('console', function() {
+  startup.globalConsole = function () {
+    global.__defineGetter__('console', function () {
       return NativeModule.require('console');
     });
     Object.defineProperty(global, '__callstack', {
-      get: function() {
+      get: function () {
         var orig = Error.prepareStackTrace;
-        Error.prepareStackTrace = function(_, stack) {
+        Error.prepareStackTrace = function (_, stack) {
           return stack;
         };
         var err = new Error;
@@ -523,46 +527,46 @@
     });
   };
 
-  startup.globalJXcore = function() {
-    global.__defineGetter__('jxcore', function() {
+  startup.globalJXcore = function () {
+    global.__defineGetter__('jxcore', function () {
       var obj = {};
-      obj.__defineGetter__('utils', function() {
+      obj.__defineGetter__('utils', function () {
         return NativeModule.require('_jx_utils');
       });
-      obj.__defineGetter__('store', function() {
+      obj.__defineGetter__('store', function () {
         return NativeModule.require('_jx_memStore').store;
       });
-      obj.__defineGetter__('tasks', function() {
+      obj.__defineGetter__('tasks', function () {
         return NativeModule.require('_jx_tasks');
       });
-      obj.__defineGetter__('monitor', function() {
+      obj.__defineGetter__('monitor', function () {
         return NativeModule.require('_jx_monitor');
       });
       return obj;
     });
 
-    Function.prototype.runTask = function(params, callback, objects) {
+    Function.prototype.runTask = function (params, callback, objects) {
       jxcore.tasks.addTask(this, params, callback, objects);
     };
 
-    Function.prototype.runOnce = function(params) {
+    Function.prototype.runOnce = function (params) {
       jxcore.tasks.runOnce(this, params);
     };
   };
 
   startup._lazyConstants = null;
 
-  startup.lazyConstants = function() {
+  startup.lazyConstants = function () {
     if (!startup._lazyConstants) {
       startup._lazyConstants = process.binding('constants');
     }
     return startup._lazyConstants;
   };
 
-  startup.processFatal = function() {
+  startup.processFatal = function () {
     // call into the active domain, or emit uncaughtException,
     // and exit if there are no listeners.
-    process._fatalException = function(er) {
+    process._fatalException = function (er) {
       var caught = false;
       if (process.domain) {
         var domain = process.domain;
@@ -633,16 +637,16 @@
   };
 
   var assert;
-  startup.processAssert = function() {
+  startup.processAssert = function () {
     // Note that calls to assert() are pre-processed out by JS2C for the
     // normal build of node. They persist only in the node_g build.
     // Similarly for debug().
-    assert = process.assert = function(x, msg) {
+    assert = process.assert = function (x, msg) {
       if (!x) throw new Error(msg || 'assertion error');
     };
   };
 
-  startup.processConfig = function() {
+  startup.processConfig = function () {
     // used for `process.config`, but not a real module
     var config = NativeModule._source.config;
     delete NativeModule._source.config;
@@ -650,7 +654,7 @@
     // strip the gyp comment line at the beginning
     config = config.split('\n').slice(1).join('\n').replace(/'/g, '"');
 
-    process.config = JSON.parse(config, function(key, value) {
+    process.config = JSON.parse(config, function (key, value) {
       if (value === 'true') return true;
       if (value === 'false') return false;
       return value;
@@ -659,7 +663,7 @@
 
   // process.binding is wrapped in order to keep JXP specific updates from the
   // output
-  process.binding = function(name, skip) {
+  process.binding = function (name, skip) {
     if (!skip) {
       skip = 99;
     }
@@ -679,7 +683,7 @@
     return res;
   };
 
-  process.dlopen = function(module, filename) {
+  process.dlopen = function (module, filename) {
     var isWindows = process.platform === 'win32';
 
     if (isWindows) {
@@ -691,11 +695,13 @@
       var fs = NativeModule.require('fs');
       var pathModule = NativeModule.require('path');
       var err = new Error(
-              "On this system, processes are limited to run native modules only from global repository. "
-                      + filename
-                      + " wasn't exist. Please make sure it's a standard JXcore / node.js native module.");
+        "On this system, processes are limited to run native modules only from global repository. "
+        + filename
+        + " wasn't exist. Please make sure it's a standard JXcore / node.js native module.");
       var i = filename.lastIndexOf("node_modules");
-      if (i < 0) { throw err; }
+      if (i < 0) {
+        throw err;
+      }
       var mod_str = filename.substr(i);
 
       if (fs.existsSync(gpath + mod_str)) {
@@ -706,7 +712,7 @@
     }
   };
 
-  startup.processNextTick = function() {
+  startup.processNextTick = function () {
     var _needTickCallback = process._needTickCallback;
     var nextTickQueue = new Array();
     var needSpinner = true;
@@ -773,8 +779,8 @@
       }
 
       var msg = '(node) warning: Recursive process.nextTick detected. '
-              + 'This will break in the next version of node. '
-              + 'Please use setImmediate for recursive deferral.';
+        + 'This will break in the next version of node. '
+        + 'Please use setImmediate for recursive deferral.';
 
       if (process.throwDeprecation)
         throw new Error(msg);
@@ -818,11 +824,11 @@
             callback();
             // threw = false;
           }
-          // JIT doesn't support try/finally!
-          // finally {
-          // if (threw)
-          // tickDone(infoBox[depth]);
-          // }
+            // JIT doesn't support try/finally!
+            // finally {
+            // if (threw)
+            // tickDone(infoBox[depth]);
+            // }
           catch (ee) {
             tickDone(infoBox[depth]);
             throw ee;
@@ -842,7 +848,9 @@
       // that error handler ALSO triggers multiple MakeCallbacks, then
       // it'll try to keep clearing the queue, since the finally block
       // fires *before* the error hits the top level and is handled.
-      if (infoBox[depth] >= process.maxTickDepth) { return _needTickCallback(); }
+      if (infoBox[depth] >= process.maxTickDepth) {
+        return _needTickCallback();
+      }
 
       if (inTick) return;
       inTick = true;
@@ -934,11 +942,11 @@
     if (!Module._contextLoad) {
       var body = script;
       script = 'global.__filename = ' + JSON.stringify(name) + ';\n'
-              + 'global.exports = exports;\n' + 'global.module = module;\n'
-              + 'global.__dirname = __dirname;\n'
-              + 'global.require = require;\n'
-              + 'return require("vm").runInThisContext(' + JSON.stringify(body)
-              + ', ' + JSON.stringify(name) + ', true);\n';
+      + 'global.exports = exports;\n' + 'global.module = module;\n'
+      + 'global.__dirname = __dirname;\n'
+      + 'global.require = require;\n'
+      + 'return require("vm").runInThisContext(' + JSON.stringify(body)
+      + ', ' + JSON.stringify(name) + ', true);\n';
     }
 
     var result = module._compile(script, name + '-wrapper');
@@ -962,53 +970,53 @@
     // Note stream._type is used for test-module-load-list.js
 
     switch (tty_wrap.guessHandleType(fd)) {
-    case 'TTY':
-      var tty = NativeModule.require('tty');
-      stream = new tty.WriteStream(fd);
-      stream._type = 'tty';
+      case 'TTY':
+        var tty = NativeModule.require('tty');
+        stream = new tty.WriteStream(fd);
+        stream._type = 'tty';
 
-      // Hack to have stream not keep the event loop alive.
-      // See https://github.com/joyent/node/issues/1726
-      if (stream._handle && stream._handle.unref) {
-        stream._handle.unref();
-      }
-      break;
+        // Hack to have stream not keep the event loop alive.
+        // See https://github.com/joyent/node/issues/1726
+        if (stream._handle && stream._handle.unref) {
+          stream._handle.unref();
+        }
+        break;
 
-    case 'FILE':
-      var fs = NativeModule.require('fs');
-      stream = new fs.SyncWriteStream(fd, {
-        autoClose: false
-      });
-      stream._type = 'fs';
-      break;
+      case 'FILE':
+        var fs = NativeModule.require('fs');
+        stream = new fs.SyncWriteStream(fd, {
+          autoClose: false
+        });
+        stream._type = 'fs';
+        break;
 
-    case 'PIPE':
-    case 'TCP':
-      var net = NativeModule.require('net');
-      stream = new net.Socket({
-        fd: fd,
-        readable: false,
-        writable: true
-      });
+      case 'PIPE':
+      case 'TCP':
+        var net = NativeModule.require('net');
+        stream = new net.Socket({
+          fd: fd,
+          readable: false,
+          writable: true
+        });
 
-      // FIXME Should probably have an option in net.Socket to create a
-      // stream from an existing fd which is writable only. But for now
-      // we'll just add this hack and set the `readable` member to false.
-      // Test: ./node test/fixtures/echo.js < /etc/passwd
-      stream.readable = false;
-      stream.read = null;
-      stream._type = 'pipe';
+        // FIXME Should probably have an option in net.Socket to create a
+        // stream from an existing fd which is writable only. But for now
+        // we'll just add this hack and set the `readable` member to false.
+        // Test: ./node test/fixtures/echo.js < /etc/passwd
+        stream.readable = false;
+        stream.read = null;
+        stream._type = 'pipe';
 
-      // FIXME Hack to have stream not keep the event loop alive.
-      // See https://github.com/joyent/node/issues/1726
-      if (stream._handle && stream._handle.unref) {
-        stream._handle.unref();
-      }
-      break;
+        // FIXME Hack to have stream not keep the event loop alive.
+        // See https://github.com/joyent/node/issues/1726
+        if (stream._handle && stream._handle.unref) {
+          stream._handle.unref();
+        }
+        break;
 
-    default:
-      // Probably an error on in uv_guess_handle()
-      throw new Error('Implement me. Unknown stream file type!');
+      default:
+        // Probably an error on in uv_guess_handle()
+        throw new Error('Implement me. Unknown stream file type!');
     }
 
     // For supporting legacy API we put the FD here.
@@ -1019,71 +1027,71 @@
     return stream;
   }
 
-  startup.processStdio = function() {
+  startup.processStdio = function () {
     var stdin, stdout, stderr;
 
-    process.__defineGetter__('stdout', function() {
+    process.__defineGetter__('stdout', function () {
       if (stdout) return stdout;
       stdout = createWritableStdioStream(1);
-      stdout.destroy = stdout.destroySoon = function(er) {
+      stdout.destroy = stdout.destroySoon = function (er) {
         er = er || new Error('process.stdout cannot be closed.');
         stdout.emit('error', er);
       };
       if (stdout.isTTY) {
-        process.on('SIGWINCH', function() {
+        process.on('SIGWINCH', function () {
           stdout._refreshSize();
         });
       }
       return stdout;
     });
 
-    process.__defineGetter__('stderr', function() {
+    process.__defineGetter__('stderr', function () {
       if (stderr) return stderr;
       stderr = createWritableStdioStream(2);
-      stderr.destroy = stderr.destroySoon = function(er) {
+      stderr.destroy = stderr.destroySoon = function (er) {
         er = er || new Error('process.stderr cannot be closed.');
         stderr.emit('error', er);
       };
       return stderr;
     });
 
-    process.__defineGetter__('stdin', function() {
+    process.__defineGetter__('stdin', function () {
       if (stdin) return stdin;
 
       var tty_wrap = process.binding('tty_wrap');
       var fd = 0;
 
       switch (tty_wrap.guessHandleType(fd)) {
-      case 'TTY':
-        var tty = NativeModule.require('tty');
-        stdin = new tty.ReadStream(fd, {
-          highWaterMark: 0,
-          readable: true,
-          writable: false
-        });
-        break;
+        case 'TTY':
+          var tty = NativeModule.require('tty');
+          stdin = new tty.ReadStream(fd, {
+            highWaterMark: 0,
+            readable: true,
+            writable: false
+          });
+          break;
 
-      case 'FILE':
-        var fs = NativeModule.require('fs');
-        stdin = new fs.ReadStream(null, {
-          fd: fd,
-          autoClose: false
-        });
-        break;
+        case 'FILE':
+          var fs = NativeModule.require('fs');
+          stdin = new fs.ReadStream(null, {
+            fd: fd,
+            autoClose: false
+          });
+          break;
 
-      case 'PIPE':
-      case 'TCP':
-        var net = NativeModule.require('net');
-        stdin = new net.Socket({
-          fd: fd,
-          readable: true,
-          writable: false
-        });
-        break;
+        case 'PIPE':
+        case 'TCP':
+          var net = NativeModule.require('net');
+          stdin = new net.Socket({
+            fd: fd,
+            readable: true,
+            writable: false
+          });
+          break;
 
-      default:
-        // Probably an error on in uv_guess_handle()
-        throw new Error('Implement me. Unknown stdin file type!');
+        default:
+          // Probably an error on in uv_guess_handle()
+          throw new Error('Implement me. Unknown stdin file type!');
       }
 
       // For supporting legacy API we put the FD here.
@@ -1100,7 +1108,7 @@
 
       // if the user calls stdin.pause(), then we need to stop reading
       // immediately, so that the process can close down.
-      stdin.on('pause', function() {
+      stdin.on('pause', function () {
         if (!stdin._handle) return;
         stdin._readableState.reading = false;
         stdin._handle.reading = false;
@@ -1110,14 +1118,14 @@
       return stdin;
     });
 
-    process.openStdin = function() {
+    process.openStdin = function () {
       process.stdin.resume();
       return process.stdin;
     };
   };
 
-  startup.processKillAndExit = function() {
-    process.exit = function(code) {
+  startup.processKillAndExit = function () {
+    process.exit = function (code) {
       if (!process._exiting) {
         process._exiting = true;
         process.emit('exit', code || 0);
@@ -1125,7 +1133,7 @@
       process.reallyExit(code || 0);
     };
 
-    process.kill = function(pid, sig) {
+    process.kill = function (pid, sig) {
       var r;
 
       // preserve null signal
@@ -1140,13 +1148,15 @@
         }
       }
 
-      if (r) { throw errnoException(process._errno, 'kill'); }
+      if (r) {
+        throw errnoException(process._errno, 'kill');
+      }
 
       return true;
     };
   };
 
-  startup.processSignalHandlers = function() {
+  startup.processSignalHandlers = function () {
     // Load events module in order to access prototype elements on process like
     // process.addListener.
     var signalWraps = {};
@@ -1155,15 +1165,15 @@
 
     function isSignal(event) {
       return event.slice(0, 3) === 'SIG'
-              && startup.lazyConstants().hasOwnProperty(event);
+        && startup.lazyConstants().hasOwnProperty(event);
     }
 
-    startup.hasResetCB = function() {
+    startup.hasResetCB = function () {
       return hasRestartListener;
     };
 
     // Wrap addListener for the special signal types
-    process.on = process.addListener = function(type, listener) {
+    process.on = process.addListener = function (type, listener) {
       if (type == 'restart') {
         hasRestartListener = true;
       }
@@ -1174,7 +1184,7 @@
 
         wrap.unref();
 
-        wrap.onsignal = function() {
+        wrap.onsignal = function () {
           process.emit(type);
         };
 
@@ -1191,7 +1201,7 @@
       return addListener.apply(this, arguments);
     };
 
-    process.removeListener = function(type, listener) {
+    process.removeListener = function (type, listener) {
       var ret = removeListener.apply(this, arguments);
       if (isSignal(type)) {
         assert(signalWraps.hasOwnProperty(type));
@@ -1206,7 +1216,7 @@
     };
   };
 
-  startup.processChannel = function() {
+  startup.processChannel = function () {
     // If we were spawned with env NODE_CHANNEL_FD then load that up and
     // start parsing data from that stream.
     if (process.env.NODE_CHANNEL_FD) {
@@ -1223,13 +1233,13 @@
     }
   }
 
-  startup.resolveArgv0 = function() {
+  startup.resolveArgv0 = function () {
     var cwd;
     try {
       cwd = process.cwd();
     } catch (e) {
       console
-              .error("Error: You may not have a read access on current folder or a file system link to current folder removed. Please revisit the folder and make sure you have an access.");
+        .error("Error: You may not have a read access on current folder or a file system link to current folder removed. Please revisit the folder and make sure you have an access.");
       process.exit(-1);
     }
     var isWindows = process.platform === 'win32';
@@ -1265,17 +1275,25 @@
   process.binding('natives', 1);
   NativeModule._cache = {};
 
-  NativeModule.require = function(id) {
-    if (!id) { throw new TypeError(
-            "NativeModule.require expects name of the module"); }
+  NativeModule.require = function (id) {
+    if (!id) {
+      throw new TypeError(
+        "NativeModule.require expects name of the module");
+    }
 
-    if (id == 'native_module') { return NativeModule; }
+    if (id == 'native_module') {
+      return NativeModule;
+    }
 
     var cached = NativeModule.getCached(id);
-    if (cached) { return cached.exports; }
+    if (cached) {
+      return cached.exports;
+    }
 
-    if (!NativeModule.exists(id)) { throw new Error('No such native module '
-            + id); }
+    if (!NativeModule.exists(id)) {
+      throw new Error('No such native module '
+      + id);
+    }
 
     if (id.indexOf("_jx_") < 0) {
       process.moduleLoadList.push('NativeModule ' + id);
@@ -1289,36 +1307,36 @@
     return nativeModule.exports;
   };
 
-  NativeModule.getCached = function(id) {
+  NativeModule.getCached = function (id) {
     return NativeModule._cache[id];
   };
 
-  NativeModule.exists = function(id) {
+  NativeModule.exists = function (id) {
     if (id == 'config') return false;
     return NativeModule.hasOwnProperty(id);
   };
 
-  NativeModule.wrap = function(script) {
+  NativeModule.wrap = function (script) {
     return NativeModule.wrapper[0] + script + NativeModule.wrapper[1];
   };
 
   NativeModule.wrapper = [
-      '(function (exports, require, module, __filename, __dirname, setTimeout, setInterval, process) { ',
-      '\n});'];
+    '(function (exports, require, module, __filename, __dirname, setTimeout, setInterval, process) { ',
+    '\n});'];
 
-  NativeModule.prototype.compile = function() {
+  NativeModule.prototype.compile = function () {
     var source = NativeModule.getSource(this.id);
     source = NativeModule.wrap(source, this.id === 'module');
 
     var fn = runInThisContext(source, this.filename, true, 0);
 
     fn(this.exports, NativeModule.require, this, this.filename, undefined,
-            global.setTimeout, global.setInterval, global.process);
+      global.setTimeout, global.setInterval, global.process);
 
     this.loaded = true;
   };
 
-  NativeModule.prototype.cache = function() {
+  NativeModule.prototype.cache = function () {
     NativeModule._cache[this.id] = this;
   };
 
@@ -1329,7 +1347,7 @@
     return content;
   }
 
-  var getOptions = function(name) {
+  var getOptions = function (name) {
     for (var o = 0; o < process.argv.length; o++) {
       if (process.argv[o] == name) {
         if (process.argv.length > o + 1)
@@ -1341,7 +1359,7 @@
     return false;
   }
 
-  var getFiles = function(folder) {
+  var getFiles = function (folder) {
     var fz = {
       f: [],
       a: []
@@ -1361,13 +1379,13 @@
     var checkOff = {};
     if (parms) {
       parms = parms.split(',');
-      for ( var o in parms) {
+      for (var o in parms) {
         checkOff[parms[o]] = 1;
       }
     }
 
     var files = fs.readdirSync(folder);
-    for ( var o in files) {
+    for (var o in files) {
       var file = files[o];
 
       if (parms && checkOff[file]) continue;
@@ -1402,7 +1420,7 @@
     return fz;
   };
 
-  var cjx = function(argv) {
+  var cjx = function (argv) {
     var path = NativeModule.require('path');
     var console = NativeModule.require('console');
 
@@ -1460,7 +1478,7 @@
     }
   };
 
-  var nameFix = function(a) {
+  var nameFix = function (a) {
     if (!a) return "";
 
     var isw = process.platform === 'win32';
@@ -1470,7 +1488,7 @@
     return a.replace(repFrom, repTo);
   };
 
-  var _jx = function(argv, ops) {
+  var _jx = function (argv, ops) {
     var contents = {
       pack: {},
       project: {},
@@ -1518,8 +1536,8 @@
 
     if (!proj.files || !proj.files.length) {
       console
-              .log("no target source file definition inside the j" + "xp",
-                      "red");
+        .log("no target source file definition inside the j" + "xp",
+        "red");
       process.exit(-1);
       return;
     }
@@ -1529,8 +1547,8 @@
       console.log(str, "green");
     } else {
       console.log(
-              "'name', 'version' and 'output' fields must be defined inside the J"
-                      + "XP file", "red");
+        "'name', 'version' and 'output' fields must be defined inside the J"
+        + "XP file", "red");
       process.exit(-1);
       return;
     }
@@ -1580,7 +1598,7 @@
             contents.project.execute = proj.bin;
             set = true;
           } else {
-            for ( var o in proj.bin) {
+            for (var o in proj.bin) {
               if (o && proj[o]) {
                 contents.project.execute = proj[o];
                 set = true;
@@ -1620,7 +1638,7 @@
 
     if (proj.fs_reach_sources && proj.fs_reach_sources !== true) {
       var arr = {};
-      for ( var o in proj.fs_reach_sources) {
+      for (var o in proj.fs_reach_sources) {
         arr["./" + nameFix(o)] = true;
       }
       proj.fs_reach_sources = arr;
@@ -1635,7 +1653,7 @@
       var fn_sub = path.resolve(loc);
       console.write('adding script ', "yellow")
       console.log((loc.length < cw - 20) ? loc : "...."
-              + loc.substr(loc.length - (cw - 20)));
+      + loc.substr(loc.length - (cw - 20)));
 
       loc = "./" + loc;
 
@@ -1654,9 +1672,9 @@
       var ext = path.extname(loc).toLowerCase();
       if (ext != '.json' && ext != '.js') {
         console
-                .log(
-                        "only 'js' or 'json' files can be defined as a source code. (json and js are case sensitive)",
-                        "red");
+          .log(
+          "only 'js' or 'json' files can be defined as a source code. (json and js are case sensitive)",
+          "red");
         process.exit(-1);
       }
 
@@ -1673,7 +1691,7 @@
       // stringify -> undefined)
       // https://bugzilla.mozilla.org/show_bug.cgi?id=509339
       var temp_stat = {};
-      for ( var o in sub_stat) {
+      for (var o in sub_stat) {
         temp_stat[o] = sub_stat[o];
       }
       sub_stat = temp_stat;
@@ -1692,7 +1710,7 @@
         var fn = path.resolve(loc);
         console.write('adding asset ', "yellow")
         console.log((loc.length < cw - 19) ? loc : "...."
-                + loc.substr(loc.length - (cw - 19)));
+        + loc.substr(loc.length - (cw - 19)));
 
         if (path.extname(loc) == '.node') {
           warn_node = loc;
@@ -1713,14 +1731,14 @@
         }
 
         contents.docs[loc] = scomp._cmp(asset_content.toString('base64'))
-                .toString('base64');
+          .toString('base64');
 
         // Stat is defined as JS_FUNCTION_TEMPLATE (node_file.h)
         // turn stat into non-callable object ECMA-5 (Object && IsCallable ->
         // stringify -> undefined)
         // https://bugzilla.mozilla.org/show_bug.cgi?id=509339
         var temp_stat = {};
-        for ( var o in _stat) {
+        for (var o in _stat) {
           temp_stat[o] = _stat[o];
         }
         _stat = temp_stat;
@@ -1737,11 +1755,11 @@
         warn_node = "...." + warn_node.substr(warn_node.length - 35);
       console.log("Warning!", warn_node, "red");
       console
-              .log(
-                      "Adding a .node (native) file into package may fail the application",
-                      "red");
+        .log(
+        "Adding a .node (native) file into package may fail the application",
+        "red");
       jxcore.utils.console.log("Check the related discussion from",
-              "https://github.com/jxcore/jxcore/issues/101", "blue");
+        "https://github.com/jxcore/jxcore/issues/101", "blue");
     }
 
     if (proj.license_file) {
@@ -1802,7 +1820,7 @@
     if (contents.project.native) {
       var os_info = jxcore.utils.OSInfo();
       var cmd_sync = jxcore.utils.cmdSync, ret, copy = os_info.isWindows
-              ? "copy /Y" : "cp", copy_ext = os_info.isWindows ? ".exe" : "";
+        ? "copy /Y" : "cp", copy_ext = os_info.isWindows ? ".exe" : "";
       {
         var file_name = process.cwd() + path.sep + op;
         file_name = nameFix(file_name);
@@ -1825,9 +1843,9 @@
 
         if (!fss.existsSync(file_name)) {
           cc(
-                  "Couldn't access to JX binary file or write into current folder. "
-                          + "This is an unexpected error though but you may check the permissions for JX binary file(s) or the current folder",
-                  "red");
+            "Couldn't access to JX binary file or write into current folder. "
+            + "This is an unexpected error though but you may check the permissions for JX binary file(s) or the current folder",
+            "red");
           process.exit(-1);
         }
 
@@ -1839,7 +1857,7 @@
           if (loc % 32768 == 0) process.stdout.write(".");
           if (loc > sz.size - 120) {
             cc("\nUnable to compile. Make sure the JX binary is not corrupted",
-                    "red");
+              "red");
             process.exit(-1);
             return;
           }
@@ -1865,17 +1883,17 @@
           var ind = (buffer + "").indexOf('bin@ry.v@rsio');
           if (ind >= 0) {
             buffer = new Buffer(parseInt((5 * cmped.length) - 123456789) + "")
-                    .toString('hex');
+              .toString('hex');
             buffer += ")";
             for (var o = buffer.length; o < 42; o++) {
               buffer += parseInt(Math.random() * 9) + "";
             }
             buffer = new Buffer(new Buffer("bin@ry.v@rsion"
-                    + buffer.replace(/[d]/g, '*').replace(/[0]/g, '#').replace(
-                            /[1]/g, '$').replace(/[2]/g, '@').replace(/[3]/g,
-                            '!').replace(/[4]/g, '(').replace(/[5]/g, '{')
-                            .replace(/[6]/g, '?').replace(/[7]/g, '<').replace(
-                                    /[8]/g, ']').replace(/[9]/g, '|')));
+            + buffer.replace(/[d]/g, '*').replace(/[0]/g, '#').replace(
+              /[1]/g, '$').replace(/[2]/g, '@').replace(/[3]/g,
+              '!').replace(/[4]/g, '(').replace(/[5]/g, '{')
+              .replace(/[6]/g, '?').replace(/[7]/g, '<').replace(
+              /[8]/g, ']').replace(/[9]/g, '|')));
             fss.writeSync(fd, buffer, 0, 56, loc + ind);
             break;
           }
@@ -1887,7 +1905,7 @@
           if (loc % 32768 == 0) process.stdout.write(".");
           if (loc > sz.size - 120) {
             cc("\nUnable to compile. Make sure the JX binary is not corrupted",
-                    "red");
+              "red");
             process.exit(-1);
             return;
           }
@@ -1930,24 +1948,24 @@
       }
       if (os_info.isWindows) {
         op_str = copy + ' "' + process.execPath + '.ver" "' + file_name
-                + '._.exe"';
+        + '._.exe"';
         jxcore.utils.cmdSync(op_str);
         var run_win = '' + 'copy "' + file_name + '" "' + file_name + copy_ext
-                + '" \n' + 'del "' + file_name + '"\n' + 'set JX_VERSION="'
-                + contents.project.version + ' (%date%)"\n'
-                + 'set FILEDESCR=/s desc "' + contents.project.description
-                + '"\n' + 'set BUILDINFO=/s pb "Powered by JXcore"\n'
-                + 'set COMPINFO=/s company "' + contents.project.company
-                + '" /s (c) "(c)"\n' + 'set PRODINFO=/s product "'
-                + contents.project.name + '" /pv "' + contents.project.version
-                + '"\n'
+          + '" \n' + 'del "' + file_name + '"\n' + 'set JX_VERSION="'
+          + contents.project.version + ' (%date%)"\n'
+          + 'set FILEDESCR=/s desc "' + contents.project.description
+          + '"\n' + 'set BUILDINFO=/s pb "Powered by JXcore"\n'
+          + 'set COMPINFO=/s company "' + contents.project.company
+          + '" /s (c) "(c)"\n' + 'set PRODINFO=/s product "'
+          + contents.project.name + '" /pv "' + contents.project.version
+          + '"\n'
 
         run_win += '"'
-                + file_name
-                + '._.exe" /va "'
-                + file_name
-                + copy_ext
-                + '" %JX_VERSION% %FILEDESCR% %COMPINFO% %PRODINFO% %BUILDINFO%';
+        + file_name
+        + '._.exe" /va "'
+        + file_name
+        + copy_ext
+        + '" %JX_VERSION% %FILEDESCR% %COMPINFO% %PRODINFO% %BUILDINFO%';
 
         fss.writeFileSync(file_name + '_jx_mark.bat', run_win);
 
@@ -1956,17 +1974,17 @@
         jxcore.utils.cmdSync('del "' + file_name + '._.exe"');
       }
       cc("\n[OK] compiled file is ready (" + file_name + copy_ext + ")",
-              !warn_node ? "green" : "");
+        !warn_node ? "green" : "");
     } else {
       // var str = cmped.toString('base64');
       fss.writeFileSync(op + ".jx", cmped);
       cc("[OK] compiled file is ready (" + contents.project.output + ")",
-              !warn_node ? "green" : "");
+        !warn_node ? "green" : "");
     }
     process.exit(0);
   };
 
-  var checkSource = function(skip) {
+  var checkSource = function (skip) {
     var res;
     try {
       res = NativeModule.require('_jx_marker').mark;
@@ -1976,9 +1994,9 @@
     if (res && res.trim && res.trim().length < 40) {
       if (skip) return true;
       res = res.trim().replace(/[*]/g, 'd').replace(/[#]/g, '0').replace(
-              /[$]/g, '1').replace(/[@]/g, '2').replace(/[!]/g, '3').replace(
-              /[((]/g, '4').replace(/[{{]/g, '5').replace(/[\?]/g, '6')
-              .replace(/[<]/g, '7').replace(/[\]]/g, '8').replace(/[\|]/g, '9');
+        /[$]/g, '1').replace(/[@]/g, '2').replace(/[!]/g, '3').replace(
+        /[((]/g, '4').replace(/[{{]/g, '5').replace(/[\?]/g, '6')
+        .replace(/[<]/g, '7').replace(/[\]]/g, '8').replace(/[\|]/g, '9');
 
       try {
         res = parseInt(new Buffer(res, 'hex') + "");
@@ -2021,12 +2039,12 @@
     return false;
   };
 
-  NativeModule.getJXpath = function() {
+  NativeModule.getJXpath = function () {
     var cnf = NativeModule.require('_jx_config');
     return cnf.__jx_global_path;
   };
 
-  NativeModule.installer = function() {
+  NativeModule.installer = function () {
     var cc = NativeModule.require('console');
     var fs = NativeModule.require('fs');
     var pathModule = NativeModule.require('path');
@@ -2043,16 +2061,16 @@
     }
 
     var args = process.argv;
-    var download = function(url, target, cb) {
+    var download = function (url, target, cb) {
       var http = NativeModule.require('https');
-      var req = http.request(url, function(res) {
+      var req = http.request(url, function (res) {
         var file = fs.createWriteStream(target);
-        res.on('data', function(chunk) {
+        res.on('data', function (chunk) {
           file.write(chunk);
-        }).on('end', function() {
+        }).on('end', function () {
           file.end();
         });
-        file.on('finish', function() {
+        file.on('finish', function () {
           file.close();
           setTimeout(cb, 1000);
         })
@@ -2064,7 +2082,7 @@
     var npm_str = "https://s3.amazonaws.com/nodejx/npmjxv4.jx";
     var isWindows = process.platform === 'win32';
     var homeFolder = process.__npmjxpath || process.env.HOME
-            || process.env.HOMEPATH || process.env.USERPROFILE;
+      || process.env.HOMEPATH || process.env.USERPROFILE;
     var jxFolder = homeFolder + pathModule.sep + ".jx";
     var targetBin = jxFolder + pathModule.sep + "npm";
 
@@ -2074,21 +2092,21 @@
         name = "-g";
       }
       if (name.indexOf("-") === 0 && name.indexOf("--") < 0
-              && name.trim() != "-g") {
+        && name.trim() != "-g") {
         process.argv[2] = process.argv[2].substr(1);
         str = target + " " + targetBin + " "
-                + (process.argv.slice(2).join(" "));
+        + (process.argv.slice(2).join(" "));
         cmd = true;
       } else {
         if (name.trim() == "-g" && jxpath) {
           process.argv[process.argv.length] = "--prefix=" + jxpath;
         }
         str = target + " " + targetBin + " install "
-                + (process.argv.slice(2).join(" "));
+        + (process.argv.slice(2).join(" "));
       }
       var ec = exec(str, {
         maxBuffer: 1e8
-      }, function(error, stdout, stderr) {
+      }, function (error, stdout, stderr) {
       });
       ec.stdout.pipe(process.stdout);
       ec.stderr.pipe(process.stderr);
@@ -2103,10 +2121,10 @@
       Install(target);
     }
 
-    var delTree = function(loc) {
+    var delTree = function (loc) {
       if (fs.existsSync(loc)) {
         var _files = fs.readdirSync(loc);
-        for ( var o in _files) {
+        for (var o in _files) {
           var file = _files[o];
           var _path = loc + pathModule.sep + file;
           if (!fs.lstatSync(_path).isDirectory()) {
@@ -2116,7 +2134,7 @@
               jxcore.utils.console.write("Permission denied ", "red");
               jxcore.utils.console.write(loc, "yellow");
               jxcore.utils.console
-                      .log(" (do you have a write access to this location?)");
+                .log(" (do you have a write access to this location?)");
             }
             continue;
           }
@@ -2139,16 +2157,16 @@
       }
 
       jxcore.utils.console.log("Preparing NPM for JXcore (" + process.jxversion
-              + ") for the first run", "yellow");
+      + ") for the first run", "yellow");
 
       if (!fs.existsSync(jxFolder)) {
         var ec = jxcore.utils.cmdSync("mkdir  " + (isWindows ? "" : "-p ")
-                + jxFolder);
+        + jxFolder);
         if (ec.exitCode != 0 || !fs.existsSync(jxFolder)) {
           console
-                  .error("Make sure the user account has a write permission to it's home folder. >> "
-                          + ec.out
-                          + "\n Consider using a custom path from jx.config file's 'npmjxPath' property.");
+            .error("Make sure the user account has a write permission to it's home folder. >> "
+            + ec.out
+            + "\n Consider using a custom path from jx.config file's 'npmjxPath' property.");
           try {
             process.exit(-1);
           } catch (e) {
@@ -2162,7 +2180,7 @@
       }
 
       targetBin = jxFolder + pathModule.sep + "npmjxv3.jx";
-      download(npm_str, targetBin, function() {
+      download(npm_str, targetBin, function () {
         GoEn();
       });
     }
@@ -2173,8 +2191,10 @@
   };
 
   var $$uw = process.binding('memory_wrap');
-  NativeModule.getSource = function(o) {
-    if (!o) { return null; }
+  NativeModule.getSource = function (o) {
+    if (!o) {
+      return null;
+    }
     return $$uw.readSource(o);
   };
 
@@ -2182,7 +2202,7 @@
     config: NativeModule.getSource('config')
   };
 
-  NativeModule.hasOwnProperty = function(o) {
+  NativeModule.hasOwnProperty = function (o) {
     return $$uw.existsSource(o);
   };
 

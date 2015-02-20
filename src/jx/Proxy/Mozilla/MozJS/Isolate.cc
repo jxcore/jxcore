@@ -37,7 +37,8 @@ Isolate* Isolate::New(int threadId) {  // for_thread is true only for initial
 
   if (for_thread) {
     if (runtimes[threadId] != NULL) {
-      abort();
+      // Something is wrong! return NULL
+      return NULL;
     }
 
     if (threadId == 0)
@@ -98,7 +99,7 @@ void Isolate::SetData(void* data) { return JS_SetContextPrivate(ctx_, data); }
 
 void Isolate::Dispose() {
   if (disposable_) {
-    if(Isolates[threadId_] != NULL) {
+    if (Isolates[threadId_] != NULL) {
       delete Isolates[threadId_];
     }
     Isolates[threadId_] = NULL;

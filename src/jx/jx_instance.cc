@@ -39,7 +39,7 @@ void JXInstance::runScript(void *x) {
 
   Job::fillTasks(threadId);
 
-  node::commons *com = node::commons::newInstance(threadId+1);
+  node::commons *com = node::commons::newInstance(threadId + 1);
   int resetCount = 0;
 
 #ifdef JS_ENGINE_V8
@@ -72,6 +72,7 @@ void JXInstance::runScript(void *x) {
     JSAutoCompartment ac(ctx, _global);
     JS_LOCAL_OBJECT global(_global, ctx);
     JS_DEFINE_STATE_MARKER(com);
+    JS_SetErrorReporter(ctx, node::OnFatalError);
 #endif
 
     uv_idle_t *t = com->tick_spinner;
@@ -90,7 +91,7 @@ void JXInstance::runScript(void *x) {
 
     JS_NAME_SET(global, JS_STRING_ID("tools"), inner);
 
-    node::SetupProcessObject(threadId+1);
+    node::SetupProcessObject(threadId + 1);
     JS_HANDLE_OBJECT process_l = com->getProcess();
 
     customUnlock(CSLOCK_NEWINSTANCE);
@@ -109,10 +110,6 @@ void JXInstance::runScript(void *x) {
 
     com->Dispose();
   }
-
-  reduceThreadCount();
-  node::removeCommons();
-  Job::removeTasker(threadId);
 
 #ifdef JS_ENGINE_V8
   com->node_isolate->Dispose();
@@ -134,6 +131,10 @@ void JXInstance::runScript(void *x) {
   JS_DestroyRuntime(rt);
   com->node_isolate->Dispose();
 #endif
+
+  reduceThreadCount();
+  node::removeCommons();
+  Job::removeTasker(threadId);
 
   if (com->expects_reset) {
     char mess[64];

@@ -126,6 +126,10 @@ int CreateNewThreadId() {
 }
 
 commons *setCommons(commons *iso) {
+  assert(iso->node_isolate != NULL &&
+         "This shouldn't be null, beware using a thread Id before destroying "
+         "the previous one");
+
   uv_mutex_lock(&comLock);
   InitThreadId(iso->threadId, false);
   isolates[iso->threadId] = iso;
@@ -418,7 +422,9 @@ commons::commons(const int tid) {
   NQ = new nQueue;
 
   debugger_running = false;
-  if (tid != 0) node_isolate = JS_CREATE_NEW_ENGINE(tid);
+  if (tid != 0) {
+    node_isolate = JS_CREATE_NEW_ENGINE(tid);
+  }
 
   prog_start_time = 0;
 
@@ -521,8 +527,7 @@ int commons::getAvailableThreadId(bool multi_threaded_) {
     threadId = CreateNewThreadId();
   }
 
-  if(threadId > 0)
-	commons::embedded_multithreading_ = true;
+  if (threadId > 0) commons::embedded_multithreading_ = true;
 
   return threadId;
 }
