@@ -22,7 +22,7 @@ namespace jxcore {
 class JXString {
   char* str_;
   bool is_set_;
-  int length_;
+  size_t length_;
   bool autogc_;
 
  public:
@@ -37,11 +37,13 @@ class JXString {
   char* operator*();
   const char* operator*() const;
 
-  int length() const;
-
   JS_HANDLE_STRING ToJSString();
 
   void DisableAutoGC() { autogc_ = false; }
+
+  inline size_t Utf8Length() const { return length_; }
+
+  inline size_t length() const { return length_; }
 };
 }  // namespace jxcore
 #endif  // SRC_JX_PROXY_V8_JXSTRING_H_

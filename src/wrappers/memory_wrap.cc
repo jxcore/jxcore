@@ -56,7 +56,7 @@ JS_METHOD(MemoryWrap, MapGet) {
   if (it != node::commons::mapData[tid]->end()) {
     std::string backup(it->second.c_str());
     node::commons::mapData[tid]->erase(jstr);
-    RETURN_PARAM(STD_TO_STRING(backup.c_str()));
+    RETURN_PARAM(UTF8_TO_STRING(backup.c_str()));
   }
 }
 JS_METHOD_END
@@ -90,7 +90,7 @@ JS_METHOD(MemoryWrap, MapRead) {
   BTStore::const_iterator it = node::commons::mapData[tid]->find(jstr);
 
   if (it != node::commons::mapData[tid]->end()) {
-    RETURN_PARAM(STD_TO_STRING(it->second.c_str()));
+    RETURN_PARAM(UTF8_TO_STRING(it->second.c_str()));
   }
 }
 JS_METHOD_END
@@ -364,7 +364,7 @@ JS_METHOD(MemoryWrap, SourceRead) {
       XSpace::UNLOCKSTORE();
 
       XSpace::ExpirationKick(*str_key);
-      RETURN_PARAM(STD_TO_STRING(localSTR.c_str()));
+      RETURN_PARAM(UTF8_TO_STRING(localSTR.c_str()));
     }
   }
   XSpace::UNLOCKSTORE();
@@ -423,7 +423,7 @@ JS_METHOD(MemoryWrap, SourceGet) {
       delete data;
 
       XSpace::ExpirationRemove(*str_key);
-      RETURN_PARAM(STD_TO_STRING(str.c_str()));
+      RETURN_PARAM(UTF8_TO_STRING(str.c_str()));
     }
   }
   XSpace::UNLOCKSTORE();

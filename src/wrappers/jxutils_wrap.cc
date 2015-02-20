@@ -81,7 +81,7 @@ JS_METHOD(JXUtilsWrap, ExecSync) {
   std::string str = exec(*jxs, &ec);
 
   JS_LOCAL_ARRAY arr = JS_NEW_ARRAY();
-  JS_INDEX_SET(arr, 0, STD_TO_STRING(str.c_str()));
+  JS_INDEX_SET(arr, 0, UTF8_TO_STRING(str.c_str()));
   JS_INDEX_SET(arr, 1, STD_TO_INTEGER(ec));
 
   RETURN_POINTER(arr);
@@ -347,10 +347,14 @@ JS_METHOD(JXUtilsWrap, SetSourceExpiration) {
 JS_METHOD_END
 
 JS_METHOD(JXUtilsWrap, Compress) {
+  if (!args.IsString(0)) {
+    THROW_TYPE_EXCEPTION("compress methods expects a string argument");
+  }
+
   jxcore::JXString jxs;
   int len = args.GetString(0, &jxs);
 
-  node::Buffer *buff = jxcore::CompressString(com, *jxs, len);
+  node::Buffer *buff = jxcore::CompressString(com, *jxs, jxs.Utf8Length());
 
   if (buff == NULL) RETURN_PARAM(STD_TO_BOOLEAN(false));
 
