@@ -542,7 +542,8 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
 
     node::EmitExit(process_l);
 
-    if (main_node_->threadId == 0) WaitThreadExit(NULL);
+    if (main_node_->threadId == 0 && getThreadCount() > 0)
+      WaitThreadExit(main_node_->loop);
 
     node::RunAtExit();
 
@@ -568,6 +569,7 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
   main_node_->Dispose();
 #endif  // NDEBUG
 #elif defined(JS_ENGINE_MOZJS)
+  main_node_->Dispose();
   JS_DestroyContext(ctx);
   if (main_node_->threadId == 0)
     node::commons::process_status_ = node::JXCORE_INSTANCE_EXITED;
@@ -583,7 +585,6 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
     itc++;
   }
   main_node_->free_context_list_.clear();
-  main_node_->Dispose();
 
   JS_DestroyRuntime(rt);
   main_iso_.Dispose();
