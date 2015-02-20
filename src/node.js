@@ -1880,7 +1880,7 @@
           loc += pass;
           fss.readSync(fd, buffer, 0, 56, loc);
 
-          var ind = (buffer + "").indexOf('bin@ry.v@rsio');
+          var ind = (buffer + "").indexOf('bin@ry.v@rsio'+'n@'); // do not combine!
           if (ind >= 0) {
             buffer = new Buffer(parseInt((5 * cmped.length) - 123456789) + "")
               .toString('hex');
