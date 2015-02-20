@@ -78,12 +78,6 @@
       'lib/vm.js',
       'lib/zlib.js',
     ],
-    
-    'conditions':[
-      ['OS=="ios"', {
-        'v8_use_snapshot%': 'false',
-      }]
-    ]
   },
 
   'targets': [
@@ -203,6 +197,7 @@
             'src/jx/Proxy/V8/v8_typed_array.cc', 
           ]
         },{
+          'v8_use_snapshot%': 'false',
           'defines':[
             'JS_ENGINE_MOZJS=1'
           ],
