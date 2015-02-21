@@ -37,6 +37,8 @@ out_arm_ios7/
 out_arm_ios64/
 out_mozjs/
 out_v8/
+out_ios/
+out_android/
 
 # various stuff that VC++ produces/uses
 Debug/
