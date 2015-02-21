@@ -6,14 +6,14 @@ Unix/Macintosh:
 
 The command above executes basic tests from *simple* and *message* subfolders of *test* directory.
 
-However you can run tests also for specified folders, like:
+However, you can also run tests for specified folders, like:
 
     make test test-simple test-message
 
 Other category of tests resides in *jxcore* subfolder. They can be run as plain .js files, packaged or native packaged.
-Extra flags can provided as parameters - see [test/jxcore/README.md](../test/README.md) for more details.
+Extra flags can be provided as parameters - see [test/jxcore/README.md](../test/README.md) for more details.
 
-The following command is testing *jxcore* tests as plain .js files:
+The following command is for testing *jxcore* tests as plain .js files:
 
     make test test-jxcore
 
