@@ -1,7 +1,5 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
-
 #ifndef MODULE_EXTERNS_H
 #define MODULE_EXTERNS_H
 #include "node.h"

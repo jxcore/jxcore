@@ -1,7 +1,5 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
-
 #include "module_externs.h"
 #include "handle_wrap.h"
 #include "jx/commons.h"
@@ -40,11 +38,9 @@ JS_METHOD(ModuleWrap, LoadInternal) {
   JS_LOCAL_OBJECT exports =
       JS_VALUE_TO_OBJECT(JS_GET_NAME(module, JS_STRING_ID("exports")));
 
-#if !defined(__IOS__)
   if (!strcmp(*filename, "sqlite3")) {
     node_sqlite3::RegisterModule(exports);
   }
-#endif
 }
 JS_METHOD_END
 

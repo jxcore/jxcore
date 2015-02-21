@@ -25,16 +25,16 @@ jx_g
 .mailmap
 
 /out
-out_intel_droid/
-out_intel_droid64/
+out_x86_droid/
+out_x64_droid/
 out_arm_droid/
-out_arm_droid7/
-out_arm_droid64/
-out_intel_ios/
-out_intel_ios64/
+out_arm7s_droid/
+out_arm64_droid/
+out_x86_ios/
+out_x64_ios/
 out_arm_ios/
-out_arm_ios7/
-out_arm_ios64/
+out_arm7s_ios/
+out_arm64_ios/
 out_mozjs/
 out_v8/
 out_ios/

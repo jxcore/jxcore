@@ -1,7 +1,4 @@
-/*
- *  Copyright Nubisa Inc. 2014 All rights reserved.
- *  License (MIT)
- */
+// Copyright & License details are available under JXCORE_LICENSE file
 
 #ifndef SRC_EXTERNAL_JX_PERSISTENT_STORE_H_
 #define SRC_EXTERNAL_JX_PERSISTENT_STORE_H_

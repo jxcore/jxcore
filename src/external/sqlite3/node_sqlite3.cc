@@ -1,4 +1,3 @@
-#if !defined(__IOS__)
 #include "node.h"
 #include "node_buffer.h"
 #include "../module_externs.h"
@@ -138,5 +137,3 @@ const char* sqlite_authorizer_string(int type) {
       return "";
   }
 }
-
-#endif

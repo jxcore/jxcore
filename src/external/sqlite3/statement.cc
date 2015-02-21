@@ -1,4 +1,3 @@
-#if !defined(__IOS__)
 #include <string.h>
 
 #include "node.h"
@@ -846,4 +845,3 @@ void Statement::CleanQueue() {
       delete call;
     }
 }
-#endif

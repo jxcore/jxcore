@@ -1,4 +1,3 @@
-#if !defined(__IOS__)
 #include <string.h>
 #include <node.h>
 
@@ -621,4 +620,3 @@ void Database::RemoveCallbacks() {
     debug_profile = NULL;
   }
 }
-#endif
