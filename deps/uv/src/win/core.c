@@ -230,7 +230,7 @@ void uv_loop_delete(uv_loop_t* loop) {
 
     tid = uv_getThreadKeyId();
     loops[tid] = NULL;
-    JXFREE("", loop);
+    JX_FREE(core, loop);
   }
 }
 

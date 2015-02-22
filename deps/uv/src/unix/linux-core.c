@@ -640,10 +640,10 @@ void uv_free_cpu_info(uv_cpu_info_t* cpu_infos, int count) {
   int i;
 
   for (i = 0; i < count; i++) {
-    JXFREE("lincore", cpu_infos[i].model);
+    JX_FREE(lincore, cpu_infos[i].model);
   }
 
-  JXFREE("lincore", cpu_infos);
+  JX_FREE(lincore, cpu_infos);
 }
 
 uv_err_t uv_interface_addresses(uv_interface_address_t** addresses,
@@ -720,10 +720,10 @@ void uv_free_interface_addresses(uv_interface_address_t* addresses, int count) {
   int i;
 
   for (i = 0; i < count; i++) {
-    JXFREE("lincore", addresses[i].name);
+    JX_FREE(lincore, addresses[i].name);
   }
 
-  JXFREE("lincore", addresses);
+  JX_FREE(lincore, addresses);
 }
 
 void uv__set_process_title(const char* title) {

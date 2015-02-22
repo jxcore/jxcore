@@ -275,7 +275,7 @@ uv_loop_t* uv_loop_new(void) {
   if ((loop = malloc(sizeof(*loop))) == NULL) return NULL;
 
   if (uv__loop_init(loop, /* default_loop? */ 0)) {
-    JXFREE("core", loop);
+    JX_FREE(core, loop);
     return NULL;
   }
 
@@ -311,7 +311,7 @@ void uv_loop_delete(uv_loop_t* loop) {
   else {
     tid = uv_getThreadKeyId();
     loops[tid] = NULL;
-    JXFREE("core", loop);
+    JX_FREE(core, loop);
   }
 }
 

@@ -120,7 +120,7 @@ void uv_process_getaddrinfo_req(uv_loop_t* loop, uv_getaddrinfo_t* req) {
 
   /* release input parameter memory */
   if (req->alloc != NULL) {
-    JXFREE("", req->alloc);
+    JX_FREE(getaddrinfo, req->alloc);
     req->alloc = NULL;
   }
 
@@ -222,7 +222,7 @@ void uv_freeaddrinfo(struct addrinfo* ai) {
 
   /* release copied result memory */
   if (alloc_ptr != NULL) {
-    JXFREE("", alloc_ptr);
+    JX_FREE(getaddrinfo, alloc_ptr);
   }
 }
 
@@ -347,7 +347,7 @@ int uv_getaddrinfo(uv_loop_t* loop, uv_getaddrinfo_t* req,
 
 error:
   if (req != NULL && req->alloc != NULL) {
-    JXFREE("", req->alloc);
+    JX_FREE(getaddrinfo, req->alloc);
   }
   return -1;
 }

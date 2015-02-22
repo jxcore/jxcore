@@ -679,7 +679,7 @@ void fs__readdir(uv_fs_t* req) {
   swprintf(path2, fmt, pathw);
 #endif
   dir = FindFirstFileW(path2, &ent);
-  JXFREE("", path2);
+  JX_FREE(fs_c, path2);
 
   if (dir == INVALID_HANDLE_VALUE) {
     SET_REQ_WIN32_ERROR(req, GetLastError());
@@ -737,13 +737,13 @@ void fs__readdir(uv_fs_t* req) {
 
     size = uv_utf16_to_utf8(buf, buf_char_len, (char*)req->ptr, size);
     if (!size) {
-      JXFREE("", buf);
-      JXFREE("", req->ptr);
+      JX_FREE(fs_c, buf);
+      JX_FREE(fs_c, req->ptr);
       req->ptr = NULL;
       SET_REQ_WIN32_ERROR(req, GetLastError());
       return;
     }
-    JXFREE("", buf);
+    JX_FREE(fs_c, buf);
 
     ((char*)req->ptr)[size] = '\0';
     req->flags |= UV_FS_FREE_PTR;
@@ -973,7 +973,7 @@ static void fs__sendfile(uv_fs_t* req) {
     }
   }
 
-  JXFREE("", buf);
+  JX_FREE(fs_c, buf);
 
   SET_REQ_RESULT(req, result);
 }
@@ -1226,13 +1226,13 @@ static void fs__create_junction(uv_fs_t* req, const WCHAR* path,
 
   // Clean up
   CloseHandle(handle);
-  JXFREE("", buffer);
+  JX_FREE(fs_c, buffer);
 
   SET_REQ_RESULT(req, 0);
   return;
 
 error:
-  JXFREE("", buffer);
+  JX_FREE(fs_c, buffer);
 
   if (handle != INVALID_HANDLE_VALUE) {
     CloseHandle(handle);
@@ -1791,9 +1791,9 @@ void uv_process_fs_req(uv_loop_t* loop, uv_fs_t* req) {
 void uv_fs_req_cleanup(uv_fs_t* req) {
   if (req->flags & UV_FS_CLEANEDUP) return;
 
-  if (req->flags & UV_FS_FREE_PATHS) JXFREE("", req->pathw);
+  if (req->flags & UV_FS_FREE_PATHS) JX_FREE(fs_c, req->pathw);
 
-  if (req->flags & UV_FS_FREE_PTR) JXFREE("", req->ptr);
+  if (req->flags & UV_FS_FREE_PTR) JX_FREE(fs_c, req->ptr);
 
   req->path = NULL;
   req->pathw = NULL;

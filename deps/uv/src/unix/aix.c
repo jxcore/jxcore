@@ -210,13 +210,13 @@ uv_err_t uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count) {
   strcpy(cpu_id.name, FIRST_CPU);
   result = perfstat_cpu(&cpu_id, ps_cpus, sizeof(perfstat_cpu_t), ncpus);
   if (result == -1) {
-    JXFREE("aix", ps_cpus);
+    JX_FREE(aix, ps_cpus);
     return uv__new_artificial_error(UV_ENOSYS);
   }
 
   *cpu_infos = (uv_cpu_info_t*)malloc(ncpus * sizeof(uv_cpu_info_t));
   if (!*cpu_infos) {
-    JXFREE("aix", ps_cpus);
+    JX_FREE(aix, ps_cpus);
     return uv__new_artificial_error(UV_ENOMEM);
   }
 
@@ -235,7 +235,7 @@ uv_err_t uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count) {
     idx++;
   }
 
-  JXFREE("aix", ps_cpus);
+  JX_FREE(aix, ps_cpus);
   return uv_ok_;
 }
 
@@ -243,10 +243,10 @@ void uv_free_cpu_info(uv_cpu_info_t* cpu_infos, int count) {
   int i;
 
   for (i = 0; i < count; ++i) {
-    JXFREE("aix", cpu_infos[i].model);
+    JX_FREE(aix, cpu_infos[i].model);
   }
 
-  JXFREE("aix", cpu_infos);
+  JX_FREE(aix, cpu_infos);
 }
 
 uv_err_t uv_interface_addresses(uv_interface_address_t** addresses,
@@ -350,8 +350,8 @@ void uv_free_interface_addresses(uv_interface_address_t* addresses, int count) {
   int i;
 
   for (i = 0; i < count; ++i) {
-    JXFREE("aix", addresses[i].name);
+    JX_FREE(aix, addresses[i].name);
   }
 
-  JXFREE("aix", addresses);
+  JX_FREE(aix, addresses);
 }

@@ -100,7 +100,7 @@ out:
     }
     close(sockfd);
 
-    JXFREE("pipe", (void*)pipe_fname);
+    JX_FREE_ONLY(pipe, (void*)pipe_fname);
   }
 
   errno = saved_errno;
@@ -142,7 +142,7 @@ void uv__pipe_close(uv_pipe_t* handle) {
      * another thread or process.
      */
     unlink(handle->pipe_fname);
-    JXFREE("pipe", (void*)handle->pipe_fname);
+    JX_FREE_ONLY(pipe, (void*)handle->pipe_fname);
     handle->pipe_fname = NULL;
   }
 

@@ -139,7 +139,7 @@ char** uv_setup_args(int argc, char** argv) {
 uv_err_t uv_set_process_title(const char* title) {
   int oid[4];
 
-  if (process_title) JXFREE("", process_title);
+  if (process_title) JX_FREE(fbsd, process_title);
   process_title = strdup(title);
 
   oid[0] = CTL_KERN;
@@ -254,7 +254,7 @@ uv_err_t uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count) {
 
   size = sizeof(cpuspeed);
   if (sysctlbyname("hw.clockrate", &cpuspeed, &size, NULL, 0) < 0) {
-    JXFREE("", *cpu_infos);
+    JX_FREE(fbsd, *cpu_infos);
     return uv__new_sys_error(errno);
   }
 
@@ -262,7 +262,7 @@ uv_err_t uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count) {
    */
   size = sizeof(maxcpus);
   if (sysctlbyname(maxcpus_key, &maxcpus, &size, NULL, 0) < 0) {
-    JXFREE("", *cpu_infos);
+    JX_FREE(fbsd, *cpu_infos);
     return uv__new_sys_error(errno);
   }
 
@@ -270,13 +270,13 @@ uv_err_t uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count) {
 
   cp_times = malloc(size);
   if (cp_times == NULL) {
-    JXFREE("", *cpu_infos);
+    JX_FREE(fbsd, *cpu_infos);
     return uv__new_sys_error(ENOMEM);
   }
 
   if (sysctlbyname(cptimes_key, cp_times, &size, NULL, 0) < 0) {
-    JXFREE("", cp_times);
-    JXFREE("", *cpu_infos);
+    JX_FREE(fbsd, cp_times);
+    JX_FREE(fbsd, *cpu_infos);
     return uv__new_sys_error(errno);
   }
 
@@ -295,7 +295,7 @@ uv_err_t uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count) {
     cur += CPUSTATES;
   }
 
-  JXFREE("", cp_times);
+  JX_FREE(fbsd, cp_times);
   return uv_ok_;
 }
 
@@ -303,10 +303,10 @@ void uv_free_cpu_info(uv_cpu_info_t* cpu_infos, int count) {
   int i;
 
   for (i = 0; i < count; i++) {
-    JXFREE("", cpu_infos[i].model);
+    JX_FREE(fbsd, cpu_infos[i].model);
   }
 
-  JXFREE("", cpu_infos);
+  JX_FREE(fbsd, cpu_infos);
 }
 
 uv_err_t uv_interface_addresses(uv_interface_address_t** addresses,

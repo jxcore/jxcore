@@ -126,7 +126,7 @@ __attribute__((destructor)) static void cleanup(void) {
   for (i = 0; i < nthreads; i++)
     if (uv_thread_join(threads + i)) abort();
 
-  if (threads != default_threads) JXFREE("threadpool", threads);
+  if (threads != default_threads) JX_FREE(threadpool, threads);
 
   uv_mutex_destroy(&mutex);
   uv_cond_destroy(&cond);

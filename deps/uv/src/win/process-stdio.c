@@ -410,7 +410,7 @@ void uv__stdio_destroy(BYTE* buffer) {
     }
   }
 
-  JXFREE("", buffer);
+  JX_FREE(prcs_stdio, buffer);
 }
 
 void uv__stdio_noinherit(BYTE* buffer) {

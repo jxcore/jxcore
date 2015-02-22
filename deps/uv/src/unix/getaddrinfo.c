@@ -52,11 +52,11 @@ static void uv__getaddrinfo_done(struct uv__work* w, int status) {
 
   /* see initialization in uv_getaddrinfo() */
   if (req->hints) {
-    JXFREE("getaddr", req->hints);
+    JX_FREE(getaddr, req->hints);
   } else if (req->service) {
-    JXFREE("getaddr", req->service);
+    JX_FREE(getaddr, req->service);
   } else if (req->hostname) {
-    JXFREE("getaddr", req->hostname);
+    JX_FREE(getaddr, req->hostname);
   } else
     assert(0);
 

@@ -63,7 +63,7 @@ void uv__udp_finish_close(uv_udp_t* handle) {
     req = QUEUE_DATA(q, uv_udp_send_t, queue);
     uv__req_unregister(handle->loop, req);
 
-    if (req->bufs != req->bufsml) JXFREE("udp", req->bufs);
+    if (req->bufs != req->bufsml) JX_FREE(udp, req->bufs);
     req->bufs = NULL;
 
     if (req->send_cb) {
@@ -143,7 +143,7 @@ static void uv__udp_run_completed(uv_udp_t* handle) {
     req = QUEUE_DATA(q, uv_udp_send_t, queue);
     uv__req_unregister(handle->loop, req);
 
-    if (req->bufs != req->bufsml) JXFREE("udp", req->bufs);
+    if (req->bufs != req->bufsml) JX_FREE(udp, req->bufs);
     req->bufs = NULL;
 
     if (req->send_cb == NULL) continue;

@@ -324,7 +324,7 @@ void uv_pipe_endgame(uv_loop_t* loop, uv_pipe_t* handle) {
 
     if (handle->flags & UV_HANDLE_CONNECTION) {
       if (handle->pending_ipc_info.socket_info) {
-        JXFREE("", handle->pending_ipc_info.socket_info);
+        JX_FREE(pipe, handle->pending_ipc_info.socket_info);
         handle->pending_ipc_info.socket_info = NULL;
       }
 
@@ -342,7 +342,7 @@ void uv_pipe_endgame(uv_loop_t* loop, uv_pipe_t* handle) {
 
     if (handle->flags & UV_HANDLE_PIPESERVER) {
       assert(handle->accept_reqs);
-      JXFREE("", handle->accept_reqs);
+      JX_FREE(pipe, handle->accept_reqs);
       handle->accept_reqs = NULL;
     }
 
@@ -438,7 +438,7 @@ int uv_pipe_bind(uv_pipe_t* handle, const char* name) {
 
 error:
   if (handle->name) {
-    JXFREE("", handle->name);
+    JX_FREE(pipe, handle->name);
     handle->name = NULL;
   }
 
@@ -549,7 +549,7 @@ void uv_pipe_connect(uv_connect_t* req, uv_pipe_t* handle, const char* name,
 
 error:
   if (handle->name) {
-    JXFREE("", handle->name);
+    JX_FREE(pipe, handle->name);
     handle->name = NULL;
   }
 
@@ -572,7 +572,7 @@ void uv_pipe_cleanup(uv_loop_t* loop, uv_pipe_t* handle) {
   HANDLE pipeHandle;
 
   if (handle->name) {
-    JXFREE("", handle->name);
+    JX_FREE(pipe, handle->name);
     handle->name = NULL;
   }
 
@@ -1297,7 +1297,7 @@ void uv_process_pipe_read_req(uv_loop_t* loop, uv_pipe_t* handle,
           }
 
           if (handle->pending_ipc_info.socket_info) {
-            JXFREE("", handle->pending_ipc_info.socket_info);
+            JX_FREE(pipe, handle->pending_ipc_info.socket_info);
             handle->pending_ipc_info.socket_info = NULL;
           }
         } else {
@@ -1348,7 +1348,7 @@ void uv_process_pipe_write_req(uv_loop_t* loop, uv_pipe_t* handle,
     if (req == &handle->ipc_header_write_req) {
       req->type = UV_UNKNOWN_REQ;
     } else {
-      JXFREE("", req);
+      JX_FREE(pipe, req);
     }
   } else {
     if (req->cb) {
@@ -1537,7 +1537,7 @@ static void eof_timer_destroy(uv_pipe_t* pipe) {
 
 static void eof_timer_close_cb(uv_handle_t* handle) {
   assert(handle->type == UV_TIMER);
-  JXFREE("", handle);
+  JX_FREE(pipe, handle);
 }
 
 int uv_pipe_open(uv_pipe_t* pipe, uv_file file) {

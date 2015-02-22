@@ -200,7 +200,7 @@ void uv_tcp_endgame(uv_loop_t* loop, uv_tcp_t* handle) {
         }
       }
 
-      JXFREE("", handle->accept_reqs);
+      JX_FREE(tcp, handle->accept_reqs);
       handle->accept_reqs = NULL;
     }
 

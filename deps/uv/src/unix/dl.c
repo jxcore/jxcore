@@ -38,7 +38,7 @@ int uv_dlopen(const char* filename, uv_lib_t* lib) {
 
 void uv_dlclose(uv_lib_t* lib) {
   if (lib->errmsg) {
-    JXFREE("dlc", lib->errmsg);
+    JX_FREE(dlc, lib->errmsg);
     lib->errmsg = NULL;
   }
 
@@ -62,7 +62,7 @@ const char* uv_dlerror(uv_lib_t* lib) {
 static int uv__dlerror(uv_lib_t* lib) {
   char* errmsg;
 
-  if (lib->errmsg) JXFREE("dlc", lib->errmsg);
+  if (lib->errmsg) JX_FREE(dlc, lib->errmsg);
 
   errmsg = dlerror();
 

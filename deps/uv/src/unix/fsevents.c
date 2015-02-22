@@ -64,7 +64,7 @@ struct uv__fsevents_event_s {
       if (((handle)->flags & (UV_CLOSING | UV_CLOSED)) == 0)     \
         block                                                    \
             /* Free allocated data */                            \
-            JXFREE("fsevs", event);                              \
+            JX_FREE(fsevs, event);                              \
     }                                                            \
   }
 
@@ -261,7 +261,7 @@ int uv__fsevents_close(uv_fs_event_t* handle) {
 
   uv_mutex_destroy(&handle->cf_mutex);
   uv_sem_destroy(&handle->cf_sem);
-  JXFREE("fsevs", handle->realpath);
+  JX_FREE(fsevs, handle->realpath);
   handle->realpath = NULL;
   handle->realpath_len = 0;
 

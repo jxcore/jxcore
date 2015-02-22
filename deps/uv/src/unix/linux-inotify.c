@@ -201,6 +201,6 @@ void uv__fs_event_close(uv_fs_event_t* handle) {
     /* No watchers left for this path. Clean up. */
     RB_REMOVE(watcher_root, CAST(&handle->loop->inotify_watchers), w);
     uv__inotify_rm_watch(handle->loop->inotify_fd, w->wd);
-    JXFREE("lininot", w);
+    JX_FREE(lininot, w);
   }
 }

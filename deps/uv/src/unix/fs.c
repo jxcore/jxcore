@@ -218,8 +218,8 @@ static ssize_t uv__fs_readdir(uv_fs_t* req) {
 out:
   saved_errno = errno;
   if (dents != NULL) {
-    for (i = 0; i < n; i++) JXFREE("fs1", dents[i]);
-    JXFREE("fs2", dents);
+    for (i = 0; i < n; i++) JX_FREE(fs1, dents[i]);
+    JX_FREE(fs2, dents);
   }
   errno = saved_errno;
 
@@ -250,7 +250,7 @@ static ssize_t uv__fs_readlink(uv_fs_t* req) {
   len = readlink(req->path, buf, len);
 
   if (len == -1) {
-    JXFREE("fs0", buf);
+    JX_FREE(fs0, buf);
     return -1;
   }
 
@@ -761,10 +761,10 @@ int uv_fs_write(uv_loop_t* loop, uv_fs_t* req, uv_file file, void* buf,
 }
 
 void uv_fs_req_cleanup(uv_fs_t* req) {
-  if (req->path != NULL) JXFREE("fs3", (void*)req->path);
+  if (req->path != NULL) JX_FREE_ONLY(fs3, (void*)req->path);
   req->path = NULL;
   req->new_path = NULL;
 
-  if (req->ptr != &req->statbuf && req->ptr != NULL) JXFREE("fs4", req->ptr);
+  if (req->ptr != &req->statbuf && req->ptr != NULL) JX_FREE(fs4, req->ptr);
   req->ptr = NULL;
 }

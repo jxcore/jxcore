@@ -130,7 +130,7 @@ char** uv_setup_args(int argc, char** argv) {
 }
 
 uv_err_t uv_set_process_title(const char* title) {
-  if (process_title) JXFREE("", process_title);
+  if (process_title) JX_FREE(netbsd, process_title);
 
   process_title = strdup(title);
   setproctitle("%s", title);
@@ -236,8 +236,8 @@ uv_err_t uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count) {
 
   *cpu_infos = malloc(numcpus * sizeof(**cpu_infos));
   if (!(*cpu_infos)) {
-    JXFREE("", cp_times);
-    JXFREE("", *cpu_infos);
+    JX_FREE(netbsd, cp_times);
+    JX_FREE(netbsd, *cpu_infos);
     return uv__new_artificial_error(UV_ENOMEM);
   }
 
@@ -252,7 +252,7 @@ uv_err_t uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count) {
     cpu_info->speed = (int)(cpuspeed / (uint64_t)1e6);
     cur += CPUSTATES;
   }
-  JXFREE("", cp_times);
+  JX_FREE(netbsd, cp_times);
   return uv_ok_;
 }
 
@@ -260,10 +260,10 @@ void uv_free_cpu_info(uv_cpu_info_t* cpu_infos, int count) {
   int i;
 
   for (i = 0; i < count; i++) {
-    JXFREE("", cpu_infos[i].model);
+    JX_FREE(netbsd, cpu_infos[i].model);
   }
 
-  JXFREE("", cpu_infos);
+  JX_FREE(netbsd, cpu_infos);
 }
 
 uv_err_t uv_interface_addresses(uv_interface_address_t** addresses,
@@ -330,8 +330,8 @@ void uv_free_interface_addresses(uv_interface_address_t* addresses, int count) {
   int i;
 
   for (i = 0; i < count; i++) {
-    JXFREE("", addresses[i].name);
+    JX_FREE(netbsd, addresses[i].name);
   }
 
-  JXFREE("", addresses);
+  JX_FREE(netbsd, addresses);
 }

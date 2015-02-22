@@ -490,7 +490,7 @@ int uv_spawn_jx(uv_loop_t* loop, uv_process_t* process,
   process->exit_cb = options->exit_cb;
   uv__handle_start(process);
 
-  JXFREE("proc", pipes);
+  JX_FREE(proc, pipes);
   return 0;
 
 error:
@@ -504,7 +504,7 @@ error:
       if (pipes[i][0] != -1) close(pipes[i][0]);
       if (pipes[i][1] != -1) close(pipes[i][1]);
     }
-    JXFREE("proc", pipes);
+    JX_FREE(proc, pipes);
   }
 
   return -1;

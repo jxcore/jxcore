@@ -119,7 +119,7 @@ int uv_exepath(char* buffer, size_t* size_ptr) {
     goto error;
   }
 
-  JXFREE("", utf16_buffer);
+  JX_FREE(util, utf16_buffer);
 
   /* utf8_len *does* include the terminating null at this point, but the */
   /* returned size shouldn't. */
@@ -127,7 +127,7 @@ int uv_exepath(char* buffer, size_t* size_ptr) {
   return 0;
 
 error:
-  JXFREE("", utf16_buffer);
+  JX_FREE(util, utf16_buffer);
   return -1;
 }
 
@@ -330,14 +330,14 @@ uv_err_t uv_set_process_title(const char* title) {
   }
 
   EnterCriticalSection(&process_title_lock);
-  JXFREE("", process_title);
+  JX_FREE(util, process_title);
   process_title = strdup(title);
   LeaveCriticalSection(&process_title_lock);
 
   err = uv_ok_;
 
 done:
-  JXFREE("", title_w);
+  JX_FREE(util, title_w);
   return err;
 }
 
@@ -363,7 +363,7 @@ static int uv__get_process_title() {
 
   /* Do utf16 -> utf8 conversion here */
   if (!uv_utf16_to_utf8(title_w, -1, process_title, length)) {
-    JXFREE("", process_title);
+    JX_FREE(util, process_title);
     return -1;
   }
 
@@ -454,7 +454,7 @@ uv_err_t uv_uptime(double* uptime) {
       return uv__new_sys_error(result);
     }
 
-    JXFREE("", malloced_buffer);
+    JX_FREE(util, malloced_buffer);
 
     buffer_size *= 2;
     /* Don't let the buffer grow infinitely. */
@@ -502,7 +502,7 @@ uv_err_t uv_uptime(double* uptime) {
         uint64_t value = *((uint64_t*)address);
         *uptime = (double)(object_type->PerfTime.QuadPart - value) /
                   (double)object_type->PerfFreq.QuadPart;
-        JXFREE("", malloced_buffer);
+        JX_FREE(util, malloced_buffer);
         return uv_ok_;
       }
     }
@@ -513,12 +513,12 @@ uv_err_t uv_uptime(double* uptime) {
   }
 
   /* If we get here, the uptime value was not found. */
-  JXFREE("", malloced_buffer);
+  JX_FREE(util, malloced_buffer);
   *uptime = 0;
   return uv__new_artificial_error(UV_ENOSYS);
 
 internalError:
-  JXFREE("", malloced_buffer);
+  JX_FREE(util, malloced_buffer);
   *uptime = 0;
   return uv__new_artificial_error(UV_EIO);
 }
@@ -639,7 +639,7 @@ uv_err_t uv_cpu_info(uv_cpu_info_t** cpu_infos_ptr, int* cpu_count_ptr) {
     cpu_info->model[len] = '\0';
   }
 
-  JXFREE("", sppi);
+  JX_FREE(util, sppi);
 
   *cpu_count_ptr = cpu_count;
   *cpu_infos_ptr = cpu_infos;
@@ -648,10 +648,10 @@ uv_err_t uv_cpu_info(uv_cpu_info_t** cpu_infos_ptr, int* cpu_count_ptr) {
 
 error:
   /* This is safe because the cpu_infos array is zeroed on allocation. */
-  for (i = 0; i < cpu_count; i++) JXFREE("", cpu_infos[i].model);
+  for (i = 0; i < cpu_count; i++) JX_FREE(util, cpu_infos[i].model);
 
-  JXFREE("", cpu_infos);
-  JXFREE("", sppi);
+  JX_FREE(util, cpu_infos);
+  JX_FREE(util, sppi);
 
   return err;
 }
@@ -660,10 +660,10 @@ void uv_free_cpu_info(uv_cpu_info_t* cpu_infos, int count) {
   int i;
 
   for (i = 0; i < count; i++) {
-    JXFREE("", cpu_infos[i].model);
+    JX_FREE(util, cpu_infos[i].model);
   }
 
-  JXFREE("", cpu_infos);
+  JX_FREE(util, cpu_infos);
 }
 
 uv_err_t uv_interface_addresses(uv_interface_address_t** addresses_ptr,
@@ -695,7 +695,7 @@ uv_err_t uv_interface_addresses(uv_interface_address_t** addresses_ptr,
 
     if (r == ERROR_SUCCESS) break;
 
-    JXFREE("", win_address_buf);
+    JX_FREE(util, win_address_buf);
 
     switch (r) {
       case ERROR_BUFFER_OVERFLOW:
@@ -762,7 +762,7 @@ uv_err_t uv_interface_addresses(uv_interface_address_t** addresses_ptr,
     name_size = WideCharToMultiByte(CP_UTF8, 0, win_address->FriendlyName, -1,
                                     NULL, 0, NULL, FALSE);
     if (name_size <= 0) {
-      JXFREE("", win_address_buf);
+      JX_FREE(util, win_address_buf);
       return uv__new_sys_error(GetLastError());
     }
     uv_address_buf_size += name_size;
@@ -780,7 +780,7 @@ uv_err_t uv_interface_addresses(uv_interface_address_t** addresses_ptr,
   /* Allocate space to store interface data plus adapter names. */
   uv_address_buf = malloc(uv_address_buf_size);
   if (uv_address_buf == NULL) {
-    JXFREE("", win_address_buf);
+    JX_FREE(util, win_address_buf);
     return uv__new_artificial_error(UV_ENOMEM);
   }
 
@@ -806,8 +806,8 @@ uv_err_t uv_interface_addresses(uv_interface_address_t** addresses_ptr,
     name_size = WideCharToMultiByte(CP_UTF8, 0, win_address->FriendlyName, -1,
                                     name_buf, (int)max_name_size, NULL, FALSE);
     if (name_size <= 0) {
-      JXFREE("", win_address_buf);
-      JXFREE("", uv_address_buf);
+      JX_FREE(util, win_address_buf);
+      JX_FREE(util, uv_address_buf);
       return uv__new_sys_error(GetLastError());
     }
 
@@ -834,7 +834,7 @@ uv_err_t uv_interface_addresses(uv_interface_address_t** addresses_ptr,
     name_buf += name_size;
   }
 
-  JXFREE("", win_address_buf);
+  JX_FREE(util, win_address_buf);
 
   *addresses_ptr = uv_address_buf;
   *count_ptr = count;
@@ -843,5 +843,5 @@ uv_err_t uv_interface_addresses(uv_interface_address_t** addresses_ptr,
 }
 
 void uv_free_interface_addresses(uv_interface_address_t* addresses, int count) {
-  JXFREE("", addresses);
+  JX_FREE(util, addresses);
 }

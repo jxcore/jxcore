@@ -370,7 +370,7 @@ void uv__fs_event_close(uv_fs_event_t* handle) {
                     (uintptr_t) & handle->fo);
   }
   handle->fd = PORT_DELETED;
-  JXFREE("", handle->filename);
+  JX_FREE(sunos, handle->filename);
   handle->filename = NULL;
   handle->fo.fo_name = NULL;
   uv__handle_stop(handle);
@@ -531,10 +531,10 @@ void uv_free_cpu_info(uv_cpu_info_t* cpu_infos, int count) {
   int i;
 
   for (i = 0; i < count; i++) {
-    JXFREE("", cpu_infos[i].model);
+    JX_FREE(sunos, cpu_infos[i].model);
   }
 
-  JXFREE("", cpu_infos);
+  JX_FREE(sunos, cpu_infos);
 }
 
 uv_err_t uv_interface_addresses(uv_interface_address_t** addresses,
@@ -605,8 +605,8 @@ void uv_free_interface_addresses(uv_interface_address_t* addresses, int count) {
   int i;
 
   for (i = 0; i < count; i++) {
-    JXFREE("", addresses[i].name);
+    JX_FREE(sunos, addresses[i].name);
   }
 
-  JXFREE("", addresses);
+  JX_FREE(sunos, addresses);
 }

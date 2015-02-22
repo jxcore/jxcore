@@ -269,8 +269,46 @@ UV_EXTERN int threadHasMessage(const int tid);
 UV_EXTERN void setThreadMessage(const int tid, const int has_it);
 
 UV_EXTERN void KICKPRINT(const char* str, const char* pass, const int flush);
-#define JXFREE(mark, x) \
-  if (x != NULL) free(x)  //;else KICKPRINT("DFREE %s\n",mark, 1)
+
+#ifdef __ANDROID__  // change to EMBEDDED
+#include <android/log.h>
+#define ALOG_TAG "jxcore-uv-log"
+#define KICKPRINT(flush, ...) \
+  __android_log_print(ANDROID_LOG_ERROR, ALOG_TAG, __VA_ARGS__)
+#else
+#define KICKPRINT(flush, ...)  \
+  do {                         \
+    printf(__VA_ARGS__);        \
+    if (flush) fflush(stdout); \
+  } while (0)
+#endif
+
+#ifdef JX_TEST_ENVIRONMENT
+#define JX_FREE(mark, x)                      \
+  do {                                       \
+    if (x != NULL) {                         \
+      free(x);                               \
+      x = NULL;                              \
+    } else {                                 \
+      printf("DOUBLE FREE at %s \n", #mark); \
+      abort();                               \
+    }                                        \
+  } while (0)
+
+#define JX_FREE_ONLY(mark, x)                \
+  do {                                       \
+    if (x != NULL) {                         \
+      free(x);                               \
+    } else {                                 \
+      printf("DOUBLE FREE at %s \n", #mark); \
+      abort();                               \
+    }                                        \
+  } while (0)
+#else
+#define JX_FREE(mark, x) free(x)
+#define JX_FREE_ONLY(mark, x) JX_FREE(mark, x)
+#endif
+
 #define JXABORT(mark) abort()
 // JX_END
 

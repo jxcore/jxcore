@@ -32,12 +32,6 @@
   case UV_##uc:    \
     return sizeof(uv_##lc##_t);
 
-void KICKPRINT(const char* str, const char* pass, const int flush) {
-  printf(str, pass);
-
-  if (flush == 1) fflush(stdout);
-}
-
 size_t uv_handle_size(uv_handle_type type) {
   switch (type) {
     UV_HANDLE_TYPE_MAP(XX)
@@ -283,7 +277,7 @@ static void* uv__thread_start(void* ctx_v)
   ctx = ctx_v;
   arg = ctx->arg;
   entry = ctx->entry;
-  JXFREE("uvcommon", ctx);
+  JX_FREE(uv_common, ctx);
   entry(arg);
 
   return 0;
@@ -306,7 +300,7 @@ int uv_thread_create(uv_thread_t* tid, void (*entry)(void* arg), void* arg) {
 #else
   if (pthread_create(tid, NULL, uv__thread_start, ctx)) {
 #endif
-    JXFREE("uvcommon", ctx);
+    JX_FREE(uv_common, ctx);
     return -1;
   }
 

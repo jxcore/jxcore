@@ -206,7 +206,7 @@ static WCHAR* search_path_join_test(const WCHAR* dir, size_t dir_len,
     return result;
   }
 
-  JXFREE("", result);
+  JX_FREE(process, result);
   return NULL;
 }
 
@@ -520,14 +520,14 @@ uv_err_t make_program_args(char** args, int verbatim_arguments,
     *pos++ = *(arg + 1) ? L' ' : L'\0';
   }
 
-  JXFREE("", temp_buffer);
+  JX_FREE(process, temp_buffer);
 
   *dst_ptr = dst;
   return uv_ok_;
 
 error:
-  JXFREE("", dst);
-  JXFREE("", temp_buffer);
+  JX_FREE(process, dst);
+  JX_FREE(process, temp_buffer);
   return err;
 }
 
@@ -608,7 +608,7 @@ uv_err_t make_program_env(char* env_block[], WCHAR** dst_ptr) {
     len = MultiByteToWideChar(CP_UTF8, 0, *env, -1, ptr,
                               (int)(env_len - (ptr - dst)));
     if (len <= 0) {
-      JXFREE("", dst);
+      JX_FREE(process, dst);
       return uv__new_sys_error(GetLastError());
     }
   }
@@ -916,12 +916,12 @@ int uv_spawn_jx(uv_loop_t* loop, uv_process_t* process,
   }
 
 done:
-  JXFREE("", application);
-  JXFREE("", application_path);
-  JXFREE("", arguments);
-  JXFREE("", cwd);
-  JXFREE("", env);
-  JXFREE("", path);
+  JX_FREE(process, application);
+  JX_FREE(process, application_path);
+  JX_FREE(process, arguments);
+  JX_FREE(process, cwd);
+  JX_FREE(process, env);
+  JX_FREE(process, path);
 
   process->spawn_error = err;
 

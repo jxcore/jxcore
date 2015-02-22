@@ -94,7 +94,7 @@ void uv__platform_loop_delete(uv_loop_t* loop) {
     s = QUEUE_DATA(item, uv__cf_loop_signal_t, member);
 
     QUEUE_REMOVE(item);
-    JXFREE("darwin", s);
+    JX_FREE(darwin, s);
   }
 }
 
@@ -143,7 +143,7 @@ static void uv__cf_loop_cb(void* arg) {
       s->cb(s->arg);
 
     QUEUE_REMOVE(item);
-    JXFREE("darwin", s);
+    JX_FREE(darwin, s);
   }
 }
 
@@ -195,12 +195,12 @@ int uv_exepath(char* buffer, size_t* size) {
   fullpath = realpath(buffer, path);
 
   if (fullpath == NULL) {
-    JXFREE("darwin", path);
+    JX_FREE(darwin, path);
     return -1;
   }
 
   strncpy(buffer, fullpath, *size);
-  JXFREE("darwin", fullpath);
+  JX_FREE(darwin, fullpath);
   *size = strlen(buffer);
   return 0;
 }
@@ -336,10 +336,10 @@ void uv_free_cpu_info(uv_cpu_info_t* cpu_infos, int count) {
   int i;
 
   for (i = 0; i < count; i++) {
-    JXFREE("darwin", cpu_infos[i].model);
+    JX_FREE(darwin, cpu_infos[i].model);
   }
 
-  JXFREE("darwin", cpu_infos);
+  JX_FREE(darwin, cpu_infos);
 }
 
 uv_err_t uv_interface_addresses(uv_interface_address_t** addresses,
@@ -412,8 +412,8 @@ void uv_free_interface_addresses(uv_interface_address_t* addresses, int count) {
   int i;
 
   for (i = 0; i < count; i++) {
-    JXFREE("darwin", addresses[i].name);
+    JX_FREE(darwin, addresses[i].name);
   }
 
-  JXFREE("darwin", addresses);
+  JX_FREE(darwin, addresses);
 }

@@ -245,7 +245,7 @@ static void uv__stream_osx_cb_close(uv_handle_t* async) {
   uv__stream_select_t* s;
 
   s = container_of(async, uv__stream_select_t, async);
-  JXFREE("stream", s);
+  JX_FREE(stream, s);
 }
 
 int uv__stream_try_select(uv_stream_t* stream, int* fd) {
@@ -291,7 +291,7 @@ int uv__stream_try_select(uv_stream_t* stream, int* fd) {
   s->fd = *fd;
 
   if (uv_async_init(stream->loop, &s->async, uv__stream_osx_select_cb)) {
-    SAVE_ERRNO(JXFREE("stream", s));
+    SAVE_ERRNO(JX_FREE(stream, s));
     return uv__set_sys_error(stream->loop, errno);
   }
 
@@ -374,7 +374,7 @@ void uv__stream_destroy(uv_stream_t* stream) {
     req = QUEUE_DATA(q, uv_write_t, queue);
     uv__req_unregister(stream->loop, req);
 
-    if (req->bufs != req->bufsml) JXFREE("stream", req->bufs);
+    if (req->bufs != req->bufsml) JX_FREE(stream, req->bufs);
     req->bufs = NULL;
 
     if (req->cb) {
@@ -392,7 +392,7 @@ void uv__stream_destroy(uv_stream_t* stream) {
 
     if (req->bufs != NULL) {
       stream->write_queue_size -= uv__write_req_size(req);
-      if (req->bufs != req->bufsml) JXFREE("stream", req->bufs);
+      if (req->bufs != req->bufsml) JX_FREE(stream, req->bufs);
       req->bufs = NULL;
     }
 
@@ -647,7 +647,7 @@ static void uv__write_req_finish(uv_write_t* req) {
    * to revisit in future revisions of the libuv API.
    */
   if (req->error == 0) {
-    if (req->bufs != req->bufsml) JXFREE("stream", req->bufs);
+    if (req->bufs != req->bufsml) JX_FREE(stream, req->bufs);
     req->bufs = NULL;
   }
 
@@ -845,7 +845,7 @@ static void uv__write_callbacks(uv_stream_t* stream) {
 
     if (req->bufs != NULL) {
       stream->write_queue_size -= uv__write_req_size(req);
-      if (req->bufs != req->bufsml) JXFREE("stream", req->bufs);
+      if (req->bufs != req->bufsml) JX_FREE(stream, req->bufs);
       req->bufs = NULL;
     }
 

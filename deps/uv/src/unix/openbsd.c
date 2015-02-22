@@ -107,7 +107,7 @@ int uv_exepath(char* buffer, size_t* size) {
   status = 0;
 
 out:
-  JXFREE("", argsbuf);
+  JX_FREE(openbsd, argsbuf);
 
   return status;
 }
@@ -142,7 +142,7 @@ char** uv_setup_args(int argc, char** argv) {
 }
 
 uv_err_t uv_set_process_title(const char* title) {
-  if (process_title) JXFREE("", process_title);
+  if (process_title) JX_FREE(openbsd, process_title);
   process_title = strdup(title);
   setproctitle(title);
   return uv_ok_;
@@ -233,7 +233,7 @@ uv_err_t uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count) {
   which[1] = HW_CPUSPEED;
   size = sizeof(cpuspeed);
   if (sysctl(which, 2, &cpuspeed, &size, NULL, 0) < 0) {
-    JXFREE("", *cpu_infos);
+    JX_FREE(openbsd, *cpu_infos);
     return uv__new_sys_error(errno);
   }
 
@@ -244,7 +244,7 @@ uv_err_t uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count) {
     which[2] = i;
     size = sizeof(info);
     if (sysctl(which, 3, &info, &size, NULL, 0) < 0) {
-      JXFREE("", *cpu_infos);
+      JX_FREE(openbsd, *cpu_infos);
       return uv__new_sys_error(errno);
     }
 
@@ -267,10 +267,10 @@ void uv_free_cpu_info(uv_cpu_info_t* cpu_infos, int count) {
   int i;
 
   for (i = 0; i < count; i++) {
-    JXFREE("", cpu_infos[i].model);
+    JX_FREE(openbsd, cpu_infos[i].model);
   }
 
-  JXFREE("", cpu_infos);
+  JX_FREE(openbsd, cpu_infos);
 }
 
 uv_err_t uv_interface_addresses(uv_interface_address_t** addresses,

@@ -89,6 +89,6 @@ uv_err_t uv_get_process_title(char* buffer, size_t size) {
 }
 
 __attribute__((destructor)) static void free_args_mem(void) {
-  JXFREE("", args_mem); /* Keep valgrind happy. */
+  JX_FREE(proctitle, args_mem); /* Keep valgrind happy. */
   args_mem = NULL;
 }

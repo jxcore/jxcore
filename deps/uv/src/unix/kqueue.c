@@ -344,7 +344,7 @@ void uv__fs_event_close(uv_fs_event_t* handle) {
 
   uv__handle_stop(handle);
 
-  JXFREE("kque", handle->filename);
+  JX_FREE(kqueue, handle->filename);
   handle->filename = NULL;
 
   close(handle->event_watcher.fd);

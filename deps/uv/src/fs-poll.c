@@ -171,7 +171,7 @@ out:
 }
 
 static void timer_close_cb(uv_handle_t* handle) {
-  JXFREE("fs-pool", container_of(handle, struct poll_ctx, timer_handle));
+  JX_FREE_ONLY(fs_poll, container_of(handle, struct poll_ctx, timer_handle));
 }
 
 static int statbuf_eq(const uv_statbuf_t* a, const uv_statbuf_t* b) {

@@ -91,7 +91,7 @@ static int uv_split_path(const WCHAR* filename, WCHAR** dir, WCHAR** file) {
       }
 
       if (!GetCurrentDirectoryW(MAX_PATH, *dir)) {
-        JXFREE("", *dir);
+        JX_FREE(fs_event, *dir);
         *dir = NULL;
         return -1;
       }
@@ -176,7 +176,7 @@ int uv_fs_event_init(uv_loop_t* loop, uv_fs_event_t* handle,
     }
 
     dir_to_watch = dir;
-    JXFREE("", filenamew);
+    JX_FREE(fs_event, filenamew);
     filenamew = NULL;
   }
 
@@ -186,7 +186,7 @@ int uv_fs_event_init(uv_loop_t* loop, uv_fs_event_t* handle,
       OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, NULL);
 
   if (dir) {
-    JXFREE("", dir);
+    JX_FREE(fs_event, dir);
     dir = NULL;
   }
 
@@ -226,21 +226,21 @@ int uv_fs_event_init(uv_loop_t* loop, uv_fs_event_t* handle,
 
 error:
   if (handle->filename) {
-    JXFREE("", handle->filename);
+    JX_FREE(fs_event, handle->filename);
     handle->filename = NULL;
   }
 
   if (handle->filew) {
-    JXFREE("", handle->filew);
+    JX_FREE(fs_event, handle->filew);
     handle->filew = NULL;
   }
 
   if (handle->short_filew) {
-    JXFREE("", handle->short_filew);
+    JX_FREE(fs_event, handle->short_filew);
     handle->short_filew = NULL;
   }
 
-  JXFREE("", filenamew);
+  JX_FREE(fs_event, filenamew);
 
   if (handle->dir_handle != INVALID_HANDLE_VALUE) {
     CloseHandle(handle->dir_handle);
@@ -330,17 +330,17 @@ void uv_process_fs_event_req(uv_loop_t* loop, uv_req_t* req,
                 if (size) {
                   long_filenamew[size] = '\0';
                 } else {
-                  JXFREE("", long_filenamew);
+                  JX_FREE(fs_event, long_filenamew);
                   long_filenamew = NULL;
                 }
               }
 
-              JXFREE("", filenamew);
+              JX_FREE(fs_event, filenamew);
 
               if (long_filenamew) {
                 /* Get the file name out of the long path. */
                 result = uv_split_path(long_filenamew, NULL, &filenamew);
-                JXFREE("", long_filenamew);
+                JX_FREE(fs_event, long_filenamew);
 
                 if (result == 0) {
                   long_filenamew = filenamew;
@@ -381,7 +381,7 @@ void uv_process_fs_event_req(uv_loop_t* loop, uv_req_t* req,
               if (size) {
                 filename[size] = '\0';
               } else {
-                JXFREE("", filename);
+                JX_FREE(fs_event, filename);
                 filename = NULL;
               }
             }
@@ -400,9 +400,9 @@ void uv_process_fs_event_req(uv_loop_t* loop, uv_req_t* req,
               break;
           }
 
-          JXFREE("", filename);
+          JX_FREE(fs_event, filename);
           filename = NULL;
-          JXFREE("", long_filenamew);
+          JX_FREE(fs_event, long_filenamew);
           long_filenamew = NULL;
         }
 
@@ -446,22 +446,22 @@ void uv_fs_event_endgame(uv_loop_t* loop, uv_fs_event_t* handle) {
     }
 
     if (handle->filew) {
-      JXFREE("", handle->filew);
+      JX_FREE(fs_event, handle->filew);
       handle->filew = NULL;
     }
 
     if (handle->short_filew) {
-      JXFREE("", handle->short_filew);
+      JX_FREE(fs_event, handle->short_filew);
       handle->short_filew = NULL;
     }
 
     if (handle->filename) {
-      JXFREE("", handle->filename);
+      JX_FREE(fs_event, handle->filename);
       handle->filename = NULL;
     }
 
     if (handle->dirw) {
-      JXFREE("", handle->dirw);
+      JX_FREE(fs_event, handle->dirw);
       handle->dirw = NULL;
     }
 
