@@ -416,10 +416,10 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(jxcore::PArguments &args,
     } else {
       globals = jxcore::getGlobal(com->threadId);
     }
-    bool asm_js = false;
-    if (args.IsInteger(args.Length() - 1))
-      asm_js = args.GetInt32(args.Length() - 1) == 1;
-    script = MozJS::Script::Compile(context, globals, code, filename, asm_js);
+//    bool asm_js = false;
+//    if (args.IsInteger(args.Length() - 1))
+//      asm_js = args.GetInt32(args.Length() - 1) == 1;
+    script = MozJS::Script::Compile(context, globals, code, filename); //, asm_js);
 #endif
     if (JS_IS_EMPTY(script)) {
 #ifdef JS_ENGINE_V8
