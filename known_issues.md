@@ -34,12 +34,7 @@ because it keeps respawning itself creating new processes infinitively!
 native packages: they do not check *.jxcore.config file:
 ./jx test/run.js -file test/jxcore/test-jx.config-portTCP.js -n
 
-
 ##12
-SM: child_process.exec receives error when spawning mt/mt-keep process (which exists naturally)
-./jx mt test/jxcore/test-exec-error.js
-
-##13
 callback for addTask (as object) is not invoked when waitLogic: true
 ./jx test/jxcore/test-tasks-waitLogic.js
 
