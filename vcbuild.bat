@@ -15,7 +15,8 @@ if /i "%1"=="/?" goto help
 set config=Release
 set msiplatform=x86
 set target=Build
-set target_arch=x64
+@rem ia32 for 32 bit, x64 for 64 bit
+set target_arch=
 set debug_arg=
 set nosnapshot_arg=
 set noprojgen=
@@ -29,14 +30,22 @@ set licensertf=
 set upload=
 set jslint=
 set buildnodeweak=
-set noetw=
+set noetw=0
 set noetw_arg=
 set noetw_msi_arg=
 set noperfctr=
 set noperfctr_arg=
 set noperfctr_msi_arg=
-set static_library=
-@rem static_library=--static-library
+
+@rem you may set extra parameters below 
+@rem setting multiple parameters is possible
+@rem just leave a blank space between them
+@rem for example:
+@rem set extra_parameters=--static-library --engine-mozilla
+set extra_parameters=
+@rem for shared library ->  --static-library
+@rem for Spider Monkey  ->  --engine-mozilla 
+@rem for Comressed Scripts  ->  --compress-internals
 
 :next-arg
 if "%1"=="" goto args-done
@@ -91,9 +100,9 @@ if defined NIGHTLY set TAG=nightly-%NIGHTLY%
 @rem Generate the VS project.
 SETLOCAL
   if defined VS100COMNTOOLS call "%VS100COMNTOOLS%\VCVarsQueryRegistry.bat"
-  python configure %debug_arg% %nosnapshot_arg% %noetw_arg% %noperfctr_arg% --dest-cpu=%target_arch% --tag=%TAG% %static_library%
+  python configure %debug_arg% %nosnapshot_arg% %noetw_arg% %noperfctr_arg% --dest-cpu=%target_arch% --tag=%TAG% %extra_parameters%
   if errorlevel 1 goto create-msvs-files-failed
-  if not exist node.sln goto create-msvs-files-failed
+  if not exist jx.sln goto create-msvs-files-failed
   echo Project files generated.
 ENDLOCAL
 
@@ -131,20 +140,20 @@ goto run
 
 :msbuild-found
 @rem Build the sln with msbuild.
-msbuild node.sln /m /t:%target% /p:Configuration=%config% /clp:NoSummary;NoItemAndPropertyList;Verbosity=minimal /nologo
+msbuild jx.sln /m /t:%target% /p:Configuration=%config% /clp:NoSummary;NoItemAndPropertyList;Verbosity=minimal /nologo
 if errorlevel 1 goto exit
 
 :sign
 @rem Skip signing if the `nosign` option was specified.
 if defined nosign goto licensertf
 
-signtool sign /a Release\node.exe
+signtool sign /a Release\jx.exe
 
 :licensertf
 @rem Skip license.rtf generation if not requested.
 if not defined licensertf goto msi
 
-%config%\node tools\license2rtf.js < LICENSE > %config%\license.rtf
+%config%\jx tools\license2rtf.js < LICENSE > %config%\license.rtf
 if errorlevel 1 echo Failed to generate license.rtf&goto exit
 
 :msi
@@ -181,7 +190,7 @@ if "%test%"=="test-all" set test_args=%test_args%
 :build-node-weak
 @rem Build node-weak if required
 if "%buildnodeweak%"=="" goto run-tests
-"%config%\node" deps\npm\node_modules\node-gyp\bin\node-gyp rebuild --directory="%~dp0test\gc\node_modules\weak" --nodedir="%~dp0."
+"%config%\jx" deps\npm\node_modules\node-gyp\bin\node-gyp rebuild --directory="%~dp0test\gc\node_modules\weak" --nodedir="%~dp0."
 if errorlevel 1 goto build-node-weak-failed
 goto run-tests
 

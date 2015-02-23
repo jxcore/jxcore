@@ -8,40 +8,7 @@
     {
       'target_name': 'mozjs',
       'type': '<(library)',
-      
-      'actions': [
-      {
-        'action_name': 'embed_js_py',
-        'inputs': ['src/builtin/embedjs.py'],
-        'outputs': [ #DO NOT CHANGE THE BELOW ORDER!!
-          'src/builtin/Utilities.js',
-          'src/builtin/TypedObject.js',
-          'src/builtin/Array.js', 
-          'src/builtin/Date.js', 
-          'src/builtin/Object.js',
-          'src/builtin/String.js',
-          'src/builtin/Error.js', 
-          'src/builtin/Intl.js', 
-          'src/builtin/IntlData.js', 
-          'src/builtin/Iterator.js',
-          'src/builtin/Map.js',
-          'src/builtin/Number.js', 
-          'src/builtin/ParallelUtilities.js', 
-          'src/builtin/Set.js',
-          'src/builtin/WeakSet.js',
-        ],
-        'action': [
-          'python',
-          'src/builtin/embedjs.py',
-          '<@(_inputs)',
-          '-c "gcc" ',
-          '-p -o ',
-          '-sselfhosted.js',
-          '-msrc/js.msg',
-          '-o<(SHARED_INTERMEDIATE_DIR)/selfhosted.out.h',
-          '<@(_outputs)'
-        ],
-      }],
+    
       'include_dirs': [
         'incs/',
         'incs/js',
@@ -254,9 +221,12 @@
        'src/vm/Compression.cpp',
        'src/vm/ArrayBufferObject.cpp',
        'src/vm/WeakMapPtr.cpp',
+     
+       'src/vm/PosixNSPR.cpp',
       ],
       
       'defines': [
+        'JS_POSIX_NSPR',
         'HAVE_VA_LIST_AS_ARRAY=1',
         'DISABLE_SHARED_JS=1',
         'STATIC_JS_API=1',
@@ -321,38 +291,36 @@
         ['target_arch=="x64"', {
           'defines':[ 'JS_PUNBOX64', 'JS_CPU_X64=1' ],
           'conditions':[
-              ['OS=="ios"', {
-                'sources':[
-                  'src/jit/none/Trampoline-none.cpp'   # ION DISABLED
-                ],
-                'defines':[
-                  'JS_CODEGEN_NONE=1' # Interpreter only
-                ]
-              },
-              { #X64 JIT
-                'sources':[
-                  'src/jit/x64/Assembler-x64.cpp',
-                  'src/jit/x64/Bailouts-x64.cpp',
-                  'src/jit/x64/BaselineCompiler-x64.cpp',
-                  'src/jit/x64/BaselineIC-x64.cpp',
-                  'src/jit/x64/CodeGenerator-x64.cpp',
-                  'src/jit/x64/Lowering-x64.cpp',
-                  'src/jit/x64/MacroAssembler-x64.cpp',
-                  'src/jit/x64/Trampoline-x64.cpp',
-                  #commons
-                  'src/jit/shared/Assembler-x86-shared.cpp',
-                  'src/jit/shared/BaselineCompiler-x86-shared.cpp',
-                  'src/jit/shared/BaselineIC-x86-shared.cpp',
-                  'src/jit/shared/CodeGenerator-x86-shared.cpp',
-                  'src/jit/shared/Lowering-x86-shared.cpp',
-                  'src/jit/shared/MacroAssembler-x86-shared.cpp',
-                  'src/jit/shared/MoveEmitter-x86-shared.cpp',
-                ],
-                'defines':[
-                  'JS_CODEGEN_X64=1'
-                ]
-              }]
-            ],
+        ['OS=="ios"', {
+          'sources':[
+            'src/jit/none/Trampoline-none.cpp'   # ION DISABLED
+          ],
+          'defines':[
+            'JS_CODEGEN_NONE=1' # Interpreter only
+          ]},{ #X64 JIT
+              'sources':[
+                'src/jit/x64/Assembler-x64.cpp',
+                'src/jit/x64/Bailouts-x64.cpp',
+                'src/jit/x64/BaselineCompiler-x64.cpp',
+                'src/jit/x64/BaselineIC-x64.cpp',
+                'src/jit/x64/CodeGenerator-x64.cpp',
+                'src/jit/x64/Lowering-x64.cpp',
+                'src/jit/x64/MacroAssembler-x64.cpp',
+                'src/jit/x64/Trampoline-x64.cpp',
+                #commons
+                'src/jit/shared/Assembler-x86-shared.cpp',
+                'src/jit/shared/BaselineCompiler-x86-shared.cpp',
+                'src/jit/shared/BaselineIC-x86-shared.cpp',
+                'src/jit/shared/CodeGenerator-x86-shared.cpp',
+                'src/jit/shared/Lowering-x86-shared.cpp',
+                'src/jit/shared/MacroAssembler-x86-shared.cpp',
+                'src/jit/shared/MoveEmitter-x86-shared.cpp',
+              ],
+              'defines':[
+                'JS_CODEGEN_X64=1'
+              ]
+            }]
+          ],
         }],
         ['target_arch=="ia32"', {
             'defines':[ 'JS_NUNBOX32', 'JS_CPU_X86=1' ],
@@ -448,11 +416,11 @@
         }],
         ['OS in "linux android freebsd"', {
            "cflags": [
-  	         "-std=c++11",
-  	         '-Wno-missing-field-initializers',
+             "-std=c++11",
+             '-Wno-missing-field-initializers',
              '-Wno-invalid-offsetof', '-Wno-ignored-qualifiers', '-Wno-extra'
-	         ],
-	         "defines": [
+           ],
+           "defines": [
              "JS_HAVE_ENDIAN_H",
            ],
         }],
@@ -467,17 +435,52 @@
            'sources': [
              'src/perf/pm_stub.cpp',
              'src/jit/ExecutableAllocatorWin.cpp',
-           ]
+           ],
+           'include_dirs': [
+             'pre_built'
+           ],
          },
          { #no WIN
            'cflags': [
              '-pthread'
            ],
-           'defines': [ 'XP_UNIX', 'MOZ_CHAR16_IS_NOT_WCHAR', 'JS_POSIX_NSPR' ], 
+           'defines': [ 'XP_UNIX', 'MOZ_CHAR16_IS_NOT_WCHAR' ], 
            'sources': [
              'src/jit/ExecutableAllocatorPosix.cpp',
-             'src/vm/PosixNSPR.cpp',
-           ]
+           ],
+           'actions': [
+           {
+           'action_name': 'embed_js_py',
+           'inputs': ['src/builtin/embedjs.py'],
+           'outputs': [ #DO NOT CHANGE THE BELOW ORDER!!
+             'src/builtin/Utilities.js',
+             'src/builtin/TypedObject.js',
+             'src/builtin/Array.js', 
+             'src/builtin/Date.js', 
+             'src/builtin/Object.js',
+             'src/builtin/String.js',
+             'src/builtin/Error.js', 
+             'src/builtin/Intl.js', 
+             'src/builtin/IntlData.js', 
+             'src/builtin/Iterator.js',
+             'src/builtin/Map.js',
+             'src/builtin/Number.js', 
+             'src/builtin/ParallelUtilities.js', 
+             'src/builtin/Set.js',
+             'src/builtin/WeakSet.js',
+           ],
+           'action': [
+            'python',
+            'src/builtin/embedjs.py',
+            '<@(_inputs)',
+            '-c "gcc" ',
+            '-p -o ',
+            '-sselfhosted.js',
+            '-msrc/js.msg',
+            '-o<(SHARED_INTERMEDIATE_DIR)/selfhosted.out.h',
+            '<@(_outputs)'
+           ],
+         }]
         }]
      ]  
   }]
