@@ -10,6 +10,8 @@ if (process.IsEmbedded)
 // spawned process
 if (process.argv.indexOf("spawned") !== -1) {
   // do nothing, exit naturally
+  if (process.subThread)
+    process.release();
   return;
 }
 

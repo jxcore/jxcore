@@ -49,13 +49,7 @@ Used to handle binary data. See the [buffer section][]
 To require modules. See the [Modules][] section.  `require` isn't actually a
 global but rather local to each module.
 
-## require.withAsmJS()
-
-<!-- type=var -->
-
-* {Function}
-
-Requires the modules with ASM.JS scripts inside. 
+It is also possible to benefit from ASM.JS performance by directly calling `require()` for any AMS.JS script.
 
 For example, let's take the following script taken from [Asm.js specification](http://asmjs.org/spec/latest/) and write it to a file *test.js*
 
@@ -70,7 +64,7 @@ function geometricMean(start, end) {
 geometricMean(10, 20);
 ```
 
-It is okay to require this script file using `require("./test.js")` but it won't have a special performance.  On the other hand, `require.withAsmJS("./test.js")` will bring the ASM.JS performance. This benefit only applies to SpiderMonkey builds.
+Now it's enough to call `require("./test.js")`. This benefit only applies to SpiderMonkey builds.
 
 ### require.resolve()
 
