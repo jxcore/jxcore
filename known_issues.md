@@ -22,19 +22,15 @@ Improve SpiderMonkey buffer interface
 packages: name conflicting, when calling `require("xxx")` - (node_modules/xxx) from inside xxx.js
 ./jx test/run.js -file test/jxcore/test-require-name-conflict.js -p
 
-##9
+##8
 native package:  `require.main` !== `module`
 ./jx test/run.js -file test/jxcore/test-others-module.js -n
 
-##10
-native packages: `./native.exe monitor run/stop/etc` should be disabled for native packages,
-because it keeps respawning itself creating new processes infinitively!
-
-##11
+##9
 native packages: they do not check *.jxcore.config file:
-./jx test/run.js -file test/jxcore/test-jx.config-portTCP.js -n
+./jx test/run.js -file test/jxcore/test-jx.config-portTCP\.js -n
 
-##12
+##10
 callback for addTask (as object) is not invoked when waitLogic: true
 ./jx test/jxcore/test-tasks-waitLogic.js
 

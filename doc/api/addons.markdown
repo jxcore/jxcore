@@ -317,7 +317,7 @@ Then in `myobject.h` make your wrapper inherit from `node::ObjectWrap`:
     #define MYOBJECT_H
 
     #include <node.h>
-    #include "jx_persistent_store.h" //available from github.com/Nubisa/jxdocs
+    #include "jx_persistent_store.h" //available from https://github.com/jxcore/jxcore/blob/master/src/external/jx_persistent_store.h
 
     class MyObject : public node::ObjectWrap {
      public:
@@ -466,7 +466,7 @@ care of instantiating the object (i.e. it does the job of `new` in JavaScript):
     #define MYOBJECT_H
 
     #include <node.h>
-    #include "jx_persistent_store.h" //available from github.com/Nubisa/jxdocs
+    #include "jx_persistent_store.h" //available from https://github.com/jxcore/jxcore/blob/master/src/external/jx_persistent_store.h
 
     class MyObject : public node::ObjectWrap {
      public:
@@ -619,7 +619,7 @@ can probe private values after unwrapping the object:
     #define MYOBJECT_H
 
     #include <node.h>
-    #include "jx_persistent_store.h" //available from github.com/Nubisa/jxdocs
+    #include "jx_persistent_store.h" //available from https://github.com/jxcore/jxcore/blob/master/src/external/jx_persistent_store.h
 
     class MyObject : public node::ObjectWrap {
      public:
