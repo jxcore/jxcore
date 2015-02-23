@@ -19,7 +19,8 @@ var finish = function (req) {
     req.abort();
   }
   srv.unref();
-  process.release();
+  if (process.subThread)
+    process.release();
   finished = true;
 };
 
@@ -68,7 +69,7 @@ srv.listen(port, "localhost");
 
 // ########   client
 
-var client = function (port) {
+var client = function () {
   var options = {
     hostname: 'localhost',
     port: portFromConfigFile,

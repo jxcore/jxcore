@@ -19,7 +19,8 @@ var finish = function (req) {
     req.abort();
   }
   srv.unref();
-  process.release();
+  if (process.subThread)
+    process.release();
   finished = true;
 };
 
