@@ -5,8 +5,8 @@ if (process.IsEmbedded)
 
 var http = require("http"),
   fs = require('fs'),
-  path = require("path");
-childprocess = require("child_process"),
+  path = require("path"),
+  childprocess = require("child_process"),
   assert = require('assert');
 
 var port = 17777;
