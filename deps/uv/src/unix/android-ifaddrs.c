@@ -35,13 +35,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
 
-#include <android/log.h>
-#define ALOG_TAG "jxcore-uv-log"
-#define log_console(...) \
-  __android_log_print(ANDROID_LOG_INFO, ALOG_TAG, __VA_ARGS__)
-#define error_console(...) \
-  __android_log_print(ANDROID_LOG_ERROR, ALOG_TAG, __VA_ARGS__)
-
 typedef struct NetlinkList {
   struct NetlinkList *m_next;
   struct nlmsghdr *m_data;

@@ -50,18 +50,6 @@
 #endif
 #endif
 
-#if defined(__ANDROID__) || defined(ANDROID)
-#include <android/log.h>
-#define ALOG_TAG "jxcore-log"
-#define log_console(...) \
-  __android_log_print(ANDROID_LOG_INFO, ALOG_TAG, __VA_ARGS__)
-#define error_console(...) \
-  __android_log_print(ANDROID_LOG_ERROR, ALOG_TAG, __VA_ARGS__)
-#else
-#define log_console(...) fprintf(stdout, __VA_ARGS__)  // TODO replace to stdout
-#define error_console(...) \
-  fprintf(stderr, __VA_ARGS__)  // TODO replace to stderr
-#endif
 
 #undef NANOSEC
 #define NANOSEC ((uint64_t)1e9)
