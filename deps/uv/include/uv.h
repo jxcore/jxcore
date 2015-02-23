@@ -268,19 +268,13 @@ UV_EXTERN int uv_run_jx(uv_loop_t* loop, uv_run_mode mode,
 UV_EXTERN int threadHasMessage(const int tid);
 UV_EXTERN void setThreadMessage(const int tid, const int has_it);
 
-UV_EXTERN void KICKPRINT(const char* str, const char* pass, const int flush);
-
 #ifdef __ANDROID__  // change to EMBEDDED
 #include <android/log.h>
 #define ALOG_TAG "jxcore-uv-log"
-#define KICKPRINT(flush, ...) \
+#define uv_log_error(...) \
   __android_log_print(ANDROID_LOG_ERROR, ALOG_TAG, __VA_ARGS__)
 #else
-#define KICKPRINT(flush, ...)  \
-  do {                         \
-    printf(__VA_ARGS__);        \
-    if (flush) fflush(stdout); \
-  } while (0)
+#define uv_log_error(...) printf(__VA_ARGS__)
 #endif
 
 #ifdef JX_TEST_ENVIRONMENT
