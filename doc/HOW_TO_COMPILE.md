@@ -8,7 +8,7 @@ Prerequisites (Unix only):
 
 First clone the source codes from Github: (or Download as a .zip file)
 ```bash
-git clone https://github.com/Nubisa/jxcore.git
+git clone git@github.com:jxcore/jxcore.git
 ```
 
 You may want to jump into [Android](Android_Compile.md), or [iOS](iOS_Compile.md) compilation details.
