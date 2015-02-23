@@ -1,6 +1,6 @@
 This document is not yet complete. If you have any experience on the subject, feel free to contribute!
 
-If you want to see `jxcore` embedded in action, you might want to check `jxcore.h` and `node_main.cc` in additon to the explanations below.
+If you want to see `jxcore` embedded in action, you might want to check `jxcore.h` and `node_main.cc` in addition to the explanations below.
 
 Embedding jxcore.h alone is enough. Depending on the engine, you should insert the definitions below into your source code.
 
