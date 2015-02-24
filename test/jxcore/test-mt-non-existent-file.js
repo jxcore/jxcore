@@ -15,5 +15,6 @@ var cmd = '"' + process.execPath + '" mt-keep _fake_file.js';
 
 var child = cp.exec(cmd, {timeout: 1000}, function (error, stdout, stderr) {
 
-  assert.ifError(error, "Error while spawning mt-keep: " + cmd + "\n" + error + stdout + stderr);
+  var str = "" + error + stdout + stderr;
+  assert.strictEqual(str.indexOf('restarting thread'), -1, "Error while spawning mt-keep: " + cmd + "\n" + error + stdout + stderr);
 });
