@@ -14,7 +14,7 @@ JSString *StringTools::FromUINT16(JSContext *ctx, const uint16_t *str,
                                   const int len) {
   char16_t *temp = (char16_t *)JS_malloc(ctx, sizeof(uint16_t) * (1 + len));
   memcpy(temp, str, sizeof(uint16_t) * len);
-  temp[len] = jschar(0);
+  temp[len] = char16_t(0);
   return JS_NewUCString(ctx, temp, len);
 }
 
@@ -23,7 +23,7 @@ JSString *StringTools::JS_ConvertToJSString(JSContext *cx, const char *source,
   char16_t *cc = (char16_t *)JS_malloc(cx, (sz_source + 1) * sizeof(char16_t));
   int leno = utf8_to_utf16(cc, source, sz_source);
   if (leno != UTF8_ERROR) {  // UTF8 Check
-    cc[leno] = jschar(0);
+    cc[leno] = char16_t(0);
     return JS_NewUCString(cx, cc, leno);
   } else {
     JS_free(cx, cc);
@@ -37,7 +37,7 @@ void StringTools::JS_ConvertToJSChar(JSContext *cx, const char *source,
   out->str_ = (char16_t *)JS_malloc(cx, (sz_source + 1) * sizeof(char16_t));
   out->length_ = utf8_to_utf16(out->str_, source, sz_source);
   if (out->length_ != UTF8_ERROR) {
-    out->str_[out->length_] = jschar(0);
+    out->str_[out->length_] = char16_t(0);
   } else {
     // force ascii to char16_t
     for (int i = 0; i < sz_source; i++) {
@@ -45,7 +45,7 @@ void StringTools::JS_ConvertToJSChar(JSContext *cx, const char *source,
       char16_t *ref = (char16_t *)buffer;
       out->str_[i] = *ref;
     }
-    out->str_[sz_source] = jschar(0);
+    out->str_[sz_source] = char16_t(0);
     out->length_ = sz_source;
   }
 }
