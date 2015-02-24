@@ -2258,6 +2258,12 @@ JS_GetPrivate(JSObject *obj)
     return obj->getPrivate();
 }
 
+JS_PUBLIC_API(bool)
+JS_HasPrivate(JSObject *obj)
+{
+    return obj->hasPrivate();
+}
+
 JS_PUBLIC_API(void)
 JS_SetPrivate(JSObject *obj, void *data)
 {

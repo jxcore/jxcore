@@ -813,7 +813,7 @@ void Value::empty_finalize(JSFreeOp *fop, JSObject *obj) {
         JSContext *ctx = Isolate::GetByThreadId(*tid)->GetRaw();
         Value val(obj, ctx);
         ff->target(val, JS_GetPrivate(obj));
-        free(ff);
+        delete(ff);
         val.rooted_ = true;
         val.RemoveRoot();
         return;

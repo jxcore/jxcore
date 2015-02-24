@@ -31,3 +31,7 @@ Feel free to help us to implement them sooner! If you have a different opinion, 
 ### To run the tests:
 
 See [Testing](doc/TESTING.md) document.
+
+### Node.JS authors list:
+
+List of Node.JS contributors can be found from [here](https://github.com/jxcore/jxcore/blob/master/node/AUTHORS)

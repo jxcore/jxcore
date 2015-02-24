@@ -30,7 +30,12 @@ JS_HANDLE_OBJECT PArguments::This() {
 }
 
 void *PArguments::GetHolder() {
-  return JS_GetPrivate(JS_THIS_OBJECT(ctx_, jsval_));
+  JSObject *obj = JS_THIS_OBJECT(ctx_, jsval_);
+
+  MozJS::Value val(obj, ctx_);
+  if (!JS_HasPrivate(obj)) return nullptr;
+
+  return JS_GetPrivate(obj);
 }
 
 bool PArguments::IsConstructCall() {

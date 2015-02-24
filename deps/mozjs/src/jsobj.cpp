@@ -4463,6 +4463,8 @@ type *num = (type*)&number;\
 *(str+index) = *num;\
 }
 
+char * FakeMemoryMarker::_ = new char[1];
+
 bool jxcore_buffer_setter(JSContext *cx, JS::Handle<JSObject*> obj, JS::Handle<jsid> id,
                           bool strict, JS::MutableHandle<JS::Value> vp){
   if(!JSID_IS_INT(id)){
@@ -4515,7 +4517,7 @@ LookupOwnPropertyInline(ExclusiveContext *cx,
 {
     // Check for a native dense element.
     if (JSID_IS_INT(id)) {  /* JXCORE_MODIFIED */
-      if (obj->extData_ != NULL && obj->typeRaw()->hasData_) {
+      if (obj->extData_ != NULL && obj->typeRaw()->hasData_ && obj->______ == (void*)FakeMemoryMarker::_) {
 	if (!cx->shouldBeJSContext() || !allowGC)
 	    return false;
 

@@ -2498,6 +2498,9 @@ JS_HasInstance(JSContext *cx, JS::Handle<JSObject*> obj, JS::Handle<JS::Value> v
 extern JS_PUBLIC_API(void *)
 JS_GetPrivate(JSObject *obj);
 
+extern JS_PUBLIC_API(bool)
+JS_HasPrivate(JSObject *obj);
+
 extern JS_PUBLIC_API(void)
 JS_SetPrivate(JSObject *obj, void *data);
 
