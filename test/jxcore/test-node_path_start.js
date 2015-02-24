@@ -22,7 +22,7 @@ if (fs.existsSync(file_jx))
 
 // creating the package
 process.chdir(path.dirname(file_js));
-var cmd = '"' + process.execPath + '" package file.js file';
+var cmd = '"' + process.execPath + '" package file.js file -slim file.jx,file.exe';
 cmd += (native ? " -native" : "");
 var ret = jxcore.utils.cmdSync(cmd);
 //console.log(ret);

@@ -14,7 +14,6 @@
 		"file.js"
 	],
 	"assets": [
-		"file.exe",
 		"file.jxp"
 	],
 	"preInstall": null,
