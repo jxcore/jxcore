@@ -5,7 +5,6 @@
 {
   'variables': {
     'use_system_sqlite%': 0,
-    'required_sqlite_version': '3.8.4',
   },
   'target_defaults': {
     'defines': [
@@ -42,7 +41,6 @@
               'USE_SYSTEM_SQLITE',
             ],
           },
-
           'conditions': [
             ['OS == "ios"', {
               'dependencies': [
@@ -81,26 +79,6 @@
           [ 
             'OS=="ios" and target_arch=="arm64"', {
               'xcode_settings': { 'XX_CPU_TARGET' : 'arm64' }
-            }],
-            ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
-              'direct_dependent_settings': {
-                'cflags': [
-                  # This next command produces no output but it it will fail
-                  # (and cause GYP to fail) if we don't have a recent enough
-                  # version of sqlite.
-                  '<!@(pkg-config --atleast-version=<(required_sqlite_version) sqlite3)',
-
-                  '<!@(pkg-config --cflags sqlite3)',
-                ],
-              },
-              'link_settings': {
-                'ldflags': [
-                  '<!@(pkg-config --libs-only-L --libs-only-other sqlite3)',
-                ],
-                'libraries': [
-                  '<!@(pkg-config --libs-only-l sqlite3)',
-                ],
-              },
             }],
             ['OS=="linux"', {
               'link_settings': {
@@ -153,26 +131,5 @@
         }],
       ],
     },
-  ],
-  'conditions': [
-    ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android" and not use_system_sqlite', {
-      'targets': [
-        {
-          'target_name': 'sqlite_shell',
-          'type': 'executable',
-          'dependencies': [
-            #'../icu/icu.gyp:icuuc',
-            'sqlite',
-          ],
-          'sources': [
-            'src/src/shell.c',
-            'src/src/shell_icu_linux.c',
-            # Include a dummy c++ file to force linking of libstdc++.
-            'build_as_cpp.cc',
-          ],
-        },
-      ],
-    },],
-
   ],
 }
