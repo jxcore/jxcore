@@ -14,6 +14,10 @@ JXcore extends Node.JS™ with additional features for developing mobile and emb
   - Application Packaging
   - Support for the latest JavaScript features (ES6, [ASM.JS](https://github.com/jxcore/jxcore/blob/master/doc/api/globals.markdown#require) ...)
 
+### Roadmap
+
+See [Roadmap](doc/ROADMAP.md) document.
+
 ### To build:
 
 See [How to Compile](doc/HOW_TO_COMPILE.md) document.
