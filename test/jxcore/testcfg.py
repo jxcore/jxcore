@@ -129,7 +129,6 @@ class JXcoreTestConfiguration(test.TestConfiguration):
 
   def ListTests(self, current_path, path, mode):
     all_tests = [current_path + [t] for t in self.Ls(join(self.root))]
-    #print "all tests", all_tests
     result = []
     for test in all_tests:
       if self.Contains(path, test):
@@ -175,7 +174,8 @@ class JXcoreTestConfiguration(test.TestConfiguration):
                 result.append(JXcoreTestCase(test, file_path, mode, self.context, self, argv))
             continue
 
-        result.append(JXcoreTestCase(test, file_path, mode, self.context, self, None))
+        for i in range(0, self.context.repeat):
+          result.append(JXcoreTestCase(test, file_path, mode, self.context, self, None))
     return result
 
   def GetBuildRequirements(self):
