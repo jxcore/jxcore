@@ -49,7 +49,10 @@ This is probably not a bug. See: [#198](https://github.com/jxcore/jxcore/issues/
 
 
 ##11
-once in a while there is segmentation fault inside a task (visible only after the test multiple times)
+once in a while there is segmentation fault inside a task (visible only after running the test multiple times):
+
+Tested on OSX.
+
 ```bash
 ./jx test/run.js -file test/jxcore/test-process.cwd-addTask-logic.js -r 100
 ```
