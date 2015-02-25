@@ -161,10 +161,18 @@ class JXcoreNPMTestConfiguration(test.TestConfiguration):
           if j and j.get("args"):
             for argv in j["args"]:
               if file_path.endswith('.exe') and argv.get("execArgv") and argv.get("execArgv").startswith("mt"):
-                    # don't test native packages with mt/mt-keep
-                    continue
+                # don't test native packages with mt/mt-keep
+                continue
 
-              result.append(JXcoreNPMTestCase(test, file_path, mode, self.context, self, argv))
+              repeat = self.context.repeat
+              if repeat == 1 and argv.get("repeat"):
+                try:
+                  repeat = int(argv.get("repeat"))
+                except:
+                  print "The value for 'args[x].repeat' in json file is not a valid integer: " + file_path_json
+
+              for i in range(0, repeat):
+                result.append(JXcoreNPMTestCase(test, file_path, mode, self.context, self, argv))
             continue
 
         result.append(JXcoreNPMTestCase(test, file_path, mode, self.context, self, None))

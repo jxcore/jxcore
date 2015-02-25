@@ -27,6 +27,9 @@ If there is no .json file present - a test is executed as described on top of th
     {
       "execArgv": "mt",
       "argv": 555
+    },
+    {
+      "repeat" : 5
     }
   ],
   "files": [
@@ -44,9 +47,10 @@ If there is no .json file present - a test is executed as described on top of th
 ```
 
 * **runtime_dependencies** - array of npm modules names (may include versions e.g. "express@4.9.5"), which should be installed prior to executing a test case
-* **args** - array of argument sets. Each of set may have 0, 1 or 2 values ("execArgv" and/or "argv")
+* **args** - array of argument sets. Each of set may have 0, 1 or multiple values ("execArgv", "argv"  and/or "repeat")
 
 - `{}` - jx test-case.js
+- `{ "repeat" : 5 }` - repeats 5 times: jx test-case.js
 - `{"execArgv": "mt"}` - jx mt test-case.js
 - `{"argv": "some parameters 123 abc"}` - jx test-case.js some parameters 123 abc
 
@@ -72,6 +76,11 @@ Also it allows to run a test for a single file test-case:
 ./node test/run.js - file test/jxcore/test-case.js -a
 ```
 
+You can specify here number of repetitions per each test with -r switch:
+```bash
+./node test/run.js - file test/jxcore/test-case.js -a -r 3
+```
+
 --help
 
 Usage:
@@ -84,6 +93,7 @@ Usage:
 	-a     tests all: -j, -p, -n
 	-s     silent: hides extra messages
 	-f     packages are created once per jx version. Use -f to force refresh them
+	-r     repeats give test/tests X times. This value overrides a value given in test.json file
 	-file  allows to execute test just for one js file
 
 	examples:
