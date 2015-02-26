@@ -113,6 +113,7 @@ class NODE_EXTERN ObjectWrap {
 #elif defined(JS_ENGINE_MOZJS)
  public:
   static void WeakCallback(JSFreeOp *fop, JSObject *_this) {
+    if (!JS_HasPrivate(_this)) return;
     void *__this = JS_GetPrivate(_this);
     if (__this == NULL) return;
     ObjectWrap *obj = static_cast<ObjectWrap *>(__this);
