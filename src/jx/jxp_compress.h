@@ -3,7 +3,6 @@
 #ifndef SRC_JX_JXP_COMPRESS_H_
 #define SRC_JX_JXP_COMPRESS_H_
 
-#include "node.h"
 #include "node_buffer.h"
 
 namespace jxcore {

@@ -32,7 +32,6 @@ var help = process.argv.indexOf("--help") !== -1;
 
 
 var getArg = function(argNames, type) {
-
   for(var a in argNames) {
     var _id = process.argv.indexOf(argNames[a]);
     if (_id == -1)
@@ -147,13 +146,11 @@ if (single_test_dir) dirs.push(single_test_dir.name);
  * @param cb
  */
 var run = function (what, cb) {
-
   var args = ["tools/test.py", "-p", "color"];
   if (repeat)
     args.push("--repeat", repeat);
 
   for (var o in dirs) {
-
     if (what === "-j")
       args.push(dirs[o]);
     else
@@ -177,7 +174,6 @@ var run = function (what, cb) {
 };
 
 var runNext = function () {
-
   console.log("");
   var what = arr.shift();
   if (what)

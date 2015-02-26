@@ -29,6 +29,7 @@ static void SignalExit(int signal) {
   _exit(128 + signal);
 }
 
+#ifdef __POSIX__
 void RegisterSignalHandler(int signal, void (*handler)(int)) {
   struct sigaction sa;
 
@@ -37,6 +38,7 @@ void RegisterSignalHandler(int signal, void (*handler)(int)) {
   sigfillset(&sa.sa_mask);
   sigaction(signal, &sa, NULL);
 }
+#endif
 
 static char **copy_argv(int argc, char **argv) {
   size_t strlen_sum;

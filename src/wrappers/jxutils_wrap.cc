@@ -1,8 +1,5 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-#include <stdio.h>
-#include <string>
-#include <iostream>
 #if defined(_MSC_VER)
 #include <windows.h>
 #else
@@ -11,12 +8,9 @@
 #endif
 #include <climits>
 #include "jxutils_wrap.h"
-#include "jx/extend.h"
-#include "wrappers/thread_wrap.h"
+#include "thread_wrap.h"
 #include "jx/memory_store.h"
-
 #include "jx/jxp_compress.h"
-#include "node_buffer.h"
 
 namespace node {
 
