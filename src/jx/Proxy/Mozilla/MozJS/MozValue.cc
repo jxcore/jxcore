@@ -631,7 +631,7 @@ void indexed_finalize(JSFreeOp *fop, JSObject *obj) {
 }
 
 static JSClass index_reserved_definition = {
-    "QJXIndexed",           JSCLASS_HAS_PRIVATE, JS_PropertyStub,
+    "QJXIndexed",          JSCLASS_HAS_PRIVATE, JS_PropertyStub,
     JS_DeletePropertyStub, JS_PropertyStub,     JS_StrictPropertyStub,
     JS_EnumerateStub,      JS_ResolveStub,      JS_ConvertStub,
     indexed_finalize,      0,                   0,
@@ -901,8 +901,8 @@ void Value::empty_finalize(JSFreeOp *fop, JSObject *obj) {
     if (__.isObjectOrNull()) {
       JSObject *robj = __.toObjectOrNull();
       if (robj != nullptr) {
-        void *ff = (void *)JS_GetPrivate(robj);
-        free(ff);
+        if (JS_HasPrivate(obj)) free(JS_GetPrivate(robj));
+
         int *tid = (int *)JS_GetRuntimePrivate(fop->runtime());
         JSContext *ctx = Isolate::GetByThreadId(*tid)->GetRaw();
         jsval val = JS::ObjectOrNullValue(robj);

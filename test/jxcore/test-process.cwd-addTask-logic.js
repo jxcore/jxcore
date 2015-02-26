@@ -11,18 +11,25 @@ var finished = false;
 var value = JSON.stringify(process.cwd());
 
 var method = function (obj) {
-  return JSON.stringify(process.cwd());
+  try {
+    return JSON.stringify(process.cwd());
+  } catch(e) {
+    console.log('error!', e);
+    return e;
+  }
 };
 
 process.on('exit', function (code) {
   assert.ok(finished, "The test did not finish.");
 });
 
-jxcore.tasks.addTask({
+var task = {
   define: function () {
-  }, logic: method
-}, null, function (ret) {
+  },
+  logic: method
+};
 
+jxcore.tasks.addTask(task, null, function (ret) {
   finished = true;
 
   clog("main thread:", "green");
