@@ -700,7 +700,7 @@ TIMEOUT_SCALEFACTOR = {
 
 class Context(object):
 
-  def __init__(self, workspace, buildspace, verbose, vm, timeout, processor, suppress_dialogs, store_unexpected_output):
+  def __init__(self, workspace, buildspace, verbose, vm, timeout, processor, suppress_dialogs, store_unexpected_output, repeat):
     self.workspace = workspace
     self.buildspace = buildspace
     self.verbose = verbose
@@ -709,6 +709,7 @@ class Context(object):
     self.processor = processor
     self.suppress_dialogs = suppress_dialogs
     self.store_unexpected_output = store_unexpected_output
+    self.repeat = repeat
 
   def GetVm(self, mode):
     if mode == 'debug':
@@ -1195,6 +1196,8 @@ def BuildOptions():
       default=True, action="store_true")
   result.add_option("--build-only", help="Only build requirements, don't run the tests",
       default=False, action="store_true")
+  result.add_option("-r", "--repeat", help="Repeat count for each test",
+      default=1, type="int")
   result.add_option("--report", help="Print a summary of the tests to be run",
       default=False, action="store_true")
   result.add_option("-s", "--suite", help="A test suite",
@@ -1381,7 +1384,8 @@ def Main():
                     options.timeout,
                     processor,
                     options.suppress_dialogs,
-                    options.store_unexpected_output)
+                    options.store_unexpected_output,
+                    options.repeat)
   # First build the required targets
   if not options.no_build:
     reqs = [ ]

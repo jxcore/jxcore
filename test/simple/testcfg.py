@@ -129,7 +129,6 @@ class SimpleTestConfiguration(test.TestConfiguration):
 
   def ListTests(self, current_path, path, mode):
     all_tests = [current_path + [t] for t in self.Ls(join(self.root))]
-    #print "all tests", all_tests
     result = []
     for test in all_tests:
       if self.Contains(path, test):
@@ -161,13 +160,22 @@ class SimpleTestConfiguration(test.TestConfiguration):
           if j and j.get("args"):
             for argv in j["args"]:
               if file_path.endswith('.exe') and argv.get("execArgv") and argv.get("execArgv").startswith("mt"):
-                    # don't test native packages with mt/mt-keep
-                    continue
+                # don't test native packages with mt/mt-keep
+                continue
 
-              result.append(SimpleTestCase(test, file_path, mode, self.context, self, argv))
+              repeat = self.context.repeat
+              if repeat == 1 and argv.get("repeat"):
+                try:
+                  repeat = int(argv.get("repeat"))
+                except:
+                  print "The value for 'args[x].repeat' in json file is not a valid integer: " + file_path_json
+
+              for i in range(0, repeat):
+                result.append(SimpleTestCase(test, file_path, mode, self.context, self, argv))
             continue
 
-        result.append(SimpleTestCase(test, file_path, mode, self.context, self, None))
+        for i in range(0, self.context.repeat):
+          result.append(SimpleTestCase(test, file_path, mode, self.context, self, None))
     return result
 
   def GetBuildRequirements(self):

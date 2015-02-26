@@ -30,6 +30,35 @@ var silent = process.argv.indexOf("-s") !== -1 || flags.indexOf("s") !== -1;
 var no_cleanup = process.argv.indexOf("-nc") !== -1;
 var help = process.argv.indexOf("--help") !== -1;
 
+
+var getArg = function(argNames, type) {
+
+  for(var a in argNames) {
+    var _id = process.argv.indexOf(argNames[a]);
+    if (_id == -1)
+      continue;
+
+    var v = process.argv[_id + 1];
+    if (!v || v.slice(0,1) == '-') {
+      jxcore.utils.console.log("Invalid value provided after " + argNames[a] + " arg. Skipping.", "red");
+      process.exit();
+    }
+
+    if (type == "int") {
+      v = parseInt(v);
+      if (!v || isNaN(v)) {
+        jxcore.utils.console.log("Integer value should be provided after -repeat arg. Skipping.", "red");
+        process.exit();
+      }
+    }
+
+    process.argv.splice(_id, 2);
+    return v;
+  }
+};
+
+var repeat = getArg(['-r', '--repeat'], "int");
+
 prepare_packages.silent = silent;
 prepare_packages.force_refresh = process.argv.indexOf("-f") !== -1;
 
@@ -42,6 +71,7 @@ if (help) {
   console.log("\t-a     tests all: -j, -p, -n");
   console.log("\t-s     silent: hides extra messages");
   console.log("\t-f     packages are created once per jx version. Use -f to force refresh them");
+  console.log("\t-r     repeats given test/tests X times. This value overrides a value given in test's .json file");
   console.log("\t-file  allows to execute test just for one js file");
   console.log("");
   console.log("\texamples:");
@@ -64,65 +94,46 @@ var single_test_dir = null;
  * jxcore/test-http-create.js)
  */
 var checkFile = function () {
-  var _id = process.argv.indexOf("-file");
-  if (_id !== -1) {
-    if (!process.argv[_id + 1]) {
-      jxcore.utils.console.log(
-        "JS test file not provided after -file arg. Skipping.", "red");
-      process.exit();
-    }
+  var file = getArg(["-file"]);
+  if (!file)
+    return;
 
-    var js_file = path.join(process.cwd(), process.argv[_id + 1]);
-    if (!fs.existsSync(js_file)) {
-      jxcore.utils.console.log(
-        "JS test file provided after -file does not exists. Skipping.",
-        "red");
-      process.exit();
-    }
-
-    process.argv.splice(_id, 2);
-
-    var basedirname = path.basename(path.dirname(js_file));
-    single_test_dir = {
-      name: prepare_packages
-        .getOutputDirBasename(basedirname + "_single", null)
-    };
-
-    // preparing separate folder for test file
-    var testDir = path.join(__dirname, single_test_dir.name);
-    jx.rmdirSync(testDir);
-    single_test_dir.native_dir = path.join(path.dirname(testDir),
-      prepare_packages.getOutputDirBasename(single_test_dir.name, true));
-    if (test_natives) jx.rmdirSync(single_test_dir.native_dir);
-    single_test_dir.package_dir = path.join(path.dirname(testDir),
-      prepare_packages.getOutputDirBasename(single_test_dir.name, false));
-    if (test_packages) jx.rmdirSync(single_test_dir.package_dir);
-    fs.mkdirSync(testDir);
-
-    jx.copyFileSync(js_file, path.join(testDir, path.basename(js_file)));
-    jx.copyFileSync(js_file + ".json", path.join(testDir, path
-      .basename(js_file)
-    + ".json"));
-    jx.copyFileSync(js_file + ".jxcore.config", path.join(testDir, path
-      .basename(js_file)
-    + ".jxcore.config"));
-    jx.copyFileSync(js_file.replace(".js", ".out"), path.join(testDir, path
-      .basename(js_file, ".js")
-    + ".out"));
-    jx.copyFileSync(js_file.replace(".js", ".jxp"), path.join(testDir, path
-      .basename(js_file, ".js")
-    + ".jxp"));
-    prepare_packages.checkJSON(js_file, testDir);
-
-    prepare_packages.renderTestCfg(testDir);
-    // console.log("single_test_dir", single_test_dir);
+  var js_file = path.join(process.cwd(), file);
+  if (!fs.existsSync(js_file)) {
+    jxcore.utils.console.log("JS test file provided after -file does not exists. Skipping.", "red");
+    process.exit();
   }
+
+  var basedirname = path.basename(path.dirname(js_file));
+  single_test_dir = {
+    name: prepare_packages.getOutputDirBasename(basedirname + "_single", null)
+  };
+
+  // preparing separate folder for test file
+  var testDir = path.join(__dirname, single_test_dir.name);
+  jx.rmdirSync(testDir);
+  single_test_dir.native_dir = path.join(path.dirname(testDir),
+    prepare_packages.getOutputDirBasename(single_test_dir.name, true));
+  if (test_natives) jx.rmdirSync(single_test_dir.native_dir);
+  single_test_dir.package_dir = path.join(path.dirname(testDir),
+    prepare_packages.getOutputDirBasename(single_test_dir.name, false));
+  if (test_packages) jx.rmdirSync(single_test_dir.package_dir);
+  fs.mkdirSync(testDir);
+
+  jx.copyFileSync(js_file, path.join(testDir, path.basename(js_file)));
+  jx.copyFileSync(js_file + ".json", path.join(testDir, path.basename(js_file) + ".json"));
+  jx.copyFileSync(js_file + ".jxcore.config", path.join(testDir, path.basename(js_file) + ".jxcore.config"));
+  jx.copyFileSync(js_file.replace(".js", ".out"), path.join(testDir, path.basename(js_file, ".js") + ".out"));
+  jx.copyFileSync(js_file.replace(".js", ".jxp"), path.join(testDir, path.basename(js_file, ".js") + ".jxp"));
+  prepare_packages.checkJSON(js_file, testDir);
+
+  prepare_packages.renderTestCfg(testDir);
+  // console.log("single_test_dir", single_test_dir);
 }();
 
 var folders = [];
 
-// stripping everything except args like "jxcore" "simple" etc - test folder
-// names
+// stripping everything except args like "jxcore" "simple" etc - test folder names
 var _arr = process.argv.slice(1).join("|").replace(__filename, "").replace(
   process.execPath, "").trim().split("|");
 var dirs = [];
@@ -132,13 +143,14 @@ for (var o in _arr)
 if (single_test_dir) dirs.push(single_test_dir.name);
 
 /**
- * @param what -
- *          "-j", "-n", "-p"
+ * @param what - "-j", "-n", "-p"
  * @param cb
  */
 var run = function (what, cb) {
 
   var args = ["tools/test.py", "-p", "color"];
+  if (repeat)
+    args.push("--repeat", repeat);
 
   for (var o in dirs) {
 
@@ -185,8 +197,7 @@ if (process.argv.indexOf("--render-test-configs") !== -1) {
   prepare_packages.renderTestCfg(path.join(__dirname, "internet"), "Internet");
   prepare_packages.renderTestCfg(path.join(__dirname, "pummel"), "Pummel");
   prepare_packages.renderTestCfg(path.join(__dirname, "simple"), "Simple");
-  prepare_packages.renderTestCfg(path.join(__dirname, "jxcore-npm"),
-    "JXcoreNPM");
+  prepare_packages.renderTestCfg(path.join(__dirname, "jxcore-npm"), "JXcoreNPM");
 
   console.log("ok");
   return;

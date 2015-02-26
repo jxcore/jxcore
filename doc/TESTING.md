@@ -1,6 +1,6 @@
 # To run the tests:
 
-Unix/Macintosh:
+## Unix/Macintosh:
 
     make test
 
@@ -10,8 +10,8 @@ However, you can also run tests for specified folders, like:
 
     make test test-simple test-message
 
-Other category of tests resides in *jxcore* subfolder. They can be run as plain .js files, packaged or native packaged.
-Extra flags can be provided as parameters - see [test/jxcore/README.md](../test/README.md) for more details.
+Other category of tests resides in *jxcore* subfolder. They can be run as plain *.js* files, packaged or native packaged.
+Extra flags can be provided as parameters - see [test/README.md](../test/README.md) for more details.
 
 The following command is for testing *jxcore* tests as plain .js files:
 
@@ -33,7 +33,7 @@ All at once:
 
     make test test-jxcore flags a
 
-Windows:
+## Windows:
 
     vcbuild.bat test
 
