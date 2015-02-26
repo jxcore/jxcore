@@ -9,8 +9,8 @@
 #elif HAVE_ETW
 #include "node_dtrace.h"
 #include <string.h>
-#include "node_win32_etw_provider.h"
-#include "node_win32_etw_provider-inl.h"
+#include "platform/win/node_win32_etw_provider.h"
+#include "platform/win/node_win32_etw_provider-inl.h"
 #elif HAVE_SYSTEMTAP
 #include <string.h>
 #include <node.h>
