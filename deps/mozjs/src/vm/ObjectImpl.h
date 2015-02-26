@@ -354,13 +354,6 @@ class ObjectImpl : public gc::BarrieredCell<ObjectImpl>
     friend Zone *js::gc::BarrieredCell<ObjectImpl>::zone() const;
     friend Zone *js::gc::BarrieredCell<ObjectImpl>::zoneFromAnyThread() const;
 
-  public:
-    ObjectImpl() {
-        extLength_ = 0; extType_ = 0; extData_ = 0;
-    }
-
-    uint32_t extLength_, extType_;
-    void *extData_, *______;
   protected:
     /*
      * Shape of the object, encodes the layout of the object's properties and

@@ -26,16 +26,13 @@ void PArguments::dispose() {
 }
 
 JS_HANDLE_OBJECT PArguments::This() {
-  return MozJS::Value(JS_THIS_OBJECT(ctx_, jsval_), ctx_);
+  return MozJS::Value(JS_THIS(ctx_, jsval_), ctx_);
 }
 
 void *PArguments::GetHolder() {
-  JSObject *obj = JS_THIS_OBJECT(ctx_, jsval_);
+  MozJS::Value val(JS_THIS(ctx_,jsval_), ctx_);
 
-  MozJS::Value val(obj, ctx_);
-  if (!JS_HasPrivate(obj)) return nullptr;
-
-  return JS_GetPrivate(obj);
+  return val.GetPointerFromInternalField(0);
 }
 
 bool PArguments::IsConstructCall() {

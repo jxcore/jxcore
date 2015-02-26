@@ -8,6 +8,8 @@
 
 #include "../../EngineLogger.h"
 
+#define JXCORE_INDEXED_NAME "                .indexed"
+
 namespace MozJS {
 
 JSString *StringTools::FromUINT16(JSContext *ctx, const uint16_t *str,
@@ -305,8 +307,7 @@ bool Value::IsDate() const {
 bool Value::IsExternal() const {
   EMPTY_RETURN();
 
-  if (!value_.isObject()) return false;
-  return JS_GetHasExternalArrayData(value_.toObjectOrNull());
+  return this->Has(JXCORE_INDEXED_NAME);
 }
 
 bool Value::IsFalse() const {
@@ -487,7 +488,8 @@ void Value::SetPrivate(void *data) {
   assert(object_ != nullptr &&
          "Can not set private data into none object JS variable");
 
-  if (!JS_HasReservedSlot(object_, GC_SLOT_GC_CALL)) {
+  if (!JS_HasReservedSlot(object_, GC_SLOT_GC_CALL) &&
+      !JS_HasPrivate(object_)) {
     // perhaps this object was created on JS land
     // add a property that can trigger the event when the base
     // object is GC'ed
@@ -500,16 +502,28 @@ void *Value::GetPointerFromInternalField(const int index) {
   INNER_VALUE_TO_OBJECT(object_, false);
 
   if (object_ != nullptr) {
-    if (!JS_HasReservedSlot(object_, GC_SLOT_GC_CALL)) {
+    if (!JS_HasReservedSlot(object_, GC_SLOT_GC_CALL) &&
+        !JS_HasPrivate(object_)) {
       // perhaps this object was created on JS land
       // add a property that can trigger the event when the base
       // object is GC'ed
-      object_ = Natify(object_rt);
+      object_ = Natify(object_rt, false);
     }
-  } else {
-    return nullptr;
   }
+
+  if (object_ == nullptr) return nullptr;
+
   return JS_GetPrivate(object_);
+}
+
+void *Value::GetSelfPrivate() {
+  if (!value_.isObject()) return nullptr;
+
+  JSObject *object_ = value_.toObjectOrNull();
+  if (JS_HasPrivate(object_))
+    return JS_GetPrivate(object_);
+  else
+    return nullptr;
 }
 
 int Value::InternalFieldCount() const {
@@ -576,34 +590,128 @@ Value Value::Null(JSContext *ctx) {
   return Value(val, ctx);
 }
 
+static JSClass empty_class_definition = {
+    "JXObject",
+    JSCLASS_HAS_PRIVATE | JSCLASS_HAS_RESERVED_SLOTS(JS_OBJECT_SLOT_COUNT) |
+        JSCLASS_NEW_RESOLVE,
+    JS_PropertyStub, JS_DeletePropertyStub, JS_PropertyStub,
+    JS_StrictPropertyStub, JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub,
+    Value::empty_finalize, 0, 0, 0, 0};
+
+static JSClass empty_natified_definition = {
+    "JXNatify", JSCLASS_HAS_PRIVATE |
+                    JSCLASS_HAS_RESERVED_SLOTS(JS_NATIFIED_OBJECT_SLOT_COUNT) |
+                    JSCLASS_NEW_RESOLVE,
+    JS_PropertyStub, JS_DeletePropertyStub, JS_PropertyStub,
+    JS_StrictPropertyStub, JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub,
+    Value::empty_finalize, 0, 0, 0, 0};
+
+static JSClass empty_reserved_definition = {
+    "JXReserved",          JSCLASS_HAS_PRIVATE, JS_PropertyStub,
+    JS_DeletePropertyStub, JS_PropertyStub,     JS_StrictPropertyStub,
+    JS_EnumerateStub,      JS_ResolveStub,      JS_ConvertStub,
+    0,                     0,                   0,
+    0,                     0};
+
+struct ObjectStore {
+ public:
+  void *extData_;
+  uint32_t extLength_;
+  int extType_;
+};
+
+void indexed_finalize(JSFreeOp *fop, JSObject *obj) {
+  if (JS_HasPrivate(obj)) {
+    void *ptr = JS_GetPrivate(obj);
+    if (ptr != nullptr) {
+      ObjectStore *store = (ObjectStore *)ptr;
+      delete store;
+    }
+  }
+}
+
+static JSClass index_reserved_definition = {
+    "QJXIndexed",           JSCLASS_HAS_PRIVATE, JS_PropertyStub,
+    JS_DeletePropertyStub, JS_PropertyStub,     JS_StrictPropertyStub,
+    JS_EnumerateStub,      JS_ResolveStub,      JS_ConvertStub,
+    indexed_finalize,      0,                   0,
+    0,                     0};
+
 void Value::SetIndexedPropertiesToExternalArrayData(void *data,
                                                     const int data_type,
                                                     const int32_t length) {
   INNER_VALUE_TO_OBJECT(object_, false);
 
   assert(object_ != nullptr);
-  JS_SetExternalArrayData(object_, data, length, data_type);
+
+  ObjectStore *store = nullptr;
+  if (!this->Has(JXCORE_INDEXED_NAME)) {
+    MozJS::Value index_ref(JS_NewObject(ctx_, &index_reserved_definition,
+                                        JS::NullPtr(), JS::NullPtr()),
+                           ctx_);
+
+    store = new ObjectStore();
+    index_ref.SetPrivate(store);
+    JS::RootedValue rt_val(ctx_, index_ref.value_);
+    this->SetProperty(JXCORE_INDEXED_NAME, rt_val);
+  } else {
+    store = (ObjectStore *)this->Get(JXCORE_INDEXED_NAME)
+                .GetPointerFromInternalField(0);
+
+    assert(store != nullptr);
+  }
+
+  store->extData_ = data;
+  store->extLength_ = length;
+  store->extType_ = data_type;
 }
 
 void *Value::GetIndexedPropertiesExternalArrayData() {
-  INNER_VALUE_TO_OBJECT(object_, false);
+  if (!value_.isObject()) return 0;
 
-  if (object_ == nullptr) return 0;
-  return JS_GetExternalArrayData(object_);
+  ObjectStore *store = nullptr;
+  if (this->Has(JXCORE_INDEXED_NAME)) {
+    store = (ObjectStore *)this->Get(JXCORE_INDEXED_NAME)
+                .GetPointerFromInternalField(0);
+
+    if (store == nullptr) return 0;
+  } else {
+    return 0;
+  }
+
+  return store->extData_;
 }
 
 int32_t Value::GetIndexedPropertiesExternalArrayDataLength() {
-  INNER_VALUE_TO_OBJECT(object_, false);
+  if (!value_.isObject()) return 0;
 
-  if (object_ == nullptr) return 0;
-  return JS_GetExternalArrayDataSize(object_);
+  ObjectStore *store = nullptr;
+  if (this->Has(JXCORE_INDEXED_NAME)) {
+    store = (ObjectStore *)this->Get(JXCORE_INDEXED_NAME)
+                .GetPointerFromInternalField(0);
+
+    if (store == nullptr) return 0;
+  } else {
+    return 0;
+  }
+
+  return store->extLength_;
 }
 
 int Value::GetIndexedPropertiesExternalArrayDataType() {
-  INNER_VALUE_TO_OBJECT(object_, false);
+  if (!value_.isObject()) return 0;
 
-  if (object_ == nullptr) return 0;
-  return JS_GetExternalArrayDataType(object_);
+  ObjectStore *store = nullptr;
+  if (this->Has(JXCORE_INDEXED_NAME)) {
+    MozJS::Value val = this->Get(JXCORE_INDEXED_NAME);
+    store = (ObjectStore *)val.GetPointerFromInternalField(0);
+
+    if (store == nullptr) return 0;
+  } else {
+    return 0;
+  }
+
+  return store->extType_;
 }
 
 bool Value::HasInstance(const Value &val) {
@@ -813,7 +921,7 @@ void Value::empty_finalize(JSFreeOp *fop, JSObject *obj) {
         JSContext *ctx = Isolate::GetByThreadId(*tid)->GetRaw();
         Value val(obj, ctx);
         ff->target(val, JS_GetPrivate(obj));
-        delete(ff);
+        delete (ff);
         val.rooted_ = true;
         val.RemoveRoot();
         return;
@@ -830,42 +938,21 @@ void Value::empty_finalize(JSFreeOp *fop, JSObject *obj) {
   }
 }
 
-static JSClass empty_class_definition = {
-    "JXObject",
-    JSCLASS_HAS_PRIVATE | JSCLASS_HAS_RESERVED_SLOTS(JS_OBJECT_SLOT_COUNT) |
-        JSCLASS_NEW_RESOLVE,
-    JS_PropertyStub, JS_DeletePropertyStub, JS_PropertyStub,
-    JS_StrictPropertyStub, JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub,
-    Value::empty_finalize, 0, 0, 0, 0};
-
-static JSClass empty_natified_definition = {
-    "JXNatify", JSCLASS_HAS_PRIVATE |
-                    JSCLASS_HAS_RESERVED_SLOTS(JS_NATIFIED_OBJECT_SLOT_COUNT) |
-                    JSCLASS_NEW_RESOLVE,
-    JS_PropertyStub, JS_DeletePropertyStub, JS_PropertyStub,
-    JS_StrictPropertyStub, JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub,
-    Value::empty_finalize, 0, 0, 0, 0};
-
-static JSClass empty_reserved_definition = {
-    "JXReserved",          JSCLASS_HAS_PRIVATE, JS_PropertyStub,
-    JS_DeletePropertyStub, JS_PropertyStub,     JS_StrictPropertyStub,
-    JS_EnumerateStub,      JS_ResolveStub,      JS_ConvertStub,
-    0,                     0,                   0,
-    0,                     0};
-
 const char *natifier_name_ =
     "                                                                ";
-JSObject *Value::Natify(JS::HandleObject object_rt) {
+JSObject *Value::Natify(JS::HandleObject object_rt, const bool force_create) {
   JS::RootedValue ret_val(ctx_);
 
   bool op = JS_GetProperty(ctx_, object_rt, natifier_name_, &ret_val);
-  if (!op || ret_val.isUndefined()) {
+  if (force_create && (!op || ret_val.isUndefined())) {
     JSObject *obj = JS_NewObject(ctx_, &empty_natified_definition,
                                  JS::NullPtr(), JS::NullPtr());
     jsval val = JS::ObjectOrNullValue(obj);
     JS::RootedValue rt_val(ctx_, val);
     JS_SetProperty(ctx_, object_rt, natifier_name_, rt_val);
     return obj;
+  } else if (!force_create) {
+    return nullptr;
   }
 
   return ret_val.toObjectOrNull();

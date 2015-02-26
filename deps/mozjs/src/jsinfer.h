@@ -914,9 +914,6 @@ struct TypeObject : gc::BarrieredCell<TypeObject>
     /* Class shared by object using this type. */
     const Class *clasp_;
 
-  public:
-    bool hasData_;
-
   private:
 
     /* Prototype shared by objects using this type. */

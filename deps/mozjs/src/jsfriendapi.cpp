@@ -84,36 +84,6 @@ JS_GetAnonymousString(JSRuntime *rt)
     return rt->commonNames->anonymous;
 }
 
-JS_FRIEND_API(void)
-JS_SetExternalArrayData(JSObject *obj, void* data, uint32_t size, uint32_t type)
-{
-    obj->setExternalData(data, size, type);
-}
-
-JS_FRIEND_API(bool)
-JS_GetHasExternalArrayData(JSObject *obj)
-{
-    return obj->getHasExternalData();
-}
-
-JS_FRIEND_API(void*)
-JS_GetExternalArrayData(JSObject *obj)
-{
-    return obj->getExternalDataAddress();
-}
-
-JS_FRIEND_API(uint32_t)
-JS_GetExternalArrayDataSize(JSObject *obj)
-{
-    return obj->getExternalDataLength();
-}
-
-JS_FRIEND_API(uint32_t)
-JS_GetExternalArrayDataType(JSObject *obj)
-{
-    return obj->getExternalDataType();
-}
-
 JS_FRIEND_API(JSObject *)
 JS_FindCompilationScope(JSContext *cx, HandleObject objArg)
 {
