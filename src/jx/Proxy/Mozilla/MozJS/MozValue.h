@@ -59,7 +59,7 @@ class Value {
   friend class Script;
   friend class String;
 
-  JSObject *Natify(JS::HandleObject obj);
+  JSObject *Natify(JS::HandleObject obj, const bool force_create = true);
 
  protected:
   bool rooted_;
@@ -123,6 +123,7 @@ class Value {
   static void empty_finalize(JSFreeOp *fop, JSObject *obj);
 
   void SetPrivate(void *data);
+  void *GetSelfPrivate();
   void *GetPointerFromInternalField(const int index = 0);
   int InternalFieldCount() const;  // JS_HasPrivate
   void SetInternalFieldCount(int count = 0);

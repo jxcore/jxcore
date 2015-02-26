@@ -663,7 +663,7 @@ static JS_LOCAL_METHOD(Chdir) {
   uv_err_t r = uv_chdir(*path);
 
   if (r.code != UV_OK) {
-    JS_LOCAL_VALUE err = UVException(r.code, "uv_chdir");
+    JS_LOCAL_VALUE err = UVException(r.code, "uv_chdir", "", "");
     THROW_EXCEPTION_OBJECT(err);
   }
 }
@@ -697,7 +697,7 @@ static JS_LOCAL_METHOD(Cwd) {
   customUnlock(CSLOCK_UVFS);
 
   if (r.code != UV_OK) {
-    JS_LOCAL_VALUE err = UVException(r.code, "uv_cwd");
+    JS_LOCAL_VALUE err = UVException(r.code, "uv_cwd", "", "");
     THROW_EXCEPTION_OBJECT(err);
   }
 
@@ -1006,7 +1006,8 @@ JS_LOCAL_METHOD(MemoryUsage) {
   uv_err_t err = uv_resident_set_memory(&rss);
 
   if (err.code != UV_OK) {
-    JS_LOCAL_VALUE err_val = UVException(err.code, "uv_resident_set_memory");
+    JS_LOCAL_VALUE err_val =
+        UVException(err.code, "uv_resident_set_memory", "", "");
     THROW_EXCEPTION_OBJECT(err_val);
   }
 
@@ -1298,8 +1299,8 @@ static JS_SETADD_METHOD(EnvSetter) {
   setenv(*key, *val, 1);
 #else  // _WIN32
 #ifdef JS_ENGINE_V8
-  String::Value key(property);
-  String::Value val(value);
+  v8::String::Value key(property);
+  v8::String::Value val(value);
 #elif defined(JS_ENGINE_MOZJS)
   jxcore::JXString key;
   key.set_handle(property, true);
@@ -1351,7 +1352,7 @@ static JS_HANDLE_INTEGER EnvQuery(JS_LOCAL_STRING property,
     return JS_LEAVE_SCOPE(val_0);
   }
 #else  // _WIN32
-  String::Value key(property);
+  v8::String::Value key(property);
   WCHAR* key_ptr = reinterpret_cast<WCHAR*>(*key);
   if (GetEnvironmentVariableW(key_ptr, NULL, 0) > 0 ||
       GetLastError() == ERROR_SUCCESS) {
@@ -1732,20 +1733,20 @@ static JS_LOCAL_METHOD(DebugProcess) {
                   FALSE, pid);
   if (process == NULL) {
     rv = JS_THROW_EXCEPTION_TYPE(
-        WinapiErrnoException(GetLastError(), "OpenProcess"));
+        WinapiErrnoException(GetLastError(), "OpenProcess", "", ""));
     goto out;
   }
 
   if (GetDebugSignalHandlerMappingName(pid, mapping_name,
                                        ARRAY_SIZE(mapping_name)) < 0) {
-    rv = JS_THROW_EXCEPTION_TYPE(ErrnoException(errno, "sprintf"));
+    rv = JS_THROW_EXCEPTION_TYPE(ErrnoException(errno, "sprintf", "", ""));
     goto out;
   }
 
   mapping = OpenFileMappingW(FILE_MAP_READ, FALSE, mapping_name);
   if (mapping == NULL) {
     rv = JS_THROW_EXCEPTION_TYPE(
-        WinapiErrnoException(GetLastError(), "OpenFileMappingW"));
+        WinapiErrnoException(GetLastError(), "OpenFileMappingW", "", ""));
     goto out;
   }
 
@@ -1753,21 +1754,21 @@ static JS_LOCAL_METHOD(DebugProcess) {
       MapViewOfFile(mapping, FILE_MAP_READ, 0, 0, sizeof *handler));
   if (handler == NULL || *handler == NULL) {
     rv = JS_THROW_EXCEPTION_TYPE(
-        WinapiErrnoException(GetLastError(), "MapViewOfFile"));
+        WinapiErrnoException(GetLastError(), "MapViewOfFile", "", ""));
     goto out;
   }
 
   thread = CreateRemoteThread(process, NULL, 0, *handler, NULL, 0, NULL);
   if (thread == NULL) {
     rv = JS_THROW_EXCEPTION_TYPE(
-        WinapiErrnoException(GetLastError(), "CreateRemoteThread"));
+        WinapiErrnoException(GetLastError(), "CreateRemoteThread", "", ""));
     goto out;
   }
 
   // Wait for the thread to terminate
   if (WaitForSingleObject(thread, INFINITE) != WAIT_OBJECT_0) {
     rv = JS_THROW_EXCEPTION_TYPE(
-        WinapiErrnoException(GetLastError(), "WaitForSingleObject"));
+        WinapiErrnoException(GetLastError(), "WaitForSingleObject", "", ""));
     goto out;
   }
 
@@ -1835,7 +1836,7 @@ void SetupProcessObject(const int threadId) {
     JS_NAME_SET(process, JS_STRING_ID("subThread"), STD_TO_BOOLEAN(false));
   }
 
-  JS_NAME_SET(process, JS_STRING_ID("threadId"), STD_TO_INTEGER(threadId-1));
+  JS_NAME_SET(process, JS_STRING_ID("threadId"), STD_TO_INTEGER(threadId - 1));
 
   // process.version
   JS_NAME_SET(process, JS_STRING_ID("version"), STD_TO_STRING(NODE_VERSION));
@@ -1855,7 +1856,8 @@ void SetupProcessObject(const int threadId) {
                       HTTP_PARSER_VERSION_MINOR)));
 
   JS_NAME_SET(versions, JS_STRING_ID("node"), STD_TO_STRING(NODE_VERSION + 1));
-  JS_NAME_SET(versions, JS_STRING_ID("jxcore"), STD_TO_STRING(JXCORE_VERSION + 2));
+  JS_NAME_SET(versions, JS_STRING_ID("jxcore"),
+              STD_TO_STRING(JXCORE_VERSION + 2));
 #ifdef JS_ENGINE_V8
   JS_NAME_SET(versions, JS_STRING_ID("v8"),
               STD_TO_STRING(v8::V8::GetVersion()));
@@ -1895,8 +1897,8 @@ void SetupProcessObject(const int threadId) {
   JS_NAME_SET(process, JS_STRING_ID("platform"), STD_TO_STRING(PLATFORM));
 
   jxcore::JXEngine* active_engine = jxcore::JXEngine::ActiveInstance();
-  if(active_engine == NULL && threadId>0) {
-	active_engine = jxcore::JXEngine::GetInstanceByThreadId(0);
+  if (active_engine == NULL && threadId > 0) {
+    active_engine = jxcore::JXEngine::GetInstanceByThreadId(0);
   }
   assert(active_engine != NULL);
   // process.argv
@@ -1908,14 +1910,13 @@ void SetupProcessObject(const int threadId) {
   // skip the duplicate exec path for secondary threads
   // TODO(obastemur) fix this!
   int ndiff = 0;
-  if(threadId > 0)
-	ndiff = 1;
+  if (threadId > 0)
+    ndiff = 1;
   else
-	ndiff = 0;
+    ndiff = 0;
 
   for (j = 1, i = com->option_end_index; i < active_engine->argc_; j++, i++) {
-    JS_INDEX_SET(arguments, j - ndiff,
-                 UTF8_TO_STRING(active_engine->argv_[i]));
+    JS_INDEX_SET(arguments, j - ndiff, UTF8_TO_STRING(active_engine->argv_[i]));
   }
 
   // assign it
@@ -2203,8 +2204,8 @@ void EmitReset(JS_HANDLE_OBJECT process_l, const int code) {
 
   JS_TRY_CATCH(try_catch);
 #ifdef JS_ENGINE_MOZJS
-  if(try_catch.HasCaught()){
-	try_catch.ClearPendingException();
+  if (try_catch.HasCaught()) {
+    try_catch.ClearPendingException();
   }
 #endif
 
@@ -2213,7 +2214,6 @@ void EmitReset(JS_HANDLE_OBJECT process_l, const int code) {
   assert(JS_IS_FUNCTION(emit_v));
   JS_LOCAL_FUNCTION emit = JS_CAST_FUNCTION(emit_v);
   JS_LOCAL_VALUE args[] = {STD_TO_STRING("$$restart"), STD_TO_INTEGER(code)};
-
 
   JS_METHOD_CALL(emit, process_l, 2, args);
   if (try_catch.HasCaught()) {

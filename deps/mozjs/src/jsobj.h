@@ -222,27 +222,6 @@ class JSObject : public js::ObjectImpl
   public:
     static const js::Class class_;
 
-    void setExternalData(void *d_data, uint32_t d_length, int32_t d_type){
-        type_->hasData_ = true;
-        if(d_data == 0){
-    	    this->extData_ = 0;
-    	    this->______ = 0;
-        }
-        else{
-            this->extData_ = d_data;
-            this->______ = (void*)FakeMemoryMarker::_;
-        }
-        this->extLength_ = d_length;
-        this->extType_ = d_type;
-    }
-
-    bool getHasExternalData() const{ return this->______ == (void*)FakeMemoryMarker::_ && type_->hasData_ && this->extData_ != 0; }
-    uint32_t getExternalDataType() const{ return this->extType_; }
-    uint32_t getExternalDataLength() const{ return this->extLength_; }
-    void* getExternalDataAddress() {
-       return this->extData_;
-    }
-
     /*
      * Update the last property, keeping the number of allocated slots in sync
      * with the object's new slot span.

@@ -32,21 +32,6 @@ class JSLinearString;
 struct JSJitInfo;
 struct JSErrorReport;
 
-JS_FRIEND_API(void)
-JS_SetExternalArrayData(JSObject *obj, void* data, uint32_t size, uint32_t type);
-
-JS_FRIEND_API(bool)
-JS_GetHasExternalArrayData(JSObject *obj);
-
-JS_FRIEND_API(void*)
-JS_GetExternalArrayData(JSObject *obj);
-
-JS_FRIEND_API(uint32_t)
-JS_GetExternalArrayDataSize(JSObject *obj);
-
-JS_FRIEND_API(uint32_t)
-JS_GetExternalArrayDataType(JSObject *obj);
-
 namespace JS {
 template <class T>
 class Heap;
@@ -543,7 +528,6 @@ namespace shadow {
 
 struct TypeObject {
     const Class *clasp;
-    bool        hasData_;
     JSObject    *proto;
 };
 
@@ -564,8 +548,6 @@ public:
 };
 
 struct Object {
-    uint32_t extLength_, extType_;
-    void               *extData_, *______;
     shadow::Shape      *shape;
     shadow::TypeObject *type;
     JS::Value          *slots;

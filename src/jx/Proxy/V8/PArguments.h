@@ -12,7 +12,7 @@ class PArguments {
   const v8::Arguments *args__;
 
 #define args_ (*args__)
-  int length;
+  unsigned length;
 
  public:
   explicit PArguments(const v8::Arguments &args)
@@ -124,7 +124,7 @@ class PArguments {
   int GetString(const unsigned index, JXString *jxs) {
     jxs->set_handle(args_[index]);
 
-    return jxs->length();
+    return (int)jxs->length();
   }
 
   int GetUTF8Length(const unsigned index) {

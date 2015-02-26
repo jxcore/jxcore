@@ -12,7 +12,7 @@ void TermPerfCounters(JS_HANDLE_OBJECT target);
 }
 
 #ifdef HAVE_PERFCTR
-#include "node_win32_perfctr_provider.h"
+#include "platform/win/node_win32_perfctr_provider.h"
 #else
 #define NODE_COUNTER_ENABLED() (false)
 #define NODE_COUNT_HTTP_SERVER_REQUEST()

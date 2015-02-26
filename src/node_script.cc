@@ -97,11 +97,6 @@ void CloneObject(JS_STATE_MARKER, JS_HANDLE_OBJECT recv,
   JS_ENTER_SCOPE_COM();
   if (JS_IS_EMPTY((com->cloneObjectMethod))) {
     JS_LOCAL_FUNCTION cloneObjectMethod_ = JS_CAST_FUNCTION(JS_COMPILE_AND_RUN(
-#elif defined(JS_ENGINE_MOZJS)
-  MozJS::Value global = JS_GET_CONTEXT_GLOBAL(__contextORisolate);
-  JS_LOCAL_FUNCTION cloneObjectMethod_ = MozJS::Value::CompileAndRun(
-      __contextORisolate,
-#endif
         STD_TO_STRING(
             "(function(source, target) {\n"
             "if(!target) target = global;\n"
@@ -117,15 +112,31 @@ void CloneObject(JS_STATE_MARKER, JS_HANDLE_OBJECT recv,
             "}\n"
             "});\n"
             "})"),
-        STD_TO_STRING("binding:script")
-#ifdef JS_ENGINE_V8
-        ));
+        STD_TO_STRING("binding:script")));
     com->cloneObjectMethod = JS_NEW_PERSISTENT_FUNCTION(cloneObjectMethod_);
   }
   JS_METHOD_CALL(com->cloneObjectMethod, recv, 2, args);
+
 #elif defined(JS_ENGINE_MOZJS)
-      ,
-      &global);
+  MozJS::Value global = JS_GET_CONTEXT_GLOBAL(__contextORisolate);
+  JS_LOCAL_FUNCTION cloneObjectMethod_ = MozJS::Value::CompileAndRun(
+      __contextORisolate,
+      STD_TO_STRING(
+          "(function(source, target) {\n"
+          "if(!target) target = global;\n"
+          "if(Array.isArray(source)){for(var o in "
+          "source){target[o]=source[o];}return;}\n"
+          "Object.getOwnPropertyNames(source).forEach(function(key) {\n"
+          "try {\n"
+          "var desc = Object.getOwnPropertyDescriptor(source, key);\n"
+          "if (desc.value === source) desc.value = target;\n"
+          "Object.defineProperty(target, key, desc);\n"
+          "} catch (e) {\n"
+          " // Catch sealed properties errors\n"
+          "}\n"
+          "});\n"
+          "})"),
+      STD_TO_STRING("binding:script"), &global);
   JS_METHOD_CALL(cloneObjectMethod_, recv, 2, args);
 #endif
 }
@@ -416,10 +427,11 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(jxcore::PArguments &args,
     } else {
       globals = jxcore::getGlobal(com->threadId);
     }
-//    bool asm_js = false;
-//    if (args.IsInteger(args.Length() - 1))
-//      asm_js = args.GetInt32(args.Length() - 1) == 1;
-    script = MozJS::Script::Compile(context, globals, code, filename); //, asm_js);
+    //    bool asm_js = false;
+    //    if (args.IsInteger(args.Length() - 1))
+    //      asm_js = args.GetInt32(args.Length() - 1) == 1;
+    script =
+        MozJS::Script::Compile(context, globals, code, filename);  //, asm_js);
 #endif
     if (JS_IS_EMPTY(script)) {
 #ifdef JS_ENGINE_V8

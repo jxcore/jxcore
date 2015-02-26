@@ -4465,41 +4465,95 @@ type *num = (type*)&number;\
 
 char * FakeMemoryMarker::_ = new char[1];
 
+struct ObjectStore {
+public:
+  void *extData_;
+  uint32_t extLength_;
+  int extType_;
+};
+
+#define JXCORE_INDEXED_NAME "                .indexed"
+
+inline ObjectStore* JXGetProperty(JSContext *cx, JS::Handle<JSObject*> obj) {
+  const js::Class *jsc = obj->getClass();
+  if (jsc == nullptr) return nullptr;
+
+  const char* jsc_name = jsc->name; // Object || SlowBuffer
+
+  if (jsc_name == 0 || (jsc_name[0] != 'S' && jsc_name[0] != 'O')
+                    || (jsc_name[1] != 'l' && jsc_name[1] != 'b') )
+    return nullptr;
+
+  bool foundp = false;
+  JSAtom *atom = Atomize(cx, JXCORE_INDEXED_NAME, 24);
+  if (!atom)
+	  return nullptr;
+
+  RootedId idn(cx, AtomToId(atom));
+
+
+  if (Shape *shape = obj->nativeLookup(cx, idn))
+  {
+	JS::Rooted<jsval> vp(cx);
+    if (shape->hasSlot()) {
+      vp.set(obj->nativeGetSlot(shape->slot()));
+    } else {
+      return nullptr;
+    }
+
+    jsval val = vp;
+
+    if (val.isUndefined() || !val.isObject()) return nullptr;
+    JSObject *o = val.toObjectOrNull();
+
+    const char* cs_name = o->getClass()->name; // QJXIndexed
+    if(cs_name == 0 || cs_name[0] != 'Q' || cs_name[1] != 'J') {
+	  printf("A");
+	  return nullptr;
+    }
+
+    void *data = JS_GetPrivate(o);
+
+    return (ObjectStore*) data;
+  }
+
+  return nullptr;
+}
+
 bool jxcore_buffer_setter(JSContext *cx, JS::Handle<JSObject*> obj, JS::Handle<jsid> id,
-                          bool strict, JS::MutableHandle<JS::Value> vp){
-  if(!JSID_IS_INT(id)){
+                          bool strict, JS::MutableHandle<JS::Value> vp) {
+  if (!JSID_IS_INT(id)) {
     return true;
   }
   
-  if (obj->extData_ != NULL && obj->type()->hasData_) {
+  ObjectStore *store = JXGetProperty(cx, obj);
+  if (store == nullptr) return true;
+
+  if (store->extData_ != NULL) {
     int index = JSID_TO_INT(id);
     /* JXCORE_MODIFIED */
-    if (index < obj->extLength_) {
-      void *data = obj->extData_;
+    if (index < store->extLength_) {
+      void *data = store->extData_;
 
       uint32_t number;
-      if(vp.isNumber())
-	  number = vp.toNumber();
-      else if(vp.isString())
-      {
-	char *str_ = JS_EncodeString(cx, vp.toString());
-	number = atol(str_);
-	JS_free(cx, str_);
+      if (vp.isNumber()) {
+        number = vp.toNumber();
+      } else if (vp.isString()) {
+        char *str_ = JS_EncodeString(cx, vp.toString());
+        number = atol(str_);
+        JS_free(cx, str_);
       }
 
-      if(obj->extType_ < 5)
-	SETTER_EXTERNAL(char)
-      else if(obj->extType_ == 5)
-	SETTER_EXTERNAL(int)
-      else if(obj->extType_ == 6)
-      {
-	uint32_t* str = (uint32_t*)data;
-	*(str+index) = number;
-      }
-      else
-      {
-	fprintf(stderr, "Not Supported Buffer Data Type %d %d\n", obj->extType_, obj->extLength_);
-	abort();
+      if (store->extType_ < 5) {
+        SETTER_EXTERNAL(char)
+      } else if (store->extType_ == 5) {
+        SETTER_EXTERNAL(int)
+      } else if (store->extType_ == 6) {
+        uint32_t* str = (uint32_t*)data;
+        *(str+index) = number;
+      } else {
+        fprintf(stderr, "Not Supported Buffer Data Type %d %d\n", store->extType_, store->extLength_);
+        abort();
       }
     }
   }
@@ -4517,62 +4571,82 @@ LookupOwnPropertyInline(ExclusiveContext *cx,
 {
     // Check for a native dense element.
     if (JSID_IS_INT(id)) {  /* JXCORE_MODIFIED */
-      if (obj->extData_ != NULL && obj->typeRaw()->hasData_ && obj->______ == (void*)FakeMemoryMarker::_) {
-	if (!cx->shouldBeJSContext() || !allowGC)
-	    return false;
+      if (cx->shouldBeJSContext() && allowGC) {
+        JSContext *ctx = cx->asJSContext();
+        JS::HandleObject hobj = MaybeRooted<JSObject*, allowGC>::toHandle(obj);
 
-	int index = JSID_TO_INT(id);
+        ObjectStore *store = JXGetProperty(ctx, hobj);
 
-	if (obj->extLength_ > index) {
-	  JSContext *ctx = cx->asJSContext();
-	  JSRuntime *rt = ctx->runtime();
-	  JS::HandleObject hobj = MaybeRooted<JSObject*, allowGC>::toHandle(obj);
-	  JS::RootedId hid(ctx, id);
+        if (store != nullptr) {
+          if (store->extData_ != nullptr) {
+            int index = JSID_TO_INT(id);
+            JSRuntime *rt = ctx->runtime();
+            JS::RootedId hid(ctx, id);
 
-	  void *vdata = obj->extData_;
-	  JS::Value val;
+            void *vdata = store->extData_;
+            JS::Value val;
 
-	  if (obj->extType_ < 5) {
-	      char* cdata = ((char*)vdata) + index ;
-	      int32_t fd = (int)*cdata;
-	      if(fd<0){
-		unsigned char* temp = (unsigned char*)&fd;
-		fd = *temp;
-	      }
-	      val = JS::Int32Value(fd);
-	  }
-	  else if (obj->extType_ == 5) {
-	      int *cdata = ((int*)vdata) + index;
-	      val = JS::Int32Value(*cdata);
-	  }
-	  else if (obj->extType_ == 6) {
-	      uint32_t *cdata = ((uint32_t*)vdata) + index;
-	      val = JS::DoubleValue(*cdata);
-	  } else {
-	      fprintf(stderr, "Not Supported Buffer Data Type %d %d\n", obj->extType_, obj->extLength_);
-	      abort();
-	  }
+            if (store->extType_ < 5) {
+              char* cdata = ((char*)vdata) + index ;
+              int32_t fd = (int)*cdata;
+              if (fd < 0) {
+                unsigned char* temp = (unsigned char*)&fd;
+                fd = *temp;
+              }
+              val.setInt32(fd);
+            }
+            else if (store->extType_ == 5) {
+              int *cdata = ((int*)vdata) + index;
+              val.setInt32(*cdata);
+            }
+            else if (store->extType_ == 6) {
+              uint32_t *cdata = ((uint32_t*)vdata) + index;
+              val.setNumber(*cdata);
+            } else {
+              fprintf(stderr, "Not Supported Buffer Data Type %d %d\n", store->extType_, store->extLength_);
+              abort();
+            }
 
-	  JS::RootedValue rt_val(ctx, val);
+            if (Shape *shape1 = obj->nativeLookup(ctx, id))
+            {
+              JS::Rooted<jsval> vp(cx);
+              if (shape1->hasSlot()) {
+                hobj->setSlot(shape1->slot(), val);
+                objp.set(obj);
+                propp.set(shape1);
+                *donep = true;
+                return true;
+              }
+            }
 
-	  int oldGC = rt->mainThread.suppressGC;
-	  rt->mainThread.suppressGC = 1;
-	  JS_DefinePropertyById(ctx, hobj, hid, rt_val, 0, 0, jxcore_buffer_setter);
-	  rt->mainThread.suppressGC = oldGC;
-	  if (Shape *shape = obj->nativeLookup(cx, id)) {
-	      objp.set(obj);
-	      propp.set(shape);
-	      *donep = true;
-	      return true;
-	  }
-	}
+            JS::RootedValue rt_val(ctx, val);
+
+            int oldGC = rt->mainThread.suppressGC;
+            rt->mainThread.suppressGC = 1;
+            bool status = js::DefineNativeProperty(cx, hobj,
+                                    hid, rt_val, 0, jxcore_buffer_setter, 0);
+            rt->mainThread.suppressGC = oldGC;
+
+            if (status) {
+              if (Shape *shape = obj->nativeLookup(cx, id)) {
+                objp.set(obj);
+                propp.set(shape);
+                *donep = true;
+                return true;
+              }
+            }
+          }
+        }
+      } else if (!(obj->template is<TypedArrayObject>())) {
+        return false;
       }
 
-      if(obj->containsDenseElement(JSID_TO_INT(id))) {
-	  objp.set(obj);
-	  MarkDenseOrTypedArrayElementFound<allowGC>(propp);
-	  *donep = true;
-	  return true;
+
+      if (obj->containsDenseElement(JSID_TO_INT(id))) {
+        objp.set(obj);
+        MarkDenseOrTypedArrayElementFound<allowGC>(propp);
+        *donep = true;
+        return true;
       }
     }
 
@@ -4594,7 +4668,6 @@ LookupOwnPropertyInline(ExclusiveContext *cx,
         }
     }
 
-    _final:
     // Check for a native property.
     if (Shape *shape = obj->nativeLookup(cx, id)) {
         objp.set(obj);

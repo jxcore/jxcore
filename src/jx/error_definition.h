@@ -10,28 +10,15 @@ class commons;
 
 inline const char *errno_string(int errorno);
 
-const char *signo_string(int signo);
-
-JS_LOCAL_VALUE ErrnoException(int errorno, const char *syscall, const char *msg,
-                              const char *path);
-
 const char *get_uv_errno_string(int errorno);
 
 const char *get_uv_errno_message(int errorno);
 
-JS_LOCAL_VALUE UVException(int errorno, const char *syscall, const char *msg,
-                           const char *path);
-
 #ifdef _WIN32
 const char *winapi_strerror(const int errorno);
-
-JS_LOCAL_VALUE WinapiErrnoException(int errorno, const char *syscall,
-                                    const char *msg, const char *path);
 #endif
 
 void SetCOMErrno(commons *com, uv_err_t err);
-
-void SetErrno(uv_err_t err);
 
 void maybeExit(commons *com, const int code);
 
