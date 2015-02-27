@@ -13,8 +13,7 @@ namespace jxcore {
 
 void SendMessage(const int threadId, const char *msg_data, const int length,
                  bool same_thread) {
-  char *str;
-  cpystr(&str, msg_data, length);
+  char *str = cpystr(msg_data, length);
 
   bool hasIt = false;
   threadLock(threadId);

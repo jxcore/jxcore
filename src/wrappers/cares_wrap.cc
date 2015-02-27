@@ -1,11 +1,5 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-#if defined(__OpenBSD__) || defined(__MINGW32__) || defined(_MSC_VER) || \
-    defined(__ANDROID__) || defined(ANDROID)
-#include <nameser.h>
-#else
-#include <arpa/nameser.h>
-#endif
 #include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -16,6 +10,13 @@
 #include "wrappers/cares_wrap.h"
 #include "jx/commons.h"
 #include "tree.h"
+
+#if defined(__OpenBSD__) || defined(__MINGW32__) || defined(_MSC_VER) || \
+    defined(__ANDROID__) || defined(ANDROID)
+#include <nameser.h>
+#else
+#include <arpa/nameser.h>
+#endif
 
 namespace node {
 
@@ -677,11 +678,10 @@ class GetHostByNameWrap : public QueryWrap {
 
 template <class Wrap>
 static JS_LOCAL_METHOD(Query) {
-#ifndef JS_ENGINE_MOZJS
-  assert(!args.IsConstructCall());
-#endif
-  assert(args.Length() >= 2);
-  assert(args.IsFunction(1));
+  if (args.Length() < 2 || !args.IsFunction(1)) {
+    THROW_TYPE_EXCEPTION(
+        "This method expects at least 2 arguments.(String, Function..)");
+  }
 
   Wrap* wrap = new Wrap();
   wrap->SetOnComplete(GET_ARG(1));
@@ -699,16 +699,17 @@ static JS_LOCAL_METHOD(Query) {
     delete wrap;
     RETURN_PARAM(JS_NULL());
   } else {
-    RETURN_POINTER(object);
+    RETURN_PARAM(object);
   }
 }
 JS_METHOD_END
 
 template <class Wrap>
 static JS_LOCAL_METHOD(QueryWithFamily) {
-  assert(!args.IsConstructCall());
-  assert(args.Length() >= 3);
-  assert(args.IsFunction(2));
+  if (args.Length() < 3 || !args.IsFunction(2)) {
+    THROW_TYPE_EXCEPTION(
+        "This method expects at least 3 arguments.(String, Int, Function..)");
+  }
 
   Wrap* wrap = new Wrap();
   wrap->SetOnComplete(GET_ARG(2));
@@ -728,7 +729,7 @@ static JS_LOCAL_METHOD(QueryWithFamily) {
     delete wrap;
     RETURN_PARAM(JS_NULL());
   } else {
-    RETURN_POINTER(object);
+    RETURN_PARAM(object);
   }
 }
 JS_METHOD_END

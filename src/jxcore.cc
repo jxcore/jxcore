@@ -29,6 +29,7 @@ static void SignalExit(int signal) {
   _exit(128 + signal);
 }
 
+#ifdef __POSIX__
 void RegisterSignalHandler(int signal, void (*handler)(int)) {
   struct sigaction sa;
 
@@ -37,6 +38,7 @@ void RegisterSignalHandler(int signal, void (*handler)(int)) {
   sigfillset(&sa.sa_mask);
   sigaction(signal, &sa, NULL);
 }
+#endif
 
 static char **copy_argv(int argc, char **argv) {
   size_t strlen_sum;
@@ -1034,6 +1036,8 @@ int JXEngine::LoopOnce() {
 
 void JXEngine::ShutDown() {
   node::commons::process_status_ = node::JXCORE_INSTANCE_EXITED;
+  jx_destroy_locks();
+  node::commons::threadPoolCount = 0;
 #if defined(JS_ENGINE_MOZJS)
 #elif defined(JS_ENGINE_V8) && !defined(NDEBUG)
   // Clean up. Not strictly necessary.

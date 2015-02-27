@@ -10,29 +10,32 @@ class Value;
 class Script;
 class String;
 
-#define JX_AUTO_POINTER(name, type)                \
-  class name {                                     \
-   public:                                         \
-    type *str_;                                    \
-    size_t length_;                                \
-    JSContext *ctx_;                               \
-                                                   \
-    name() {                                       \
-      str_ = NULL;                                 \
-      length_ = 0;                                 \
-      ctx_ = NULL;                                 \
-    }                                              \
-                                                   \
-    ~name() {                                      \
-      if (length_ != 0) {                          \
-        if (!ctx_) abort();                        \
-        JS_free(ctx_, str_);                       \
-      }                                            \
-    }                                              \
-                                                   \
-    type *operator*() { return str_; }             \
-                                                   \
-    const type *operator*() const { return str_; } \
+#define JX_AUTO_POINTER(name, type)                                    \
+  class name {                                                         \
+   public:                                                             \
+    type *str_;                                                        \
+    size_t length_;                                                    \
+    JSContext *ctx_;                                                   \
+                                                                       \
+    name() {                                                           \
+      str_ = NULL;                                                     \
+      length_ = 0;                                                     \
+      ctx_ = NULL;                                                     \
+    }                                                                  \
+                                                                       \
+    ~name() {                                                          \
+      if (length_ != 0) {                                              \
+        if (!ctx_) {                                                   \
+          error_console("MozValue AutoPointer: JSContext is null!\n"); \
+          abort();                                                     \
+        }                                                              \
+        JS_free(ctx_, str_);                                           \
+      }                                                                \
+    }                                                                  \
+                                                                       \
+    type *operator*() { return str_; }                                 \
+                                                                       \
+    const type *operator*() const { return str_; }                     \
   }
 
 JX_AUTO_POINTER(auto_str, char);
@@ -156,6 +159,7 @@ class Value {
   void *GetIndexedPropertiesExternalArrayData();
   int32_t GetIndexedPropertiesExternalArrayDataLength();
   int GetIndexedPropertiesExternalArrayDataType();
+  bool HasBufferSignature() const;
 
   bool HasInstance(const Value &val);
   bool StrictEquals(const Value &val);

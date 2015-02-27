@@ -28,8 +28,7 @@ const char *GetExternalMethodName(const int id) {
 int AddExternalMethod(const char *name, JS_NATIVE_METHOD method) {
   external_methods_count++;
   external_methods[external_methods_count - 1] = method;
-  char *_name;
-  cpystr(&_name, name, strlen(name));
+  char *_name = strdup(name);
 
   external_method_names[external_methods_count - 1] = _name;
   return external_methods_count - 1;
@@ -74,15 +73,17 @@ char *pullThreadQueue(const int tid) {  // reader reverse!
 
 void pushThreadQueue(const int tid, char *str) { threadQueue[tid].push(str); }
 
-void cpystr(char **dest, const char *src, const int ln) {
+char* cpystr(const char *src, const int ln) {
+  char *dest;
   if (src != NULL) {
-    *dest = (char *)malloc(sizeof(char) * (ln + 1));
-    memcpy(*dest, src, ln);
-    char *s = *dest;
-    *(s + ln) = '\0';
+    dest = (char *)malloc(sizeof(char) * (ln + 1));
+    memcpy(dest, src, ln);
+    *(dest + ln) = '\0';
   } else {
-    *dest = NULL;
+    dest = NULL;
   }
+
+  return dest;
 }
 
 int getThreadCount() {
@@ -130,7 +131,11 @@ int getIncreaseThreadCount() {
 #define do_pipe_sig()
 #endif
 
+static bool store_inited = false;
+
 void jx_init_locks() {
+  if (store_inited) return;
+  store_inited = true;
   do_pipe_sig();
 
   for (int i = 0; i < CUSTOMLOCKSCOUNT; i++) uv_mutex_init(&customLocks[i]);
@@ -143,6 +148,9 @@ void jx_init_locks() {
 }
 
 void jx_destroy_locks() {
+  if (!store_inited) return;
+  store_inited = false;
+
   for (int i = 0; i < CUSTOMLOCKSCOUNT; i++) uv_mutex_destroy(&customLocks[i]);
 
   for (int i = 0; i < MAX_JX_THREADS + 1; i++)

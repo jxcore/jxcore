@@ -226,25 +226,6 @@ Value::Value(const JS::Value &value, JSContext *ctx, bool rooted) {
   is_exception_ = false;
 }
 
-#define DEFINE_OPERATOR(left, right)                    \
-  left &left::operator=(const right &value) {           \
-    value_ = value.value_;                              \
-    rooted_ = value.fake_rooting_;                      \
-    empty_ = value.empty_;                              \
-    ctx_ = value.ctx_;                                  \
-    is_exception_ = value.is_exception_;                \
-    if (empty_) {                                       \
-      rooted_ = false;                                  \
-    } else if (rooted_) {                               \
-      assert(JS::AddValueRootOLD(value.ctx_, &value_)); \
-    }                                                   \
-    fake_rooting_ = false;                              \
-    return *this;                                       \
-  }
-
-DEFINE_OPERATOR(Value, Value)
-DEFINE_OPERATOR(String, String)
-
 Value::Value(const Value &value) : value_(value.value_) {
   rooted_ = false;
   empty_ = value.empty_;
@@ -460,6 +441,25 @@ String Value::ToString() {
   Value &_this = *this;
   return String(_this);
 }
+
+#define DEFINE_OPERATOR(left, right)                    \
+  left &left::operator=(const right &value) {           \
+    value_ = value.value_;                              \
+    rooted_ = value.fake_rooting_;                      \
+    empty_ = value.empty_;                              \
+    ctx_ = value.ctx_;                                  \
+    is_exception_ = value.is_exception_;                \
+    if (empty_) {                                       \
+      rooted_ = false;                                  \
+    } else if (rooted_) {                               \
+      assert(JS::AddValueRootOLD(value.ctx_, &value_)); \
+    }                                                   \
+    fake_rooting_ = false;                              \
+    return *this;                                       \
+  }
+
+DEFINE_OPERATOR(Value, Value)
+DEFINE_OPERATOR(String, String)
 
 void Value::AddRoot() {
   if (!rooted_ && !empty_) {
@@ -712,6 +712,30 @@ int Value::GetIndexedPropertiesExternalArrayDataType() {
   }
 
   return store->extType_;
+}
+
+bool Value::HasBufferSignature() const {
+  if (!value_.isObject()) return 0;
+
+  JSObject *obj = value_.toObjectOrNull();
+  if (obj == nullptr) return false;
+
+  const JSClass *jsc = JS_GetClass(obj);
+  if (jsc == nullptr) return false;
+
+  const char *jsc_name = jsc->name;  // Object || SlowBuffer
+
+  if (jsc_name == 0 || (jsc_name[0] != 'S' && jsc_name[0] != 'O') ||
+      (jsc_name[1] != 'l' && jsc_name[1] != 'b'))
+    return false;
+
+  bool foundp = false;
+  JS::RootedObject object_rt(ctx_, obj);
+  if (!JS_HasProperty(ctx_, object_rt, JXCORE_INDEXED_NAME, &foundp)) {
+    foundp = false;
+  }
+
+  return foundp;
 }
 
 bool Value::HasInstance(const Value &val) {
@@ -1546,10 +1570,12 @@ Value::Value(JSNative native, bool instance, JSContext *cx) {
 }
 
 Value::~Value() {
+#ifdef DEBUG
   if (rooted_) {
     if (EngineHelper::IsInstanceAlive(ctx_)) {
       assert(!rooted_ && "Don't let rooted/persistent object die");
     }
   }
+#endif
 }
 }  // namespace MozJS

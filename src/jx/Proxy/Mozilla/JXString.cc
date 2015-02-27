@@ -22,15 +22,17 @@ namespace jxcore {
 
 static char empty_str = '\0';
 
-static void cpystr(JSContext *ctx, char **dest, const char *src, const int ln) {
+static char *cpystr(JSContext *ctx, const char *src, const int ln) {
+  char *dest;
   if (src != NULL) {
-    *dest = (char *)JS_malloc(ctx, sizeof(char) * (ln + 1));
-    memcpy(*dest, src, ln);
-    char *s = *dest;
-    *(s + ln) = '\0';
+    dest = (char *)JS_malloc(ctx, sizeof(char) * (ln + 1));
+    memcpy(dest, src, ln);
+    *(dest + ln) = '\0';
   } else {
-    *dest = NULL;
+    dest = NULL;
   }
+
+  return dest;
 }
 
 JXString::JXString() {
@@ -82,7 +84,7 @@ void JXString::set_std(const char *other, JSContext *iso) {
 
   length_ = strlen(other);
   if (length_ != 0) {
-    cpystr(ctx_, &str_, other, length_);
+    str_ = cpystr(ctx_, other, length_);
   } else {
     str_ = &empty_str;
   }
@@ -240,7 +242,7 @@ JXString::JXString(const char *str, JSContext *iso) {
   ascii_char_set_ = false;
   if (str != NULL) {
     length_ = strlen(str);
-    if (length_) cpystr(ctx_, &str_, str, length_);
+    if (length_) str_ = cpystr(ctx_, str, length_);
   }
 
   if (length_ == 0) {

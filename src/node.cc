@@ -649,7 +649,10 @@ JS_LOCAL_METHOD(GetActiveHandles) {
 }
 JS_METHOD_END
 
-static JS_LOCAL_METHOD(Abort) { abort(); }
+static JS_LOCAL_METHOD(Abort) {
+  error_console("process.abort is called from the JavaScript Thread %d\n", com->threadId);
+  abort();
+}
 JS_METHOD_END
 
 static JS_LOCAL_METHOD(Chdir) {

@@ -2,20 +2,6 @@
 
 #ifndef SRC_JX_MEMORY_STORE_H_
 #define SRC_JX_MEMORY_STORE_H_
-#include <uv.h>
-#include <stdint.h>
-#include <map>
-#include <queue>
-#include <string.h>
-
-#if !defined(_MSC_VER)
-#include <strings.h>
-#else
-#define snprintf _snprintf
-#endif
-
-#include <string>
-#include <stdlib.h>
 #include "extend.h"
 
 struct ttlTimer {

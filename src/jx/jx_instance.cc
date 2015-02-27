@@ -6,6 +6,12 @@
 #include "job.h"
 #include "wrappers/thread_wrap.h"
 
+#if !defined(_MSC_VER)
+#include <strings.h>
+#else
+#define snprintf _snprintf
+#endif
+
 namespace jxcore {
 
 #ifdef JS_ENGINE_MOZJS
@@ -250,8 +256,7 @@ JS_METHOD(JXInstance, Compiler) {
 
   handleTasks(com, func, runner, threadId);
 start:
-  Job *j = NULL;
-  getJob(&j, directions[mn]);
+  Job *j = getJob(directions[mn]);
   if (j != NULL) {
     succ++;
 

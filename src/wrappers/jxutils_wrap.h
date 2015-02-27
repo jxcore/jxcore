@@ -14,7 +14,7 @@ class JXUtilsWrap {
 
   static DEFINE_JS_METHOD(RunLoop);
 
-  static std::string exec(const char* cmd, int* ec);
+  static void exec(const char* cmd, int* ec, std::string &result);
 
   static DEFINE_JS_METHOD(ExecSync);
 

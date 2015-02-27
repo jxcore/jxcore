@@ -31,13 +31,13 @@ class WriteWrap : public ReqWrap<uv_write_t> {
 
   // This is just to keep the compiler happy. It should never be called, since
   // we don't use exceptions in node.
-  void operator delete(void* ptr, char* storage) { assert(0); }
+  void operator delete(void* ptr, char* storage) { assert(0 && "DO NOT USE"); }
 
  protected:
   // People should not be using the non-placement new and delete operator on a
   // WriteWrap. Ensure this never happens.
-  void* operator new(size_t size) { assert(0); }
-  void operator delete(void* ptr) { assert(0); }
+  void* operator new(size_t size) { assert(0 && "DO NOT USE"); }
+  void operator delete(void* ptr) { assert(0 && "DO NOT USE"); }
 };
 
 static void DeleteSlabAllocator(void*) {
@@ -154,7 +154,10 @@ static JS_LOCAL_OBJECT AcceptHandle(uv_stream_t* pipe) {
   wrap = static_cast<WrapType*>(wrap_obj->GetPointerFromInternalField(0));
   handle = wrap->UVHandle();
 
-  if (uv_accept(pipe, reinterpret_cast<uv_stream_t*>(handle))) abort();
+  if (uv_accept(pipe, reinterpret_cast<uv_stream_t*>(handle))) {
+    error_console("Failed command - uv_accept at StreapWrap::AcceptHandle\n");
+    abort();
+  }
 
   return JS_LEAVE_SCOPE(wrap_obj);
 }

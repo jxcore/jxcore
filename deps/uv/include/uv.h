@@ -278,7 +278,7 @@ UV_EXTERN void setThreadMessage(const int tid, const int has_it);
 #endif
 
 #ifdef JX_TEST_ENVIRONMENT
-#define JX_FREE(mark, x)                      \
+#define JX_FREE(mark, x)                     \
   do {                                       \
     if (x != NULL) {                         \
       free(x);                               \

@@ -15,6 +15,7 @@
 
 #ifndef SRC_JX_PROXY_MOZILLA_JXSTRING_H_
 #define SRC_JX_PROXY_MOZILLA_JXSTRING_H_
+#ifdef JS_ENGINE_MOZJS
 #include "MozJS/MozJS.h"
 #include "PMacro.h"
 
@@ -66,5 +67,5 @@ class JXString {
 };
 
 }  // namespace jxcore
-
+#endif
 #endif  // SRC_JX_PROXY_MOZILLA_JXSTRING_H_

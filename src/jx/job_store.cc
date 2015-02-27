@@ -36,15 +36,17 @@ void addNewJob(const int m, Job* j) {
   ops[m]++;
 }
 
-void getJob(Job** j, const int n) {
+Job* getJob(const int n) {
   auto_lock locker_(CSLOCK_JOBS + n);
   if (ops[n] == 0) {
-    return;
+    return NULL;
   }
   ops[n]--;
 
-  *j = jobs_queue[n].front();
+  Job* j = jobs_queue[n].front();
   jobs_queue[n].pop();
+
+  return j;
 }
 
 Job* getTaskDefinition(const int n) { return taskDefinitions[n]; }
@@ -151,7 +153,7 @@ Job::Job(const char* scr, const int scrlen, const char* pr, const int paramlen,
   hasParam = paramlen > 0;
   hasScript = scrlen > 0;
   if (hasParam) {
-    cpystr(&param, pr, paramlen);
+    param = cpystr(pr, paramlen);
   } else {
     param = NULL;
   }
@@ -161,7 +163,7 @@ Job::Job(const char* scr, const int scrlen, const char* pr, const int paramlen,
   if (hasScript) {
     assert(scr != NULL);
 
-    cpystr(&script, scr, scrlen);
+    script = cpystr(scr, scrlen);
 
     {
       auto_lock locker_(CSLOCK_TASKS);
@@ -179,6 +181,7 @@ Job::Job(const char* scr, const int scrlen, const char* pr, const int paramlen,
 }
 
 void Job::Dispose() {
+  assert(!disposed);
   disposed = true;
   if (param != NULL) {
     free(param);

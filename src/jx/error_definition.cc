@@ -155,7 +155,7 @@ JS_LOCAL_VALUE WinapiErrnoException(int errorno, const char *syscall,
     str += "'";
   }
 
-  JS_LOCAL_VALUE err_str = STD_TO_STRING(str.c_str());
+  JS_LOCAL_STRING err_str = STD_TO_STRING(str.c_str());
   e = ENGINE_NS::Exception::Error(err_str);
 
   JS_LOCAL_OBJECT obj = e->ToObject();
@@ -379,17 +379,19 @@ void DisplayExceptionLine(JS_TRY_CATCH_TYPE try_catch) {
 }
 
 void ReportException(JS_TRY_CATCH_TYPE try_catch, bool show_line) {
-  JS_ENTER_SCOPE();
+#ifdef JS_ENGINE_V8
+  JS_ENTER_SCOPE_COM();
 
   if (show_line) DisplayExceptionLine(try_catch);
 
-#ifdef JS_ENGINE_V8
-
-  JS_DEFINE_COM_AND_MARKER();
-  jxcore::JXString trace(try_catch.StackTrace());
+  JS_DEFINE_STATE_MARKER(com);
+  JS_LOCAL_VALUE stack_trace = try_catch.StackTrace();
+  jxcore::JXString trace;
+  if (!stack_trace->IsUndefined())
+    trace.set_handle(stack_trace);
 
   // range errors have a trace member set to undefined
-  if (trace.length() > 0 && !try_catch.StackTrace()->IsUndefined()) {
+  if (trace.length() > 0) {
     error_console("%s\n", *trace);
   } else {
     // this really only happens for RangeErrors, since they're the only
@@ -515,6 +517,7 @@ void FatalException(ENGINE_NS::TryCatch try_catch) {
 }
 
 void FatalException_jx(ENGINE_NS::TryCatch try_catch, const char *location) {
+  JS_ENTER_SCOPE();
   FatalException(try_catch);
 }
 

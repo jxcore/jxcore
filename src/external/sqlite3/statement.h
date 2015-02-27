@@ -56,7 +56,7 @@ struct Blob : Field {
   template <class T>
   inline Blob(T _name, size_t len, const void* val)
       : Field(_name, SQLITE_BLOB), length(len) {
-    value = (char*)malloc(len);
+    value = (char*)malloc(len * sizeof(char));
     memcpy(value, val, len);
   }
   inline ~Blob() { free(value); }

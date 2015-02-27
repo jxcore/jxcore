@@ -145,7 +145,8 @@ void Buffer::Replace(char* data, size_t length, free_callback callback,
                      void* hint) {
   ENGINE_LOG_THIS("Buffer", "Replace");
   JS_ENTER_SCOPE();
-  JS_DEFINE_STATE_MARKER(com_);
+  node::commons* com = com_;
+  JS_DEFINE_STATE_MARKER(com);
 
   if (callback_) {
     callback_(data_, callback_hint_);
@@ -181,9 +182,7 @@ void Buffer::Replace(char* data, size_t length, free_callback callback,
   JS_LOCAL_VALUE val_len = STD_TO_UNSIGNED(length_);
   JS_SET_INDEXED_EXTERNAL(handle_, data_, ENGINE_NS::kExternalUnsignedByteArray,
                           length_);
-#ifdef JS_ENGINE_V8
-  node::commons *com = com_;
-#endif
+
   JS_NAME_SET(handle_, JS_PREDEFINED_STRING(length), val_len);
 }
 
@@ -491,13 +490,14 @@ JS_METHOD_END
 
 bool Buffer::jxHasInstance(JS_HANDLE_VALUE val, commons* com) {
 #if defined(JS_ENGINE_MOZJS)
-  // below implementation also works for MozJS
-  // but (our custom) indexed array implementation for SM makes this part easier
-  // to detect
-  // (experimental)
-  ENGINE_NS::ExternalArrayType type = JS_GET_EXTERNAL_ARRAY_DATA_TYPE(val);
+  // TODO(obastemur) currently SM identifies ExternalArray as Buffer
+  // do we need to change it for embedders ? or they should use TypedArrays
+  // whenever they want to implement Buffer like custom proxy classes.
+  // embedders can use Buffers on native land without an issue.
+  //
+  // P.S. The below V8 implementation also works for SM but not needed.
 
-  return (type == ENGINE_NS::kExternalUnsignedByteArray);
+  return val.HasBufferSignature();
 #elif defined(JS_ENGINE_V8)
   if (!JS_IS_OBJECT(val)) return false;
   JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(val);

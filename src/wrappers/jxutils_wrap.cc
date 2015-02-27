@@ -1,37 +1,34 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-#include <stdio.h>
-#include <string>
-#include <iostream>
+#include <climits>
+#include "jxutils_wrap.h"
+#include "thread_wrap.h"
+#include "jx/memory_store.h"
+#include "jx/jxp_compress.h"
 #if defined(_MSC_VER)
 #include <windows.h>
 #else
 #include <unistd.h>
 #define Sleep(x) usleep((x) * 1000)
 #endif
-#include <climits>
-#include "jxutils_wrap.h"
-#include "jx/extend.h"
-#include "wrappers/thread_wrap.h"
-#include "jx/memory_store.h"
-
-#include "jx/jxp_compress.h"
-#include "node_buffer.h"
 
 namespace node {
 
 static uint64_t unique_id = 0;
 static int loops[MAX_JX_THREADS];
 
-std::string JXUtilsWrap::exec(const char *cmd, int *ec) {
+void JXUtilsWrap::exec(const char *cmd, int *ec, std::string &result) {
 #if defined(_WIN32)
   FILE *pipe = _popen(cmd, "r");
 #else
   FILE *pipe = popen(cmd, "r");
 #endif
-  if (!pipe) return "execSync couldn't create the pipe";
+  if (!pipe) {
+	result = "execSync could not create the pipe";
+	*ec = 1; // TODO(obastemur) put the correct exit code
+	return;
+  }
   char buffer[256];
-  std::string result = "";
   while (fgets(buffer, 256, pipe)) {
     result += buffer;
   }
@@ -40,11 +37,16 @@ std::string JXUtilsWrap::exec(const char *cmd, int *ec) {
   *ec = _pclose(pipe);
 #else
   *ec = pclose(pipe);
-  if (*ec > 256 && *ec < 65536) {
+  // TODO (obastemur) remove negative return codes from the project
+  // then remove the below nonsense
+  if (*ec > 256 && *ec < 260) {
     *ec = (*ec - 65536) / 256;
+  } else {
+	*ec = (*ec) >> 8;
   }
+  // Only below line must be enough
+  // *ec = (*ec) >> 8;
 #endif
-  return result;
 }
 
 JS_METHOD(JXUtilsWrap, ExecSystem) {
@@ -78,7 +80,8 @@ JS_METHOD(JXUtilsWrap, ExecSync) {
   int ec = 0;
   jxcore::JXString jxs;
   args.GetString(0, &jxs);
-  std::string str = exec(*jxs, &ec);
+  std::string str = "";
+  exec(*jxs, &ec, str);
 
   JS_LOCAL_ARRAY arr = JS_NEW_ARRAY();
   JS_INDEX_SET(arr, 0, UTF8_TO_STRING(str.c_str()));

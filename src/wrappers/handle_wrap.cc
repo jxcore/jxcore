@@ -9,10 +9,9 @@ DEFINE_CLASS_INITIALIZER(HandleWrap, Initialize) {
   /* Doesn't do anything at the moment. */
 }
 
-JS_METHOD_NO_COM(HandleWrap, Ref)  // args
+JS_METHOD_NO_COM(HandleWrap, Ref) {
+  ENGINE_UNWRAP_NO_ABORT(HandleWrap);
 
-ENGINE_UNWRAP_NO_ABORT(HandleWrap);
-{
   if (wrap != NULL) wrap->ref();
 }
 JS_METHOD_END
@@ -60,11 +59,7 @@ JS_METHOD_END
 
 HandleWrap::HandleWrap(JS_HANDLE_OBJECT_REF object, uv_handle_t* h) {
   ENGINE_LOG_THIS("HandleWrap", "HandleWrap");
-#ifdef JS_ENGINE_V8
   JS_ENTER_SCOPE_COM();
-#elif defined(JS_ENGINE_MOZJS)
-  node::commons* com = node::commons::getInstance();
-#endif
 
   this->com = com;
   flags_ = 0;

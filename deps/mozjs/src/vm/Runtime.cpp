@@ -57,7 +57,21 @@ using JS::DoubleNaNValue;
 /* static */ Atomic<size_t> JSRuntime::liveRuntimesCount;
 
 namespace js {
-    bool gCanUseExtraThreads = true;
+// TODO(obastemur) consider enabling it back on next SM version
+/*
+ * Below test case should pass..
+ *
+ * :Run 1000 times:
+ *
+  function x() { }
+
+  process.on('exit', function(){ });
+
+  jxcore.tasks.addTask(x, null, function(ret) {
+    process.nextTick(process.exit);
+  });
+*/
+    bool gCanUseExtraThreads = false;
 };
 
 void
