@@ -49,7 +49,7 @@ JS_METHOD(TTYWrap, GuessHandleType) {
       break;
 
     default:
-      assert(0);
+      assert(0  && "Bad Handle (TTY_WRAP)");
   }
 }
 JS_METHOD_END
