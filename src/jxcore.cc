@@ -1036,6 +1036,8 @@ int JXEngine::LoopOnce() {
 
 void JXEngine::ShutDown() {
   node::commons::process_status_ = node::JXCORE_INSTANCE_EXITED;
+  jx_destroy_locks();
+  node::commons::threadPoolCount = 0;
 #if defined(JS_ENGINE_MOZJS)
 #elif defined(JS_ENGINE_V8) && !defined(NDEBUG)
   // Clean up. Not strictly necessary.

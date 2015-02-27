@@ -156,6 +156,7 @@ class Value {
   void *GetIndexedPropertiesExternalArrayData();
   int32_t GetIndexedPropertiesExternalArrayDataLength();
   int GetIndexedPropertiesExternalArrayDataType();
+  bool HasBufferSignature() const;
 
   bool HasInstance(const Value &val);
   bool StrictEquals(const Value &val);

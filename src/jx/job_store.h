@@ -36,7 +36,7 @@ class Job {
   void Dispose();
 };
 
-void getJob(Job **j, const int n);
+Job *getJob(const int n);
 void addNewJob(const int m, Job *j);
 
 long getJobCount();

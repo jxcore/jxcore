@@ -15,6 +15,7 @@
 
 #ifndef SRC_JX_PROXY_V8_JXSTRING_H_
 #define SRC_JX_PROXY_V8_JXSTRING_H_
+#ifdef JS_ENGINE_V8
 #include "PMacro.h"
 
 namespace jxcore {
@@ -46,4 +47,5 @@ class JXString {
   inline size_t length() const { return length_; }
 };
 }  // namespace jxcore
+#endif
 #endif  // SRC_JX_PROXY_V8_JXSTRING_H_

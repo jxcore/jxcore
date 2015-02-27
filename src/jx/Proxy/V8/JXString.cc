@@ -57,15 +57,17 @@ namespace jxcore {
   str_ = reinterpret_cast<char *>(cstr);                       \
   is_set_ = true;
 
-static void cpystr(char **dest, const char *src, const int ln) {
+static char* cpystr(const char *src, const int ln) {
+  char *dest;
   if (src != NULL) {
-    *dest = (char *)malloc(sizeof(char) * (ln + 1));
+    dest = (char *)malloc(sizeof(char) * (ln + 1));
     memcpy(*dest, src, ln);
-    char *s = *dest;
-    *(s + ln) = '\0';
+    *(dest + ln) = '\0';
   } else {
-    *dest = NULL;
+    dest = NULL;
   }
+
+  return dest;
 }
 
 JXString::JXString() {
@@ -109,7 +111,7 @@ JXString::JXString(const char *str, void *_) {
   if (str != NULL) {
     is_set_ = true;
     length_ = strlen(str);
-    cpystr(&str_, str, length_);
+    str_ = cpystr(str, length_);
   } else {
     is_set_ = false;
     length_ = 0;

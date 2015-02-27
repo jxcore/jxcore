@@ -256,8 +256,7 @@ JS_METHOD(JXInstance, Compiler) {
 
   handleTasks(com, func, runner, threadId);
 start:
-  Job *j = NULL;
-  getJob(&j, directions[mn]);
+  Job *j = getJob(directions[mn]);
   if (j != NULL) {
     succ++;
 

@@ -64,6 +64,6 @@ void jx_destroy_locks();
 bool IsThreadQueueEmpty(const int tid);
 char* pullThreadQueue(const int tid);
 void pushThreadQueue(const int tid, char* str);
-void cpystr(char** dest, const char* src, const int ln);
+char* cpystr(const char* src, const int ln);
 
 #endif  // SRC_JX_EXTEND_H_
