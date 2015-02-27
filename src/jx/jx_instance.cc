@@ -6,6 +6,12 @@
 #include "job.h"
 #include "wrappers/thread_wrap.h"
 
+#if !defined(_MSC_VER)
+#include <strings.h>
+#else
+#define snprintf _snprintf
+#endif
+
 namespace jxcore {
 
 #ifdef JS_ENGINE_MOZJS

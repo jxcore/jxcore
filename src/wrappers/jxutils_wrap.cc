@@ -1,16 +1,16 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
+#include <climits>
+#include "jxutils_wrap.h"
+#include "thread_wrap.h"
+#include "jx/memory_store.h"
+#include "jx/jxp_compress.h"
 #if defined(_MSC_VER)
 #include <windows.h>
 #else
 #include <unistd.h>
 #define Sleep(x) usleep((x) * 1000)
 #endif
-#include <climits>
-#include "jxutils_wrap.h"
-#include "thread_wrap.h"
-#include "jx/memory_store.h"
-#include "jx/jxp_compress.h"
 
 namespace node {
 
