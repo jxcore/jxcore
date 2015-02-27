@@ -86,7 +86,7 @@ Adds new task **as a method** to be processed in a separate thread. The task wil
 If there is any idle subthread, it will be used to execute the task immediately. Otherwise it may wait until the other tasks will finish or some of the subthreads will become idle.
 
 The task is the function `method` with optional `param` as an argument. After the method completes, the `callback` will be invoked.
-It can receive one or twe arguments, depending if `obj` is provided or not.
+It can receive one or two arguments, depending if `obj` is provided or not.
 
 `obj` is a context object from the main thread and it can contain any value.
 If it’s not provided, the `callback` method will have only one argument, and it will be the result of the task `method`.
@@ -167,13 +167,25 @@ var callback = function (obj, result) {
 method.runTask({ str: "hello" }, callback, mainThreadVariable);
 ```
 
-## tasks.addTask(object, param)
+## tasks.addTask(object, param, callback, obj)
 
 * `object` {Function} - this is the object containing `define()` and/or `logic()` methods, which will be executed in a subthread.
 * `param` {Object} - argument for `logic()` method
+* `callback` {Function} [optional]
+* `obj` {Object} [optional]
 
 Adds new task **as an object** to be processed in a separate thread. The task will be processed as soon as possible.
 If there is any idle subthread, it will be used to execute the task immediately. Otherwise it may wait until the other tasks will finish or some of the subthreads will become idle.
+
+After the task completes, the `callback` will be invoked.
+It can receive one or two arguments, depending if `obj` is provided or not.
+
+`obj` is a context object from the main thread and it can contain any value.
+If it’s not provided, the `callback` method will have only one argument, and it will be the result of the task's `logic()` method.
+Otherwise, the `callback` will contain two arguments.
+The first one is the `obj` object described here, while the second argument is the result of `logic()`.
+
+There is one important thing to be noted here: the `callback` is invoked only when there is no `waitLogic` defined or when it evaluates to `false` (see `waitLogic` description below).
 
 As you already might know from previous part of the documentation, the subthreads are separated from the main thread as well as from each other. Moreover, tasks themselves are also separated from each other, even if they are running in the same subthread.
 
@@ -195,24 +207,26 @@ task.logic = function(param) {
 };
 ```
 
-**define()**
+### define()
 
   * This method runs only once per whole subthread (at first `addTask()` invocation.)
   * Purpose of this method is to declare variables, initialize objects, make some e.g. database connections, etc. All of them will be static and accessible to all tasks, which means any subsequent `logic()` invocations of this particular task object, running on this subthread.
   * This is a required method which neither takes any parameters nor returns any values. Any parameters will be ignored.
 
-**logic(param)**
+### logic(param)
 
   * This is the actual task’s execution code.
   * It may receive one argument and this can be any javascript object.
   * Variables and objects declared in `define()` method are freely accessible from inside `logic()` method. You can also freely modify them, but please remember that since everything declared in `define()` is static, if you change some variable’s value in one task, it will have affect for all subsequent tasks which run in this subthread. Also do not assume the tasks will be executed in the order of which they were added.
   * This method is optional which means that the entire task’s job should be embedded inside the `define()` method. As mentioned before, it will run only once per subthread, no matter how many times the task was added to the subthread’s queue.
 
-**waitLogic** `boolean`
+### waitLogic `boolean`
 
   * When this parameter is provided and is set to `true`, the `logic()` does not get executed immediately after `define()` completes.
   Instead, it waits, until you explicitly call `continueLogic()` from inside `define()`. If you will not do it, the `logic()` will never get called.
   This mechanism is intended to be used in scenarios, when `define()` runs async work, and `logic()` should be run afterwards.
+  Whenever `waitLogic` is used (set to `true`), the `callback` is not called after the task completes.
+  This is mostly due to historical reasons and might be changed in future.
 
 When adding a tasks with *define & logic approach*, make sure to apply all of the principles for adding the tasks as methods – see `addTask(method, param, callback, obj)`.
 
@@ -245,7 +259,7 @@ jxcore.tasks.addTask(task, "task1");
 jxcore.tasks.addTask(task, "task2");
 ```
 
-Another example with `waitLogic`:
+Example with `waitLogic` usage:
 
 ```js
 var task = {
@@ -267,6 +281,33 @@ for (var o = 0; o < 2; o++) {
         console.log("END", res);
     });
 }
+```
+
+Below is a sample usage of `addTask` with `callback` invoke and usage of context variable:
+
+```js
+var task = {
+  define: function () {
+  },
+  logic: function (param) {
+    console.log("We are in a subthread now. Argument value is:", param);
+    return "ok";
+  }
+};
+
+
+var mainThreadVariable = {
+  log: function (txt) {
+    console.log(txt);
+  }
+};
+
+var callback = function (obj, result) {
+  // now we can access mainThreadVariable (by obj argument)
+  obj.log(result);
+};
+
+jxcore.tasks.addTask(task, {str: "hello"}, callback, mainThreadVariable);
 ```
 
 ## tasks.forceGC()

@@ -14,6 +14,24 @@ Attaching any callback to `restart` event, depending on the context in which it 
 
 Internal Recovery is a separate section described [here](jxcore-feature-internal-recovery.html).
 
+## process.IsEmbedded
+
+This property returns `true`, if the current code block runs under native package (a package compiled with [-native](jxcore-feature-packaging-code-protection.markdown#-native) switch).
+
+For example, let's have the following *index.js*:
+```js
+console.log("IsEmbedded", process.IsEmbedded);
+```
+
+We can compile it now with `-native` switch:
+
+    > jx package index.js app -native
+
+Now when we run it, it displays `true`:
+
+    > ./app
+    true
+
 ## process.keepAlive(timeout)
 
 * `timeout` {Number}
