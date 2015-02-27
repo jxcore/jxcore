@@ -19,6 +19,9 @@ var finished = false;
 // spawned process
 if (process.argv.indexOf("spawned") !== -1) {
 
+  if (process.subThread)
+    process.release();
+
   process.on("exit", function (code) {
     console.log(str);
     jx.exitNowMT();

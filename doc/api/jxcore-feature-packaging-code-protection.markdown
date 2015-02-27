@@ -40,6 +40,18 @@ This optional parameters followed by folder names separated with comma - prevent
 #### -native
 
 This parameter is optional. When provided, the package will be compiled as a self-executable.
+It means, that you can run it directly without `jx` binary.
+
+Also, the output file name will be changed. It will no longer contain *.jx* extension.
+In fact, for Unix systems it will not contain any extension at all, while on Windows - it will be an *.exe*.
+
+Thus, you can run it on Unix systems the following way:
+
+    > ./helloworld
+
+On Windows:
+
+    > helloworld.exe
 
 ### compile
 
