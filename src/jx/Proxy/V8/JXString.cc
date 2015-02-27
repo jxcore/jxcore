@@ -61,7 +61,7 @@ static char* cpystr(const char *src, const int ln) {
   char *dest;
   if (src != NULL) {
     dest = (char *)malloc(sizeof(char) * (ln + 1));
-    memcpy(*dest, src, ln);
+    memcpy(dest, src, ln);
     *(dest + ln) = '\0';
   } else {
     dest = NULL;
@@ -94,7 +94,7 @@ void JXString::set_std(const char *other, void *_) {
   }
 
   length_ = strlen(other);
-  cpystr(&str_, other, length_);
+  str_ = cpystr(other, length_);
 }
 
 void JXString::set_handle(JS_HANDLE_VALUE str, bool _) {
