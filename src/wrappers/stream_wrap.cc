@@ -154,7 +154,10 @@ static JS_LOCAL_OBJECT AcceptHandle(uv_stream_t* pipe) {
   wrap = static_cast<WrapType*>(wrap_obj->GetPointerFromInternalField(0));
   handle = wrap->UVHandle();
 
-  if (uv_accept(pipe, reinterpret_cast<uv_stream_t*>(handle))) abort();
+  if (uv_accept(pipe, reinterpret_cast<uv_stream_t*>(handle))) {
+    error_console("Failed command - uv_accept at StreapWrap::AcceptHandle\n");
+    abort();
+  }
 
   return JS_LEAVE_SCOPE(wrap_obj);
 }

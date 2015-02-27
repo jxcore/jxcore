@@ -69,7 +69,10 @@ static void crypto_lock_init(void) {
   locks = new uv_rwlock_t[n];
 
   for (i = 0; i < n; i++)
-    if (uv_rwlock_init(locks + i)) abort();
+    if (uv_rwlock_init(locks + i)) {
+      error_console("rwlock initialization is failed. (node_crypto.cc)\n");
+      abort();
+    }
 }
 
 static void crypto_lock_cb(int mode, int n, const char* file, int line) {
@@ -3542,7 +3545,8 @@ void EIO_PBKDF2(uv_work_t* work_req) {
   EIO_PBKDF2(req);
 }
 
-void EIO_PBKDF2After(node::commons *com, pbkdf2_req* req, JS_LOCAL_VALUE argv[2]) {
+void EIO_PBKDF2After(node::commons* com, pbkdf2_req* req,
+                     JS_LOCAL_VALUE argv[2]) {
   JS_DEFINE_STATE_MARKER(com);
 
   if (req->err) {

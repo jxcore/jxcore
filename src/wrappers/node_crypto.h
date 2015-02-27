@@ -137,7 +137,10 @@ class ClientHelloParser {
   explicit ClientHelloParser(Connection* c)
       : conn_(c), state_(kWaiting), offset_(0), body_offset_(0) {
     data_ = new uint8_t[kBufferSize];
-    if (!data_) abort();
+    if (!data_) {
+      error_console("out of memory at node_crypto.h (ClientHelloParser)\n");
+      abort();
+    }
   }
 
   ~ClientHelloParser() {

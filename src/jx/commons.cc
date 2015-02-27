@@ -634,7 +634,7 @@ bool commons::CheckMemoryLimit() {
 
   if (rss >= (size_t)commons::maxMemory) {
     error_console(
-        "The application reached beyond the pre-defined memory limits (%ld >= "
+        "The application has reached beyond the pre-defined memory limits (%ld >= "
         "%ld)\n",
         rss / 1024, commons::maxMemory / 1024);
     abort();
@@ -721,7 +721,7 @@ void commons::CheckCPUUsage(const int64_t timer) {
       double usage = GetCPU(counter, &last);
       if (usage >= commons::maxCPU + 1) {
         error_console(
-            "The application reached beyond the pre-defined cpu limits."
+            "The application has reached beyond the pre-defined cpu limits."
             "The CPU usage was (%f)\n",
             usage);
         abort();
