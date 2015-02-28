@@ -25,12 +25,12 @@ jx_g
 .mailmap
 
 /out
-out_x86_droid/
+out_ia32_droid/
 out_x64_droid/
 out_arm_droid/
 out_arm7s_droid/
 out_arm64_droid/
-out_x86_ios/
+out_ia32_ios/
 out_x64_ios/
 out_arm_ios/
 out_arm7s_ios/
