@@ -30,7 +30,7 @@ JS_HANDLE_OBJECT PArguments::This() {
 }
 
 void *PArguments::GetHolder() {
-  MozJS::Value val(JS_THIS(ctx_,jsval_), ctx_);
+  MozJS::Value val(JS_THIS(ctx_, jsval_), ctx_);
 
   return val.GetPointerFromInternalField(0);
 }
@@ -329,19 +329,19 @@ unsigned PArguments::GetUInteger(const unsigned index) {
 
 int PArguments::GetString(const unsigned index, jxcore::JXString *jxs) {
   if (index >= argc_) {
-    jxs->set_std("", ctx_);
+    jxs->SetFromSTD("", ctx_);
     return 0;
   }
 
   if (!args_[index].isNullOrUndefined()) {
     JS::RootedValue harg(ctx_, args_[index]);
     JSString *str = JS::ToString(ctx_, harg);
-    jxs->set_handle(str, ctx_);
+    jxs->SetFromHandle(str, ctx_);
   } else {
     if (args_[index].isUndefined())
-      jxs->set_std("undefined", ctx_);
+      jxs->SetFromSTD("undefined", ctx_);
     else
-      jxs->set_std("null", ctx_);
+      jxs->SetFromSTD("null", ctx_);
   }
 
   return jxs->length();

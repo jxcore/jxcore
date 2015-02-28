@@ -135,17 +135,14 @@ static void CheckImmediate(uv_check_t* handle, int status) {
   node::commons* com = node::commons::getInstanceByThreadId(handle->threadId);
   if (com->instance_status_ == node::JXCORE_INSTANCE_EXITED) return;
 
-  assert(handle == com->check_immediate_watcher);
-  assert(status == 0);
-  JS_DEFINE_STATE_MARKER(com);
+  assert(handle == com->check_immediate_watcher &&
+         "CheckImmediate [1] assert failed at node.cc");
+  assert(status == 0 && "CheckImmediate [2] assert failed at node.cc");
 
-#ifdef JS_ENGINE_V8
-  MakeCallback(com, com->getProcess(), STD_TO_STRING("_immediateCallback"), 0,
-               NULL);
-#elif defined(JS_ENGINE_MOZJS)
-  JS_HANDLE_OBJECT cref = com->getProcess();
-  MakeCallback(com, cref, "_immediateCallback", 0, nullptr);
-#endif
+  JS_DEFINE_STATE_MARKER(com);
+  JS_HANDLE_OBJECT process = com->getProcess();
+
+  MakeCallback(com, process, com->pstr__immediateCallback, 0, NULL);
 }
 
 static void IdleImmediateDummy(uv_idle_t* handle, int status) {
@@ -650,7 +647,8 @@ JS_LOCAL_METHOD(GetActiveHandles) {
 JS_METHOD_END
 
 static JS_LOCAL_METHOD(Abort) {
-  error_console("process.abort is called from the JavaScript Thread %d\n", com->threadId);
+  error_console("process.abort is called from the JavaScript Thread %d\n",
+                com->threadId);
   abort();
 }
 JS_METHOD_END
@@ -1306,9 +1304,9 @@ static JS_SETADD_METHOD(EnvSetter) {
   v8::String::Value val(value);
 #elif defined(JS_ENGINE_MOZJS)
   jxcore::JXString key;
-  key.set_handle(property, true);
+  key.SetFromHandle(property, true);
   jxcore::JXString val;
-  val.set_handle(value, true);
+  val.SetFromHandle(value, true);
 #endif
   WCHAR* key_ptr = reinterpret_cast<WCHAR*>(*key);
   // Environment variables that start with '=' are read-only.

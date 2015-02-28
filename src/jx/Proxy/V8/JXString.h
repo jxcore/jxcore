@@ -22,28 +22,25 @@ namespace jxcore {
 
 class JXString {
   char* str_;
-  bool is_set_;
   size_t length_;
   bool autogc_;
 
  public:
-  void set_std(const char* other, void* _ = NULL);
-  void set_handle(JS_HANDLE_VALUE value, bool get_ascii = false);
+  void SetFromSTD(const char* other, void* _ = NULL);
+  void SetFromHandle(JS_HANDLE_VALUE value, bool get_ascii = false);
 
   JXString();
   explicit JXString(const char* str, void* _ = NULL);
-  explicit JXString(JS_HANDLE_VALUE_CARRY value, void* _iso = NULL);
+  explicit JXString(JS_HANDLE_VALUE value, void* _iso = NULL);
   ~JXString();
 
   char* operator*();
   const char* operator*() const;
 
-  JS_HANDLE_STRING ToJSString();
-
+  void Dispose();
   void DisableAutoGC() { autogc_ = false; }
 
   inline size_t Utf8Length() const { return length_; }
-
   inline size_t length() const { return length_; }
 };
 }  // namespace jxcore

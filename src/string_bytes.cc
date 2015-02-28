@@ -152,7 +152,7 @@ size_t StringBytes::JXWrite(char* buf, size_t buflen, JS_HANDLE_VALUE_REF val,
       len = str->WriteAscii(buf, 0, buflen, flags);
 #else
       jxcore::JXString jxsa;
-      jxsa.set_handle(str, true);
+      jxsa.SetFromHandle(str, true);
       len = buflen < jxsa.length() ? buflen : jxsa.length();
       memcpy(buf, *jxsa, len);
 #endif
@@ -191,7 +191,7 @@ size_t StringBytes::JXWrite(char* buf, size_t buflen, JS_HANDLE_VALUE_REF val,
 
     case BASE64: {
       jxcore::JXString value;
-      value.set_handle(str, true);
+      value.SetFromHandle(str, true);
 
       len = base64_decode(buf, buflen, *value, value.length());
       if (chars_written != NULL) {

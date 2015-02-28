@@ -49,7 +49,7 @@ namespace node {
   jxcore::JXString _##member;                                        \
   {                                                                  \
     JS_LOCAL_VALUE __val = JS_GET_NAME(obj, STD_TO_STRING(#member)); \
-    _##member.set_handle(__val);                                     \
+    _##member.SetFromHandle(__val);                                  \
   }                                                                  \
   if ((*(const char **)valp = *_##member) == NULL)                   \
     *(const char **)valp = "<unknown>";

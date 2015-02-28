@@ -29,41 +29,36 @@ class JXString {
   JSString *value_;
   bool ascii_char_set_;
 
-  void set_handle();
-
- public:
-  JSContext *ctx_;
-
-  void set_std(const char *other, JSContext *ctx = NULL);
-  void set_handle(const JS_HANDLE_VALUE &str, bool get_ascii = false);
-  void set_handle(JSString *str, JSContext *ctx);
+  void SetFromHandle();
   void GetASCII();
 
-  static JXString CreateString(JSString *str, JSContext *ctx);
-  static JXString CreateString(const char *str, JSContext *ctx);
-  static MozJS::String CreateNativeString(const char *str, JSContext *ctx);
-  static JXString CreateString(JS_HANDLE_VALUE str);
+ public:
+  void SetFromSTD(const char *other, JSContext *ctx = NULL);
+  void SetFromHandle(const JS_HANDLE_VALUE_REF str, bool get_ascii = false);
+  void SetFromHandle(JSString *str, JSContext *ctx);
 
   JXString();
   JXString(const char *str, JSContext *ctx);
   JXString(JSString *str, JSContext *ctx, bool autogc = true,
            bool get_ascii = false);
-  explicit JXString(const JS_HANDLE_VALUE &str, void *ctx = NULL);
+  explicit JXString(const JS_HANDLE_VALUE_REF str, void *ctx = NULL);
   ~JXString();
-
-  void Dispose();
 
   char *operator*();
   const char *operator*() const;
 
-  size_t length() const;
-  size_t Utf8Length() const;
-  void GetUTF8LetterAt(const size_t index, MozJS::auto_str *chars);
-  size_t WriteUtf8(char *buf, const size_t buflen, int *chars_written);
-
-  JSString *ToJSString();
-
+  void Dispose();
   void DisableAutoGC() { autogc_ = false; }
+
+  size_t Utf8Length() const;
+  size_t length() const;
+
+  // MOZJS Specific
+  JSContext *ctx_;
+
+  // TODO(obastemur) v8 like (move this into MozJS::Value)
+  size_t WriteUtf8(char *buf, const size_t buflen, int *chars_written);
+  void GetUTF8LetterAt(const size_t index, MozJS::auto_str *chars);
 };
 
 }  // namespace jxcore

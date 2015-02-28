@@ -346,6 +346,7 @@ void commons::stringOPS(bool construct) {
   NEW_PERSISTENT_STRING(GET);
   NEW_PERSISTENT_STRING(HEAD);
   NEW_PERSISTENT_STRING(POST);
+  NEW_PERSISTENT_STRING(_immediateCallback);
 }
 
 commons::~commons() {

@@ -130,7 +130,7 @@ JS_METHOD_NO_COM(ProcessWrap, Spawn) {
   JS_LOCAL_VALUE file_v = JS_GET_NAME(js_options, JS_PREDEFINED_STRING(file));
   jxcore::JXString file;
   if (JS_IS_STRING(file_v)) {
-    file.set_handle(file_v);
+    file.SetFromHandle(file_v);
     if (file.length() == 0) {
       THROW_EXCEPTION("Bad argument");
     }
@@ -160,7 +160,7 @@ JS_METHOD_NO_COM(ProcessWrap, Spawn) {
 
   jxcore::JXString cwd;
   if (JS_IS_STRING(cwd_v)) {
-    cwd.set_handle(cwd_v);
+    cwd.SetFromHandle(cwd_v);
     if (cwd.length() > 0) {
       options.cwd = *cwd;
     }

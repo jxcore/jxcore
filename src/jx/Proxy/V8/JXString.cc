@@ -31,33 +31,27 @@ namespace jxcore {
       result = str->Utf8Length();          \
   }
 
-#define COSTRUCT_ME(_value)                                    \
-  if (JS_IS_EMPTY(_value)) {                                   \
-    str_ = NULL;                                               \
-    is_set_ = false;                                           \
-    length_ = 0;                                               \
-    return;                                                    \
-  }                                                            \
-                                                               \
-  JS_ENTER_SCOPE_COM();                                        \
-                                                               \
-  JS_LOCAL_STRING val_ = _value->ToString();                   \
-                                                               \
-  size_t len;                                                  \
-  STRING_SIZE(len, val_);                                      \
-  len++;                                                       \
-                                                               \
-  char *cstr = static_cast<char *>(calloc(sizeof(char), len)); \
-                                                               \
-  int flags = node::WRITE_UTF8_FLAGS;                          \
-  flags |= ~v8::String::NO_NULL_TERMINATION;                   \
-                                                               \
-  length_ = val_->WriteUtf8(cstr, len, 0, flags);              \
-                                                               \
-  str_ = reinterpret_cast<char *>(cstr);                       \
-  is_set_ = true;
+#define COSTRUCT_ME(_value)                              \
+  if (JS_IS_EMPTY(_value)) {                             \
+    str_ = NULL;                                         \
+    length_ = 0;                                         \
+    return;                                              \
+  }                                                      \
+                                                         \
+  JS_ENTER_SCOPE_COM();                                  \
+  JS_LOCAL_STRING val_ = _value->ToString();             \
+                                                         \
+  size_t len;                                            \
+  STRING_SIZE(len, val_);                                \
+  len++;                                                 \
+                                                         \
+  str_ = static_cast<char *>(calloc(sizeof(char), len)); \
+  int flags = node::WRITE_UTF8_FLAGS;                    \
+  flags |= ~v8::String::NO_NULL_TERMINATION;             \
+                                                         \
+  length_ = val_->WriteUtf8(str_, len, 0, flags);
 
-static char* cpystr(const char *src, const int ln) {
+static char *cpystr(const char *src, const int ln) {
   char *dest;
   if (src != NULL) {
     dest = (char *)malloc(sizeof(char) * (ln + 1));
@@ -73,7 +67,6 @@ static char* cpystr(const char *src, const int ln) {
 JXString::JXString() {
   autogc_ = true;
   str_ = NULL;
-  is_set_ = false;
   length_ = 0;
 }
 
@@ -81,26 +74,24 @@ char *JXString::operator*() { return str_; }
 
 const char *JXString::operator*() const { return str_; }
 
-JXString::JXString(JS_HANDLE_VALUE_CARRY value, void *_) {
+JXString::JXString(JS_HANDLE_VALUE value, void *_) {
   autogc_ = true;
   COSTRUCT_ME(value);
 }
 
-void JXString::set_std(const char *other, void *_) {
-  if (is_set_) {
+void JXString::SetFromSTD(const char *other, void *_) {
+  if (str_ != NULL) {
     free(str_);
-  } else {
-    is_set_ = true;
   }
 
+  // TODO(obastemur) make this utf-16 compatible
   length_ = strlen(other);
   str_ = cpystr(other, length_);
 }
 
-void JXString::set_handle(JS_HANDLE_VALUE str, bool _) {
-  if (is_set_) {
+void JXString::SetFromHandle(JS_HANDLE_VALUE str, bool _) {
+  if (str_ != NULL) {
     free(str_);
-    is_set_ = false;
   }
 
   COSTRUCT_ME(str);
@@ -109,23 +100,27 @@ void JXString::set_handle(JS_HANDLE_VALUE str, bool _) {
 JXString::JXString(const char *str, void *_) {
   autogc_ = true;
   if (str != NULL) {
-    is_set_ = true;
+    // TODO(obastemur) make this utf-16 compatible
     length_ = strlen(str);
     str_ = cpystr(str, length_);
   } else {
-    is_set_ = false;
     length_ = 0;
     str_ = NULL;
   }
 }
 
 JXString::~JXString() {
-  if (is_set_ && autogc_) free(str_);
+  if (autogc_) {
+    Dispose();
+  }
 }
 
-JS_HANDLE_STRING JXString::ToJSString() {
-  JS_ENTER_SCOPE_COM();
-  JS_DEFINE_STATE_MARKER(com);
-  return JS_LEAVE_SCOPE(STD_TO_STRING(str_));
+void JXString::Dispose() {
+  if (str_ != NULL && length_ != 0) {
+    free(str_);
+    str_ = NULL;
+    length_ = 0;
+  }
 }
+
 }  // namespace jxcore

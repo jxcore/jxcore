@@ -387,8 +387,7 @@ void ReportException(JS_TRY_CATCH_TYPE try_catch, bool show_line) {
   JS_DEFINE_STATE_MARKER(com);
   JS_LOCAL_VALUE stack_trace = try_catch.StackTrace();
   jxcore::JXString trace;
-  if (!stack_trace->IsUndefined())
-    trace.set_handle(stack_trace);
+  if (!stack_trace->IsUndefined()) trace.SetFromHandle(stack_trace);
 
   // range errors have a trace member set to undefined
   if (trace.length() > 0) {
@@ -445,7 +444,7 @@ void ReportException(JS_TRY_CATCH_TYPE try_catch, bool show_line) {
     const char *err_name = "Error";
     jxcore::JXString err_name_str;
     if (!name.IsEmpty()) {
-      err_name_str.set_handle(name);
+      err_name_str.SetFromHandle(name);
       err_name = *err_name_str;
     }
     error_console("%s: ", err_name);

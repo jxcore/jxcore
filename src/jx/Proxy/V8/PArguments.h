@@ -122,7 +122,7 @@ class PArguments {
   double GetNumber(const unsigned index) { return args_[index]->NumberValue(); }
 
   int GetString(const unsigned index, JXString *jxs) {
-    jxs->set_handle(args_[index]);
+    jxs->SetFromHandle(args_[index]);
 
     return (int)jxs->length();
   }

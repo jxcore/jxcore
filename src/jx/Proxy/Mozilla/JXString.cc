@@ -46,13 +46,13 @@ JXString::JXString() {
   ascii_char_set_ = false;
 }
 
-JXString::JXString(const JS_HANDLE_VALUE &str, void *ctx) {
+JXString::JXString(const JS_HANDLE_VALUE_REF str, void *ctx) {
   str_ = NULL;
   autogc_ = true;
   ctx_ = str.ctx_;
   value_ = str.GetRawStringPointer();
   ascii_char_set_ = false;
-  set_handle();
+  SetFromHandle();
 }
 
 char *JXString::operator*() { return str_; }
@@ -66,12 +66,12 @@ JXString::JXString(JSString *str, JSContext *ctx, bool autogc, bool get_ascii) {
   ctx_ = ctx;
   ascii_char_set_ = get_ascii;
   if (!ascii_char_set_)
-    set_handle();
+    SetFromHandle();
   else
     GetASCII();
 }
 
-void JXString::set_std(const char *other, JSContext *iso) {
+void JXString::SetFromSTD(const char *other, JSContext *iso) {
   if (ctx_ == NULL) {
     assert(iso != NULL);
     ctx_ = iso;
@@ -91,7 +91,7 @@ void JXString::set_std(const char *other, JSContext *iso) {
   utf8_length_ = length_;
 }
 
-void JXString::set_handle() {
+void JXString::SetFromHandle() {
   assert(value_ != nullptr);
   if (length_ != 0) {
     JS_free(ctx_, str_);
@@ -196,40 +196,19 @@ void JXString::GetASCII() {
   }
 }
 
-void JXString::set_handle(const JS_HANDLE_VALUE &str, bool get_ascii) {
+void JXString::SetFromHandle(const JS_HANDLE_VALUE_REF str, bool get_ascii) {
   value_ = str.GetRawStringPointer();
   ctx_ = str.ctx_;
   if (!get_ascii)
-    set_handle();
+    SetFromHandle();
   else
     GetASCII();
 }
 
-void JXString::set_handle(JSString *str, JSContext *ctx) {
+void JXString::SetFromHandle(JSString *str, JSContext *ctx) {
   value_ = str;
   ctx_ = ctx;
-  set_handle();
-}
-
-JXString JXString::CreateString(JSString *str, JSContext *ctx) {
-  JXString string;
-  string.set_handle(str, ctx);
-  return string;
-}
-
-JXString JXString::CreateString(const char *str, JSContext *ctx) {
-  return JXString(str, ctx);
-}
-
-MozJS::String JXString::CreateNativeString(const char *str, JSContext *ctx) {
-  JXString jxs = CreateString(str, ctx);
-  return MozJS::String(jxs.ToJSString(), ctx);
-}
-
-JXString JXString::CreateString(JS_HANDLE_VALUE str) {
-  JXString string;
-  string.set_handle(str);
-  return string;
+  SetFromHandle();
 }
 
 JXString::JXString(const char *str, JSContext *iso) {
@@ -269,10 +248,4 @@ size_t JXString::Utf8Length() const {
   return utf8_length_;
 }
 
-JSString *JXString::ToJSString() {
-  if (str_ != NULL)
-    return MozJS::StringTools::JS_ConvertToJSString(ctx_, str_, length_);
-  else
-    return NULL;
-}
 }  // namespace jxcore
