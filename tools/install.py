@@ -128,7 +128,7 @@ def files(action):
     'config.gypi',
     'src/node.h',
     'src/jxcore.h',
-    'src/Wrappers/node_buffer.h',
+    'src/wrappers/node_buffer.h',
     'src/node_internals.h',
     'src/node_object_wrap.h',
     'src/node_version.h',
