@@ -326,6 +326,7 @@ void commons::stringOPS(bool construct) {
   NEW_PERSISTENT_STRING(shouldKeepAlive);
   NEW_PERSISTENT_STRING(versionMinor);
   NEW_PERSISTENT_STRING(versionMajor);
+  NEW_PERSISTENT_STRING(_immediateCallback);
 #endif
 
   NEW_PERSISTENT_STRING(onmessage);
@@ -346,7 +347,6 @@ void commons::stringOPS(bool construct) {
   NEW_PERSISTENT_STRING(GET);
   NEW_PERSISTENT_STRING(HEAD);
   NEW_PERSISTENT_STRING(POST);
-  NEW_PERSISTENT_STRING(_immediateCallback);
 }
 
 commons::~commons() {

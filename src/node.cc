@@ -142,7 +142,7 @@ static void CheckImmediate(uv_check_t* handle, int status) {
   JS_DEFINE_STATE_MARKER(com);
   JS_HANDLE_OBJECT process = com->getProcess();
 
-  MakeCallback(com, process, com->pstr__immediateCallback, 0, NULL);
+  MakeCallback(com, process, JS_PREDEFINED_STRING(_immediateCallback), 0, NULL);
 }
 
 static void IdleImmediateDummy(uv_idle_t* handle, int status) {

@@ -249,15 +249,14 @@
           'defines': ['NDEBUG'],
         },
       },  
+      'dependencies': [ '../zlib/zlib.gyp:zlib' ],
       'conditions': 
       [ 
         ['target_arch=="arm"', {
           'defines': [ 'WTF_CPU_ARM_TRADITIONAL', 'JS_NUNBOX32', 'JS_CPU_ARM=1' ],
-          'xcode_settings': { 'XX_CPU_TARGET' : 'armv7s' }
         }],
         ['target_arch=="arm64"', {
           'defines': [ 'WTF_CPU_ARM_TRADITIONAL', 'JS_PUNBOX64', 'JS_CPU_ARM=1' ],
-          'xcode_settings': { 'XX_CPU_TARGET' : 'arm64' }
         }],
         ['target_arch=="arm" or target_arch=="arm64"', {
             'conditions':[
@@ -379,27 +378,8 @@
             'OTHER_CFLAGS' : ['-std=gnu99'],
           }
         }],
-        [ 'OS=="ios" and target_arch!="x64" and target_arch!="ia32"', {
-          'xcode_settings': {
-            'SDKROOT': 'iphoneos',
-          },
-          'dependencies': [ '../zlib/zlib.gyp:zlib', './jskwgen.gyp:jskwgen_ios' ],
-        }],
-        [ 'OS=="ios" and (target_arch=="x64" or target_arch=="ia32")', {
-          'xcode_settings': {
-            'SDKROOT': 'iphonesimulator',
-          },
-          'dependencies': [ '../zlib/zlib.gyp:zlib', './jskwgen.gyp:jskwgen' ],
-        }],
-        [ 'OS=="ios"', {
-          'xcode_settings': {
-            'IPHONEOS_DEPLOYMENT_TARGET': '6.0',
-            'IPHONEOS_SDK_VERSION': '8.1',
-          },
-          'defines':[ '__IOS__' ],
-        },
-        {
-          'dependencies': [ '../zlib/zlib.gyp:zlib', './jskwgen.gyp:jskwgen' ],
+        [ 'OS!="ios" and OS!="android"', {
+          'dependencies': [ './jskwgen.gyp:jskwgen' ],
         }],
         ['OS in "linux freebsd"', {
            'sources':[

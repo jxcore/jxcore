@@ -76,10 +76,6 @@
             4018, 4244, 4267,
           ],
           'conditions': [
-          [ 
-            'OS=="ios" and target_arch=="arm64"', {
-              'xcode_settings': { 'XX_CPU_TARGET' : 'arm64' }
-            }],
             ['OS=="linux"', {
               'link_settings': {
                 'libraries': [

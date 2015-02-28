@@ -254,23 +254,13 @@
           }],
         ],
         'conditions': [
-          ['target_arch=="ia32" and OS!="ios"', {
+          ['target_arch=="ia32"', {
             'xcode_settings': {'ARCHS': ['i386']},
           }],
           ['target_arch=="x64"', {
             'xcode_settings': {'ARCHS': ['x86_64']},
           }],
         ],
-      }],
-      ['OS=="ios" and target_arch!="x64"', {
-        'xcode_settings': {
-          'SDKROOT': 'iphoneos',
-        }
-      }],
-      ['OS=="ios" and target_arch=="x64"', {
-        'xcode_settings': {
-          'SDKROOT': 'iphonesimulator',
-        }
       }],
       ['OS=="ios"', {
         'xcode_settings': {
@@ -284,8 +274,6 @@
           'GCC_THREADSAFE_STATICS': 'NO',           # -fno-threadsafe-statics
           'PREBINDING': 'NO',                       # No -Wl,-prebind
           
-          'IPHONEOS_DEPLOYMENT_TARGET': '6.0',
-          'IPHONEOS_SDK_VERSION': '7.1',
           'USE_HEADERMAP': 'NO',
           'OTHER_CFLAGS': [
             '-fno-strict-aliasing',
@@ -297,9 +285,24 @@
             '-Wno-unused-parameter',
           ],
         },
+        'defines':[ '__IOS__' ],
         'conditions': [
           ['target_arch=="ia32"', {
             'xcode_settings': {'ARCHS': ['i386']},
+          }],
+          ['target_arch=="x64"', {
+            'xcode_settings': {'ARCHS': ['x86_64']},
+          }],
+          [ 'target_arch=="arm64"', {
+            'xcode_settings': {'ARCHS': ['arm64']},
+          }],
+          [ 'target_arch=="arm"', {
+            'xcode_settings': {'ARCHS': ['armv7s']},
+          }],
+          [ 'target_arch=="x64" or target_arch=="ia32"', {
+            'xcode_settings': { 'SDKROOT': 'iphonesimulator', },
+          }, {
+            'xcode_settings': { 'SDKROOT': 'iphoneos', },
           }]
         ],
       }],

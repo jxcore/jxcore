@@ -224,36 +224,22 @@
           'src/jx/Proxy/Mozilla/SpiderHelper.cc',
         ],
         'conditions': [
-          ['OS!="win"',
-          {
+          ['OS!="win"', {
             'defines': ['JS_POSIX_NSPR=1']
           }],
-          ['target_arch=="arm"',
-          {
+          ['target_arch=="arm"', {
             'defines': ['WTF_CPU_ARM_TRADITIONAL', 'JS_NUNBOX32', 'JS_CPU_ARM=1'],
-            'xcode_settings':
-            {
-              'XX_CPU_TARGET': 'armv7s'
-            }
           }],
-          ['target_arch=="arm64"',
-          {
+          ['target_arch=="arm64"', {
             'defines': ['WTF_CPU_ARM_TRADITIONAL', 'JS_PUNBOX64', 'JS_CPU_ARM=1', '__ARM_ARCH_64__'],
-            'xcode_settings':
-            {
-              'XX_CPU_TARGET': 'arm64'
-            }
           }],
-          ['target_arch=="x64"',
-          {
+          ['target_arch=="x64"', {
             'defines': ['JS_PUNBOX64', 'JS_CPU_X64=1'],
           }],
-          ['target_arch=="ia32"',
-          {
+          ['target_arch=="ia32"', {
             'defines': ['JS_NUNBOX32', 'JS_CPU_X86=1'],
           }],
-          ['OS in "linux android freebsd"',
-          {
+          ['OS in "linux android freebsd"', {
             "cflags": [
               "-std=c++11", '-D__STDC_LIMIT_MACROS',
               '-Wno-missing-field-initializers', '-Wno-extra',
@@ -263,8 +249,7 @@
               "JS_HAVE_ENDIAN_H",
             ],
           }],
-          ['OS=="android"',
-          {
+          ['OS=="android"', {
             'defines': [
               'ANDROID'
             ]
@@ -276,8 +261,7 @@
               'XP_MACOSX=1',
               'DARWIN=1',
             ],
-            'xcode_settings':
-            {
+            'xcode_settings': {
               'OTHER_CPLUSPLUSFLAGS': ['-std=c++11', '-stdlib=libstdc++',
                 '-Wno-mismatched-tags', '-Wno-missing-field-initializers',
                 '-Wno-unused-private-field', '-Wno-invalid-offsetof', '-Wno-ignored-qualifiers'
@@ -285,39 +269,27 @@
               'OTHER_CFLAGS': ['-std=gnu99'],
             },
             'conditions': [
-              ['OS=="mac"',
-              {
-                'xcode_settings':
-                {
+              ['OS=="mac"', {
+                'xcode_settings': {
                   'MACOSX_DEPLOYMENT_TARGET': '10.7',
                   #mozjs uses c++11 / libc++
                 }
               }],
-              ['OS=="ios"',
-              {
-                'xcode_settings':
-                {
+              ['OS=="ios"', {
+                'xcode_settings': {
                   'IPHONEOS_DEPLOYMENT_TARGET': '6.0',
                   'IPHONEOS_SDK_VERSION': '8.1',
                 },
                 'defines': ['__IOS__']
               }],
-              ['OS=="ios" and target_arch!="x64" and target_arch!="ia32"',
-              {
-                'xcode_settings':
-                {
-                  'SDKROOT': 'iphoneos',
-                },
+              ['OS=="ios" and target_arch!="x64" and target_arch!="ia32"', {
+                'xcode_settings': { 'SDKROOT': 'iphoneos' },
                 'include_dirs': [
                   'src/platform/ios_device', #ios device SDK doesn not have crt_externs.h
                 ],
               }],
-              ['OS=="ios" and (target_arch=="x64" or target_arch=="ia32")',
-              {
-                'xcode_settings':
-                {
-                  'SDKROOT': 'iphonesimulator',
-                },
+              ['OS=="ios" and (target_arch=="x64" or target_arch=="ia32")', {
+                'xcode_settings': { 'SDKROOT': 'iphonesimulator' },
               }],
             ]
           }],

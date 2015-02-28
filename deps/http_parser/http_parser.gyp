@@ -42,9 +42,6 @@
           'WIN32'
         ],       
       }],
-      ['OS=="ios" and target_arch=="arm64"', {
-        'xcode_settings': { 'XX_CPU_TARGET' : 'arm64' }
-      }],
     ],
   },
 
@@ -67,7 +64,7 @@
               'CompileAs': 2,
             },
           },
-        }]
+        }],
       ],
     },
 

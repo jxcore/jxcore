@@ -57,9 +57,6 @@
             ],
           },
           'conditions': [
-            [ 'OS=="ios" and target_arch=="arm64"', {
-              'xcode_settings': { 'XX_CPU_TARGET' : 'arm64' }
-            }],
             ['OS!="win"', {
               'product_name': 'chrome_zlib',
               'cflags!': [ '-ansi' ],

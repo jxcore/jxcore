@@ -43,7 +43,6 @@ class XcodeSettings(object):
 
     self.isIOS = False
     self.isIOSSimulator = False
-    self.jx_cpu_target = None
 
     # Per-target 'xcode_settings' are pushed down into configs earlier by gyp.
     # This means self.xcode_settings[config] always contains all settings
@@ -60,8 +59,6 @@ class XcodeSettings(object):
         sdk__root = self.xcode_settings[configname].get('SDKROOT', None)
         if sdk__root == 'iphonesimulator':
           self.isIOSSimulator = True
-      if self.xcode_settings[configname].get('XX_CPU_TARGET', None): 
-        self.jx_cpu_target = self.xcode_settings[configname].get('XX_CPU_TARGET', None)
 
     # This is only non-None temporarily during the execution of some methods.
     self.configname = None
@@ -1031,10 +1028,7 @@ class XcodeSettings(object):
       if self.isIOSSimulator:
         return 'x86_64' 
       else:
-        if self.jx_cpu_target != None:
-          return self.jx_cpu_target
-        else:
-          return 'armv7s'
+        return 'armv7s'
     
     version, build = self._XcodeVersion()
     if version >= '0500':
