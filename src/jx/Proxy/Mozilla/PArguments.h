@@ -20,11 +20,13 @@ class PArguments {
 
   PArguments(JSContext *ctx, int argc, JS::Value *__jsval);
 
-  void dispose();
+  inline MozJS::Isolate *GetIsolate() {
+    return MozJS::Isolate::GetByThreadId(JS_GetThreadId(ctx_));
+  }
 
-  MozJS::Isolate *GetMarker();
+  inline JSContext *GetContext() { return ctx_; }
 
-  int Length() const;
+  inline int Length() const { return argc_; }
 
   int GetUTF8Length(const unsigned index);
 

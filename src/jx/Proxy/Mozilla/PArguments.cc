@@ -15,16 +15,6 @@ PArguments::PArguments(JSContext *ctx, int argc, JS::Value *__jsval) {
   args_ = __jsval + 2;
 }
 
-MozJS::Isolate *PArguments::GetMarker() {
-  return MozJS::Isolate::GetByThreadId(JS_GetThreadId(ctx_));
-}
-
-int PArguments::Length() const { return argc_; }
-
-void PArguments::dispose() {
-  // future use
-}
-
 JS_HANDLE_OBJECT PArguments::This() {
   return MozJS::Value(JS_THIS(ctx_, jsval_), ctx_);
 }

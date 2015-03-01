@@ -355,7 +355,7 @@ JS_METHOD(JXUtilsWrap, Compress) {
   }
 
   jxcore::JXString jxs;
-  int len = args.GetString(0, &jxs);
+  args.GetString(0, &jxs);
 
   node::Buffer *buff = jxcore::CompressString(com, *jxs, jxs.Utf8Length());
 

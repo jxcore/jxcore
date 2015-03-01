@@ -4543,7 +4543,7 @@ bool jxcore_buffer_setter(JSContext *cx, JS::Handle<JSObject*> obj, JS::Handle<j
         number = atol(str_);
         JS_free(cx, str_);
       } else if (vp.isBoolean()) {
-    	number = vb.toBoolean()? 1:0;
+    	number = vp.toBoolean()? 1:0;
       } else {
     	number = 0;
       }

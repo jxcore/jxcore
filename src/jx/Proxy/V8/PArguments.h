@@ -11,141 +11,144 @@ namespace jxcore {
 class PArguments {
   const v8::Arguments *args__;
 
-#define args_ (*args__)
-  unsigned length;
+#define v8__args (*args__)
+  unsigned length_;
 
  public:
   explicit PArguments(const v8::Arguments &args)
-      : args__(&args), length(args.Length()) {}
+      : args__(&args), length_(args.Length()) {}
 
-  void *GetHolder() { return args_.Holder()->GetPointerFromInternalField(0); }
+  inline v8::Local<v8::Context> GetContext() {
+    return v8::Context::GetCurrent();
+  }
+  inline v8::Isolate *GetIsolate() { return v8__args.GetIsolate(); }
+
+  void *GetHolder() { return v8__args.Holder()->GetPointerFromInternalField(0); }
 
   const v8::Arguments *GetArgs() { return args__; }
 
-  bool IsConstructCall() { return args_.IsConstructCall(); }
+  inline bool IsConstructCall() { return v8__args.IsConstructCall(); }
 
-  JS_HANDLE_OBJECT This() { return args_.This(); }
+  inline JS_HANDLE_OBJECT This() { return v8__args.This(); }
 
-  JS_HANDLE_OBJECT Holder() { return args_.Holder(); }
+  inline JS_HANDLE_OBJECT Holder() { return v8__args.Holder(); }
 
-  int Length() const { return length; }
-
-  v8::Isolate *GetMarker() { return args_.GetIsolate(); }
+  inline int Length() const { return length_; }
 
   bool IsFunction(const unsigned index) const {
-    if (index >= length) return false;
-    return args_[index]->IsFunction();
+    if (index >= length_) return false;
+    return v8__args[index]->IsFunction();
   }
 
   bool IsObject(const unsigned index) const {
-    if (index >= length) return false;
-    return args_[index]->IsObject();
+    if (index >= length_) return false;
+    return v8__args[index]->IsObject();
   }
 
   bool IsArray(const unsigned index) const {
-    if (index >= length) return false;
-    return args_[index]->IsArray();
+    if (index >= length_) return false;
+    return v8__args[index]->IsArray();
   }
 
   bool IsDate(const unsigned index) const {
-    if (index >= length) return false;
-    return args_[index]->IsDate();
+    if (index >= length_) return false;
+    return v8__args[index]->IsDate();
   }
 
   bool IsRegExp(const unsigned index) const {
-    if (index >= length) return false;
-    return args_[index]->IsRegExp();
+    if (index >= length_) return false;
+    return v8__args[index]->IsRegExp();
   }
 
   bool IsNull(const unsigned index) const {
-    if (index >= length) return true;
-    return args_[index]->IsNull();
+    if (index >= length_) return true;
+    return v8__args[index]->IsNull();
   }
 
   bool IsUndefined(const unsigned index) const {
-    if (index >= length) return true;
-    return args_[index]->IsUndefined();
+    if (index >= length_) return true;
+    return v8__args[index]->IsUndefined();
   }
 
   bool IsNumber(const unsigned index) const {
-    if (index >= length) return false;
-    return args_[index]->IsNumber();
+    if (index >= length_) return false;
+    return v8__args[index]->IsNumber();
   }
 
   bool IsInteger(const unsigned index) const {
-    if (index >= length) return false;
-    return args_[index]->IsInt32();
+    if (index >= length_) return false;
+    return v8__args[index]->IsInt32();
   }
 
   bool IsUnsigned(const unsigned index) const {
-    if (index >= length) return false;
-    return args_[index]->IsUint32();
+    if (index >= length_) return false;
+    return v8__args[index]->IsUint32();
   }
 
   bool IsNumberOrNull(const unsigned index) const {
-    if (index >= length) return false;
-    return args_[index]->IsNumber() || args_[index]->IsNull();
+    if (index >= length_) return false;
+    return v8__args[index]->IsNumber() || v8__args[index]->IsNull();
   }
 
   bool IsBoolean(const unsigned index) const {
-    if (index >= length) return false;
-    return args_[index]->IsBoolean();
+    if (index >= length_) return false;
+    return v8__args[index]->IsBoolean();
   }
 
   bool IsBooleanOrNull(const unsigned index) const {
-    if (index >= length) return false;
-    return args_[index]->IsBoolean() || args_[index]->IsNull();
+    if (index >= length_) return false;
+    return v8__args[index]->IsBoolean() || v8__args[index]->IsNull();
   }
 
   bool IsString(const unsigned index) const {
-    if (index >= length) return false;
-    return args_[index]->IsString();
+    if (index >= length_) return false;
+    return v8__args[index]->IsString();
   }
 
   bool IsStringOrNull(const unsigned index) const {
-    if (index >= length) return false;
-    return args_[index]->IsString() || args_[index]->IsNull();
+    if (index >= length_) return false;
+    return v8__args[index]->IsString() || v8__args[index]->IsNull();
   }
 
-  bool GetBoolean(const unsigned index) { return args_[index]->BooleanValue(); }
+  bool GetBoolean(const unsigned index) { return v8__args[index]->BooleanValue(); }
 
   int64_t GetInteger(const unsigned index) {
-    return args_[index]->IntegerValue();
+    return v8__args[index]->IntegerValue();
   }
 
-  int32_t GetInt32(const unsigned index) { return args_[index]->Int32Value(); }
+  int32_t GetInt32(const unsigned index) { return v8__args[index]->Int32Value(); }
 
   unsigned GetUInteger(const unsigned index) {
-    return args_[index]->Uint32Value();
+    return v8__args[index]->Uint32Value();
   }
 
-  double GetNumber(const unsigned index) { return args_[index]->NumberValue(); }
+  double GetNumber(const unsigned index) { return v8__args[index]->NumberValue(); }
 
   int GetString(const unsigned index, JXString *jxs) {
-    jxs->SetFromHandle(args_[index]);
+    jxs->SetFromHandle(v8__args[index]);
 
     return (int)jxs->length();
   }
 
   int GetUTF8Length(const unsigned index) {
-    return args_[index]->ToString()->Utf8Length();
+    return v8__args[index]->ToString()->Utf8Length();
   }
 
-  JS_HANDLE_VALUE GetItem(const unsigned index) const { return args_[index]; }
+  JS_HANDLE_VALUE GetItem(const unsigned index) const { return v8__args[index]; }
 
   JS_HANDLE_STRING GetAsString(const unsigned index) const {
-    return args_[index].As<v8::String>();
+    return v8__args[index].As<v8::String>();
   }
 
   JS_HANDLE_FUNCTION GetAsFunction(const unsigned index) const {
-    return args_[index].As<v8::Function>();
+    return v8__args[index].As<v8::Function>();
   }
 
   JS_HANDLE_ARRAY GetAsArray(const unsigned index) const {
-    return args_[index].As<v8::Array>();
+    return v8__args[index].As<v8::Array>();
   }
 
-#undef args_
+#undef v8__args
 };
 }  // namespace jxcore
 #endif  // SRC_JX_PROXY_V8_PARGUMENTS_H_

@@ -74,9 +74,10 @@ Script &Script::operator=(const Script &value) {
   rooted_ = value.fake_rooting_;
   empty_ = value.empty_;
   ctx_ = value.ctx_;
-  if (rooted_) {
-    assert(!empty_);
-    JS::AddScriptRootOLD(value.ctx_, &value_);
+  if (empty_) {
+    rooted_ = false;
+  } else if (rooted_) {
+    rooted_ = JS::AddScriptRootOLD(value.ctx_, &value_);
   }
   fake_rooting_ = false;
   return *this;
@@ -84,8 +85,7 @@ Script &Script::operator=(const Script &value) {
 
 void Script::AddRoot() {
   if (!rooted_ && !empty_) {
-    rooted_ = true;
-    JS::AddScriptRootOLD(ctx_, &value_);
+    rooted_ = JS::AddScriptRootOLD(ctx_, &value_);
   }
 }
 
@@ -442,20 +442,20 @@ String Value::ToString() {
   return String(_this);
 }
 
-#define DEFINE_OPERATOR(left, right)                    \
-  left &left::operator=(const right &value) {           \
-    value_ = value.value_;                              \
-    rooted_ = value.fake_rooting_;                      \
-    empty_ = value.empty_;                              \
-    ctx_ = value.ctx_;                                  \
-    is_exception_ = value.is_exception_;                \
-    if (empty_) {                                       \
-      rooted_ = false;                                  \
-    } else if (rooted_) {                               \
-      assert(JS::AddValueRootOLD(value.ctx_, &value_)); \
-    }                                                   \
-    fake_rooting_ = false;                              \
-    return *this;                                       \
+#define DEFINE_OPERATOR(left, right)                      \
+  left &left::operator=(const right &value) {             \
+    value_ = value.value_;                                \
+    rooted_ = value.fake_rooting_;                        \
+    empty_ = value.empty_;                                \
+    ctx_ = value.ctx_;                                    \
+    is_exception_ = value.is_exception_;                  \
+    if (empty_) {                                         \
+      rooted_ = false;                                    \
+    } else if (rooted_) {                                 \
+      rooted_ = JS::AddValueRootOLD(value.ctx_, &value_); \
+    }                                                     \
+    fake_rooting_ = false;                                \
+    return *this;                                         \
   }
 
 DEFINE_OPERATOR(Value, Value)
@@ -463,8 +463,7 @@ DEFINE_OPERATOR(String, String)
 
 void Value::AddRoot() {
   if (!rooted_ && !empty_) {
-    rooted_ = true;
-    JS::AddValueRootOLD(ctx_, &value_);
+    rooted_ = JS::AddValueRootOLD(ctx_, &value_);
   }
 }
 
@@ -773,8 +772,9 @@ void Value::ToSTDString(auto_str *out) const {
 }
 
 Value Value::RootCopy() {
-  fake_rooting_ = true;
-  return *this;
+  Value val = *this;
+  val.fake_rooting_ = true;
+  return val;
 }
 
 void Value::MakeWeak(void *_, JS_FINALIZER_METHOD method) {

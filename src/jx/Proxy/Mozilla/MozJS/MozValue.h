@@ -256,8 +256,9 @@ class String : public Value {
   String &operator=(const String &value);
 
   String RootCopy() {
-    fake_rooting_ = true;
-    return *this;
+	String str = *this;
+    str.fake_rooting_ = true;
+    return str;
   }
 };
 
@@ -299,8 +300,9 @@ class Script {
   JSScript *GetRawScriptPointer() { return value_; }
 
   Script RootCopy() {
-    fake_rooting_ = true;
-    return *this;
+	Script scr = *this;
+    scr.fake_rooting_ = true;
+    return scr;
   }
 
   static Script Compile(JSContext *ctx, const String &source,

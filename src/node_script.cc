@@ -85,7 +85,11 @@ class WrappedScript : ObjectWrap {
   static DEFINE_JS_METHOD(CompileRunInThisContext);
   static DEFINE_JS_METHOD(CompileRunInNewContext);
 
+#ifdef JS_ENGINE_V8
   JS_PERSISTENT_SCRIPT script_;
+#elif defined(JS_ENGINE_MOZJS)
+  jxcore::MemoryScript script_;
+#endif
 };
 
 void CloneObject(JS_STATE_MARKER, JS_HANDLE_OBJECT recv,
@@ -158,10 +162,16 @@ JS_METHOD(WrappedContext, New) {
 JS_METHOD_END
 
 WrappedContext::WrappedContext() : ObjectWrap() {
+#ifdef JS_ENGINE_V8
   context_ = JS_NEW_EMPTY_CONTEXT();
+#endif
 }
 
-WrappedContext::~WrappedContext() { JS_DISPOSE_PERSISTENT_CONTEXT(context_); }
+WrappedContext::~WrappedContext() {
+#ifdef JS_ENGINE_V8
+  JS_DISPOSE_PERSISTENT_CONTEXT(context_);
+#endif
+}
 
 JS_LOCAL_OBJECT WrappedContext::NewInstance(commons *com) {
   if (com == NULL) com = node::commons::getInstance();
@@ -170,7 +180,14 @@ JS_LOCAL_OBJECT WrappedContext::NewInstance(commons *com) {
   return context;
 }
 
-JS_PERSISTENT_CONTEXT WrappedContext::GetV8Context() { return context_; }
+JS_PERSISTENT_CONTEXT WrappedContext::GetV8Context() {
+#ifdef JS_ENGINE_V8
+  return context_;
+#elif defined(JS_ENGINE_MOZJS)
+  assert(0 && "This function should not be called for MozJS implementation");
+  return NULL;
+#endif
+}
 
 JS_METHOD(WrappedScript, New) {
   if (!args.IsConstructCall()) {
@@ -282,16 +299,12 @@ static JSObject *CrossCompartmentClone(MozJS::Value &orig_obj,
 }
 #endif
 
+#ifdef JS_ENGINE_V8
 template <WrappedScript::EvalInputFlags input_flag,
           WrappedScript::EvalContextFlags context_flag,
           WrappedScript::EvalOutputFlags output_flag>
 JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(jxcore::PArguments &args,
-#ifdef JS_ENGINE_V8
-                                                 JS_HANDLE_OBJECT _this)
-#elif defined(JS_ENGINE_MOZJS)
-                                                 const JS_HANDLE_OBJECT &_this)
-#endif
-{
+                                                 JS_HANDLE_OBJECT _this) {
   JS_ENTER_SCOPE_COM();
   JS_DEFINE_STATE_MARKER(com);
 
@@ -327,7 +340,6 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(jxcore::PArguments &args,
           : STD_TO_STRING("evalmachine.<anonymous>");
 
   const int display_error_index = args.Length() - 1;
-#ifdef JS_ENGINE_V8
   bool display_error = false;
   // This hack doesn't needed for MozJS
   if (args.Length() > display_error_index &&
@@ -335,7 +347,6 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(jxcore::PArguments &args,
       args.GetBoolean(display_error_index) == true) {
     display_error = true;
   }
-#endif
 
   JS_HANDLE_CONTEXT context = JS_CURRENT_CONTEXT();
 
@@ -349,13 +360,11 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(jxcore::PArguments &args,
     JS_PERSISTENT_CONTEXT tmp = JS_NEW_EMPTY_CONTEXT();
     context = JS_NEW_LOCAL_CONTEXT(tmp);
     JS_DISPOSE_PERSISTENT_CONTEXT(tmp);
-
   } else if (context_flag == userContext) {
     // Use the passed in context
     WrappedContext *nContext = ObjectWrap::Unwrap<WrappedContext>(sandbox);
     context = JS_TYPE_TO_LOCAL_CONTEXT(nContext->GetV8Context());
   }
-#ifdef JS_ENGINE_V8
   ENGINE_NS::Context::Scope context_scope(context);
 
   // New and user context share code. DRY it up.
@@ -365,28 +374,118 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(jxcore::PArguments &args,
     CloneObject(JS_GET_STATE_MARKER(), args.This(), sandbox,
                 context->Global()->GetPrototype());
   }
-#define LEAVE_COMPARTMENT(x)
-#endif
   // Catch errors
   JS_TRY_CATCH(try_catch);
-#if defined(JS_ENGINE_MOZJS)
-  JSObject *fake_sandbox = NULL;
-  JS_LOCAL_OBJECT sandbox_backup;
+  JS_HANDLE_VALUE result;
+  JS_HANDLE_SCRIPT script;
 
-  // we can't check comp != nullptr
-  // if there is no oldCompartment, it will return null
-  // after entering the new one anyways.
-  // so we need a flag here
-  bool entered_compartment_ = false;
-  JSCompartment *comp = NULL;
-  if (context_flag == userContext || context_flag == newContext) {
-    if (context_flag == newContext) {
-      sandbox_backup = JS_LOCAL_OBJECT(
-          jxcore::NewTransplantObject(__contextORisolate), __contextORisolate);
+  if (input_flag == compileCode) {
+    // well, here WrappedScript::New would suffice in all cases, but maybe
+    // Compile has a little better performance where possible
+    script = output_flag == returnResult
+                 ? JS_SCRIPT_COMPILE(code, filename)
+                 : ENGINE_NS::Script::New(code, filename);
+    if (JS_IS_EMPTY(script)) {
+      // v8 Only hack
+      if (display_error) DisplayExceptionLine(try_catch);
+
+      // Hack because I can't get a proper stacktrace on SyntaxError
+      return try_catch.ReThrow();
     }
+  } else {
+    WrappedScript *n_script = ObjectWrap::Unwrap<WrappedScript>(_this);
+    if (!n_script) {
+      THROW_EXCEPTION("Must be called as a method of Script.");
+    } else if (JS_IS_EMPTY((n_script->script_))) {
+      THROW_EXCEPTION(
+          "'this' must be a result of previous "
+          "new Script(code) call.");
+    }
+
+    script = n_script->script_;
   }
+
+  if (output_flag == returnResult) {
+    result = JS_SCRIPT_RUN(script);
+    if (JS_IS_EMPTY(result)) {
+      if (display_error) DisplayExceptionLine(try_catch);
+      return try_catch.ReThrow();
+    }
+  } else {
+    WrappedScript *n_script = ObjectWrap::Unwrap<WrappedScript>(_this);
+    if (!n_script) {
+      THROW_EXCEPTION("Must be called as a method of Script.");
+    }
+    n_script->script_ = JS_NEW_PERSISTENT_SCRIPT(script);
+    result = _this;
+  }
+
+  if (context_flag == userContext || context_flag == newContext) {
+    // success! copy changes back onto the sandbox object.
+    CloneObject(JS_GET_STATE_MARKER(), args.This(),
+                context->Global()->GetPrototype(), sandbox);
+  }
+
+  return result == args.This() ? result : JS_LEAVE_SCOPE(result);
+}
+#elif defined(JS_ENGINE_MOZJS)
+template <WrappedScript::EvalInputFlags input_flag,
+          WrappedScript::EvalContextFlags context_flag,
+          WrappedScript::EvalOutputFlags output_flag>
+JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(
+    jxcore::PArguments &args, const JS_HANDLE_OBJECT_REF _this) {
+  JSContext *__contextORisolate = args.GetContext();
+  node::commons *com =
+      node::commons::getInstanceByThreadId(JS_GetThreadId(__contextORisolate));
+
+  if (input_flag == compileCode && args.Length() < 1) {
+    THROW_TYPE_EXCEPTION("needs at least 'code' argument.");
+  }
+
+  const int sandbox_index = input_flag == compileCode ? 1 : 0;
+  if (context_flag == userContext &&
+      !WrappedContext::InstanceOf(args.GetItem(sandbox_index), com)) {
+    THROW_TYPE_EXCEPTION("needs a 'context' argument.");
+  }
+
+  JS_LOCAL_STRING code;
+  if (input_flag == compileCode) {
+    code = JS_VALUE_TO_STRING(args.GetItem(0));
+  }
+
+  JS_LOCAL_OBJECT sandbox;
+  if (context_flag == newContext) {
+    sandbox = args.IsObject(sandbox_index)
+                  ? JS_VALUE_TO_OBJECT(args.GetItem(sandbox_index))
+                  : JS_NEW_EMPTY_OBJECT();
+  } else if (context_flag == userContext) {
+    sandbox = JS_VALUE_TO_OBJECT(args.GetItem(sandbox_index));
+  }
+
+  const int filename_index =
+      sandbox_index + (context_flag == thisContext ? 0 : 1);
+  JS_LOCAL_STRING filename =
+      args.Length() > filename_index
+          ? JS_VALUE_TO_STRING(args.GetItem(filename_index))
+          : STD_TO_STRING("evalmachine.<anonymous>");
+
+  JS_HANDLE_CONTEXT context;
+  MozJS::Isolate *iso = NULL;
+
+  if (context_flag == newContext || context_flag == userContext) {
+    iso = JS_NEW_EMPTY_CONTEXT();
+    context = iso->GetRaw();
+  } else {
+    context = __contextORisolate;
+  }
+  // Catch errors
+  JS_TRY_CATCH(try_catch);
+
+  JSObject *fake_sandbox = NULL;
+  JSCompartment *comp = NULL;
+
 #define LEAVE_COMPARTMENT(copy_result)                                        \
-  if (entered_compartment_) {                                                 \
+  if (fake_sandbox != NULL) {                                                 \
     JS_LOCAL_VALUE result_backup;                                             \
     if (copy_result) {                                                        \
       result_backup = result;                                                 \
@@ -407,94 +506,71 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(jxcore::PArguments &args,
       result = JS_LOCAL_OBJECT(result_sandbox, __contextORisolate);           \
       result = JS_GET_NAME(result, JS_STRING_ID("result"));                   \
     }                                                                         \
+    JS_DestroyContext(context);                                               \
+    iso->Dispose();                                                           \
   }
-#endif
 
   JS_HANDLE_VALUE result;
-  JS_HANDLE_SCRIPT script;
+  jxcore::MemoryScript mscript;
 
   if (input_flag == compileCode) {
-// well, here WrappedScript::New would suffice in all cases, but maybe
-// Compile has a little better performance where possible
-#ifdef JS_ENGINE_V8
-    script = output_flag == returnResult
-                 ? JS_SCRIPT_COMPILE(code, filename)
-                 : ENGINE_NS::Script::New(code, filename);
-#elif defined(JS_ENGINE_MOZJS)
+    // well, here WrappedScript::New would suffice in all cases, but maybe
+    // Compile has a little better performance where possible
     JS_LOCAL_VALUE globals;
     if (context_flag == userContext || context_flag == newContext) {
       globals = sandbox;
     } else {
       globals = jxcore::getGlobal(com->threadId);
     }
-    //    bool asm_js = false;
-    //    if (args.IsInteger(args.Length() - 1))
-    //      asm_js = args.GetInt32(args.Length() - 1) == 1;
-    script =
-        MozJS::Script::Compile(context, globals, code, filename);  //, asm_js);
-#endif
-    if (JS_IS_EMPTY(script)) {
-#ifdef JS_ENGINE_V8
-      // v8 Only hack
-      if (display_error) DisplayExceptionLine(try_catch);
 
-      // Hack because I can't get a proper stacktrace on SyntaxError
-      return try_catch.ReThrow();
-#elif defined(JS_ENGINE_MOZJS)
+    JS_HANDLE_SCRIPT script =
+        MozJS::Script::Compile(__contextORisolate, globals, code, filename);
+
+    if (JS_IS_EMPTY(script)) {
       JS_LOCAL_VALUE err_val = try_catch.Exception();
       THROW_EXCEPTION_OBJECT(err_val);
-#endif
     }
+
+    mscript = jxcore::GetScriptMemory(__contextORisolate,
+                                      script.GetRawScriptPointer());
   } else {
-    WrappedScript *n_script = ObjectWrap::Unwrap<WrappedScript>(_this);
-    if (!n_script) {
-      THROW_EXCEPTION("Must be called as a method of Script.");
-    } else if (JS_IS_EMPTY((n_script->script_))) {
+	WrappedScript *n_script = ObjectWrap::Unwrap<WrappedScript>(_this);
+	if (!n_script) {
+	  THROW_EXCEPTION("Must be called as a method of Script.");
+	}
+
+    if (JS_IS_EMPTY((n_script->script_))) {
       THROW_EXCEPTION(
           "'this' must be a result of previous "
           "new Script(code) call.");
     }
 
-    script = n_script->script_;
+    mscript = n_script->script_;
   }
 
   if (output_flag == returnResult) {
-#ifdef JS_ENGINE_V8
-    result = JS_SCRIPT_RUN(script);
-#elif defined(JS_ENGINE_MOZJS)
-
     if (context_flag == userContext || context_flag == newContext) {
+      JS_LOCAL_OBJECT sandbox_backup = JS_LOCAL_OBJECT(
+          jxcore::NewTransplantObject(__contextORisolate), __contextORisolate);
 
-      if (!sandbox_backup.IsEmpty()) {
-        fake_sandbox = jxcore::CrossCompartmentCopy(__contextORisolate, context,
-                                                    sandbox_backup, true);
-        CloneObject(__contextORisolate, sandbox_backup, sandbox,
-                    sandbox_backup);
+      fake_sandbox = jxcore::CrossCompartmentCopy(__contextORisolate, context,
+                                                  sandbox_backup, true);
+      CloneObject(__contextORisolate, sandbox_backup, sandbox, sandbox_backup);
 
-        comp = JS_EnterCompartment(context, fake_sandbox);
-        try_catch.ctx_ = context;
-        entered_compartment_ = true;
-        JSScript *new_script = jxcore::TransplantScript(
-            script.ctx_, context, script.GetRawScriptPointer());
-        MozJS::Script script_pr(new_script, context);
+      comp = JS_EnterCompartment(context, fake_sandbox);
+      try_catch.ctx_ = context;
+      JSScript *new_script = jxcore::GetScript(context, mscript);
+      MozJS::Script script_pr(new_script, context);
 
-        JS_LOCAL_OBJECT obj_fs(fake_sandbox, context);
-        result = script_pr.Run(obj_fs);
-      } else {
-        script.ctx_ = context;
-        result = script.Run(sandbox);
-        script.ctx_ = __contextORisolate;
-      }
+      JS_LOCAL_OBJECT obj_fs(fake_sandbox, context);
+      result = script_pr.Run(obj_fs);
+
     } else {
+      MozJS::Script script(jxcore::GetScript(context, mscript), context);
       result = script.Run();
     }
 
-#endif
     if (JS_IS_EMPTY(result)) {
-#ifdef JS_ENGINE_V8
-      if (display_error) DisplayExceptionLine(try_catch);
-      return try_catch.ReThrow();
-#elif defined(JS_ENGINE_MOZJS)
       JS_LOCAL_VALUE err_val;
       bool catched_error = try_catch.HasCaught();
       if (!catched_error) {
@@ -516,31 +592,22 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(jxcore::PArguments &args,
       LEAVE_COMPARTMENT(false);
       err_val = JS_LOCAL_OBJECT(new_error, __contextORisolate);
       THROW_EXCEPTION_OBJECT(err_val);
-#endif
     }
   } else {
+	result = _this;
     WrappedScript *n_script = ObjectWrap::Unwrap<WrappedScript>(_this);
     if (!n_script) {
       LEAVE_COMPARTMENT(false);
       THROW_EXCEPTION("Must be called as a method of Script.");
     }
-    n_script->script_ = JS_NEW_PERSISTENT_SCRIPT(script);
-    result = _this;
+
+    n_script->script_ = mscript;
   }
 
-#ifdef JS_ENGINE_V8
-  if (context_flag == userContext || context_flag == newContext) {
-    // success! copy changes back onto the sandbox object.
-    CloneObject(JS_GET_STATE_MARKER(), args.This(),
-                context->Global()->GetPrototype(), sandbox);
-  }
-
-  return result == args.This() ? result : JS_LEAVE_SCOPE(result);
-#elif defined(JS_ENGINE_MOZJS)
   LEAVE_COMPARTMENT(true);
   RETURN_PARAM(result);
-#endif
 }
+#endif
 
 DECLARE_CLASS_INITIALIZER(InitEvals) {
   JS_ENTER_SCOPE();

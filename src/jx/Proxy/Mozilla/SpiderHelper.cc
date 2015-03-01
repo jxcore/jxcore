@@ -66,13 +66,16 @@ JSObject *NewContextGlobal(JSContext *ctx) {
   return c_global;
 }
 
-JSScript *TransplantScript(JSContext *origContext, JSContext *newContext,
-                           JSScript *script) {
+MemoryScript GetScriptMemory(JSContext *ctx, JSScript *script) {
   uint32_t ln;
-  JS::RootedScript rs_orig(origContext, script);
-  void *data = JS_EncodeScript(origContext, rs_orig, &ln);
+  JS::RootedScript rs_orig(ctx, script);
+  void *data = JS_EncodeScript(ctx, rs_orig, &ln);
 
-  return JS_DecodeScript(newContext, data, ln, nullptr);
+  return MemoryScript(data, ln);
+}
+
+JSScript *GetScript(JSContext *ctx, MemoryScript ms) {
+  return JS_DecodeScript(ctx, ms.data(), ms.length(), nullptr);
 }
 
 JSObject *NewGlobalObject(JSContext *ctx) {
