@@ -163,7 +163,7 @@ static void handleJob(node::commons *com, Job *j,
   JS_INDEX_SET(arr, 1, STD_TO_INTEGER(j->cbId));
 
   if (j->hasParam) {
-    JS_INDEX_SET(arr, 2, STD_TO_STRING(j->param));
+    JS_INDEX_SET(arr, 2, UTF8_TO_STRING(j->param));
   } else {
     JS_INDEX_SET(arr, 2, JS_UNDEFINED());
   }
@@ -206,12 +206,10 @@ static void handleTasks(node::commons *com, const JS_HANDLE_FUNCTION &func,
       break;
     }
 
-    assert(j->script != NULL);
+    assert(j->script != NULL && "Something is wrong job->script shouldn't be null!");
 
-    JS_INDEX_SET(arr, 1, STD_TO_STRING(j->script));
-
+    JS_INDEX_SET(arr, 1, UTF8_TO_STRING(j->script));
     JS_HANDLE_VALUE argv[1] = {arr};
-
     {
       JS_TRY_CATCH(try_catch);
 

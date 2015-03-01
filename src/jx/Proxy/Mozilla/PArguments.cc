@@ -334,7 +334,7 @@ int PArguments::GetString(const unsigned index, jxcore::JXString *jxs) {
       jxs->SetFromSTD("null", ctx_);
   }
 
-  return jxs->length();
+  return jxs->Utf8Length();
 }
 
 void PArguments::close(MozJS::Value val) { close(&val); }
