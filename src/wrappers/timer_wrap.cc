@@ -87,7 +87,7 @@ void TimerWrap::OnTimeout(uv_timer_t* handle, int status) {
   assert(wrap);
 
   commons* com = wrap->com;
-  JS_DEFINE_STATE_MARKER(wrap->com);
+  JS_DEFINE_STATE_MARKER(com);
 
   __JS_LOCAL_VALUE argv[1] = {
 #ifdef JS_ENGINE_MOZJS

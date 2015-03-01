@@ -12,6 +12,10 @@ JS_METHOD_END
 // JS side -> console.log(myClass.Sum(3, 4)); -> 7 
 ``` 
 ```RETURN``` or ```RETURN_PARAM``` can be used to mimic the functionality of ```return```. In order not to return anything (```undefined```) you can either call ```RETURN();``` or don't call anything. By default every native method returns ```undefined```. ```RETURN_PARAM``` expects a native JS variable. 
+
+For example, the above method doesn't convert any native type to a JavaScript type. In such case you may use ```JS_LOCAL_METHOD_NO_COM``` name instead. 
+The underlying JavaScript engine might need to know, on which context/isolate the JavaScript variable should be hosted. JXcore's macro automatically manages that by ```com``` variable (instance of commons class).
+This ```com``` variable carries the actual context/isolate reference for actual instance. Remind that you can safely use the version given on above sample for any case and it shouldn't affect the performance.
 ***
 
 ## DEFINE_JS_METHOD 
@@ -42,6 +46,10 @@ JS_METHOD_END
 // JS side -> Print('Hello!\n'); -> Hello!  
 ```
 ```RETURN``` or ```RETURN_PARAM``` can be used to mimic the functionality of ```return```. In order not to return anything (```undefined```) you can either call ```RETURN();``` or don't call anything. By default every native method returns ```undefined```. ```RETURN_PARAM``` expects a native JS variable. 
+
+For example, the above method doesn't convert any native type to a JavaScript type. In such case you may use ```JS_LOCAL_METHOD_NO_COM``` name instead. 
+The underlying JavaScript engine might need to know, on which context/isolate the JavaScript variable should be hosted. JXcore's macro automatically manages that by ```com``` variable (instance of commons class).
+This ```com``` variable carries the actual context/isolate reference for actual instance. Remind that you can safely use the version given on above sample for any case and it shouldn't affect the performance.
 ***
 
 ## JS_METHOD_SET
@@ -193,13 +201,10 @@ SET_INSTANCE_METHOD(String name, JS_NATIVE_METHOD method, Integer expected_param
 P.S. ```expected_parameters_count``` has no effect on actual functionality. You may set it to 0 if you are not sure. Sample usage for ```SET_INSTANCE_METHOD``` is available from [JS_CLASS_NEW_INSTANCE](#js_class_new_instance)
 ***
 
-### SET_CLASS_METHOD
+## SET_CLASS_METHOD
 Defines a static method on a native class template. 
 ```c++
 SET_CLASS_METHOD(String name, JS_NATIVE_METHOD method, Integer expected_parameters_count)
 ```
 P.S. ```expected_parameters_count``` has no effect on actual functionality. You may set it to 0 if you are not sure. Sample usage for ```SET_CLASS_METHOD``` is available from [INIT_CLASS_MEMBERS](#init_class_members)
 ***
-
-
-

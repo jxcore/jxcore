@@ -4542,6 +4542,10 @@ bool jxcore_buffer_setter(JSContext *cx, JS::Handle<JSObject*> obj, JS::Handle<j
         char *str_ = JS_EncodeString(cx, vp.toString());
         number = atol(str_);
         JS_free(cx, str_);
+      } else if (vp.isBoolean()) {
+    	number = vb.toBoolean()? 1:0;
+      } else {
+    	number = 0;
       }
 
       if (store->extType_ < 5) {

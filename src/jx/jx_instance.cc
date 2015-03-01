@@ -128,7 +128,6 @@ void JXInstance::runScript(void *x) {
   std::list<JSContext *>::iterator itc = com->free_context_list_.begin();
 
   while (itc != com->free_context_list_.end()) {
-    JSContext *ctx_sub = *itc;
     JS_DestroyContext(*itc);
     itc++;
   }

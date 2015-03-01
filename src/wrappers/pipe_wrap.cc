@@ -28,15 +28,10 @@ PipeWrap* PipeWrap::Unwrap(JS_LOCAL_OBJECT obj) {
 }
 
 JS_METHOD(PipeWrap, New) {
-  // This constructor should not be exposed to public javascript.
-  // Therefore we assert that we are not trying to call this as a
-  // normal function.
-
   assert(args.IsConstructCall());
   JS_CLASS_NEW_INSTANCE(obj, Pipe);
 
-  PipeWrap* wrap = new PipeWrap(obj, args.GetBoolean(0));
-  assert(wrap);
+  new PipeWrap(obj, args.GetBoolean(0));
 
   RETURN_POINTER(obj);
 }
@@ -44,9 +39,7 @@ JS_METHOD_END
 
 PipeWrap::PipeWrap(JS_HANDLE_OBJECT object, bool ipc)
     : StreamWrap(object, (uv_stream_t*)&handle_) {
-  int r = uv_pipe_init(com->loop, &handle_, ipc);
-  assert(r == 0);  // How do we proxy this error up to javascript?
-  // Suggestion: uv_pipe_init() returns void.
+  uv_pipe_init(com->loop, &handle_, ipc);
   handle_.data = static_cast<void*>(this);
   UpdateWriteQueueSize(com);
 }

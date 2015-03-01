@@ -254,8 +254,8 @@ void TCPWrap::OnConnection(uv_stream_t* handle, int status) {
   TCPWrap* wrap = static_cast<TCPWrap*>(handle->data);
   assert(&wrap->handle_ == (uv_tcp_t*)handle);
 
-  JS_DEFINE_STATE_MARKER(wrap->com);
   node::commons* com = wrap->com;
+  JS_DEFINE_STATE_MARKER(com);
   // We should not be getting this callback if someone as already called
   // uv_close() on the handle.
   assert(JS_IS_EMPTY((wrap->object_)) == false);

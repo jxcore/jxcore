@@ -251,6 +251,8 @@ JS_METHOD_END
 
 JS_LOCAL_OBJECT BuildStatsObject(const uv_statbuf_t* s) {
   JS_ENTER_SCOPE_COM();
+  if (com == NULL) return JS_LOCAL_OBJECT();
+
   JS_DEFINE_STATE_MARKER(com);
 
   JS_LOCAL_OBJECT stats = JS_NEW_DEFAULT_INSTANCE(

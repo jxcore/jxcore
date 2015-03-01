@@ -20,8 +20,7 @@ void UDPWrap::DeleteSlabAllocator(void*) {
 
 UDPWrap::UDPWrap(JS_HANDLE_OBJECT object)
     : HandleWrap(object, (uv_handle_t*)&handle_) {
-  int r = uv_udp_init(this->com->loop, &handle_);
-  assert(r == 0);  // can't fail anyway
+  uv_udp_init(this->com->loop, &handle_);
   handle_.data = reinterpret_cast<void*>(this);
 }
 

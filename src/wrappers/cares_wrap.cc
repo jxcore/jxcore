@@ -232,8 +232,8 @@ class QueryWrap {
   virtual ~QueryWrap() {
     assert(!JS_IS_EMPTY(object_));
 
-    JS_DEFINE_STATE_MARKER(_com);
     commons* com = _com;
+    JS_DEFINE_STATE_MARKER(com);
 
     JS_NAME_DELETE(object_, JS_PREDEFINED_STRING(oncomplete));
 
