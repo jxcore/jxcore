@@ -930,9 +930,36 @@ char *Stringify(node::commons *com, JS_HANDLE_OBJECT obj) {
   return *str;
 }
 
+// For MozJS implementation, JXString memory is managed by SpiderMonkey.
+// In order not to call strdup on JSON, and String return types, below will
+// use SM interface for other types to make it consistent.
+#ifdef JS_ENGINE_V8
+#define ALLOC_MEMORY(type, size) (type*)malloc(sizeof(type) * size)
+#elif defined(JS_ENGINE_MOZJS)
+#define ALLOC_MEMORY(type, size) \
+	(type*)JS_malloc(__contextORisolate, sizeof(type) * size)
+#endif
+
+#define MANAGE_EXCEPTION                                                  \
+  JS_LOCAL_VALUE exception = try_catch.Exception();                       \
+  if (!JS_IS_EMPTY(exception) && JS_IS_OBJECT(exception)) {               \
+    result->type_ = RT_JSON;                                              \
+    result->data_ = Stringify(main_node_, JS_VALUE_TO_OBJECT(exception)); \
+    result->empty_ = false;                                               \
+    return true;                                                          \
+  } else {                                                                \
+    node::ReportException(try_catch, true);                               \
+    return false;                                                         \
+  }
+
 bool JXEngine::Evaluate(const char *source, const char *filename,
                         JXResult *result) {
   JS_ENGINE_SCOPE();
+  node::commons *com = main_node_;
+
+#ifdef JS_ENGINE_MOZJS
+  result->__contextORisolate = __contextORisolate;
+#endif
 
   JS_LOCAL_STRING source_ = UTF8_TO_STRING(source);
   JS_LOCAL_STRING filename_ = STD_TO_STRING(filename);
@@ -942,20 +969,14 @@ bool JXEngine::Evaluate(const char *source, const char *filename,
   JS_LOCAL_SCRIPT script = JS_SCRIPT_COMPILE(source_, filename_);
 
   if (JS_IS_EMPTY(script)) {
-    // TODO(obastemur) report exception back to embedder?
-    node::ReportException(try_catch, true);
-    return false;
+    MANAGE_EXCEPTION
   }
 
   JS_LOCAL_VALUE ret_val = JS_SCRIPT_RUN(script);
 
   if (try_catch.HasCaught()) {
-    node::ReportException(try_catch, true);
-    // TODO(obastemur) report exception back to embedder?
-    return false;
+    MANAGE_EXCEPTION
   }
-
-  result->empty_ = false;
 
   if (JS_IS_NULL_OR_UNDEFINED(ret_val)) {
     result->type_ = RT_NullUndefined;
@@ -963,9 +984,11 @@ bool JXEngine::Evaluate(const char *source, const char *filename,
     return true;
   }
 
+  result->empty_ = false;
+
   if (JS_IS_BOOLEAN(ret_val)) {
     result->type_ = RT_Boolean;
-    bool *data = new bool[1];
+    bool *data = ALLOC_MEMORY(bool, 1);
     data[0] = BOOLEAN_TO_STD(ret_val);
     result->data_ = (void *)data;
 
@@ -975,12 +998,12 @@ bool JXEngine::Evaluate(const char *source, const char *filename,
   if (JS_IS_NUMBER(ret_val)) {
     if (JS_IS_INT32(ret_val)) {
       result->type_ = RT_Int32;
-      int32_t *data = new int32_t[1];
+      int32_t *data = ALLOC_MEMORY(int32_t, 1);
       data[0] = INT32_TO_STD(ret_val);
       result->data_ = (void *)data;
     } else {
       result->type_ = RT_Double;
-      double *data = new double[1];
+      double *data = ALLOC_MEMORY(double, 1);
       data[0] = NUMBER_TO_STD(ret_val);
       result->data_ = (void *)data;
     }
@@ -1008,6 +1031,22 @@ bool JXEngine::Evaluate(const char *source, const char *filename,
   result->data_ = Stringify(main_node_, JS_VALUE_TO_OBJECT(ret_val));
 
   return true;
+}
+
+JXResult::JXResult() : data_(0), type_(RT_NullUndefined), empty_(true) {
+#ifdef JS_ENGINE_MOZJS
+  __contextORisolate = NULL;
+#endif
+}
+
+JXResult::~JXResult() {
+  if (!empty_ && type_ != RT_NullUndefined) {
+#ifdef JS_ENGINE_V8
+    free(data_);
+#elif defined(JS_ENGINE_MOZJS)
+    JS_free(__contextORisolate, data_);
+#endif
+  }
 }
 
 void JXEngine::DefineNativeMethod(const char *name, JS_NATIVE_METHOD method) {

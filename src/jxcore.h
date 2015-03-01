@@ -23,11 +23,15 @@ class JXResult {
   JXResultType type_;
   bool empty_;
 
+ protected:
+#ifdef JS_ENGINE_MOZJS
+  JSContext *__contextORisolate;
+#endif
+
  public:
-  JXResult() : data_(0), type_(RT_NullUndefined), empty_(true) {}
+  JXResult();
 
   bool IsEmpty() const { return empty_; }
-
   bool IsInt32() const { return type_ == RT_Int32; }
   bool IsDouble() const { return type_ == RT_Double; }
   bool IsBoolean() const { return type_ == RT_Boolean; }
@@ -35,41 +39,36 @@ class JXResult {
   bool IsString() const { return type_ == RT_String; }
   bool IsJSON() const { return type_ == RT_JSON; }
 
-#define CHECKRET(x)                \
-  if (empty_) return x;            \
-  if (type_ == RT_NullUndefined) { \
-    return x;                      \
+#define __CHECKRET__(x, tp)                  \
+  if (empty_ || type_ == RT_NullUndefined) { \
+    return x;                                \
   }
+#define __RETURN_PRIMITIVE__(tp) return *((tp *)data_)
+#define __RETURN_STRING__() return (const char *)data_
+#define __RET_PRI__(x, tp) \
+  __CHECKRET__(x, tp); \
+  __RETURN_PRIMITIVE__(tp)
+#define __RET_STR__(x)       \
+  __CHECKRET__(x, char); \
+  __RETURN_STRING__()
 
-  int32_t GetInt32() {
-    CHECKRET(0)
-    return *((int32_t *)data_);
-  }
-  double GetDouble() {
-    CHECKRET(0)
-    return *((double *)data_);
-  }
-  bool GetBoolean() {
-    CHECKRET(false)
-    return *((bool *)data_);
-  }
-  char *GetString() {
-    CHECKRET("")
-    return (char *)data_;
-  }
-  char *GetJSON() {
-    CHECKRET("")
-    return (char *)data_;
-  }
+  const int32_t GetInt32() { __RET_PRI__(0, int32_t); }
 
-  ~JXResult() {
-    if (!empty_ && type_ != RT_NullUndefined) {
-      if (type_ != RT_String && type_ != RT_JSON)
-        delete (data_);
-      else
-        free(data_);
-    }
-  }
+  const double GetDouble() { __RET_PRI__(0, double); }
+
+  const bool GetBoolean() { __RET_PRI__(false, bool); }
+
+  const char *GetString() { __RET_STR__(NULL); }
+
+  const char *GetJSON() { __RET_STR__(NULL); }
+
+#undef __CHECKRET__
+#undef __RETURN_PRIMITIVE__
+#undef __RETURN_STRING__
+#undef __RET_PRI__
+#undef __RET_STR__
+
+  ~JXResult();
 };
 
 class JXEngine {
