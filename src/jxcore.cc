@@ -604,13 +604,6 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
   delete main_node_;
 }
 
-#define DECLARE_NATIVE_METHOD(name, method)                   \
-  do {                                                        \
-    JS_LOCAL_FUNCTION __temp =                                \
-        JS_GET_FUNCTION(JS_NEW_FUNCTION_TEMPLATE(method));    \
-    JS_NAME_SET(native_methods_, JS_STRING_ID(name), __temp); \
-  } while (0)
-
 #if defined(JS_ENGINE_MOZJS)
 void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
   char **argv_copy;
@@ -674,13 +667,13 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
                 STD_TO_STRING(entry_file_name_.c_str()));
   }
 
-  native_methods_ = JS_NEW_EMPTY_PERSISTENT_OBJECT();
-  JS_NAME_SET(process_l, JS_STRING_ID("natives"), native_methods_);
+  JS_LOCAL_OBJECT methods = JS_NEW_EMPTY_OBJECT();
   for (std::map<std::string, JS_NATIVE_METHOD>::iterator it =
            methods_to_initialize_.begin();
        it != methods_to_initialize_.end(); ++it) {
-    DECLARE_NATIVE_METHOD(it->first.c_str(), it->second);
+    NODE_SET_METHOD(methods, it->first.c_str(), it->second);
   }
+  JS_NAME_SET(process_l, JS_STRING_ID("natives"), methods);
   methods_to_initialize_.clear();
 
   node::Load(process_l);
@@ -702,8 +695,6 @@ void JXEngine::Destroy() {
 
   if (main_node_->threadId == 0 && getThreadCount() > 0)
     WaitThreadExit(main_node_->loop);
-
-  JS_CLEAR_PERSISTENT(native_methods_);
 
   node::RunAtExit();
 
@@ -811,13 +802,13 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
                 STD_TO_STRING(entry_file_name_.c_str()));
   }
 
-  native_methods_ = JS_NEW_EMPTY_PERSISTENT_OBJECT();
-  JS_NAME_SET(process_l, JS_STRING_ID("natives"), native_methods_);
+  JS_LOCAL_OBJECT methods = JS_NEW_EMPTY_OBJECT();
   for (std::map<std::string, JS_NATIVE_METHOD>::iterator it =
            methods_to_initialize_.begin();
        it != methods_to_initialize_.end(); ++it) {
-    DECLARE_NATIVE_METHOD(it->first.c_str(), it->second);
+    NODE_SET_METHOD(methods, it->first.c_str(), it->second);
   }
+  JS_NAME_SET(process_l, JS_STRING_ID("natives"), methods);
   methods_to_initialize_.clear();
 
   node::Load(process_l);
@@ -839,8 +830,6 @@ void JXEngine::Destroy() {
 
     if (main_node_->threadId == 0 && getThreadCount() > 0)
       WaitThreadExit(main_node_->loop);
-
-    JS_CLEAR_PERSISTENT(native_methods_);
 
     node::RunAtExit();
 
@@ -1065,14 +1054,22 @@ bool JXEngine::Evaluate(const char *source, const char *filename,
   return JXEngine::ConvertToJXResult(com, ret_val, result);
 }
 
-void JXEngine::DefineNativeMethod(const char *name, JS_NATIVE_METHOD method) {
+bool JXEngine::DefineNativeMethod(const char *name, JS_NATIVE_METHOD method) {
   if (main_node_ == NULL) {
     methods_to_initialize_[name] = method;
   } else {
     JS_ENGINE_SCOPE();
 
-    DECLARE_NATIVE_METHOD(name, method);
+    JS_HANDLE_OBJECT process = main_node_->getProcess();
+    JS_LOCAL_OBJECT natives = JS_VALUE_TO_OBJECT(JS_GET_NAME(process, JS_STRING_ID("natives")));
+    if (JS_IS_EMPTY(natives) || JS_IS_NULL_OR_UNDEFINED(natives)) {
+      error_console("JXEngine::DefineNativeMethod, could not find 'natives' object under process\n");
+      return false;
+    }
+    NODE_SET_METHOD(natives, name, method);
   }
+
+  return true;
 }
 
 int JXEngine::Loop() {

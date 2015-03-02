@@ -16,7 +16,6 @@ class JXEngine {
   std::string entry_file_name_;
 
   std::map<std::string, JS_NATIVE_METHOD> methods_to_initialize_;
-  JS_PERSISTENT_OBJECT native_methods_;
 
 #if defined(JS_ENGINE_MOZJS)
   JS_PERSISTENT_OBJECT global_;
@@ -73,8 +72,8 @@ class JXEngine {
   // Evaluates JS
   bool Evaluate(const char *script, const char *filename, JXResult *result);
 
-  // Defines a native method under process.natives
-  void DefineNativeMethod(const char *name, JS_NATIVE_METHOD method);
+  // Defines a native method under process.natives (returns true if it succeeds)
+  bool DefineNativeMethod(const char *name, JS_NATIVE_METHOD method);
 
   // returns the JXEngine instance for the actual thread
   static JXEngine *ActiveInstance();
