@@ -10,19 +10,23 @@ JX_CALLBACK jx_callback;
 char *argv = NULL;
 char *app_args[2];
 
-JS_LOCAL_METHOD(emitCallback) {
-  JS_HANDLE_VALUE val = args.GetItem(0);
-  JXResult result;
+JS_LOCAL_METHOD(asyncCallback) {
+  const int len = args.Length();
+  JXResult *results = (JXResult *)malloc(sizeof(JXResult) * len);
+  for (int i = 0; i < len; i++) {
+    JS_HANDLE_VALUE val = args.GetItem(i);
 #ifdef JS_ENGINE_MOZJS
-  result.context_ = __contextORisolate;
+    results[i].context_ = __contextORisolate;
 #endif
-  result.data_ = NULL;
-  result.size_ = 0;
-  result.type_ = RT_Undefined;
+    results[i].data_ = NULL;
+    results[i].size_ = 0;
+    results[i].type_ = RT_Undefined;
 
-  jxcore::JXEngine::ConvertToJXResult(com, val, &result);
+    jxcore::JXEngine::ConvertToJXResult(com, val, &results[i]);
+  }
 
-  jx_callback(&result);
+  jx_callback(results, len);
+  free(results);
 }
 JS_METHOD_END
 
@@ -96,7 +100,7 @@ void JX_StartEngine() {
     return;
   }
 
-  engine->DefineNativeMethod("emitCallback", emitCallback);
+  engine->DefineNativeMethod("asyncCallback", asyncCallback);
 
   warn_console("Starting JXcore engine\n");
   engine->Start();

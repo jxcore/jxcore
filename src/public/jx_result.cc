@@ -1,36 +1,36 @@
 #include "jx_result.h"
 #include "../jx/commons.h"
 
-bool JX_ResultIsInt32(const JXResult &result) {
-  return result.size_ > 0 && result.type_ == RT_Int32;
+bool JX_ResultIsInt32(JXResult *result) {
+  return result->size_ > 0 && result->type_ == RT_Int32;
 }
 
-bool JX_ResultIsDouble(const JXResult &result) {
-  return result.size_ > 0 && result.type_ == RT_Double;
+bool JX_ResultIsDouble(JXResult *result) {
+  return result->size_ > 0 && result->type_ == RT_Double;
 }
 
-bool JX_ResultIsBoolean(const JXResult &result) {
-  return result.size_ > 0 && result.type_ == RT_Boolean;
+bool JX_ResultIsBoolean(JXResult *result) {
+  return result->size_ > 0 && result->type_ == RT_Boolean;
 }
 
-bool JX_ResultIsString(const JXResult &result) {
-  return result.size_ > 0 && result.type_ == RT_String;
+bool JX_ResultIsString(JXResult *result) {
+  return result->size_ > 0 && result->type_ == RT_String;
 }
 
-bool JX_ResultIsJSON(const JXResult &result) {
-  return result.size_ > 0 && result.type_ == RT_JSON;
+bool JX_ResultIsJSON(JXResult *result) {
+  return result->size_ > 0 && result->type_ == RT_JSON;
 }
 
-bool JX_ResultIsBuffer(const JXResult &result) {
-  return result.size_ > 0 && result.type_ == RT_Buffer;
+bool JX_ResultIsBuffer(JXResult *result) {
+  return result->size_ > 0 && result->type_ == RT_Buffer;
 }
 
-bool JX_ResultIsUndefined(const JXResult &result) {
-  return result.size_ > 0 && result.type_ == RT_Undefined;
+bool JX_ResultIsUndefined(JXResult *result) {
+  return result->size_ > 0 && result->type_ == RT_Undefined;
 }
 
-bool JX_ResultIsNull(const JXResult &result) {
-  return result.size_ > 0 && result.type_ == RT_Null;
+bool JX_ResultIsNull(JXResult *result) {
+  return result->size_ > 0 && result->type_ == RT_Null;
 }
 
 #define EMPTY_CHECK(x)                                  \

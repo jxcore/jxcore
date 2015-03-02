@@ -10,7 +10,7 @@ extern "C" {
 #endif
 
   typedef void
-  (*JX_CALLBACK)(JXResult *result);
+  (*JX_CALLBACK)(JXResult *result, int argc);
 
   void JX_Initialize(const char* home_folder, JX_CALLBACK callback);
 
