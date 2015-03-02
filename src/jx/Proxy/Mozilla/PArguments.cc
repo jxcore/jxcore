@@ -252,6 +252,8 @@ bool PArguments::GetBoolean(const unsigned index) {
     return args_[index].toBoolean();
   else if (args_[index].isNumber())
     return args_[index].toInt32() != 0;
+  else if (args_[index].isString())
+    return GetUTF8Length(index) > 0;    
   else
     return false;
 }
