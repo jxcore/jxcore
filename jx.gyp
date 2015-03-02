@@ -133,6 +133,9 @@
       'src/node_constants.cc',
       'src/node_extensions.cc',
       'src/node_javascript.cc',
+      
+      'src/public/jx_result.cc',
+      'src/public/jx.cc',
 
       'src/jxcore.cc',
       'src/node.cc',

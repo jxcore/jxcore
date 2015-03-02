@@ -877,7 +877,7 @@ void JXEngine::Destroy() {
 }
 #endif
 
-char *Stringify(node::commons *com, JS_HANDLE_OBJECT obj) {
+char *Stringify(node::commons *com, JS_HANDLE_OBJECT obj, size_t *data_length) {
   JS_ENTER_SCOPE();
   JS_DEFINE_STATE_MARKER(com);
 
@@ -927,6 +927,7 @@ char *Stringify(node::commons *com, JS_HANDLE_OBJECT obj) {
 
   JXString str(str_value);
   str.DisableAutoGC();
+  *data_length = str.Utf8Length();
   return *str;
 }
 
@@ -934,31 +935,114 @@ char *Stringify(node::commons *com, JS_HANDLE_OBJECT obj) {
 // In order not to call strdup on JSON, and String return types, below will
 // use SM interface for other types to make it consistent.
 #ifdef JS_ENGINE_V8
-#define ALLOC_MEMORY(type, size) (type*)malloc(sizeof(type) * size)
+#define ALLOC_MEMORY(type, size) (type *) malloc(sizeof(type) * size)
 #elif defined(JS_ENGINE_MOZJS)
 #define ALLOC_MEMORY(type, size) \
-	(type*)JS_malloc(__contextORisolate, sizeof(type) * size)
+  (type *) JS_malloc(__contextORisolate, sizeof(type) * size)
 #endif
 
-#define MANAGE_EXCEPTION                                                  \
-  JS_LOCAL_VALUE exception = try_catch.Exception();                       \
-  if (!JS_IS_EMPTY(exception) && JS_IS_OBJECT(exception)) {               \
-    result->type_ = RT_JSON;                                              \
-    result->data_ = Stringify(main_node_, JS_VALUE_TO_OBJECT(exception)); \
-    result->empty_ = false;                                               \
-    return true;                                                          \
-  } else {                                                                \
-    node::ReportException(try_catch, true);                               \
-    return false;                                                         \
+#define SET_UNDEFINED(to_)   \
+  to_->type_ = RT_Undefined; \
+  to_->data_ = NULL;         \
+  to_->size_ = 0
+
+#define MANAGE_EXCEPTION                                                      \
+  JS_LOCAL_VALUE exception = try_catch.Exception();                           \
+  if (!JS_IS_EMPTY(exception) && JS_IS_OBJECT(exception)) {                   \
+    result->type_ = RT_JSON;                                                  \
+    result->data_ =                                                           \
+        Stringify(main_node_, JS_VALUE_TO_OBJECT(exception), &result->size_); \
+    return true;                                                              \
+  } else {                                                                    \
+    node::ReportException(try_catch, true);                                   \
+    return false;                                                             \
   }
+
+bool JXEngine::ConvertToJXResult(node::commons *com, JS_HANDLE_VALUE_REF ret_val,
+                                 JXResult *result) {
+
+#ifdef JS_ENGINE_MOZJS
+  assert(result->context_);
+  JSContext *__contextORisolate = (JSContext*) result->context_;
+#endif
+
+  if (JS_IS_NULL(ret_val)) {
+    result->type_ = RT_Null;
+    return true;
+  }
+
+  if (JS_IS_UNDEFINED(ret_val)) {
+    return true;
+  }
+
+  if (JS_IS_BOOLEAN(ret_val)) {
+    result->type_ = RT_Boolean;
+    bool *data = ALLOC_MEMORY(bool, 1);
+    data[0] = BOOLEAN_TO_STD(ret_val);
+    result->data_ = (void *)data;
+    result->size_ = sizeof(bool);
+
+    return true;
+  }
+
+  if (JS_IS_NUMBER(ret_val)) {
+    if (JS_IS_INT32(ret_val)) {
+      result->type_ = RT_Int32;
+      int32_t *data = ALLOC_MEMORY(int32_t, 1);
+      data[0] = INT32_TO_STD(ret_val);
+      result->data_ = (void *)data;
+      result->size_ = sizeof(int32_t);
+    } else {
+      result->type_ = RT_Double;
+      double *data = ALLOC_MEMORY(double, 1);
+      data[0] = NUMBER_TO_STD(ret_val);
+      result->data_ = (void *)data;
+      result->size_ = sizeof(double);
+    }
+    return true;
+  }
+
+  if (node::Buffer::jxHasInstance(ret_val, com)) {
+    result->type_ = RT_Buffer;
+    node::Buffer::DataAndLength(ret_val, &result->data_, &result->size_);
+
+    return true;
+  }
+
+  if (JS_IS_STRING(ret_val)) {
+    result->type_ = RT_String;
+
+    JXString str(ret_val);
+    str.DisableAutoGC();
+
+    result->data_ = *str;
+    result->size_ = str.Utf8Length();
+
+    return true;
+  }
+
+  if (!JS_IS_OBJECT(ret_val)) {
+	// unsupported type. better return a TypeError ?
+    result->type_ = RT_Undefined;
+
+    return true;
+  }
+
+  result->type_ = RT_JSON;
+  result->data_ =
+      Stringify(com, JS_VALUE_TO_OBJECT(ret_val), &result->size_);
+
+  return true;
+}
 
 bool JXEngine::Evaluate(const char *source, const char *filename,
                         JXResult *result) {
   JS_ENGINE_SCOPE();
   node::commons *com = main_node_;
 
+  SET_UNDEFINED(result);
 #ifdef JS_ENGINE_MOZJS
-  result->__contextORisolate = __contextORisolate;
+  result->context_ = __contextORisolate;
 #endif
 
   JS_LOCAL_STRING source_ = UTF8_TO_STRING(source);
@@ -978,75 +1062,7 @@ bool JXEngine::Evaluate(const char *source, const char *filename,
     MANAGE_EXCEPTION
   }
 
-  if (JS_IS_NULL_OR_UNDEFINED(ret_val)) {
-    result->type_ = RT_NullUndefined;
-
-    return true;
-  }
-
-  result->empty_ = false;
-
-  if (JS_IS_BOOLEAN(ret_val)) {
-    result->type_ = RT_Boolean;
-    bool *data = ALLOC_MEMORY(bool, 1);
-    data[0] = BOOLEAN_TO_STD(ret_val);
-    result->data_ = (void *)data;
-
-    return true;
-  }
-
-  if (JS_IS_NUMBER(ret_val)) {
-    if (JS_IS_INT32(ret_val)) {
-      result->type_ = RT_Int32;
-      int32_t *data = ALLOC_MEMORY(int32_t, 1);
-      data[0] = INT32_TO_STD(ret_val);
-      result->data_ = (void *)data;
-    } else {
-      result->type_ = RT_Double;
-      double *data = ALLOC_MEMORY(double, 1);
-      data[0] = NUMBER_TO_STD(ret_val);
-      result->data_ = (void *)data;
-    }
-    return true;
-  }
-
-  if (JS_IS_STRING(ret_val)) {
-    result->type_ = RT_String;
-
-    JXString str(ret_val);
-    str.DisableAutoGC();
-
-    result->data_ = *str;
-
-    return true;
-  }
-
-  if (!JS_IS_OBJECT(ret_val)) {
-    result->type_ = RT_NullUndefined;
-
-    return true;
-  }
-
-  result->type_ = RT_JSON;
-  result->data_ = Stringify(main_node_, JS_VALUE_TO_OBJECT(ret_val));
-
-  return true;
-}
-
-JXResult::JXResult() : data_(0), type_(RT_NullUndefined), empty_(true) {
-#ifdef JS_ENGINE_MOZJS
-  __contextORisolate = NULL;
-#endif
-}
-
-JXResult::~JXResult() {
-  if (!empty_ && type_ != RT_NullUndefined) {
-#ifdef JS_ENGINE_V8
-    free(data_);
-#elif defined(JS_ENGINE_MOZJS)
-    JS_free(__contextORisolate, data_);
-#endif
-  }
+  return JXEngine::ConvertToJXResult(com, ret_val, result);
 }
 
 void JXEngine::DefineNativeMethod(const char *name, JS_NATIVE_METHOD method) {

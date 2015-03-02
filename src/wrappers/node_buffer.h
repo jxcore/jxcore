@@ -51,7 +51,8 @@ JS_RETAINED_OBJECT_INFO* WrapperInfo(uint16_t class_id,
 #endif
 
 class NODE_EXTERN Buffer : public ObjectWrap {
-  node::commons *com_;
+  node::commons* com_;
+
  public:
   static const unsigned int kMaxLength = 0x3fffffff;
 
@@ -59,9 +60,8 @@ class NODE_EXTERN Buffer : public ObjectWrap {
   static bool jxHasInstance(JS_HANDLE_VALUE val, commons* com);
 
   static inline char* Data(JS_HANDLE_VALUE val) {
-#ifdef JS_ENGINE_V8
-    assert(JS_IS_OBJECT(val));
-#endif
+    assert(JS_IS_OBJECT(val) &&
+           "Buffer::Data, JS variable is expected to be an Object");
     void* data = JS_GET_EXTERNAL_ARRAY_DATA(val);
     return static_cast<char*>(data);
   }
@@ -69,9 +69,17 @@ class NODE_EXTERN Buffer : public ObjectWrap {
   static inline char* Data(Buffer* b) { return Buffer::Data(b->handle_); }
 
   static inline size_t Length(JS_HANDLE_VALUE val) {
-    assert(JS_IS_OBJECT(val));
+    assert(JS_IS_OBJECT(val) &&
+           "Buffer::Length, JS variable is expected to be an Object");
     int len = JS_GET_EXTERNAL_ARRAY_DATA_LENGTH(val);
     return static_cast<size_t>(len);
+  }
+
+  static void DataAndLength(JS_HANDLE_VALUE_REF val, void** data, size_t* len) {
+    assert(JS_IS_OBJECT(val) &&
+           "Buffer::DataAndLength, JS variable is expected to be an Object");
+    *len = JS_GET_EXTERNAL_ARRAY_DATA_LENGTH(val);
+    *data = JS_GET_EXTERNAL_ARRAY_DATA(val);
   }
 
   static inline size_t Length(Buffer* b) { return Buffer::Length(b->handle_); }
@@ -134,7 +142,7 @@ class NODE_EXTERN Buffer : public ObjectWrap {
   static DEFINE_JS_METHOD(Fill);
   static DEFINE_JS_METHOD(Copy);
 
-  Buffer(node::commons *com, JS_HANDLE_OBJECT_REF wrapper, size_t length);
+  Buffer(node::commons* com, JS_HANDLE_OBJECT_REF wrapper, size_t length);
   void Replace(char* data, size_t length, free_callback callback, void* hint);
 
   bool disposing_;

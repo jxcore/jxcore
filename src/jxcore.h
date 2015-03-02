@@ -3,73 +3,9 @@
 #ifndef SRC_JXCORE_H_
 #define SRC_JXCORE_H_
 #include "jx/commons.h"
+#include "public/jx_result.h"
 
 namespace jxcore {
-typedef enum JXResultType {
-  RT_Int32 = 1,
-  RT_Double = 2,
-  RT_Boolean = 3,
-  RT_NullUndefined = 4,
-  RT_String = 5,
-  RT_JSON = 6
-};
-
-class JXEngine;
-
-class JXResult {
-  friend class JXEngine;
-
-  void *data_;
-  JXResultType type_;
-  bool empty_;
-
- protected:
-#ifdef JS_ENGINE_MOZJS
-  JSContext *__contextORisolate;
-#endif
-
- public:
-  JXResult();
-
-  bool IsEmpty() const { return empty_; }
-  bool IsInt32() const { return type_ == RT_Int32; }
-  bool IsDouble() const { return type_ == RT_Double; }
-  bool IsBoolean() const { return type_ == RT_Boolean; }
-  bool IsNullOrUndefined() const { return type_ == RT_NullUndefined; }
-  bool IsString() const { return type_ == RT_String; }
-  bool IsJSON() const { return type_ == RT_JSON; }
-
-#define __CHECKRET__(x, tp)                  \
-  if (empty_ || type_ == RT_NullUndefined) { \
-    return x;                                \
-  }
-#define __RETURN_PRIMITIVE__(tp) return *((tp *)data_)
-#define __RETURN_STRING__() return (const char *)data_
-#define __RET_PRI__(x, tp) \
-  __CHECKRET__(x, tp); \
-  __RETURN_PRIMITIVE__(tp)
-#define __RET_STR__(x)       \
-  __CHECKRET__(x, char); \
-  __RETURN_STRING__()
-
-  const int32_t GetInt32() { __RET_PRI__(0, int32_t); }
-
-  const double GetDouble() { __RET_PRI__(0, double); }
-
-  const bool GetBoolean() { __RET_PRI__(false, bool); }
-
-  const char *GetString() { __RET_STR__(NULL); }
-
-  const char *GetJSON() { __RET_STR__(NULL); }
-
-#undef __CHECKRET__
-#undef __RETURN_PRIMITIVE__
-#undef __RETURN_STRING__
-#undef __RET_PRI__
-#undef __RET_STR__
-
-  ~JXResult();
-};
 
 class JXEngine {
   bool self_hosted_;
@@ -154,6 +90,9 @@ class JXEngine {
   }
 
   ~JXEngine() { ENGINE_PRINT_LOGS(); }
+
+  static bool ConvertToJXResult(node::commons *com, JS_HANDLE_VALUE_REF ret_val,
+                                JXResult *result);
 };
 }  // namespace jxcore
 
