@@ -32,21 +32,13 @@ void JXUtilsWrap::exec(const char *cmd, int *ec, std::string &result) {
   while (fgets(buffer, 256, pipe)) {
     result += buffer;
   }
-// need checking ferror ?
-#if defined(_WIN32)
-  *ec = _pclose(pipe);
-#else
-  *ec = pclose(pipe);
-  // TODO (obastemur) remove negative return codes from the project
-  // then remove the below nonsense
-  if (*ec > 256 && *ec < 260) {
-    *ec = (*ec - 65536) / 256;
-  } else {
-	*ec = (*ec) >> 8;
-  }
-  // Only below line must be enough
-  // *ec = (*ec) >> 8;
-#endif
+  // need checking ferror ?
+  #if defined(_WIN32)
+    *ec = _pclose(pipe);
+  #else
+    *ec = pclose(pipe);
+    *ec = (*ec) >> 8;
+  #endif
 }
 
 JS_METHOD(JXUtilsWrap, ExecSystem) {

@@ -65,5 +65,5 @@ if (ret.out.indexOf(mod.value2) === -1) {
   console.log(cl('dir:') + ' `' + node_path + "`");
   console.log(cl("command used:") + " \n" + cmd);
   console.log(cl("output:"), ret.out, "\n\n");
-  process.exit(-1);
+  process.exit(1);
 }

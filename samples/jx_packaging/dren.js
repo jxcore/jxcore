@@ -27,14 +27,14 @@
 **/
 if(typeof jxcore == 'undefined'){
   console.error('This application requires jxcore to run.');
-  process.exit(-1);
+  process.exit(1);
 }
 
 var fs = require('fs');
 var pathModule = require('path');
 var log = jxcore.utils.console.log;
 var args = process.argv;
-var check = function(c, m){if(!c){log(m, "red");process.exit(-1);}};
+var check = function(c, m){if(!c){log(m, "red");process.exit(1);}};
 
 check(process.platform == 'win32', "This application is Windows only, you don't need this functionality on other systems");
 check(args.length==4, "Requires a path for the .node file and a new target");

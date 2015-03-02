@@ -210,7 +210,7 @@
       } catch (e) {
         co.error("Perhaps the path you are running on is not "
         + "exist any more. Please revisit the path and try again.");
-        process.exit(-1);
+        process.exit(1);
       }
       return sep;
     };
@@ -221,7 +221,7 @@
         process.IsEmbedded = IsEmbedded;
       } else {
         co.error("Binary corrupted");
-        process.exit(-1);
+        process.exit(1);
       }
     }
     if (!process.IsEmbedded) {
@@ -1240,7 +1240,7 @@
     } catch (e) {
       console
         .error("Error: You may not have a read access on current folder or a file system link to current folder removed. Please revisit the folder and make sure you have an access.");
-      process.exit(-1);
+      process.exit(1);
     }
     var isWindows = process.platform === 'win32';
 
@@ -1507,7 +1507,7 @@
 
     if (ext != '.jxp') {
       console.log("unknown JX project type '" + fn + "'", "red");
-      process.exit(-1);
+      process.exit(1);
       return;
     }
 
@@ -1518,7 +1518,7 @@
       proj = JSON.parse(stripBOM(xt));
     } catch (e) {
       console.log(e);
-      process.exit(-1);
+      process.exit(1);
       return;
     }
 
@@ -1528,7 +1528,7 @@
 
     if (!proj) {
       console.log("corrupted JSON in jxp file", "red");
-      process.exit(-1);
+      process.exit(1);
       return;
     }
 
@@ -1538,7 +1538,7 @@
       console
         .log("no target source file definition inside the j" + "xp",
         "red");
-      process.exit(-1);
+      process.exit(1);
       return;
     }
 
@@ -1549,7 +1549,7 @@
       console.log(
         "'name', 'version' and 'output' fields must be defined inside the J"
         + "XP file", "red");
-      process.exit(-1);
+      process.exit(1);
       return;
     }
 
@@ -1577,7 +1577,7 @@
 
       if (!proj) {
         console.log("corrupted JSON in '" + fn + "' file", red);
-        process.exit(-1);
+        process.exit(1);
         return;
       }
 
@@ -1664,7 +1664,7 @@
       } catch (e) {
         console.log("while processing ", fn_sub, 'red');
         console.log(e, 'red');
-        process.exit(-1);
+        process.exit(1);
       }
 
       var lo = loc.length - 5;
@@ -1675,7 +1675,7 @@
           .log(
           "only 'js' or 'json' files can be defined as a source code. (json and js are case sensitive)",
           "red");
-        process.exit(-1);
+        process.exit(1);
       }
 
       var buff;
@@ -1726,7 +1726,7 @@
           _stat = fss.statSync(fn);
         } catch (e) {
           console.log(e, "red");
-          process.exit(-1);
+          process.exit(1);
           return;
         }
 
@@ -1832,13 +1832,13 @@
         cmd_sync(op_str);
         if (fss.existsSync(file_name + copy_ext)) {
           cc("Target file in use", file_name + copy_ext, "red");
-          process.exit(-1);
+          process.exit(1);
         }
         op_str = copy + ' "' + process.execPath + '" "' + file_name + '"';
         ret = cmd_sync(op_str);
         if (ret.exitCode != 0) {
           cc(ret.out, "red");
-          process.exit(-1);
+          process.exit(1);
         }
 
         if (!fss.existsSync(file_name)) {
@@ -1846,7 +1846,7 @@
             "Couldn't access to JX binary file or write into current folder. "
             + "This is an unexpected error though but you may check the permissions for JX binary file(s) or the current folder",
             "red");
-          process.exit(-1);
+          process.exit(1);
         }
 
         var sz = fss.statSync(file_name);
@@ -1858,7 +1858,7 @@
           if (loc > sz.size - 120) {
             cc("\nUnable to compile. Make sure the JX binary is not corrupted",
               "red");
-            process.exit(-1);
+            process.exit(1);
             return;
           }
           var buffer = new Buffer(56);
@@ -1906,7 +1906,7 @@
           if (loc > sz.size - 120) {
             cc("\nUnable to compile. Make sure the JX binary is not corrupted",
               "red");
-            process.exit(-1);
+            process.exit(1);
             return;
           }
 
@@ -1989,7 +1989,7 @@
     try {
       res = NativeModule.require('_jx_marker').mark;
     } catch (e) {
-      process.exit(-1);
+      process.exit(1);
     }
     if (res && res.trim && res.trim().length < 40) {
       if (skip) return true;
@@ -2001,11 +2001,11 @@
       try {
         res = parseInt(new Buffer(res, 'hex') + "");
       } catch (e) {
-        process.exit(-1)
+        process.exit(1)
       }
       ;
       if (!res || isNaN(res)) {
-        process.exit(-1);
+        process.exit(1);
       }
       res += 123456789;
       res /= 5;
@@ -2015,11 +2015,11 @@
       try {
         sz = fs.statSync(process.execPath);
       } catch (e) {
-        process.exit(-1);
+        process.exit(1);
       }
       sz.result = res;
       if (sz.size - 5000000 < sz.result) {
-        process.exit(-1);
+        process.exit(1);
       }
       try {
         var fd = fs.openSync(process.execPath, 'r');
@@ -2030,7 +2030,7 @@
         buffer = null;
         process._EmbeddedSource = true;
       } catch (e) {
-        process.exit(-1);
+        process.exit(1);
       }
 
       return true;
@@ -2168,7 +2168,7 @@
             + ec.out
             + "\n Consider using a custom path from jx.config file's 'npmjxPath' property.");
           try {
-            process.exit(-1);
+            process.exit(1);
           } catch (e) {
           }
         }
