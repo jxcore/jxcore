@@ -943,7 +943,7 @@
         ['target_arch in "arm armv7 armv7s arm64"', {
           'sources': ['openssl/crypto/armcap.c'],
         }],
-        ['OS=="ios" and target_arch in "arm armv7 armv7s arm64"', {
+        ['OS in "ios android" and target_arch in "arm armv7 armv7s arm64"', {
           'defines': [ '__ARM_ARCH_7__' ], #openssl
         }],
         ['target_arch=="arm64"', {

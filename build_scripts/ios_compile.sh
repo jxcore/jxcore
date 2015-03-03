@@ -21,7 +21,7 @@ LOG() {
 ERROR_ABORT() {
 	if [[ $? != 0 ]]
 	then
-		LOG $RED_COLOR "Compilation aborted\n"
+		LOG $RED_COLOR "compilation aborted\n"
 		exit	
 	fi
 }
@@ -73,6 +73,9 @@ mkdir out_ios
 
 rm -rf out
 
+LOG $GREEN_COLOR "Compiling IOS INTEL32\n"
+MAKE_INSTALL ia32
+
 LOG $GREEN_COLOR "Compiling IOS ARM7\n"
 MAKE_INSTALL arm
 
@@ -81,15 +84,13 @@ MAKE_INSTALL arm64
 
 LOG $GREEN_COLOR "Compiling IOS INTEL64\n"
 MAKE_INSTALL x64
-
-LOG $GREEN_COLOR "Compiling IOS INTEL32\n"
-MAKE_INSTALL ia32
  
 
 LOG $GREEN_COLOR "Preparing FAT binaries\n"
 rm -rf $FATBIN
 mkdir -p $FATBIN/bin
 mv $ARM7/include $FATBIN/
+
 cp deps/mozjs/src/js.msg $FATBIN/include/node/
 
 MAKE_FAT "libcares"
@@ -101,4 +102,11 @@ MAKE_FAT "libopenssl"
 MAKE_FAT "libuv"
 MAKE_FAT "libsqlite3"
 
+cp src/public/*.h $FATBIN/bin
 
+rm -rf $ARM7
+rm -rf $ARM64
+rm -rf $INTEL32
+rm -rf $INTEL64
+
+LOG $GREEN_COLOR "JXcore iOS binaries are ready under $FATBIN"

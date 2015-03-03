@@ -9,8 +9,10 @@ tags
 *.pyc
 doc/api.xml
 tmp/
-android-toolchain/
+android-toolchain-arm/
+android-toolchain-arm64/
 android-toolchain-intel/
+android-toolchain-intelx64/
 jx
 jx_g
 /enco.js
