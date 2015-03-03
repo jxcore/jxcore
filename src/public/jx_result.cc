@@ -1,6 +1,10 @@
 #include "jx_result.h"
 #include "../jx/commons.h"
 
+bool JX_ResultIsError(JXResult *result) {
+  return result->size_ > 0 && result->type_ == RT_Error;
+}
+
 bool JX_ResultIsInt32(JXResult *result) {
   return result->size_ > 0 && result->type_ == RT_Int32;
 }

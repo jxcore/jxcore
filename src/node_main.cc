@@ -16,7 +16,7 @@ void run(int argc, char *argv[]) {
 
 #ifdef RUN_AS_EMBEDDED
   engine.LoopOnce();
-  jxcore::JXResult res;
+  JXResult res;
   engine.Evaluate("console.log('embedded instance is started');",
                   "embedded_eval", &res);
   while (engine.LoopOnce() != 0) usleep(1);

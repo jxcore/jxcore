@@ -985,8 +985,16 @@ JS_METHOD_END
 #endif  // __POSIX__
 
 JS_LOCAL_METHOD(Exit) {
-  ENGINE_PRINT_LOGS();
-  exit(args.GetInt32(0));
+  // if this is an embedded instance we shouldn't terminate the process
+  // TODO(obastemur) apply this rule to other places
+  if (node::commons::self_hosted_process_) {
+    ENGINE_PRINT_LOGS();
+    exit(args.GetInt32(0));
+  } else {
+    com->expects_reset = com->threadId > 0;
+    JS_TERMINATE_EXECUTION(com->threadId);
+    uv_stop(com->loop);
+  }
 }
 JS_METHOD_END
 
@@ -2210,15 +2218,19 @@ void EmitReset(JS_HANDLE_OBJECT process_l, const int code) {
   }
 #endif
 
-  JS_NAME_SET(process_l, JS_STRING_ID("_exiting"), STD_TO_BOOLEAN(true));
-  JS_LOCAL_VALUE emit_v = JS_GET_NAME(process_l, JS_STRING_ID("emit"));
-  assert(JS_IS_FUNCTION(emit_v));
-  JS_LOCAL_FUNCTION emit = JS_CAST_FUNCTION(emit_v);
-  JS_LOCAL_VALUE args[] = {STD_TO_STRING("$$restart"), STD_TO_INTEGER(code)};
+  // if this is an embedded instance we shouldn't terminate the process
+  // TODO(obastemur) apply this rule to other places
+  if (node::commons::self_hosted_process_ || com->threadId > 0) {
+    JS_NAME_SET(process_l, JS_STRING_ID("_exiting"), STD_TO_BOOLEAN(true));
+    JS_LOCAL_VALUE emit_v = JS_GET_NAME(process_l, JS_STRING_ID("emit"));
+    assert(JS_IS_FUNCTION(emit_v));
+    JS_LOCAL_FUNCTION emit = JS_CAST_FUNCTION(emit_v);
+    JS_LOCAL_VALUE args[] = {STD_TO_STRING("$$restart"), STD_TO_INTEGER(code)};
 
-  JS_METHOD_CALL(emit, process_l, 2, args);
-  if (try_catch.HasCaught()) {
-    abort();
+    JS_METHOD_CALL(emit, process_l, 2, args);
+    if (try_catch.HasCaught()) {
+      abort();
+    }
   }
 }
 

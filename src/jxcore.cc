@@ -359,6 +359,7 @@ char **JXEngine::Init(int argc, char *argv[], bool engine_inited_already) {
   return argv;
 }
 
+static bool jxcore_first_instance = true;
 bool JXEngine::jxcore_was_shutdown_ = false;
 bool JXEngine::JS_engine_inited_ = false;
 
@@ -366,6 +367,15 @@ bool JXEngine::JS_engine_inited_ = false;
 jx_engine_map jx_engine_instances;
 
 JXEngine::JXEngine(int argc, char **argv, bool self_hosted) {
+  if (jxcore_first_instance) {
+    jxcore_first_instance = false;
+    node::commons::self_hosted_process_ = self_hosted;
+  } else {
+    assert(node::commons::self_hosted_process_ == self_hosted &&
+           "Once it's set self_hosted option can not be different for other "
+           "instances");
+  }
+
 #ifdef JS_ENGINE_MOZJS
   // set only once for proxy
   MozJS::Value::SetGlobalFinalizer(node::ObjectWrap::WeakCallback);
@@ -937,22 +947,30 @@ char *Stringify(node::commons *com, JS_HANDLE_OBJECT obj, size_t *data_length) {
 
 #define MANAGE_EXCEPTION                                                      \
   JS_LOCAL_VALUE exception = try_catch.Exception();                           \
-  if (!JS_IS_EMPTY(exception) && JS_IS_OBJECT(exception)) {                   \
-    result->type_ = RT_JSON;                                                  \
+  if (JS_IS_OBJECT(exception)) {                                              \
+    result->type_ = RT_Error;                                                 \
     result->data_ =                                                           \
         Stringify(main_node_, JS_VALUE_TO_OBJECT(exception), &result->size_); \
+    return true;                                                              \
+  } else if (JS_IS_STRING(exception)) {                                       \
+    result->type_ = RT_Error;                                                 \
+    jxcore::JXString str_err(exception);                                      \
+    str_err.DisableAutoGC();                                                  \
+    result->data_ = *str_err;                                                 \
+    result->size_ = str_err.Utf8Length();                                     \
     return true;                                                              \
   } else {                                                                    \
     node::ReportException(try_catch, true);                                   \
     return false;                                                             \
   }
 
-bool JXEngine::ConvertToJXResult(node::commons *com, JS_HANDLE_VALUE_REF ret_val,
+bool JXEngine::ConvertToJXResult(node::commons *com,
+                                 JS_HANDLE_VALUE_REF ret_val,
                                  JXResult *result) {
 
 #ifdef JS_ENGINE_MOZJS
   assert(result->context_);
-  JSContext *__contextORisolate = (JSContext*) result->context_;
+  JSContext *__contextORisolate = (JSContext *)result->context_;
 #endif
 
   if (JS_IS_NULL(ret_val)) {
@@ -1011,15 +1029,19 @@ bool JXEngine::ConvertToJXResult(node::commons *com, JS_HANDLE_VALUE_REF ret_val
   }
 
   if (!JS_IS_OBJECT(ret_val)) {
-	// unsupported type. better return a TypeError ?
-    result->type_ = RT_Undefined;
+    result->type_ = RT_Error;
+    // totally waste of resources but it should work bug free.
+    JS_LOCAL_STRING dummy = STD_TO_STRING("Unsupported return type.");
+    jxcore::JXString message(dummy);
+    message.DisableAutoGC();
+    result->data_ = *message;
+    result->size_ = message.Utf8Length();
 
-    return true;
+    return false;
   }
 
   result->type_ = RT_JSON;
-  result->data_ =
-      Stringify(com, JS_VALUE_TO_OBJECT(ret_val), &result->size_);
+  result->data_ = Stringify(com, JS_VALUE_TO_OBJECT(ret_val), &result->size_);
 
   return true;
 }
@@ -1048,7 +1070,22 @@ bool JXEngine::Evaluate(const char *source, const char *filename,
   JS_LOCAL_VALUE ret_val = JS_SCRIPT_RUN(script);
 
   if (try_catch.HasCaught()) {
-    MANAGE_EXCEPTION
+    MozJS::Value exception = try_catch.Exception();
+    if ((exception).IsObject()) {
+      result->type_ = RT_Error;
+      result->data_ = Stringify(main_node_, exception, &result->size_);
+      return true;
+    } else if ((exception).IsString()) {
+      result->type_ = RT_Error;
+      jxcore::JXString str_err(exception);
+      str_err.DisableAutoGC();
+      result->data_ = *str_err;
+      result->size_ = str_err.Utf8Length();
+      return true;
+    } else {
+      node::ReportException(try_catch, true);
+      return false;
+    }
   }
 
   return JXEngine::ConvertToJXResult(com, ret_val, result);
@@ -1061,9 +1098,12 @@ bool JXEngine::DefineNativeMethod(const char *name, JS_NATIVE_METHOD method) {
     JS_ENGINE_SCOPE();
 
     JS_HANDLE_OBJECT process = main_node_->getProcess();
-    JS_LOCAL_OBJECT natives = JS_VALUE_TO_OBJECT(JS_GET_NAME(process, JS_STRING_ID("natives")));
+    JS_LOCAL_OBJECT natives =
+        JS_VALUE_TO_OBJECT(JS_GET_NAME(process, JS_STRING_ID("natives")));
     if (JS_IS_EMPTY(natives) || JS_IS_NULL_OR_UNDEFINED(natives)) {
-      error_console("JXEngine::DefineNativeMethod, could not find 'natives' object under process\n");
+      error_console(
+          "JXEngine::DefineNativeMethod, could not find 'natives' object under "
+          "process\n");
       return false;
     }
     NODE_SET_METHOD(natives, name, method);

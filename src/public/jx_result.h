@@ -16,7 +16,8 @@ typedef enum {
   RT_JSON = 5,
   RT_Buffer = 6,
   RT_Undefined = 7,
-  RT_Null = 8
+  RT_Null = 8,
+  RT_Error = 9
 } JXResultType;
 
 struct _JXResult {
@@ -30,6 +31,7 @@ struct _JXResult {
 
 typedef struct _JXResult JXResult;
 
+bool JX_ResultIsError(JXResult *result);
 bool JX_ResultIsInt32(JXResult *result);
 bool JX_ResultIsDouble(JXResult *result);
 bool JX_ResultIsBoolean(JXResult *result);
@@ -42,7 +44,7 @@ bool JX_ResultIsNull(JXResult *result);
 int32_t JX_GetInt32(JXResult *result);
 double JX_GetDouble(JXResult *result);
 bool JX_GetBoolean(JXResult *result);
-// for String, JSON, and Buffer
+// for String, JSON, Error and Buffer
 char *JX_GetString(JXResult *result);
 int32_t JX_GetDataLength(JXResult *result);
 

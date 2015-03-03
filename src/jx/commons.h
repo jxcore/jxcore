@@ -86,6 +86,7 @@ class commons {
   bool should_interrupt_;
 #endif
 
+  static bool self_hosted_process_;
   static bool embedded_multithreading_;
 
   static char *embedded_source_;  // static data for entry point
