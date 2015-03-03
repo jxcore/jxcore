@@ -1,25 +1,23 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
 /*
- This unit is creating an https server and a client tries to connect to it.
+ This unit tests https server starting and listening
  */
+
 
 var jx = require('jxtools');
 var assert = jx.assert;
 var https = require("https");
 
+
 var finished = false;
+var listening = true;
 var port = 8126;
-var portFromConfigFile = 8976; // <-- value from jxcore.config
-var clientReceived = false;
 
 
-var finish = function (req) {
-  if (req) {
-    req.abort();
-  }
+var finish = function () {
   srv.unref();
-  if (process.subThread)
+  if (process.threadId != -1)
     process.release();
   finished = true;
 };
@@ -49,49 +47,24 @@ var options = {
   "-----END CERTIFICATE-----"
 };
 
-
-var srv = https.createServer(options, function (req, res) {
-  // sending back to client
-  res.end("ok");
-  finish();
-});
+var srv = https.createServer(options);
 
 srv.on('error', function (e) {
-  assert.ok(0, "Server error: \n" + e);
+  assert.ifError(e, "Server error: \n" + e);
   finish();
 });
 
 srv.on("listening", function () {
-  client();
+  listening = true;
+  finish();
 });
 srv.listen(port, "localhost");
-
-
-// ########   client
-
-var client = function () {
-  var options = {
-    hostname: 'localhost',
-    port: portFromConfigFile,
-    path: '/',
-    method: 'POST',
-    rejectUnauthorized: false
-  };
-
-  var req = https.get(options, function () {
-    clientReceived = true;
-    finish(req);
-  }).on("error", function (err) {
-    assert.ok(0, "Client error: cannot connect on port defined in .jxcore.config (" + portFromConfigFile + ")\n" + err);
-    finish(req);
-  });
-};
 
 
 process.on("exit", function (code) {
   assert.ok(finished, "Test unit did not finish.");
 
   var sid = "Thread id: " + process.threadId + ". ";
-  assert.ok(clientReceived, sid + "Client did not receive message from the server on port " + portFromConfigFile);
+  assert.ok(listening, sid + "Server did not start to listen.");
+  jx.exitNowMT();
 });
-

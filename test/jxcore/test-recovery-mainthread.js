@@ -61,7 +61,7 @@ if (!isChild) {
   var pids = [];
 
 
-  var child = cp.exec('"' + process.execPath + '" "' + __filename + '" child', null, function () {
+  var child = cp.exec('"' + process.execPath + '" "' + __filename.replace(".js.jx", ".jx") + '" child', null, function (err, stdout, stderr) {
 
     var checkLog = function () {
 

@@ -346,7 +346,7 @@ var removeRedundantFiles = function (dir, leaveFiles) {
   for (var a = 0, len = files.length; a < len; a++) {
     var found = false;
     var f = files[a].replace(".jxp", "").replace(".jx", "").replace(".exe", "")
-      .replace(".json", "");
+      .replace(".json", "").replace(".jxcore.config", "");
 
     if (f === files[a]) continue; // none of package files for removal
 

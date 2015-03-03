@@ -1,6 +1,9 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-if (process.IsEmbedded)
+// This unit is testing NODE_PATH environment variable applied to
+// virtual path inside package / native package
+
+if (process.IsEmbedded || exports.$JXP)
   return;
 
 // -------------   init part

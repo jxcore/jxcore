@@ -1,0 +1,11 @@
+{
+  "args" : [
+    {},
+    { "argv" : "native" }
+  ],
+  "files": [
+    "assets"
+  ],
+  "package" : false,
+  "native" : false
+}

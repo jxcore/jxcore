@@ -10,19 +10,7 @@ var https = require("https");
 
 var finished = false;
 var port = 8126;
-var portFromConfigFile = 8976; // <-- value from jxcore.config
 var clientReceived = false;
-
-
-var finish = function (req) {
-  if (req) {
-    req.abort();
-  }
-  srv.unref();
-  if (process.subThread)
-    process.release();
-  finished = true;
-};
 
 
 // ########   server
@@ -53,12 +41,10 @@ var options = {
 var srv = https.createServer(options, function (req, res) {
   // sending back to client
   res.end("ok");
-  finish();
 });
 
 srv.on('error', function (e) {
-  assert.ok(0, "Server error: \n" + e);
-  finish();
+  jx.throwMT("Server error: \n" + e);
 });
 
 srv.on("listening", function () {
@@ -72,7 +58,7 @@ srv.listen(port, "localhost");
 var client = function () {
   var options = {
     hostname: 'localhost',
-    port: portFromConfigFile,
+    port: port,
     path: '/',
     method: 'POST',
     rejectUnauthorized: false
@@ -80,10 +66,14 @@ var client = function () {
 
   var req = https.get(options, function () {
     clientReceived = true;
-    finish(req);
-  }).on("error", function (err) {
-    assert.ok(0, "Client error: cannot connect on port defined in .jxcore.config (" + portFromConfigFile + ")\n" + err);
-    finish(req);
+    req.abort();
+    srv.close();
+    finished = true;
+  });
+
+  req.on("error", function (err) {
+    finish = true;
+    assert.ifError(err, "Client error: \n" + err);
   });
 };
 
@@ -92,6 +82,5 @@ process.on("exit", function (code) {
   assert.ok(finished, "Test unit did not finish.");
 
   var sid = "Thread id: " + process.threadId + ". ";
-  assert.ok(clientReceived, sid + "Client did not receive message from the server on port " + portFromConfigFile);
+  assert.ok(clientReceived, sid + "Client did not receive message from the server.");
 });
-

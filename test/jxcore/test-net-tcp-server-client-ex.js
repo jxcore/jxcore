@@ -6,8 +6,8 @@
  - connects to server,
  - sends message to server
  - receives message from server
- - saves retult in log file
- - and exist
+ - saves result in log file
+ - and exits
 
  Server checks if everything was fine.
  */
@@ -60,7 +60,7 @@ if (process.argv[process.argv.length - 1] != "client_test") {
 
   server.listen(port, function () {
 
-    var cmd = '"' + process.execPath + '" mt-keep ' + __filename + " client_test";
+    var cmd = '"' + process.execPath + '" mt-keep ' + __filename.replace(".js.jx", ".jx") + " client_test";
     var child = cp.exec(cmd, {timeout: 10000}, function (error, stdout, stderr) {
 //            var out = stdout.toString() + stderr.toString();
 //            consol e.log(out);
