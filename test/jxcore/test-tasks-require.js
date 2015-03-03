@@ -24,6 +24,12 @@ var method = function () {
   } catch (ex) {
     process.sendToMain("Cannot require __filename from inside addTask(method): " + ex + "\n__filename = " + __filename);
   }
+
+  try {
+    var common = require('jxtools');
+  } catch (ex) {
+    process.sendToMain("Cannot require jxtools from inside addTask(method): " + ex + "\n__filename = " + __filename);
+  }
 };
 
 // when in main thread
