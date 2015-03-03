@@ -26,11 +26,11 @@ bool JX_ResultIsBuffer(JXResult *result) {
 }
 
 bool JX_ResultIsUndefined(JXResult *result) {
-  return result->size_ > 0 && result->type_ == RT_Undefined;
+  return result->size_ == 0 || result->type_ == RT_Undefined;
 }
 
 bool JX_ResultIsNull(JXResult *result) {
-  return result->size_ > 0 && result->type_ == RT_Null;
+  return result->type_ == RT_Null;
 }
 
 #define EMPTY_CHECK(x)                                  \
