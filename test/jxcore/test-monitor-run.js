@@ -75,7 +75,7 @@ var traceWin = function (cmd, res) {
 // ########################## jx monitor start
 var ret = jxcore.utils.cmdSync(cmd + "start");
 traceWin(cmd + "start", ret);
-assert.strictEqual(ret.exitCode, -1, "Monitor did not start after `start` command. \n", JSON.stringify(ret));
+assert.ok(ret.exitCode === 0, "Monitor did not start after `start` command. \n", JSON.stringify(ret));
 
 // ########################## jx monitor run test-monitor-run-app.js
 

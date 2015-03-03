@@ -38,6 +38,6 @@ var child = cp.exec(cmd, {timeout: 10000}, function (error, stdout, stderr) {
     console.log("error: " + error);
     console.log("stdout: " + stdout);
     console.log("stderr: " + stderr);
-    process.exit(-1);
+    process.exit(1);
   }
 });
