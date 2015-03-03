@@ -7,9 +7,9 @@ Go to root folder of jxcore project and;
 $> build_scripts/ios-compile.sh
 ```
 Prepare a cup of coffee for yourself since this is going to take a while! When it's finished, 
-you can find the 'fat' binaries and include files for ARM, ARM64 and INTEL64 platforms under `out_ios/ios` (root folder of this project)
+you can find the 'fat' binaries and include files for ARM, ARM64, INTEL32, and INTEL64 targets under `out_ios/ios` folder
 
-This folder contains the FAT binary files for (ARM, ARM64, INTEL64) targets. If you need them separately, they are individually available under `out_ios/`
+Coming Soon -> We are preparing the samples for mobile applications. 
 
 What is next :  
 [Embedding JXcore](https://github.com/jxcore/jxcore/blob/master/doc/native/Embedding_Basics.md)
