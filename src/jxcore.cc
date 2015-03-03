@@ -967,11 +967,10 @@ char *Stringify(node::commons *com, JS_HANDLE_OBJECT obj, size_t *data_length) {
 bool JXEngine::ConvertToJXResult(node::commons *com,
                                  JS_HANDLE_VALUE_REF ret_val,
                                  JXResult *result) {
-
 #ifdef JS_ENGINE_MOZJS
   assert(result->context_);
-  JSContext *__contextORisolate = (JSContext *)result->context_;
 #endif
+  JS_DEFINE_STATE_MARKER(com);
 
   if (JS_IS_NULL(ret_val)) {
     result->type_ = RT_Null;
@@ -1070,22 +1069,7 @@ bool JXEngine::Evaluate(const char *source, const char *filename,
   JS_LOCAL_VALUE ret_val = JS_SCRIPT_RUN(script);
 
   if (try_catch.HasCaught()) {
-    MozJS::Value exception = try_catch.Exception();
-    if ((exception).IsObject()) {
-      result->type_ = RT_Error;
-      result->data_ = Stringify(main_node_, exception, &result->size_);
-      return true;
-    } else if ((exception).IsString()) {
-      result->type_ = RT_Error;
-      jxcore::JXString str_err(exception);
-      str_err.DisableAutoGC();
-      result->data_ = *str_err;
-      result->size_ = str_err.Utf8Length();
-      return true;
-    } else {
-      node::ReportException(try_catch, true);
-      return false;
-    }
+	MANAGE_EXCEPTION
   }
 
   return JXEngine::ConvertToJXResult(com, ret_val, result);
