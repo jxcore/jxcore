@@ -6,7 +6,7 @@ process.chdir(__dirname);
 // we run jx package from `_auto_jxcore_package` folder
 // but we want to compare the asset content with real file located at `jxcore`,
 // so we cut the "_package" part from dirname
-var dirname = exports.$JXP ? __dirname.replace(/_package$/g, '').replace("_auto_", "").replace("_single", "") : __dirname;
+var dirname = exports.$JXP ? __dirname.replace("_package", '').replace("_native", '').replace("_auto_", "").replace("_single", "") : __dirname;
 
 var jx = require('jxtools');
 var assert = jx.assert;
