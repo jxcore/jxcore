@@ -114,6 +114,6 @@ g++ sample.cpp -stdlib=libstdc++ -lstdc++ -m32 -std=c++11 -O3 -I/targetFolder/in
     -o sample
 ```
 
-If you are compiling it under OSX, you should also add `-framework CoreServices` after `-Wl` 
+If you are compiling it under OSX, you should also add `-framework CoreServices` before `-o` 
 
 That's It!
