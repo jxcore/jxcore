@@ -30,12 +30,6 @@ native packages:  `require.main` !== `module`
 ```
 
 ##8
-native packages: they do not check *.jxcore.config file:
-```bash
-./jx test/run.js -file test/jxcore/test-jx.config-portTCP\.js -n
-```
-
-##9
 callback for addTask (as object) is not invoked when waitLogic: true
 
 This is probably not a bug. See: [#198](https://github.com/jxcore/jxcore/issues/198)
