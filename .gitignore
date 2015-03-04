@@ -35,7 +35,7 @@ out_arm64_droid/
 out_ia32_ios/
 out_x64_ios/
 out_arm_ios/
-out_arm7s_ios/
+out_armv7s_ios/
 out_arm64_ios/
 out_mozjs/
 out_v8/

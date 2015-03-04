@@ -6,6 +6,7 @@ GREEN_COLOR='\033[0;32m'
 GRAY_COLOR='\033[0;37m'
 
 ARM7=out_ios/arm
+ARM7s=out_ios/armv7s
 ARM64=out_ios/arm64
 INTEL64=out_ios/x64
 INTEL32=out_ios/ia32
@@ -60,11 +61,12 @@ MAKE_INSTALL() {
 
 
 MAKE_FAT() {
-	lipo -create "$ARM64/bin/$1_arm64.a" "$ARM7/bin/$1_arm.a" "$INTEL64/bin/$1_x64.a" "$INTEL32/bin/$1_ia32.a" -output "$FATBIN/bin/$1.a"
+	lipo -create "$ARM64/bin/$1_arm64.a" "$ARM7/bin/$1_arm.a" "$ARM7s/bin/$1_armv7s.a" "$INTEL64/bin/$1_x64.a" "$INTEL32/bin/$1_ia32.a" -output "$FATBIN/bin/$1.a"
 	ERROR_ABORT
 }
 
 
+mkdir out_armv7s_ios
 mkdir out_arm_ios
 mkdir out_arm64_ios
 mkdir out_x64_ios
@@ -76,8 +78,11 @@ rm -rf out
 LOG $GREEN_COLOR "Compiling IOS INTEL32\n"
 MAKE_INSTALL ia32
 
-LOG $GREEN_COLOR "Compiling IOS ARM7\n"
+LOG $GREEN_COLOR "Compiling IOS ARMv7\n"
 MAKE_INSTALL arm
+
+LOG $GREEN_COLOR "Compiling IOS ARMv7s\n"
+MAKE_INSTALL armv7s
 
 LOG $GREEN_COLOR "Compiling IOS ARM64\n"
 MAKE_INSTALL arm64
@@ -104,6 +109,7 @@ MAKE_FAT "libsqlite3"
 
 cp src/public/*.h $FATBIN/bin
 
+rm -rf $ARM7s
 rm -rf $ARM7
 rm -rf $ARM64
 rm -rf $INTEL32

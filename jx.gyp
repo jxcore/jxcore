@@ -230,7 +230,7 @@
           ['OS!="win"', {
             'defines': ['JS_POSIX_NSPR=1']
           }],
-          ['target_arch=="arm"', {
+          ['target_arch in "arm armv7 armv7s"', {
             'defines': ['WTF_CPU_ARM_TRADITIONAL', 'JS_NUNBOX32', 'JS_CPU_ARM=1'],
           }],
           ['target_arch=="arm64"', {

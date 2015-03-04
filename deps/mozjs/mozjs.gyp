@@ -252,13 +252,13 @@
       'dependencies': [ '../zlib/zlib.gyp:zlib' ],
       'conditions': 
       [ 
-        ['target_arch=="arm"', {
+        ['target_arch in "arm armv7 armv7s"', {
           'defines': [ 'WTF_CPU_ARM_TRADITIONAL', 'JS_NUNBOX32', 'JS_CPU_ARM=1' ],
         }],
         ['target_arch=="arm64"', {
           'defines': [ 'WTF_CPU_ARM_TRADITIONAL', 'JS_PUNBOX64', 'JS_CPU_ARM=1' ],
         }],
-        ['target_arch=="arm" or target_arch=="arm64"', {
+        ['target_arch in "arm armv7 arm64 armv7s"', {
             'conditions':[
               ['OS=="ios"', {
                 'sources':[

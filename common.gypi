@@ -297,6 +297,9 @@
             'xcode_settings': {'ARCHS': ['arm64']},
           }],
           [ 'target_arch=="arm"', {
+            'xcode_settings': {'ARCHS': ['armv7']},
+          }],
+          [ 'target_arch=="armv7s"', {
             'xcode_settings': {'ARCHS': ['armv7s']},
           }],
           [ 'target_arch=="x64" or target_arch=="ia32"', {
