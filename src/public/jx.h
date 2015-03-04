@@ -34,6 +34,12 @@ void JX_StartEngine();
 
 int JX_LoopOnce();
 
+int JX_Loop();
+
+bool JX_IsSpiderMonkey();
+
+bool JX_IsV8();
+
 void JX_StopEngine();
 
 #ifdef __cplusplus

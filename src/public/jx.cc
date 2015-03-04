@@ -33,7 +33,10 @@ JS_METHOD_END
 void JX_Initialize(const char *home_folder, JX_CALLBACK callback) {
   jx_callback = callback;
 
+#if defined(__IOS__) || defined(__ANDROID__) || defined(DEBUG)
   warn_console("Initializing JXcore engine\n");
+#endif
+
   if (engine != NULL) {
     warn_console("Destroying the previous JXcore engine instance\n");
     engine->Destroy();
@@ -50,12 +53,12 @@ void JX_Initialize(const char *home_folder, JX_CALLBACK callback) {
   app_args[0] = argv;
   app_args[1] = argv + home_length + 4;
 
-  warn_console("JXcore process.argv ::\n%s %s\n", app_args[0], app_args[1]);
-
   engine = new jxcore::JXEngine(2, app_args, false);
   engine->Init();
 
+#if defined(__IOS__) || defined(__ANDROID__) || defined(DEBUG)
   warn_console("JXcore engine is ready\n");
+#endif
 }
 
 bool JX_Evaluate(const char *data, const char *script_name,
@@ -63,12 +66,12 @@ bool JX_Evaluate(const char *data, const char *script_name,
   char *str;
   if (engine == NULL) {
     error_console(
-        "JXcore engine is not ready yet! (jxcoreIOS.cc:evalEngine)\n");
+        "JXcore engine is not ready yet! (jx.cc:Evaluate)\n");
     str = strdup("undefined");
     return str;
   }
 
-  const char *name = script_name == NULL ? "IOS_Evaluate" : script_name;
+  const char *name = script_name == NULL ? "JX_Evaluate" : script_name;
 
   return engine->Evaluate(data, name, jxresult);
 }
@@ -76,7 +79,7 @@ bool JX_Evaluate(const char *data, const char *script_name,
 void JX_DefineMainFile(const char *data) {
   if (engine == NULL) {
     error_console(
-        "JXcore engine is not ready yet! (jxcoreIOS.cc:defineFile)\n");
+        "JXcore engine is not ready yet! (jx.cc:DefineMainFile)\n");
     return;
   }
 
@@ -86,7 +89,7 @@ void JX_DefineMainFile(const char *data) {
 void JX_DefineFile(const char *name, const char *file) {
   if (engine == NULL) {
     error_console(
-        "JXcore engine is not ready yet! (jxcoreIOS.cc:defineFile)\n");
+        "JXcore engine is not ready yet! (jx.cc:DefineFile)\n");
     return;
   }
 
@@ -96,34 +99,66 @@ void JX_DefineFile(const char *name, const char *file) {
 void JX_StartEngine() {
   if (engine == NULL) {
     error_console(
-        "JXcore engine is not ready yet! (jxcoreIOS.cc:startEngine)\n");
+        "JXcore engine is not ready yet! (jx.cc:StartEngine)\n");
     return;
   }
 
   engine->DefineNativeMethod("asyncCallback", asyncCallback);
 
+#if defined(__IOS__) || defined(__ANDROID__) || defined(DEBUG)
   warn_console("Starting JXcore engine\n");
+#endif
+
   engine->Start();
-  int res = engine->LoopOnce();
-  warn_console("JXcore engine is started, loop(%d)\n", res);
+  engine->LoopOnce();
+#if defined(__IOS__) || defined(__ANDROID__) || defined(DEBUG)
+  warn_console("JXcore engine is started\n", res);
+#endif
 }
 
 int JX_LoopOnce() {
   if (engine == NULL) {
-    error_console("JXcore engine is not ready yet! (jxcoreIOS.cc:loopOnce)\n");
+    error_console("JXcore engine is not ready yet! (jx.cc:LoopOnce)\n");
     return 0;
   }
   return engine->LoopOnce();
 }
 
+int JX_Loop() {
+  if (engine == NULL) {
+    error_console("JXcore engine is not ready yet! (jx.cc:Loop)\n");
+    return 0;
+  }
+  return engine->Loop();
+}
+
+bool JX_IsV8() {
+#ifdef JS_ENGINE_V8
+  return true;
+#else
+  return false;
+#endif
+}
+
+bool JX_IsSpiderMonkey() {
+#ifdef JS_ENGINE_MOZJS
+  return true;
+#else
+  return false;
+#endif
+}
+
 void JX_StopEngine() {
   if (engine == NULL) {
     error_console(
-        "JXcore engine is not ready yet! (jxcoreIOS.cc:stopEngine)\n");
+        "JXcore engine is not ready yet! (jx.cc:StopEngine)\n");
     return;
   }
 
+#if defined(__IOS__) || defined(__ANDROID__) || defined(DEBUG)
   warn_console("Destroying JXcore engine\n");
+#endif
+
   if (engine->LoopOnce()) {
     warn_console("JXcore engine event loop was still handling other events\n");
   }
@@ -131,5 +166,7 @@ void JX_StopEngine() {
   engine->Destroy();
   delete engine;
   engine = NULL;
+#if defined(__IOS__) || defined(__ANDROID__) || defined(DEBUG)
   warn_console("JXcore engine is destroyed");
+#endif
 }
