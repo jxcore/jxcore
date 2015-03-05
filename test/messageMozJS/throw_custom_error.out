@@ -1,2 +1,2 @@
 before
-uncaught exception: [object Object]Abort trap: 6
+MyCustomError: This is a custom message

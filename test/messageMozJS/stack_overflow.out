@@ -1,12 +1,11 @@
 before
-
-InternalError: too much recursion
-stackOverflow (*test*messageMozJS*stack_overflow.js:*:*)
-  at stackOverflow (*test*messageMozJS*stack_overflow.js:*:*)
-  at stackOverflow (*test*messageMozJS*stack_overflow.js:*:*)
-  at stackOverflow (*test*messageMozJS*stack_overflow.js:*:*)
-  at stackOverflow (*test*messageMozJS*stack_overflow.js:*:*)
-  at stackOverflow (*test*messageMozJS*stack_overflow.js:*:*)
-  at stackOverflow (*test*messageMozJS*stack_overflow.js:*:*)
-  at stackOverflow (*test*messageMozJS*stack_overflow.js:*:*)
-  at stackOverflow (*test*messageMozJS*stack_overflow.js:
+InternalError: too much recursion (*test*messageMozJS*stack_overflow.js 14:2)
+    at stackOverflow (*test*messageMozJS*stack_overflow.js:14:3)
+    at stackOverflow (*test*messageMozJS*stack_overflow.js:14:3)
+    at stackOverflow (*test*messageMozJS*stack_overflow.js:14:3)
+    at stackOverflow (*test*messageMozJS*stack_overflow.js:14:3)
+    at stackOverflow (*test*messageMozJS*stack_overflow.js:14:3)
+    at stackOverflow (*test*messageMozJS*stack_overflow.js:14:3)
+    at stackOverflow (*test*messageMozJS*stack_overflow.js:14:3)
+    at stackOverflow (*test*messageMozJS*stack_overflow.js:14:3)
+    at stackOverflow (*test*messageMozJS*stack_overflow.js:

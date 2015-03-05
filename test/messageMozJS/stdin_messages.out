@@ -2,28 +2,30 @@
 [stdin]
 42
 42
-
-Error: hello
- ([stdin]:1:7)
-  at [stdin]-wrapper:*:*
-  at Module.prototype._compile (module.js:*:*)
-  at evalScript (node.js:*:*)
-  at startup/< (node.js:*:*)
-  at emit (events.js:*:*)
-  at endReadable/< (_stream_readable.js:*:*)
-  at _tickCallback (node.js:*:*)
-
-
-Error: hello
- ([stdin]:*:*)
-  at [stdin]-wrapper:*:*
-  at Module.prototype._compile (module.js:*:*)
-  at evalScript (node.js:*:*)
-  at startup/< (node.js:*:*)
-  at emit (events.js:*:*)
-  at endReadable/< (_stream_readable.js:*:*)
-  at _tickCallback (node.js:*:*)
-
+undefined: hello ([stdin] *:*)
+    at  ([stdin]:*:*)
+    at [stdin]-wrapper:*:*
+    at Module.prototype._compile (module.js:*:*)
+    at evalScript (node.js:*:*)
+    at startup/< (node.js:*:*)
+    at emit (events.js:*:*)
+    at endReadable/< (_stream_readable.js:*:*)
+    at _tickCallback (node.js:*:*)
+  
+undefined: hello ([stdin] *:*)
+    at  ([stdin]:*:*)
+    at [stdin]-wrapper:*:*
+    at Module.prototype._compile (module.js:*:*)
+    at evalScript (node.js:*:*)
+    at startup/< (node.js:*:*)
+    at emit (events.js:*:*)
+    at endReadable/< (_stream_readable.js:*:*)
+    at _tickCallback (node.js:*:*)
+  
 100
 100
-uncaught exception: 10uncaught exception: 10done
+undefined: (null)
+
+undefined: (null)
+
+done

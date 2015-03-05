@@ -1,6 +1,3 @@
-
-ReferenceError: undefined_reference_error_maker is not defined
- (*test*messageMozJS*timeout_throw.js:*:*)
-  at listOnTimeout (timers.js:*:*)
-  at startup.globalVariables/process.__makeCall (node.js:*:*)
-
+ReferenceError: undefined_reference_error_maker is not defined (*test*messageMozJS*timeout_throw.js *:*)
+    at  (*test*messageMozJS*timeout_throw.js:8:3)
+    at listOnTimeout (timers.js:*:*)

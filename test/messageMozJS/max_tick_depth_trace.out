@@ -9,15 +9,25 @@ tick 13
 tick 12
 tick 11
 Trace: (node) warning: Recursive process.nextTick detected. This will break in the next version of node. Please use setImmediate for recursive deferral.
-  at maxTickWarn@node.js:*:*
-  at _nextTick@node.js:*:*
-  at nextTick@node.js:*:*
-  at onwrite@_stream_writable.js:*:*
-  at WritableState/this.onwrite@_stream_writable.js:*:*
-  at Socket.prototype._write@net.js:*:*
-  at doWrite@_stream_writable.js:*:*
-  at writeOrBuffer@_stream_writable.js:*:*
-  at Writable.prototype.write@_stream_writable.js:*:*
+    at Console.prototype.trace@console.js:*:*
+    at maxTickWarn@node.js:*:*
+    at _nextTick@node.js:*:*
+    at nextTick@node.js:*:*
+    at onwrite@_stream_writable.js:*:*
+    at WritableState/this.onwrite@_stream_writable.js:*:*
+    at Socket.prototype._write@net.js:*:*
+    at doWrite@_stream_writable.js:*:*
+    at writeOrBuffer@_stream_writable.js:*:*
+Trace: (node) warning: Recursive process.nextTick detected. This will break in the next version of node. Please use setImmediate for recursive deferral.
+    at Console.prototype.trace@console.js:*:*
+    at maxTickWarn@node.js:*:*
+    at _nextTick@node.js:*:*
+    at nextTick@node.js:*:*
+    at onwrite@_stream_writable.js:*:*
+    at WritableState/this.onwrite@_stream_writable.js:*:*
+    at Socket.prototype._write@net.js:*:*
+    at doWrite@_stream_writable.js:*:*
+    at writeOrBuffer@_stream_writable.js:*:*
 tick 10
 tick 9
 tick 8
@@ -29,10 +39,13 @@ tick 3
 tick 2
 tick 1
 Trace: (node) warning: Recursive process.nextTick detected. This will break in the next version of node. Please use setImmediate for recursive deferral.
-  at maxTickWarn@node.js:*:*
-  at _nextTick@node.js:*:*
-  at nextTick@node.js:*:*
-  at f@*test*messageMozJS*max_tick_depth_trace.js:*:*
-  at _tickCallback@node.js:*:*
-  at _tickFromSpinner@node.js:*:*
+    at Console.prototype.trace@console.js:*:*
+    at maxTickWarn@node.js:*:*
+    at _nextTick@node.js:*:*
+    at nextTick@node.js:*:*
+    at onwrite@_stream_writable.js:*:*
+    at WritableState/this.onwrite@_stream_writable.js:*:*
+    at Socket.prototype._write@net.js:*:*
+    at doWrite@_stream_writable.js:*:*
+    at writeOrBuffer@_stream_writable.js:*:*
 tick 0
