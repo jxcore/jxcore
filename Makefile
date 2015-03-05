@@ -72,14 +72,14 @@ distclean:
 	-rm -rf node_modules
 
 test: all
-	$(PYTHON) tools/test.py --mode=release simple message
+	$(PYTHON) tools/test.py --mode=release simple
 	$(MAKE) jslint
 
 test-http1: all
-	$(PYTHON) tools/test.py --mode=release --use-http1 simple message
+	$(PYTHON) tools/test.py --mode=release --use-http1 simple
 
 test-valgrind: all
-	$(PYTHON) tools/test.py --mode=release --valgrind simple message
+	$(PYTHON) tools/test.py --mode=release --valgrind simple
 
 test/gc/node_modules/weak/build/Release/weakref.node:
 	@if [ ! -f jx ]; then make all; fi
