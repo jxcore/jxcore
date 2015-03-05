@@ -1,11 +1,22 @@
 language: cpp
 
-install:
-  - sudo apt-get install python-setuptools
-  - sudo easy_install tools/which-1.1.0-py2.7.egg
-
 compiler:
   - gcc
+
+before_install:
+  # g++4.8.1
+  - if [ "$CXX" == "g++" ]; then sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
+
+  - sudo apt-get update -qq
+
+install:
+  # g++4.8.1
+  - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8"; fi
+  
+  # python which
+  - sudo apt-get install python-setuptools
+  - sudo easy_install tools/which-1.1.0-py2.7.egg
 
 script: 
  - ./configure --engine-mozilla && make
