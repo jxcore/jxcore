@@ -112,7 +112,7 @@ void JX_StartEngine() {
   engine->Start();
   engine->LoopOnce();
 #if defined(__IOS__) || defined(__ANDROID__) || defined(DEBUG)
-  warn_console("JXcore engine is started\n", res);
+  warn_console("JXcore engine is started\n");
 #endif
 }
 
