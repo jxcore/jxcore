@@ -130,10 +130,8 @@ exports.createSinglePackage = function (src, native) {
     fs.renameSync(compiled_binary, outputFile);
     jx.copyFileSync(src + ".json", outputFile + ".json");
     jx.copyFileSync(src + ".jxcore.config", outputFile + ".jxcore.config");
-    jx.copyFileSync(path.join(tmpDir, basename + ".jxp"), path.join(outputDir,
-      basename + ".jxp"));
-    jx.copyFileSync(path.join(tmpDir, basename + ".out"), path.join(outputDir,
-      basename + ".out"));
+    jx.copyFileSync(path.join(tmpDir, basename + ".jxp"), path.join(outputDir, basename + ".jxp"));
+    jx.copyFileSync(path.join(tmpDir, basename + ".out"), path.join(outputDir, basename + ".out"));
 
     if (!exports.silent) jxcore.utils.console.log(" OK");
 
@@ -345,8 +343,8 @@ var removeRedundantFiles = function (dir, leaveFiles) {
 
   for (var a = 0, len = files.length; a < len; a++) {
     var found = false;
-    var f = files[a].replace(".jxp", "").replace(".jx", "").replace(".exe", "")
-      .replace(".json", "").replace(".jxcore.config", "");
+    var f = files[a].replace(".jxp", "").replace(".exe", "")
+      .replace(".json", "").replace(".jxcore.config", "").replace(".jx", "");
 
     if (f === files[a]) continue; // none of package files for removal
 
