@@ -1,0 +1,8 @@
+language: cpp
+
+compiler:
+  - gcc
+
+script: 
+ - ./configure --engine-mozilla && make
+ - ./configure && make && make test
