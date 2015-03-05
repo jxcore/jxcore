@@ -16,16 +16,17 @@ process.on('exit', function (code) {
   assert.ok(started, "Client did not connect to the server.")
 });
 
-
+process.release();
 server.listen(port, function () {
   //console.log("started" + process.threadId);
   started = true;
   server.close();
 
-  if (process.threadId !== -1) {
-    process.release();
-    process.release();
-  }
+  server.on('close', function(){
+	  if (process.threadId !== -1) {
+		process.release();
+	  }
+  });
 });
 
 server.on("error", function (err) {

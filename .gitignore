@@ -87,3 +87,5 @@ deps/openssl/openssl.xml
 # test tmp folders
 _auto_*
 tmp_jx
+
+test/simple/test-process-config.js-config.gypi_sm
