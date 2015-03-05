@@ -1,5 +1,9 @@
 language: cpp
 
+install:
+  - sudo apt-get install python-setuptools
+  - sudo easy_install tools/which-1.1.0-py2.7.egg
+
 compiler:
   - gcc
 
