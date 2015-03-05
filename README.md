@@ -2,6 +2,8 @@
 
 JXcore extends Node.JS™ with additional features for developing mobile and embedded applications using JavaScript and leveraging the Node ecosystem.
 
+Master build status: [![Build Status](https://travis-ci.org/jxcore/jxcore.svg?branch=master)](https://travis-ci.org/jxcore/jxcore)
+
 ### Features include
 
   - Support for core Node.JS features
