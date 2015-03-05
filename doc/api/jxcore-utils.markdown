@@ -52,27 +52,40 @@ Resumes block execution paused by `pause()` or `jump()`;
 
 ### console.log(data [, ...], color)
 
-This method of `jxcore.utils` object does the same thing as native [`console.log()`](console.markdown#console-log-data)
+The `jxcore.utils.console.log()` method does the same thing as native [`console.log()`](console.markdown#console-log-data)
 (prints the output to stdout with newline) except that it accepts a color name as the last parameter.
 
 The `color` parameter is not limited only for colorizing the output - it may also apply some simple formatting.
 Value of this parameter may be one of the following:
 
-* RGB Colors
+* Foreground Colors
     * red
     * green
     * blue
     * white
-
-* CMYK Colors
     * cyan
     * magenta
     * yellow
     * black
+    * grey
+    * default
+
+* Background Colors
+    * bgRed
+    * bgGreen
+    * bgBlue
+    * bgWhite
+    * bgYellow
+    * bgMagenta
+    * bgCyan
+    * bgBlack
+    * bgDefault
 
 * Text Formatting
     * bold
+    * italic (_not widely supported - may not work on all platforms_)
     * underline
+    * inverse
 
 ```js
 var clog = jxcore.utils.console.log;
@@ -82,8 +95,23 @@ clog("this", "is", "also", "green", "green");
 clog("but", "this", "one", "is bolded", "bold");
 ```
 
+You may combine those attributes with a plus (`+`) sign, for example:
+
+```js
+var clog = jxcore.utils.console.log;
+// green foreground with yellow background and all bold:
+clog("test", "green+bgYellow+bold");
+// bolded underline:
+clog("test", "underline+bold");
+```
+
 If environment variable `NODE_DISABLE_COLORS` is set to 1, which disables colors in the REPL (see `jx -h`),
 the last parameter `color` is printed to the output just like `data` argument. For example:
+
+```bash
+# unix systems
+$ export NODE_DISABLE_COLORS=1;
+```
 
 ```js
 jxcore.utils.console.log("this is green", "green");
@@ -110,13 +138,13 @@ Displays:
 > **bolded**normal**bolded again**
 
 
-### setColor(data, color)
+### setColor(data [, ...], color)
 
-Returns the `data` string with specific `color` attribute added.
+Returns the string containing all `data` arguments wrapped with specific `color` attribute.
 Sending this string to the console will result in colorized output.
 
 ```js
-var yellow = jxcore.utils.console.setColor("The yellow is here", "yellow");
+var yellow = jxcore.utils.console.setColor("The yellow is here", "and here", "yellow");
 console.log(yellow);
 ```
 
