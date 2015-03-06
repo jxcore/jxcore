@@ -267,6 +267,11 @@ void OnFatalError(JSContext *JS_GET_STATE_MARKER(), const char *message,
     current_exception = tt.Exception();
   } else if (JSREPORT_IS_WARNING(report->flags)) {
     return;  // internal warning (i.e. ASMJS)
+  }
+
+  if (!current_exception.IsEmpty() && current_exception.IsObject()) {
+    tt.SetHolder(MozJS::Value(current_exception.GetRawObjectPointer(),
+                              JS_GET_STATE_MARKER()));
   } else {
     MozJS::String msg_val = STD_TO_STRING(message);
     current_exception = MozJS::Exception::Error(msg_val).GetErrorObject();
@@ -283,20 +288,8 @@ void OnFatalError(JSContext *JS_GET_STATE_MARKER(), const char *message,
 
     if (report->linebuf != nullptr)
       JS_NAME_SET(current_exception, "lineBuf", STD_TO_STRING(report->linebuf));
-  }
 
-  if (current_exception.IsObject()) {
-    tt.SetHolder(MozJS::Value(current_exception.GetRawObjectPointer(),
-                              JS_GET_STATE_MARKER()));
-  } else {
-    MozJS::Value err_stack = current_exception.Get("stack");
-    MozJS::String str(current_exception.GetRawStringPointer(),
-                      current_exception.ctx_);
-
-    MozJS::Value err_obj = MozJS::Exception::Error(str).GetErrorObject();
-    if (!err_stack.IsUndefined())
-      JS_NAME_SET(err_obj, JS_STRING_ID("stack"), err_stack);
-    tt.SetHolder(err_obj);
+    tt.SetHolder(current_exception);
   }
 
   FatalException_jx(tt);
