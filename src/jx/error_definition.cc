@@ -296,7 +296,7 @@ void OnFatalError(JSContext *JS_GET_STATE_MARKER(), const char *message,
 }
 #endif
 
-void DisplayExceptionLine(JS_TRY_CATCH_TYPE try_catch) {
+void DisplayExceptionLine(JS_TRY_CATCH_TYPE &try_catch) {
   // Prevent re-entry into this function.  For example, if there is
   // a throw from a program in vm.runInThisContext(code, filename, true),
   // then we want to show the original failure, not the secondary one.
@@ -350,9 +350,6 @@ void DisplayExceptionLine(JS_TRY_CATCH_TYPE try_catch) {
     int start = message->GetStartColumn();
     int end = message->GetEndColumn();
 
-    // fprintf(stderr, "---\nsourceline:%s\noffset:%d\nstart:%d\nend:%d\n---\n",
-    // sourceline_string, start, end);
-
     error_console("%s\n", sourceline_string);
 
 #ifndef __MOBILE_OS__
@@ -380,7 +377,7 @@ void ReportException(JS_TRY_CATCH_TYPE try_catch, bool show_line) {
   JS_DEFINE_STATE_MARKER(com);
   JS_LOCAL_VALUE stack_trace = try_catch.StackTrace();
   jxcore::JXString trace;
-  if (!stack_trace->IsUndefined()) trace.SetFromHandle(stack_trace);
+  if (!JS_IS_EMPTY(stack_trace) && !stack_trace->IsUndefined()) trace.SetFromHandle(stack_trace);
 
   // range errors have a trace member set to undefined
   if (trace.length() > 0) {

@@ -29,7 +29,7 @@ void OnFatalError(JSContext *JS_GET_STATE_MARKER(), const char *message,
                   JSErrorReport *report);
 #endif
 
-void DisplayExceptionLine(JS_TRY_CATCH_TYPE try_catch);
+void DisplayExceptionLine(JS_TRY_CATCH_TYPE &try_catch);
 
 void ReportException(JS_TRY_CATCH_TYPE try_catch, bool show_line);
 
