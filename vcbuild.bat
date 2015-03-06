@@ -36,16 +36,9 @@ set noetw_msi_arg=
 set noperfctr=
 set noperfctr_arg=
 set noperfctr_msi_arg=
-
-@rem you may set extra parameters below 
-@rem setting multiple parameters is possible
-@rem just leave a blank space between them
-@rem for example:
-@rem set extra_parameters=--static-library --engine-mozilla
-set extra_parameters=
-@rem for shared library ->  --static-library
-@rem for Spider Monkey  ->  --engine-mozilla 
-@rem for Comressed Scripts  ->  --compress-internals
+set engine_mozilla=
+set static_library=
+set compress_internals=
 
 :next-arg
 if "%1"=="" goto args-done
@@ -73,6 +66,9 @@ if /i "%1"=="test"          set test=test&goto arg-ok
 if /i "%1"=="msi"           set msi=1&set licensertf=1&goto arg-ok
 if /i "%1"=="upload"        set upload=1&goto arg-ok
 if /i "%1"=="jslint"        set jslint=1&goto arg-ok
+if /i "%1"=="--shared-library" set static_library=--static-library&goto arg-ok
+if /i "%1"=="--engine-mozilla" set engine_mozilla=--engine-mozilla&goto arg-ok
+if /i "%1"=="--compress-internals" set compress_internals=--compress-internals&goto arg-ok
 
 echo Warning: ignoring invalid command line option `%1`.
 
@@ -100,7 +96,7 @@ if defined NIGHTLY set TAG=nightly-%NIGHTLY%
 @rem Generate the VS project.
 SETLOCAL
   if defined VS100COMNTOOLS call "%VS100COMNTOOLS%\VCVarsQueryRegistry.bat"
-  python configure %debug_arg% %nosnapshot_arg% %noetw_arg% %noperfctr_arg% --dest-cpu=%target_arch% --tag=%TAG% %extra_parameters%
+  python configure %debug_arg% %nosnapshot_arg% %noetw_arg% %noperfctr_arg% --dest-cpu=%target_arch% --tag=%TAG% %static_library% %engine_mozilla% %compress_internals%
   if errorlevel 1 goto create-msvs-files-failed
   if not exist jx.sln goto create-msvs-files-failed
   echo Project files generated.

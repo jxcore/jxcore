@@ -1,9 +1,5 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
-
-
-
 var common = require('../common');
 var assert = require('assert');
 
@@ -101,7 +97,10 @@ file5.on('data', function(data) {
   file5.data += data.toString('utf-8');
 });
 file5.on('end', function() {
-  assert.equal(file5.data, 'yz\n');
+  if (process.platform === 'win32')
+    assert.equal(file5.data, 'yz\r\n');
+  else
+    assert.equal(file5.data, 'yz\n');
 });
 
 // https://github.com/joyent/node/issues/2320
@@ -111,7 +110,10 @@ file6.on('data', function(data) {
   file6.data += data.toString('utf-8');
 });
 file6.on('end', function() {
-  assert.equal(file6.data, 'yz\n');
+  if (process.platform === 'win32')
+    assert.equal(file6.data, 'yz\r\n');
+  else
+    assert.equal(file6.data, 'yz\n');
 });
 
 assert.throws(function() {
@@ -152,7 +154,10 @@ function file7Next(){
     file7.data += data;
   });
   file7.on('end', function(err) {
-    assert.equal(file7.data, 'xyz\n');
+    if (process.platform === 'win32')
+      assert.equal(file7.data, 'xyz\r\n');
+    else
+      assert.equal(file7.data, 'xyz\n');
   });
 }
 

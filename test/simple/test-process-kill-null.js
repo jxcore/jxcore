@@ -1,6 +1,7 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
+// this test file is not compatible to Windows
+if (process.platform === 'win32') return;
 
 var common = require('../common');
 var assert = require('assert');

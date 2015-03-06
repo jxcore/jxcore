@@ -1274,14 +1274,19 @@ static JS_SETTER_METHOD(ProcessTitleSetter) {
 JS_SETTER_METHOD_END
 
 static JS_GETTER_METHOD(EnvGetter) {
-  jxcore::JXString key(property);
 #ifdef __POSIX__
+  jxcore::JXString key(property);
   const char* val = getenv(*key);
 
   if (val) {
     RETURN_GETTER_PARAM(UTF8_TO_STRING(val));
   }
 #else  // _WIN32
+#ifdef JS_ENGINE_V8
+  v8::String::Value key(property);
+#elif defined(JS_ENGINE_MOZJS)
+  jxcore::JXString key(property);
+#endif
   WCHAR buffer[32767];  // The maximum size allowed for environment variables.
   DWORD result = GetEnvironmentVariableW(reinterpret_cast<WCHAR*>(*key), buffer,
                                          ARRAY_SIZE(buffer));
@@ -1326,11 +1331,16 @@ static JS_SETADD_METHOD(EnvSetter) {
 JS_SETADD_METHOD_END
 
 JS_DELETER_METHOD(EnvDeleter) {
-  jxcore::JXString key(property);
 #ifdef __POSIX__
+  jxcore::JXString key(property);
   if (!getenv(*key)) RETURN_DELETER_FALSE();
   unsetenv(*key);  // can't check return value, it's void on some platforms
 #else
+#ifdef JS_ENGINE_V8
+  v8::String::Value key(property);
+#elif defined(JS_ENGINE_MOZJS)
+  jxcore::JXString key(property);
+#endif
   WCHAR* key_ptr = reinterpret_cast<WCHAR*>(*key);
   if (key_ptr[0] == L'=' || !SetEnvironmentVariableW(key_ptr, NULL)) {
     // Deletion failed. Return true if the key wasn't there in the first place,
@@ -1361,7 +1371,11 @@ static JS_HANDLE_INTEGER EnvQuery(JS_LOCAL_STRING property,
     return JS_LEAVE_SCOPE(val_0);
   }
 #else  // _WIN32
+#ifdef JS_ENGINE_V8
   v8::String::Value key(property);
+#elif defined(JS_ENGINE_MOZJS)
+  jxcore::JXString key(property);
+#endif
   WCHAR* key_ptr = reinterpret_cast<WCHAR*>(*key);
   if (GetEnvironmentVariableW(key_ptr, NULL, 0) > 0 ||
       GetLastError() == ERROR_SUCCESS) {
@@ -1398,7 +1412,7 @@ static JS_HANDLE_ARRAY EnvEnumerator(const v8::AccessorInfo& info) {
   WCHAR* environment = GetEnvironmentStringsW();
   if (environment == NULL) {
     // This should not happen.
-    return scope.Close(v8::Handle<v8::Array>());
+    return scope.Close(JS_NEW_ARRAY());
   }
   JS_LOCAL_ARRAY env = JS_NEW_ARRAY();
   WCHAR* p = environment;

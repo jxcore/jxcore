@@ -5,6 +5,7 @@ Prerequisites (Unix only):
     * GNU Make 3.81 or newer
     * libexecinfo (FreeBSD and OpenBSD only)
     * for SpiderMonkey : 'which' python module (sudo easy_install tools/which-1.1.0-py2.7.egg)
+    * for Windows (VS2012+) 
 
 First clone the source codes from Github: (or Download as a .zip file)
 ```bash
@@ -27,6 +28,12 @@ make install
 make install
 ```
 
+On Windows;
+
+```
+/ $> vcbuild.bat
+```
+
 After a successful compilation process, you should have jxcore installed into `/jxcoreSM/bin` or `/jxcoreV8/bin` folder (depending on the engine selection). 
 
 JXcore internal JavaScript files can be embedded in two ways (compressed, or as-is). If you are planning to use `jx` binary for a native package creation, 
@@ -45,10 +52,20 @@ make install
 make install
 ```
 
+Windows;
+```
+/ $> vcbuild.bat --compress-internals
+```
+
 **Compile as a Static Library** 
 You can compile JXcore as a `static library` and embed it into your solution.
 
-Simply add `--static-library` parameter to one of the above `configure` definitions. You should have the compiled lib files inside the target installation folder.
+Simply add `--static-library` parameter to one of the above `configure` definitions. You should have the compiled lib files inside the target installation folder. 
+
+On Windows;
+```
+/ $> vcbuild.bat --shared-library
+```
 
 **Notes**
 
@@ -59,10 +76,6 @@ non-standard name, run the following instead:
     $PYTHON ./configure
     make
     make install
-
-Windows:
-
-    vcbuild.bat
 
 You can download (latest stable) binaries for various operating systems from  
 [http://jxcore.com/downloads/](http://jxcore.com/downloads/)  

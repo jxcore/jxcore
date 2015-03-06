@@ -1,9 +1,5 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
-
-
-
 var common = require('../common');
 var assert = require('assert');
 var path = require('path');
@@ -110,7 +106,11 @@ assert.equal(require('path').dirname(__filename), __dirname);
 common.debug('load custom file types with extensions');
 require.extensions['.test'] = function(module, filename) {
   var content = fs.readFileSync(filename).toString();
-  assert.equal('this is custom source\n', content);
+  if (process.platform === 'win32')
+    assert.equal('this is custom source\r\n', content);
+  else
+    assert.equal('this is custom source\n', content);
+	
   content = content.replace('this is custom source',
                             'exports.test = \'passed\'');
   module._compile(content, filename);

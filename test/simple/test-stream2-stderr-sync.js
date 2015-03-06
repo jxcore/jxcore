@@ -6,6 +6,9 @@
 var common = require('../common.js');
 var assert = require('assert');
 
+// this test file is not compatible to Windows
+if (process.platform === 'win32') return;
+
 function parent() {
   var spawn = require('child_process').spawn;
   var assert = require('assert');

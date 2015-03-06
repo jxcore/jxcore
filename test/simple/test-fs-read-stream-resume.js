@@ -29,5 +29,8 @@ process.nextTick(function() {
 });
 
 process.on('exit', function() {
-  assert.equal(data, 'xyz\n');
+  if (process.platform === 'win32')
+    assert.equal(data, 'xyz\r\n');
+  else
+    assert.equal(data, 'xyz\n');  
 });

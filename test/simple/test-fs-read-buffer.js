@@ -1,9 +1,5 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
-
-
-
 var common = require('../common');
 var assert = require('assert');
 var path = require('path'),
@@ -11,8 +7,14 @@ var path = require('path'),
     fs = require('fs'),
     filepath = path.join(common.fixturesDir, 'x.txt'),
     fd = fs.openSync(filepath, 'r'),
-    expected = 'xyz\n',
-    bufferAsync = new Buffer(expected.length),
+    expected = 'xyz';
+	
+if (process.platform === 'win32')
+  expected += '\r';
+else
+  expected += '\n';
+  
+var bufferAsync = new Buffer(expected.length),
     bufferSync = new Buffer(expected.length),
     readCalled = 0;
 

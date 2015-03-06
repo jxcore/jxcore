@@ -4,6 +4,7 @@
 #define SRC_PUBLIC_JX_RESULT_H
 
 #include <stdlib.h>
+#include <stdint.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
