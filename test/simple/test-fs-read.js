@@ -1,17 +1,18 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
-
-
-
 var common = require('../common');
 var assert = require('assert');
 var path = require('path'),
     fs = require('fs'),
     filepath = path.join(common.fixturesDir, 'x.txt'),
     fd = fs.openSync(filepath, 'r'),
-    expected = 'xyz\n',
+    expected = 'xyz',
     readCalled = 0;
+	
+if (process.platform === 'win32')
+  expected += '\r';
+else
+  expected += '\n';
 
 fs.read(fd, expected.length, 0, 'utf-8', function(err, str, bytesRead) {
   readCalled++;

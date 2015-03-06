@@ -1,12 +1,13 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
 // This is the same as test/simple/test-crypto, but from before the shift
 // to use buffers by default.
 
-
 var common = require('../common');
 var assert = require('assert');
+
+// this test file is not compatible to Windows
+if (process.platform === 'win32') return;
 
 try {
   var crypto = require('crypto');

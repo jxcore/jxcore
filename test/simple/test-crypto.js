@@ -3,6 +3,9 @@
 var common = require('../common');
 var assert = require('assert');
 
+// this test file is not compatible to Windows
+if (process.platform === 'win32') return;
+
 try {
   var crypto = require('crypto');
 } catch (e) {
