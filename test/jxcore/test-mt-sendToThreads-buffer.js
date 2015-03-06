@@ -10,6 +10,7 @@ var assert = jx.assert;
 //process.keepAlive();
 
 var buf = new Buffer(20);
+buf.fill(20);
 buf.write("some string", 0);
 var str = buf.toString();
 var finished = false;
