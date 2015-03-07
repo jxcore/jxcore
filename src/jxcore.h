@@ -7,6 +7,12 @@
 
 namespace jxcore {
 
+struct JXMethod {
+  JS_NATIVE_METHOD native_method_;
+  bool is_native_method_;
+  int interface_id_;
+};
+
 class JXEngine {
   bool self_hosted_;
   node::commons *main_node_;
@@ -15,7 +21,7 @@ class JXEngine {
   bool instance_inited_;
   std::string entry_file_name_;
 
-  std::map<std::string, JS_NATIVE_METHOD> methods_to_initialize_;
+  std::map<std::string, JXMethod> methods_to_initialize_;
 
 #if defined(JS_ENGINE_MOZJS)
   JS_PERSISTENT_OBJECT global_;
@@ -75,6 +81,9 @@ class JXEngine {
   // Defines a native method under process.natives (returns true if it succeeds)
   bool DefineNativeMethod(const char *name, JS_NATIVE_METHOD method);
 
+  bool DefineProxyMethod(const char *name, const int interface_id,
+                         JS_NATIVE_METHOD method);
+
   // returns the JXEngine instance for the actual thread
   static JXEngine *ActiveInstance();
 
@@ -93,7 +102,8 @@ class JXEngine {
   static bool ConvertToJXResult(node::commons *com, JS_HANDLE_VALUE_REF ret_val,
                                 JXResult *result);
 
-  static JS_HANDLE_VALUE ConvertFromJXResult(node::commons *com, JXResult *result);
+  static JS_HANDLE_VALUE ConvertFromJXResult(node::commons *com,
+                                             JXResult *result);
 };
 }  // namespace jxcore
 

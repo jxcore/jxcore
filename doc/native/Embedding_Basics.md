@@ -109,6 +109,8 @@ return: undefined
 In order to compile above source code (lets say you saved it into sample.cpp)
 Scripts below assumes you've compiled JXcore static libraries for x64 architecture. In case you did that for 32 bit, you should add `-m32` argument to the below scripts.
 
+Besides the architecture, if you have compiled JXcore with V8 engine, you should replace `libmozjs.a` below to `libv8_base.a` and also add `libv8_nosnapshot.a`
+
 OSX :
 ```bash
 g++ sample.cpp -stdlib=libstdc++ -lstdc++ -std=c++11 -O3 -I/targetFolder/include/node/public \

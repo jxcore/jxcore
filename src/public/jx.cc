@@ -4,38 +4,81 @@
 #include "../jxcore.h"
 #include <stdio.h>
 #include <string.h>
-#include "jx_wrapper_internal.h"
-
-DEFINE_WRAPPER_VARIABLES();
-static int extension_id = 0;
 
 jxcore::JXEngine *engine = NULL;
 JX_CALLBACK jx_callback;
 char *argv = NULL;
 char *app_args[2];
 
+// allocates one extra JXResult memory at the end of the array
+// Uses that one for a return value
+#define CONVERT_ARG_TO_RESULT(results, context)                   \
+  JXResult *results = NULL;                                       \
+  const int len = args.Length() - start_arg;                      \
+  {                                                               \
+    results = (JXResult *)malloc(sizeof(JXResult) * (len + 1));   \
+    for (int i = 0; i < len; i++) {                               \
+      JS_HANDLE_VALUE val = args.GetItem(i - start_arg);          \
+      results[i].context_ = context;                              \
+      results[i].data_ = NULL;                                    \
+      results[i].size_ = 0;                                       \
+      results[i].type_ = RT_Undefined;                            \
+      jxcore::JXEngine::ConvertToJXResult(com, val, &results[i]); \
+    }                                                             \
+    results[len].context_ = context;                              \
+    results[len].data_ = NULL;                                    \
+    results[len].size_ = 0;                                       \
+    results[len].type_ = RT_Undefined;                            \
+  }
+
 JS_LOCAL_METHOD(asyncCallback) {
+  const int start_arg = 0;
   CONVERT_ARG_TO_RESULT(results, __contextORisolate);
   jx_callback(results, len);
   free(results);
 }
 JS_METHOD_END
 
-DEFINE_WRAPPER_HOSTS();
+static int extension_id = 0;
+#define MAX_CALLBACK_ID 1024
+static JX_CALLBACK callbacks[MAX_CALLBACK_ID] = {0};
+
+JS_LOCAL_METHOD(extensionCallback) {
+  if (args.Length() == 0 || !args.IsUnsigned(0)) {
+    THROW_EXCEPTION("This method expects the first parameter is unsigned");
+  }
+
+  const int interface_id = args.GetInteger(0);
+  if (interface_id >= MAX_CALLBACK_ID || callbacks[interface_id] == NULL)
+    THROW_EXCEPTION("There is no extension method for given Id");
+
+  const int start_arg = 1;
+  CONVERT_ARG_TO_RESULT(results, __contextORisolate);
+
+  callbacks[interface_id](results, len);
+  if (results[len].type_ != RT_Undefined) {
+    if (results[len].type_ == RT_Error) {
+      std::string msg = JX_GetString(&results[len]);
+      JX_FreeResultData(&results[len]);
+      THROW_EXCEPTION(msg.c_str());
+    }
+    JS_HANDLE_VALUE ret_val =
+        jxcore::JXEngine::ConvertFromJXResult(com, &results[len]);
+    JX_FreeResultData(&results[len]);
+    RETURN_PARAM(ret_val);
+  }
+}
+JS_METHOD_END
 
 void JX_DefineExtension(const char *name, JX_CALLBACK callback) {
   int id = extension_id++;
-  assert ( (id < MAX_WRAPPERS_COUNT) && "You have reached beyond the maximum extension slots");
-  extensions[id] = callback;
-  engine->DefineNativeMethod(name, wrappers[id]);
+  assert(id < MAX_CALLBACK_ID &&
+         "Maximum amount of extension methods reached.");
+  callbacks[id] = callback;
+  engine->DefineProxyMethod(name, id, extensionCallback);
 }
 
 void JX_Initialize(const char *home_folder, JX_CALLBACK callback) {
-  static bool first_initialize_ = true;
-  if (first_initialize_) {
-    first_initialize_ = false;
-    DEFINE_WRAPPERS();
-  }
   jx_callback = callback;
 
 #if defined(__IOS__) || defined(__ANDROID__) || defined(DEBUG)

@@ -75,7 +75,7 @@ static bool use_sni = false;
 
 bool no_deprecation;
 
-#ifdef __IOS__
+#if defined(__IOS__)  || defined(__ANDROID__)
 char* app_sandbox_folder = NULL;
 #endif
 
@@ -671,7 +671,7 @@ static JS_LOCAL_METHOD(Chdir) {
 JS_METHOD_END
 
 static JS_LOCAL_METHOD(Cwd) {
-#ifdef __IOS__
+#if defined(__IOS__)  || defined(__ANDROID__)
   // iOS getcwd returns / no matter what. iOS sandboxed app folder has nothing
   // related to
   // documents etc. folder. Besides, sandboxed app folder location is not
@@ -2011,7 +2011,7 @@ void SetupProcessObject(const int threadId) {
     JS_NAME_SET(process, JS_STRING_ID("execPath"),
                 STD_TO_STRING(active_engine->argv_[0]));
   } else {
-#ifdef __IOS__
+#if defined(__IOS__)  || defined(__ANDROID__)
     if (app_sandbox_folder != NULL) {
       free(app_sandbox_folder);
       app_sandbox_folder = NULL;
