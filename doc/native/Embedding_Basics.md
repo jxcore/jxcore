@@ -18,6 +18,7 @@ The sample below demonstrates a basic usage of the interface
 #include <stdlib.h>
 #include <string.h>
 #include <sstream>
+#include <unistd.h>
 
 #include "jx.h"
 
@@ -106,14 +107,26 @@ return: undefined
 ```
 
 In order to compile above source code (lets say you saved it into sample.cpp)
+Scripts below assumes you've compiled JXcore static libraries for x64 architecture. In case you did that for 32 bit, you should add `-m32` argument to the below scripts.
+
+OSX :
 ```bash
-g++ sample.cpp -stdlib=libstdc++ -lstdc++ -m32 -std=c++11 -O3 -I/targetFolder/include/node/public \
+g++ sample.cpp -stdlib=libstdc++ -lstdc++ -std=c++11 -O3 -I/targetFolder/include/node/public \
     /targetFolder/bin/libcares.a	/targetFolder/bin/libjx.a /targetFolder/bin/libsqlite3.a \
     /targetFolder/bin/libchrome_zlib.a /targetFolder/bin/libmozjs.a  /targetFolder/bin/libuv.a \
-    /targetFolder/bin/libhttp_parser.a	/targetFolder/bin/libopenssl.a -Wl \
+    /targetFolder/bin/libhttp_parser.a	/targetFolder/bin/libopenssl.a \
+    -Wno-c++11-compat-deprecated-writable-strings -Wl -framework CoreServices -o sample
+```
+
+Linux:
+```bash
+g++ sample.cpp -lstdc++ -std=c++11 -pthread -O3 -Wno-write-strings -I/targetFolder/include/node/public \
+    -fno-rtti /targetFolder/bin/libjx.a /targetFolder/bin/libsqlite3.a \
+    /targetFolder/bin/libchrome_zlib.a /targetFolder/bin/libmozjs.a  /targetFolder/bin/libuv.a \
+    /targetFolder/bin/libhttp_parser.a	/targetFolder/bin/libopenssl.a  \
+    -ldl /targetFolder/bin/libcares.a \
     -o sample
 ```
 
-If you are compiling it under OSX, you should also add `-framework CoreServices` before `-o` 
 
 That's It!
