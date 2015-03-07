@@ -4,6 +4,10 @@
 #include "../jxcore.h"
 #include <stdio.h>
 #include <string.h>
+#include "jx_wrapper_internal.h"
+
+DEFINE_WRAPPER_VARIABLES();
+static int extension_id = 0;
 
 jxcore::JXEngine *engine = NULL;
 JX_CALLBACK jx_callback;
@@ -11,26 +15,27 @@ char *argv = NULL;
 char *app_args[2];
 
 JS_LOCAL_METHOD(asyncCallback) {
-  const int len = args.Length();
-  JXResult *results = (JXResult *)malloc(sizeof(JXResult) * len);
-  for (int i = 0; i < len; i++) {
-    JS_HANDLE_VALUE val = args.GetItem(i);
-#ifdef JS_ENGINE_MOZJS
-    results[i].context_ = __contextORisolate;
-#endif
-    results[i].data_ = NULL;
-    results[i].size_ = 0;
-    results[i].type_ = RT_Undefined;
-
-    jxcore::JXEngine::ConvertToJXResult(com, val, &results[i]);
-  }
-
+  CONVERT_ARG_TO_RESULT(results, __contextORisolate);
   jx_callback(results, len);
   free(results);
 }
 JS_METHOD_END
 
+DEFINE_WRAPPER_HOSTS();
+
+void JX_DefineExtension(const char *name, JX_CALLBACK callback) {
+  int id = extension_id++;
+  assert ( (id < MAX_WRAPPERS_COUNT) && "You have reached beyond the maximum extension slots");
+  extensions[id] = callback;
+  engine->DefineNativeMethod(name, wrappers[id]);
+}
+
 void JX_Initialize(const char *home_folder, JX_CALLBACK callback) {
+  static bool first_initialize_ = true;
+  if (first_initialize_) {
+    first_initialize_ = false;
+    DEFINE_WRAPPERS();
+  }
   jx_callback = callback;
 
 #if defined(__IOS__) || defined(__ANDROID__) || defined(DEBUG)
@@ -65,8 +70,7 @@ bool JX_Evaluate(const char *data, const char *script_name,
                  JXResult *jxresult) {
   char *str;
   if (engine == NULL) {
-    error_console(
-        "JXcore engine is not ready yet! (jx.cc:Evaluate)\n");
+    error_console("JXcore engine is not ready yet! (jx.cc:Evaluate)\n");
     str = strdup("undefined");
     return str;
   }
@@ -78,8 +82,7 @@ bool JX_Evaluate(const char *data, const char *script_name,
 
 void JX_DefineMainFile(const char *data) {
   if (engine == NULL) {
-    error_console(
-        "JXcore engine is not ready yet! (jx.cc:DefineMainFile)\n");
+    error_console("JXcore engine is not ready yet! (jx.cc:DefineMainFile)\n");
     return;
   }
 
@@ -88,8 +91,7 @@ void JX_DefineMainFile(const char *data) {
 
 void JX_DefineFile(const char *name, const char *file) {
   if (engine == NULL) {
-    error_console(
-        "JXcore engine is not ready yet! (jx.cc:DefineFile)\n");
+    error_console("JXcore engine is not ready yet! (jx.cc:DefineFile)\n");
     return;
   }
 
@@ -98,8 +100,7 @@ void JX_DefineFile(const char *name, const char *file) {
 
 void JX_StartEngine() {
   if (engine == NULL) {
-    error_console(
-        "JXcore engine is not ready yet! (jx.cc:StartEngine)\n");
+    error_console("JXcore engine is not ready yet! (jx.cc:StartEngine)\n");
     return;
   }
 
@@ -150,8 +151,7 @@ bool JX_IsSpiderMonkey() {
 
 void JX_StopEngine() {
   if (engine == NULL) {
-    error_console(
-        "JXcore engine is not ready yet! (jx.cc:StopEngine)\n");
+    error_console("JXcore engine is not ready yet! (jx.cc:StopEngine)\n");
     return;
   }
 

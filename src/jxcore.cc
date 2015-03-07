@@ -964,12 +964,49 @@ char *Stringify(node::commons *com, JS_HANDLE_OBJECT obj, size_t *data_length) {
     return false;                                                             \
   }
 
+JS_HANDLE_VALUE JXEngine::ConvertFromJXResult(node::commons *com,
+                                              JXResult *result) {
+  JS_ENTER_SCOPE();
+  JS_DEFINE_STATE_MARKER(com);
+
+  switch (result->type_) {
+    case RT_Undefined:
+      return JS_LEAVE_SCOPE(JS_UNDEFINED());
+      break;
+    case RT_Null:
+      return JS_LEAVE_SCOPE(JS_NULL());
+      break;
+    case RT_Int32:
+      return JS_LEAVE_SCOPE(STD_TO_NUMBER(JX_GetInt32(result)));
+      break;
+    case RT_Double:
+      return JS_LEAVE_SCOPE(STD_TO_NUMBER(JX_GetDouble(result)));
+      break;
+    case RT_Boolean:
+      return JS_LEAVE_SCOPE(STD_TO_BOOLEAN(JX_GetBoolean(result)));
+      break;
+    case RT_Error:
+    case RT_String:
+    case RT_JSON:
+      return JS_LEAVE_SCOPE(STD_TO_STRING(JX_GetString(result)));
+      break;
+    case RT_Buffer: {
+      node::Buffer *buff = node::Buffer::New(JX_GetString(result),
+                                             JX_GetDataLength(result), com);
+      return JS_LEAVE_SCOPE(JS_VALUE_TO_OBJECT(buff->handle_));
+    } break;
+    default:
+      assert(0 && "This type id is not supported by JXResult");
+  }
+
+  // :/ for compiler warning
+  return JS_LEAVE_SCOPE(JS_UNDEFINED());
+}
+
 bool JXEngine::ConvertToJXResult(node::commons *com,
                                  JS_HANDLE_VALUE_REF ret_val,
                                  JXResult *result) {
-#ifdef JS_ENGINE_MOZJS
   assert(result->context_);
-#endif
   JS_DEFINE_STATE_MARKER(com);
 
   if (JS_IS_NULL(ret_val)) {
@@ -1051,9 +1088,7 @@ bool JXEngine::Evaluate(const char *source, const char *filename,
   node::commons *com = main_node_;
 
   SET_UNDEFINED(result);
-#ifdef JS_ENGINE_MOZJS
   result->context_ = __contextORisolate;
-#endif
 
   JS_LOCAL_STRING source_ = UTF8_TO_STRING(source);
   JS_LOCAL_STRING filename_ = STD_TO_STRING(filename);
@@ -1069,7 +1104,7 @@ bool JXEngine::Evaluate(const char *source, const char *filename,
   JS_LOCAL_VALUE ret_val = JS_SCRIPT_RUN(script);
 
   if (try_catch.HasCaught()) {
-	MANAGE_EXCEPTION
+    MANAGE_EXCEPTION
   }
 
   return JXEngine::ConvertToJXResult(com, ret_val, result);

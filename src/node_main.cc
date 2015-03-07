@@ -3,27 +3,13 @@
 #include "jxcore.h"
 #include "jx/job.h"
 
-// #define RUN_AS_EMBEDDED 1
-
 void run(int argc, char *argv[]) {
-#ifdef RUN_AS_EMBEDDED
-  jxcore::JXEngine engine(argc, argv, false);
-#else
   jxcore::JXEngine engine(argc, argv, true);
-#endif
+
   engine.Init();
   engine.Start();
 
-#ifdef RUN_AS_EMBEDDED
-  engine.LoopOnce();
-  JXResult res;
-  engine.Evaluate("console.log('embedded instance is started');",
-                  "embedded_eval", &res);
-  while (engine.LoopOnce() != 0) usleep(1);
-  engine.Destroy();
-#else
   engine.ShutDown();
-#endif
 }
 
 #ifdef _WIN32

@@ -92,6 +92,8 @@ class JXEngine {
 
   static bool ConvertToJXResult(node::commons *com, JS_HANDLE_VALUE_REF ret_val,
                                 JXResult *result);
+
+  static JS_HANDLE_VALUE ConvertFromJXResult(node::commons *com, JXResult *result);
 };
 }  // namespace jxcore
 

@@ -2042,7 +2042,7 @@ void SetupProcessObject(const int threadId) {
   JS_NAME_SET(process, JS_STRING_ID("IsAndroid"), STD_TO_BOOLEAN(true));
 #endif
 
-#if defined(__IOS__)
+#if defined(__IOS__) || defined(__ANDROID__)
   // iOS documents folder is on separate location
   // mobile embedded application is expected to return
   // this location via argv[0]

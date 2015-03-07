@@ -49,6 +49,16 @@ bool JX_GetBoolean(JXResult *result);
 char *JX_GetString(JXResult *result);
 int32_t JX_GetDataLength(JXResult *result);
 
+void JX_SetInt32(JXResult *result, const int32_t val);
+void JX_SetDouble(JXResult *result, const double val);
+void JX_SetBoolean(JXResult *result, const bool val);
+void JX_SetString(JXResult *result, const char* val, const int32_t length);
+void JX_SetJSON(JXResult *result, const char* val, const int32_t length);
+void JX_SetError(JXResult *result, const char* val, const int32_t length);
+void JX_SetBuffer(JXResult *result, const char* val, const int32_t length);
+void JX_SetUndefined(JXResult *result);
+void JX_SetNull(JXResult *result);
+
 void JX_FreeResultData(JXResult *result);
 
 #ifdef __cplusplus
