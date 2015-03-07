@@ -640,6 +640,7 @@ void DeclareProxy(node::commons *com, JS_HANDLE_OBJECT_REF methods,
 
   JS_LOCAL_FUNCTION defineProxy = JS_CAST_FUNCTION(JS_COMPILE_AND_RUN(
       STD_TO_STRING(script), STD_TO_STRING("proxy_method:script")));
+  free(script);
 
   JS_LOCAL_OBJECT obj = JS_NEW_EMPTY_OBJECT();
   JS_LOCAL_OBJECT temp = JS_NEW_EMPTY_OBJECT();
