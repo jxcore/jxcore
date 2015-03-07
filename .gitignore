@@ -88,4 +88,5 @@ deps/openssl/openssl.xml
 _auto_*
 tmp_jx
 
-test/simple/test-process-config.js-config.gypi_sm
+*.gypi_sm
+*.gypi_v8
