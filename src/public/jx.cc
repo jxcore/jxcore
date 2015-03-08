@@ -18,7 +18,7 @@ char *app_args[2];
   {                                                               \
     results = (JXResult *)malloc(sizeof(JXResult) * (len + 1));   \
     for (int i = 0; i < len; i++) {                               \
-      JS_HANDLE_VALUE val = args.GetItem(i - start_arg);          \
+      JS_HANDLE_VALUE val = args.GetItem(i + start_arg);          \
       results[i].context_ = context;                              \
       results[i].data_ = NULL;                                    \
       results[i].size_ = 0;                                       \
