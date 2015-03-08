@@ -637,7 +637,8 @@ bool commons::CheckMemoryLimit() {
 
   if (rss >= (size_t)commons::maxMemory) {
     error_console(
-        "The application has reached beyond the pre-defined memory limits (%ld >= "
+        "The application has reached beyond the pre-defined memory limits (%ld "
+        ">= "
         "%ld)\n",
         rss / 1024, commons::maxMemory / 1024);
     abort();

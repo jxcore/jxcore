@@ -995,7 +995,7 @@ JS_HANDLE_VALUE Parse(node::commons *com, const char *str,
     com->JSONparse = JS_NEW_PERSISTENT_FUNCTION(_JSONparse);
   }
 
-  JS_LOCAL_VALUE args[1] = { str_value };
+  JS_LOCAL_VALUE args[1] = {str_value};
   JS_LOCAL_VALUE result =
       JS_METHOD_CALL(com->JSONparse, JS_GET_GLOBAL(), 1, args);
 

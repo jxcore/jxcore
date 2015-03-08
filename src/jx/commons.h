@@ -318,7 +318,7 @@ class commons {
   void setMainIsolate();
 
 #ifdef JS_ENGINE_MOZJS
-  std::list<JSContext*> free_context_list_;
+  std::list<JSContext *> free_context_list_;
 #endif
 };
 

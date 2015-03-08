@@ -21,7 +21,7 @@ void JX_DefineFile(const char *name, const char *script);
 
 void JX_StartEngine();
 
-void JX_DefineExtension(const char* name, JX_CALLBACK callback);
+void JX_DefineExtension(const char *name, JX_CALLBACK callback);
 
 int JX_LoopOnce();
 
