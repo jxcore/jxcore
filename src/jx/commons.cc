@@ -243,6 +243,7 @@ void commons::Dispose() {
 
   JS_CLEAR_PERSISTENT(cloneObjectMethod);
   JS_CLEAR_PERSISTENT(JSONstringify);
+  JS_CLEAR_PERSISTENT(JSONparse);
   JS_CLEAR_PERSISTENT(process_);
 
   stringOPS(false);

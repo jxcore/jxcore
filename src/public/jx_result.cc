@@ -90,8 +90,8 @@ void JX_FreeResultData(JXResult *result) {
 }
 
 // For MozJS implementation, JXString memory is managed by SpiderMonkey.
-// In order not to call strdup on JSON, and String return types, below will
-// use SM interface for other types to make it consistent.
+// In order not to call strdup on JSON, and String return types, we will
+// also use SM interface for other types to make it consistent.
 #ifdef JS_ENGINE_V8
 #define ALLOC_MEMORY(type, size) (type *) malloc(sizeof(type) * size)
 #elif defined(JS_ENGINE_MOZJS)

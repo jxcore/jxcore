@@ -944,19 +944,18 @@ char *Stringify(node::commons *com, JS_HANDLE_OBJECT obj, size_t *data_length) {
       JS_LOCAL_FUNCTION _JSONstringify = JS_CAST_FUNCTION(
           JS_COMPILE_AND_RUN(STD_TO_STRING(
                                  "(function(obj, is_function) {\n"
-                                 "try {\n"
-                                 "if(is_function)\n"
-                                 "{\n"
-                                 "var b={};\n"
-                                 "for(var o in obj){\n"
-                                 "b[o] = obj[o];\n"
-                                 "}\n"
-                                 "obj = b;\n"
-                                 "}\n"
-                                 "return JSON.stringify(obj);\n"
-                                 "} catch (e) {\n"
-                                 "return 'undefined';\n"
-                                 "}\n"
+                                 "  try {\n"
+                                 "    if(is_function) {\n"
+                                 "      var b={};\n"
+                                 "      for (var o in obj) {\n"
+                                 "        b[o] = obj[o];\n"
+                                 "      }\n"
+                                 "      obj = b;\n"
+                                 "    }\n"
+                                 "    return JSON.stringify(obj);\n"
+                                 "  } catch (e) {\n"
+                                 "    return 'undefined';\n"
+                                 "  }\n"
                                  "});"),
                              STD_TO_STRING("binding:stringify")));
       com->JSONstringify = JS_NEW_PERSISTENT_FUNCTION(_JSONstringify);
@@ -973,6 +972,34 @@ char *Stringify(node::commons *com, JS_HANDLE_OBJECT obj, size_t *data_length) {
   str.DisableAutoGC();
   *data_length = str.Utf8Length();
   return *str;
+}
+
+JS_HANDLE_VALUE Parse(node::commons *com, const char *str,
+                      const size_t length) {
+  JS_ENTER_SCOPE();
+  JS_DEFINE_STATE_MARKER(com);
+
+  JS_LOCAL_STRING str_value = UTF8_TO_STRING_WITH_LENGTH(str, length);
+  // Init
+  if (JS_IS_EMPTY((com->JSONparse))) {
+    JS_LOCAL_FUNCTION _JSONparse =
+        JS_CAST_FUNCTION(JS_COMPILE_AND_RUN(STD_TO_STRING(
+                                                "(function(str) {\n"
+                                                "  try {\n"
+                                                "    return JSON.parse(str);\n"
+                                                "  } catch (e) {\n"
+                                                "    return e;\n"
+                                                "  }\n"
+                                                "});"),
+                                            STD_TO_STRING("binding:parse")));
+    com->JSONparse = JS_NEW_PERSISTENT_FUNCTION(_JSONparse);
+  }
+
+  JS_LOCAL_VALUE args[1] = { str_value };
+  JS_LOCAL_VALUE result =
+      JS_METHOD_CALL(com->JSONparse, JS_GET_GLOBAL(), 1, args);
+
+  return JS_LEAVE_SCOPE(result);
 }
 
 // For MozJS implementation, JXString memory is managed by SpiderMonkey.
@@ -1030,9 +1057,12 @@ JS_HANDLE_VALUE JXEngine::ConvertFromJXResult(node::commons *com,
     case RT_Boolean:
       return JS_LEAVE_SCOPE(STD_TO_BOOLEAN(JX_GetBoolean(result)));
       break;
+    case RT_JSON: {
+      return JS_LEAVE_SCOPE(
+          Parse(com, JX_GetString(result), JX_GetDataLength(result)));
+    } break;
     case RT_Error:
     case RT_String:
-    case RT_JSON:
       return JS_LEAVE_SCOPE(STD_TO_STRING(JX_GetString(result)));
       break;
     case RT_Buffer: {

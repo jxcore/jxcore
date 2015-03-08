@@ -267,6 +267,7 @@ class commons {
   JS_PERSISTENT_FUNCTION cloneObjectMethod;
 
   JS_PERSISTENT_FUNCTION JSONstringify;
+  JS_PERSISTENT_FUNCTION JSONparse;
 
   JS_PERSISTENT_FUNCTION_TEMPLATE ws_constructor_template;
   JS_PERSISTENT_FUNCTION_TEMPLATE wc_constructor_template;

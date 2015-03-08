@@ -35,6 +35,11 @@ JS_LOCAL_METHOD(asyncCallback) {
   const int start_arg = 0;
   CONVERT_ARG_TO_RESULT(results, __contextORisolate);
   jx_callback(results, len);
+
+  for (int i = 0; i < len; i++) {
+    JX_FreeResultData(&results[i]);
+  }
+
   free(results);
 }
 JS_METHOD_END
@@ -56,6 +61,11 @@ JS_LOCAL_METHOD(extensionCallback) {
   CONVERT_ARG_TO_RESULT(results, __contextORisolate);
 
   callbacks[interface_id](results, len);
+
+  for (int i = 0; i < len; i++) {
+    JX_FreeResultData(&results[i]);
+  }
+
   if (results[len].type_ != RT_Undefined) {
     if (results[len].type_ == RT_Error) {
       std::string msg = JX_GetString(&results[len]);
