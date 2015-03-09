@@ -506,8 +506,7 @@ The list below covers all the core features supported; (JS api)
  - test-zlib-zero-byte.js
  - test-zlib.js
 
- We do also need tests for the native interface. A single tweaked version of jxcore-cordova plugin is enough the test
- the native interface against to mobile and desktop targets. For desktop emulate a jxcore-cordova like bridge.
+ We do also need tests for the native interface. A single tweaked version of jxcore-cordova plugin is enough the test the native interface against to mobile and desktop targets. For desktop emulate a jxcore-cordova like bridge.
 
  - test-new-instance
  - test-new-instance-thread
