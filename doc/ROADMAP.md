@@ -10,12 +10,16 @@ SM Build: Beta
 (@) help us to make it sooner
 
 ### Current Release Roadmap*
+* [Mobile Test Cases](https://github.com/jxcore/jxcore/blob/master/doc/TODO%20-%20Testing.md) (@)
+* Native Public API Documentation (@)
+* JXcore build time native module embedding (@)
 * Android, iOS sample projects (+)
-* Windows Build Script (+)
+* Windows Build Script (SM) (+)
 * Debugger support for SpiderMonkey (@)
+* Debugging from Mobile Applications (@)
 * Compiled JavaScript for Mobile Applications (+)
-* WinRT (+)
-* PowerPC (Linux) (+)
+* WinRT (@)
+* PowerPC (Linux) (@)
 * Stable Release (@)
 
 
