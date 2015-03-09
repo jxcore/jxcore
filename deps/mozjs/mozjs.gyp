@@ -221,12 +221,9 @@
        'src/vm/Compression.cpp',
        'src/vm/ArrayBufferObject.cpp',
        'src/vm/WeakMapPtr.cpp',
-     
-       'src/vm/PosixNSPR.cpp',
       ],
       
       'defines': [
-        'JS_POSIX_NSPR',
         'HAVE_VA_LIST_AS_ARRAY=1',
         'DISABLE_SHARED_JS=1',
         'STATIC_JS_API=1',
@@ -424,9 +421,10 @@
            'cflags': [
              '-pthread'
            ],
-           'defines': [ 'XP_UNIX', 'MOZ_CHAR16_IS_NOT_WCHAR' ], 
+           'defines': [ 'XP_UNIX', 'MOZ_CHAR16_IS_NOT_WCHAR', 'JS_POSIX_NSPR' ], 
            'sources': [
              'src/jit/ExecutableAllocatorPosix.cpp',
+             'src/vm/PosixNSPR.cpp',
            ],
            'actions': [
            {
