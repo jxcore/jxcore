@@ -22,7 +22,11 @@ The sample below demonstrates a basic usage of the interface
 
 #include "jx.h"
 
-#define flush_console(...) do { fprintf(stdout, __VA_ARGS__); fflush(stdout); } while(0)
+#define flush_console(...)        \
+  do {                            \
+    fprintf(stdout, __VA_ARGS__); \
+    fflush(stdout);               \
+  } while (0)
 
 void ConvertResult(JXResult *result, std::string &to_result) {
   switch (result->type_) {
@@ -62,10 +66,14 @@ void ConvertResult(JXResult *result, std::string &to_result) {
 }
 
 void callback(JXResult *results, int argc) {
-  flush_console("received a callback ");
+  // do nothing
+}
+
+void sampleMethod(JXResult *results, int argc) {
+  flush_console("sampleMethod Called;\n");
 
   std::stringstream ss_result;
-  for (int i=0; i<argc; i++) {
+  for (int i = 0; i < argc; i++) {
     std::string str_result;
     ConvertResult(&results[i], str_result);
     ss_result << i << " : ";
@@ -73,27 +81,40 @@ void callback(JXResult *results, int argc) {
   }
 
   flush_console("%s", ss_result.str().c_str());
+
+  // return an Array back to JS Land
+  const char *str = "[1, 2, 3]";
+
+  // results[argc] corresponds to return value
+  JX_SetJSON(&results[argc], str, strlen(str));
 }
 
-
-int main(int argc, char **args){
+int main(int argc, char **args) {
   char *path = args[0];
   JX_Initialize(path, callback);
 
   char *contents = "console.log('hello world');";
   JX_DefineMainFile(contents);
+
+  JX_DefineExtension("sampleMethod", sampleMethod);
   JX_StartEngine();
 
-  // or JX_Loop() without usleep
-  while(JX_LoopOnce() != 0) usleep(1);
+  // loop for possible IO
+  // or JX_Loop() without usleep / while
+  while (JX_LoopOnce() != 0) usleep(1);
 
   JXResult result;
-  JX_Evaluate("process.natives.asyncCallback(Date.now());", "myscript", &result);
+  JX_Evaluate(
+      "var arr = process.natives.sampleMethod('String Parameter', {foo:1}); \n"
+      "console.log('result: ', arr, 'length:', arr.length ); \n"
+      "setTimeout(function() { \n"
+      "  console.log('end!'); \n"
+      "}, 100);",
+      "myscript", &result);
 
-  std::string str_result;
-  ConvertResult(&result, str_result);
-
-  flush_console("return: %s\n", str_result.c_str());
+  // loop for possible IO
+  // or JX_Loop() without usleep / while
+  while (JX_LoopOnce() != 0) usleep(1);
 
   JX_StopEngine();
 }
@@ -102,14 +123,14 @@ int main(int argc, char **args){
 Expected output should be;
 ```
 hello world
-received a callback 0 : 1.42549e+12
-return: undefined
+sampleMethod Called;
+0 : String Parameter
+1 : {"foo":1}
+result:  [ 1, 2, 3 ] length: 3
+end!
 ```
 
-In order to compile above source code (lets say you saved it into sample.cpp)
-Scripts below assumes you've compiled JXcore static libraries for x64 architecture. In case you did that for 32 bit, you should add `-m32` argument to the below scripts.
-
-Besides the architecture, if you have compiled JXcore with V8 engine, you should replace `libmozjs.a` below to `libv8_base.a` and also add `libv8_nosnapshot.a`
+In order to compile the source codes above (lets say you saved it into sample.cpp)
 
 OSX :
 ```bash
@@ -130,5 +151,8 @@ g++ sample.cpp -lstdc++ -std=c++11 -pthread -O3 -Wno-write-strings -I/targetFold
     -o sample
 ```
 
+Scripts above assumes you've compiled JXcore static libraries for x64 architecture. In case you did that for 32 bit, you should add `-m32` argument.
+
+Besides the architecture, if you have compiled JXcore with V8 engine, you should replace `libmozjs.a` above to `libv8_base.a` and also add `libv8_nosnapshot.a`
 
 That's It!
