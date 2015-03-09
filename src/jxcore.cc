@@ -331,15 +331,12 @@ char **JXEngine::Init(int argc, char *argv[], bool engine_inited_already) {
 // com->node_isolate = Isolate::GetCurrent();
 
 #if defined(JS_ENGINE_V8)
-  main_node_->node_isolate = JS_CURRENT_ENGINE();
   if (!engine_inited_already) v8::V8::SetFatalErrorHandler(node::OnFatalError);
 #elif defined(JS_ENGINE_MOZJS)
   JS_SetErrorReporter(main_node_->node_isolate->ctx_, node::OnFatalError);
 #endif
 
   if (!engine_inited_already) {
-    main_node_->setMainIsolate();
-
     // If the --debug flag was specified then initialize the debug thread.
     if (main_node_->use_debug_agent) {
       node::EnableDebug(main_node_->debug_wait_connect, main_node_);
@@ -503,6 +500,7 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
     main_node_ = new node::commons(0);
     main_node_->node_isolate = ENGINE_NS::Isolate::New(0);
     main_iso_ = *main_node_->node_isolate;
+    main_node_->setMainIsolate();
   } else {
     main_node_ = node::commons::newInstance(actual_thread_id);
     main_iso_ = *main_node_->node_isolate;
@@ -522,6 +520,10 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
     v8::HandleScope handle_scope;
     v8::Persistent<v8::Context> context = v8::Context::New();
     v8::Context::Scope context_scope(context);
+    if (actual_thread_id == 0) {
+      main_node_->node_isolate = v8::Isolate::GetCurrent();
+      main_node_->setMainIsolate();
+    }
 #elif defined(JS_ENGINE_MOZJS)
     JSAutoRequest ar(ctx);
     JS::RootedObject global(ctx, jxcore::NewGlobalObject(ctx));
@@ -684,6 +686,7 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
     main_node_ = new node::commons(0);
     main_node_->node_isolate = ENGINE_NS::Isolate::New(0);
     main_iso_ = *main_node_->node_isolate;
+    main_node_->setMainIsolate();
   } else {
     main_node_ = node::commons::newInstance(actual_thread_id);
     main_iso_ = *main_node_->node_isolate;
@@ -842,6 +845,11 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
   v8::HandleScope handle_scope;
   context_ = v8::Context::New();
   v8::Context::Scope context_scope(context_);
+
+  if (actual_thread_id == 0) {
+    main_node_->node_isolate = v8::Isolate::GetCurrent();
+    main_node_->setMainIsolate();
+  }
 
   node::SetupProcessObject(actual_thread_id);
   JS_HANDLE_OBJECT process_l = main_node_->getProcess();
