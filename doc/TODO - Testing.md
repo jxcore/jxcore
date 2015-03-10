@@ -8,8 +8,8 @@ application.
 It is possible to redirect application logs (console.log / console.error) to a separate file on the host system. 
 We might need a tweaked version of the Cordova app for testing purposes.
 
-We can not expect some core features are working for **mobile** targets;
- - cluster (JXcore provides multithreading (parallel JavaScript))
+We can not expect some core features working for **mobile** targets;
+ - cluster (JXcore provides multithreading - parallel JavaScript)
  - debugger (will be supported later)
  - REPL (no use case on mobile)
  - Readline (no use case on mobile)
@@ -509,7 +509,7 @@ The list below covers all the core features supported; (JS api)
 ```
 
 ###Public interface
-We do also need tests for the native interface. A single tweaked version of jxcore-cordova plugin is enough the test the native interface against to mobile and desktop targets. For desktop emulate a jxcore-cordova like bridge.
+We also need tests for the native interface. A single tweaked version of jxcore-cordova plugin is enough to test the native interface against mobile and desktop targets. For desktop, emulate a jxcore-cordova like bridge.
 ```
  - test-new-instance
  - test-new-instance-thread
@@ -529,7 +529,7 @@ We do also need tests for the native interface. A single tweaked version of jxco
 ```
 
 ###JXcore extensions
-JXcore's core features are must for mobile apps. We need the test cases below for mobile targets;
+JXcore's core features are required for mobile apps. We need to test the cases below for mobile targets;
 ```
  - test-api-members.js
  - test-assets-fs-createReadStream-Transform.js
