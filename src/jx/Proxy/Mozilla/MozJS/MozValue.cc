@@ -407,7 +407,13 @@ uint32_t Value::Uint32Value() {
     return (uint32_t)Int32Value();
 }
 
-int64_t Value::IntegerValue() { return Int32Value(); }
+int64_t Value::IntegerValue() {
+  if (value_.isNumber()) {
+    return (int64_t)value_.toNumber();
+  }
+
+  return Int32Value();
+}
 
 bool Value::BooleanValue() {
   if (value_.isBoolean())

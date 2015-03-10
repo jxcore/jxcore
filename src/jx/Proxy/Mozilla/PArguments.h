@@ -51,7 +51,7 @@ class PArguments {
   JS_HANDLE_OBJECT GetAsArray(const unsigned index) const;
   JS_HANDLE_FUNCTION GetAsFunction(const unsigned index) const;
   JS_HANDLE_STRING GetAsString(const unsigned index) const;
-  int GetInteger(const unsigned index);
+  int64_t GetInteger(const unsigned index);
   int32_t GetInt32(const unsigned index);
   unsigned GetUInteger(const unsigned index);
   bool GetBoolean(const unsigned index);
