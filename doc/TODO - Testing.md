@@ -15,8 +15,9 @@ We can not expect some core features are working for **mobile** targets;
  - Readline (no use case on mobile)
  - TTY (no use case on mobile, it can be emulated)
 
+###Core features
 The list below covers all the core features supported; (JS api)
-
+```
  - net-socket-readystate.js
  - path.js
  - test-arraybuffer-slice.js
@@ -505,9 +506,11 @@ The list below covers all the core features supported; (JS api)
  - test-zlib-write-after-flush.js
  - test-zlib-zero-byte.js
  - test-zlib.js
+```
 
- We do also need tests for the native interface. A single tweaked version of jxcore-cordova plugin is enough the test the native interface against to mobile and desktop targets. For desktop emulate a jxcore-cordova like bridge.
-
+###Public interface
+We do also need tests for the native interface. A single tweaked version of jxcore-cordova plugin is enough the test the native interface against to mobile and desktop targets. For desktop emulate a jxcore-cordova like bridge.
+```
  - test-new-instance
  - test-new-instance-thread
  - test-instance-close
@@ -523,9 +526,11 @@ The list below covers all the core features supported; (JS api)
  - test-eval-call-defined-method
  - test-eval-unicode
  - test-proxy-methods-unicode
+```
 
- JXcore's core features are must for mobile apps. We need the test cases below for mobile targets;
- 
+###JXcore extensions
+JXcore's core features are must for mobile apps. We need the test cases below for mobile targets;
+```
  - test-api-members.js
  - test-assets-fs-createReadStream-Transform.js
  - test-assets-fs-createReadStream-source.js
@@ -628,3 +633,4 @@ The list below covers all the core features supported; (JS api)
  - test-utils-OSInfo-platform.js
  - test-utils-isFunction.js
  - test-utils-pause-continue.js
+```
