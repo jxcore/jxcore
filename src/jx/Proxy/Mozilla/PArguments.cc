@@ -256,14 +256,14 @@ bool PArguments::GetBoolean(const unsigned index) {
   return !(args_[index].isNullOrUndefined());
 }
 
-int32_t PArguments::GetInteger(const unsigned index) {
+int64_t PArguments::GetInteger(const unsigned index) {
   if (index >= argc_) {
     return 0;
   }
 
   if (args_[index].isInt32()) return args_[index].toInt32();
 
-  if (args_[index].isNumber()) return (int32_t)args_[index].toNumber();
+  if (args_[index].isNumber()) return (int64_t)args_[index].toNumber();
 
   if (args_[index].isBoolean()) return args_[index].toBoolean() ? 1 : 0;
 

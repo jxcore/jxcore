@@ -132,12 +132,9 @@ Script Script::Compile(JSContext *cx, const Value &hst, const auto_str &source,
   if (!hst.value_.isObjectOrNull()) return script;
 
   JS::RootedObject host(cx, hst.value_.toObjectOrNull());
-
-  JSAutoCompartment ac(cx, host);
-
   JS::RootedScript rs(cx);
-
   {
+    JSAutoCompartment ac(cx, host);
     JS::CompileOptions compile_options(cx);
     compile_options.setFileAndLine(filename, 1);
     compile_options.setCompileAndGo(false);
@@ -410,7 +407,13 @@ uint32_t Value::Uint32Value() {
     return (uint32_t)Int32Value();
 }
 
-int64_t Value::IntegerValue() { return Int32Value(); }
+int64_t Value::IntegerValue() {
+  if (value_.isNumber()) {
+    return (int64_t)value_.toNumber();
+  }
+
+  return Int32Value();
+}
 
 bool Value::BooleanValue() {
   if (value_.isBoolean())
