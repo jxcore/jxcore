@@ -121,11 +121,9 @@ void JX_Initialize(const char *home_folder, JX_CALLBACK callback) {
 
 bool JX_Evaluate(const char *data, const char *script_name,
                  JXResult *jxresult) {
-  char *str;
   if (engine == NULL) {
     error_console("JXcore engine is not ready yet! (jx.cc:Evaluate)\n");
-    str = strdup("undefined");
-    return str;
+    return false;
   }
 
   const char *name = script_name == NULL ? "JX_Evaluate" : script_name;
