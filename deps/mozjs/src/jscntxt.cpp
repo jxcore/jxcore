@@ -405,6 +405,15 @@ js_ReportOutOfMemory(ThreadSafeContext *cxArg)
     JS_ASSERT(!cx->isExceptionPending());
 }
 
+#ifdef __ANDROID__  // change to EMBEDDED
+#include <android/log.h>
+#define ALOG_TAG "jxcore-log"
+#define warn_console(...) \
+  __android_log_print(ANDROID_LOG_WARN, ALOG_TAG, __VA_ARGS__)
+#elif defined(__IOS__)
+#define warn_console(...) fprintf(stderr, __VA_ARGS__)
+#endif
+
 JS_FRIEND_API(void)
 js_ReportOverRecursed(JSContext *maybecx)
 {
@@ -418,6 +427,15 @@ js_ReportOverRecursed(JSContext *maybecx)
      * like fuzzers.
      */
     fprintf(stderr, "js_ReportOverRecursed called\n");
+#endif
+#if defined(__ANDROID__) || defined(__IOS__)
+    static bool warned = false;
+    if(!warned) {
+      warned = true;
+      warn_console("!!! js_ReportOverRecursed called !!!\n");
+      // if you endup receiving this message, check if you lost the track
+      // of the actual thread and JSContext match.
+    }
 #endif
     if (maybecx)
         JS_ReportErrorNumber(maybecx, js_GetErrorMessage, nullptr, JSMSG_OVER_RECURSED);
