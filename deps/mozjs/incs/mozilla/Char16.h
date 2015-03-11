@@ -41,7 +41,9 @@ typedef unsigned int char32_t;
     * This macro is used to distinguish when char16_t would be a distinct
     * typedef from wchar_t.
     */
+#ifndef MOZ_CHAR16_IS_NOT_WCHAR
 #  define MOZ_CHAR16_IS_NOT_WCHAR
+#endif
 #  ifdef WIN32
 #    define MOZ_USE_CHAR16_WRAPPER
 #  endif
