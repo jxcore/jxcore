@@ -156,3 +156,5 @@ Scripts above assumes you've compiled JXcore static libraries for x64 architectu
 Besides the architecture, if you have compiled JXcore with V8 engine, you should replace `libmozjs.a` above to `libv8_base.a` and also add `libv8_nosnapshot.a`
 
 That's It!
+
+What's next: [managing multiple instances](https://github.com/jxcore/jxcore/blob/master/test/native-interface/multiple-instance/test-posix.cpp)
