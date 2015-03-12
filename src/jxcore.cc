@@ -373,6 +373,9 @@ JXEngine::JXEngine(int argc, char **argv, bool self_hosted) {
            "instances");
   }
 
+  threadId_ = node::commons::getAvailableThreadId(!jx_engine_instances.empty());
+  jx_engine_instances[threadId_] = this;
+
 #ifdef JS_ENGINE_MOZJS
   // set only once for proxy
   MozJS::Value::SetGlobalFinalizer(node::ObjectWrap::WeakCallback);
@@ -385,18 +388,14 @@ JXEngine::JXEngine(int argc, char **argv, bool self_hosted) {
   argv_ = argv;
   main_node_ = NULL;
   self_hosted_ = self_hosted;
-  instance_inited_ = false;
   entry_file_name_ = "";
 }
 
 void JXEngine::Init() {
-  if (main_node_ != NULL) {
-    error_console("You should call Init(JXEngine) before StartEngine\n");
-    exit(1);
-  }
+  static bool instance_inited_ = false;
 
   if (instance_inited_) {
-    error_console("This JXEngine instance was already Init'ed\n");
+    error_console("JXEngine was already Init'ed\n");
     exit(1);
   }
 
@@ -405,13 +404,6 @@ void JXEngine::Init() {
 }
 
 void JXEngine::Start() {
-  if (!instance_inited_) {
-    error_console(
-        "This JXEngine instance wasn't Init'ed. Call 'Init' before "
-        "StartEngine.\n");
-    exit(1);
-  }
-
   node::commons::process_status_ = node::JXCORE_INSTANCE_ALIVE;
   if (self_hosted_)
     InitializeEngine(argc_, argv_);
@@ -421,13 +413,6 @@ void JXEngine::Start() {
 
 void JXEngine::MemoryMap(const char *filename, const char *content,
                          bool entry_file) {
-  if (!instance_inited_) {
-    error_console(
-        "This JXEngine instance wasn't Init'ed. Call 'Init' before this "
-        "method.\n");
-    exit(1);
-  }
-
   if (entry_file) {
     if (entry_file_name_.length() != 0) {
       error_console(
@@ -463,9 +448,7 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
   }
   argc_ = argc;
 
-  const int actual_thread_id =
-      node::commons::getAvailableThreadId(!jx_engine_instances.empty());
-  jx_engine_instances[actual_thread_id] = this;
+  const int actual_thread_id = threadId_;
 
 #ifdef JS_ENGINE_V8
 #if HAVE_OPENSSL
@@ -668,9 +651,7 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
   }
 
   argc_ = argc;
-  const int actual_thread_id =
-      node::commons::getAvailableThreadId(!jx_engine_instances.empty());
-  jx_engine_instances[actual_thread_id] = this;
+  const int actual_thread_id = threadId_;
 
   bool was_inited = JS_engine_inited_;
   if (!JS_engine_inited_) {
@@ -736,22 +717,32 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
 }
 
 void JXEngine::Destroy() {
-  if (main_node_->threadId == 0)
+  if (jx_engine_instances.size() == 1)
     node::commons::process_status_ = node::JXCORE_INSTANCE_EXITING;
-  else
+  else {
+    // do not destroy the initial JXcore instance before others
+    // JavaScript Runtimes are related to each other and the first JSRT
+    // is the parent of all the others
+    assert(threadId_ != 0 &&
+           "First instance can not be destroyed before others");
     main_node_->instance_status_ = node::JXCORE_INSTANCE_EXITING;
-
+  }
   JS_HANDLE_OBJECT process_l = main_node_->getProcess();
   JSContext *ctx = main_iso_.ctx_;
   JSRuntime *rt = JS_GetRuntime(ctx);
 
   node::EmitExit(process_l);
 
+  // wait for the internal task threads
+  // an app can have either task threads or embedded threads
+  // as a result, any thread with id bigger than 0 can't have
+  // task threads.
   if (main_node_->threadId == 0 && getThreadCount() > 0)
     WaitThreadExit(main_node_->loop);
 
   node::RunAtExit();
 
+  // clean task thread related data
   if (main_node_->threadId == 0) {
     node::MemoryWrap::MapClear(true);
     Job::removeTaskers();
@@ -760,13 +751,15 @@ void JXEngine::Destroy() {
   JS_DEFINE_STATE_MARKER(main_node_);
 
   global_->RemoveRoot();
+
+  // clean persistent stuff
   main_node_->Dispose();
 
   JS_LeaveCompartment(ctx, jscomp_);
   JS_EndRequest(ctx);
-
   JS_DestroyContext(ctx);
-  if (main_node_->threadId == 0)
+
+  if (jx_engine_instances.size() == 1)
     node::commons::process_status_ = node::JXCORE_INSTANCE_EXITED;
   else
     main_node_->instance_status_ = node::JXCORE_INSTANCE_EXITED;
@@ -788,15 +781,14 @@ void JXEngine::Destroy() {
 
   main_iso_.Dispose();
   delete main_node_;
-
-  if (jx_engine_instances.size() == 0) {
-    jx_destroy_locks();
-    node::commons::threadPoolCount = 0;
-  }
 }
 #endif
 
 #if defined(JS_ENGINE_V8)
+#define _EXIT_ISOLATE_                \
+  if (threadId_ != 0) {               \
+    main_node_->node_isolate->Exit(); \
+  }
 void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
   if (!JS_engine_inited_) {
     const char *replaceInvalid = getenv("NODE_INVALID_UTF8");
@@ -818,9 +810,7 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
   }
   argc_ = argc;
 
-  const int actual_thread_id =
-      node::commons::getAvailableThreadId(!jx_engine_instances.empty());
-  jx_engine_instances[actual_thread_id] = this;
+  const int actual_thread_id = threadId_;
 
   if (actual_thread_id == 0) {
     main_node_ = new node::commons(0);
@@ -841,48 +831,58 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
     v8::V8::Initialize();
   }
 
-  v8::Locker locker;
-  v8::HandleScope handle_scope;
-  context_ = v8::Context::New();
-  v8::Context::Scope context_scope(context_);
-
   if (actual_thread_id == 0) {
-    main_node_->node_isolate = v8::Isolate::GetCurrent();
-    main_node_->setMainIsolate();
+    main_node_->node_isolate = NULL;
   }
 
-  node::SetupProcessObject(actual_thread_id);
-  JS_HANDLE_OBJECT process_l = main_node_->getProcess();
-  v8_typed_array::AttachBindings(context_->Global());
+  {
+    v8::Locker locker(main_node_->node_isolate);
+    if (actual_thread_id != 0) {
+      main_node_->node_isolate->Enter();
+    }
+    v8::HandleScope handle_scope;
+    context_ = v8::Context::New();
+    v8::Context::Scope context_scope(context_);
 
-  JS_DEFINE_STATE_MARKER(main_node_);
-  if (entry_file_name_.length() != 0) {
-    JS_NAME_SET(process_l, JS_STRING_ID("entry_file_name_"),
-                STD_TO_STRING(entry_file_name_.c_str()));
+    if (actual_thread_id == 0) {
+      main_node_->node_isolate = v8::Isolate::GetCurrent();
+      main_node_->setMainIsolate();
+    }
+
+    node::SetupProcessObject(actual_thread_id);
+    JS_HANDLE_OBJECT process_l = main_node_->getProcess();
+    v8_typed_array::AttachBindings(context_->Global());
+
+    JS_DEFINE_STATE_MARKER(main_node_);
+    if (entry_file_name_.length() != 0) {
+      JS_NAME_SET(process_l, JS_STRING_ID("entry_file_name_"),
+                  STD_TO_STRING(entry_file_name_.c_str()));
+    }
+
+    JS_LOCAL_OBJECT methods = JS_NEW_EMPTY_OBJECT();
+    for (std::map<std::string, JXMethod>::iterator it =
+             methods_to_initialize_.begin();
+         it != methods_to_initialize_.end(); ++it) {
+      if (it->second.is_native_method_)
+        NODE_SET_METHOD(methods, it->first.c_str(), it->second.native_method_);
+      else
+        DeclareProxy(main_node_, methods, it->first.c_str(),
+                     it->second.interface_id_, it->second.native_method_);
+    }
+    JS_NAME_SET(process_l, JS_STRING_ID("natives"), methods);
+    methods_to_initialize_.clear();
+
+    node::Load(process_l);
+
+    if (argc > 0) free(argv_copy);
   }
-
-  JS_LOCAL_OBJECT methods = JS_NEW_EMPTY_OBJECT();
-  for (std::map<std::string, JXMethod>::iterator it =
-           methods_to_initialize_.begin();
-       it != methods_to_initialize_.end(); ++it) {
-    if (it->second.is_native_method_)
-      NODE_SET_METHOD(methods, it->first.c_str(), it->second.native_method_);
-    else
-      DeclareProxy(main_node_, methods, it->first.c_str(),
-                   it->second.interface_id_, it->second.native_method_);
-  }
-  JS_NAME_SET(process_l, JS_STRING_ID("natives"), methods);
-  methods_to_initialize_.clear();
-
-  node::Load(process_l);
-
-  if (argc > 0) free(argv_copy);
+  _EXIT_ISOLATE_
 }
 
 void JXEngine::Destroy() {
   // need it for scope leave
   {
-    if (main_node_->threadId == 0)
+    if (jx_engine_instances.size() == 1)
       node::commons::process_status_ = node::JXCORE_INSTANCE_EXITING;
     else
       main_node_->instance_status_ = node::JXCORE_INSTANCE_EXITING;
@@ -904,7 +904,7 @@ void JXEngine::Destroy() {
     main_node_->Dispose();
   }
 
-  if (main_node_->threadId == 0)
+  if (jx_engine_instances.size() == 1)
     node::commons::process_status_ = node::JXCORE_INSTANCE_EXITED;
   else
     main_node_->instance_status_ = node::JXCORE_INSTANCE_EXITED;
@@ -922,11 +922,10 @@ void JXEngine::Destroy() {
 
   delete main_node_;
 
-  if (jx_engine_instances.size() == 0) {
-    jx_destroy_locks();
-    node::commons::threadPoolCount = 0;
-  }
+  _EXIT_ISOLATE_
 }
+#elif defined(JS_ENGINE_MOZJS)
+#define _EXIT_ISOLATE_
 #endif
 
 char *Stringify(node::commons *com, JS_HANDLE_OBJECT obj, size_t *data_length) {
@@ -1167,98 +1166,128 @@ bool JXEngine::ConvertToJXResult(node::commons *com,
 
 bool JXEngine::Evaluate(const char *source, const char *filename,
                         JXResult *result) {
-  JS_ENGINE_SCOPE();
-  node::commons *com = main_node_;
+  bool ret_val = false;
+  {
+    JS_ENGINE_SCOPE();
 
-  SET_UNDEFINED(result);
-  result->context_ = __contextORisolate;
+    node::commons *com = main_node_;
 
-  JS_LOCAL_STRING source_ = UTF8_TO_STRING(source);
-  JS_LOCAL_STRING filename_ = STD_TO_STRING(filename);
+    SET_UNDEFINED(result);
+    result->context_ = __contextORisolate;
 
-  JS_TRY_CATCH(try_catch);
+    JS_LOCAL_STRING source_ = UTF8_TO_STRING(source);
+    JS_LOCAL_STRING filename_ = STD_TO_STRING(filename);
 
-  JS_LOCAL_SCRIPT script = JS_SCRIPT_COMPILE(source_, filename_);
+    JS_TRY_CATCH(try_catch);
 
-  if (JS_IS_EMPTY(script)) {
-    MANAGE_EXCEPTION
+    JS_LOCAL_SCRIPT script = JS_SCRIPT_COMPILE(source_, filename_);
+
+    if (JS_IS_EMPTY(script)) {
+      MANAGE_EXCEPTION
+    }
+
+    JS_LOCAL_VALUE scr_return = JS_SCRIPT_RUN(script);
+
+    if (try_catch.HasCaught()) {
+      MANAGE_EXCEPTION
+    }
+
+    ret_val = JXEngine::ConvertToJXResult(com, scr_return, result);
   }
-
-  JS_LOCAL_VALUE ret_val = JS_SCRIPT_RUN(script);
-
-  if (try_catch.HasCaught()) {
-    MANAGE_EXCEPTION
-  }
-
-  return JXEngine::ConvertToJXResult(com, ret_val, result);
+  _EXIT_ISOLATE_
+  return ret_val;
 }
 
 bool JXEngine::DefineProxyMethod(const char *name, const int interface_id,
                                  JS_NATIVE_METHOD method) {
+  bool ret_val = true;
   if (main_node_ == NULL) {
     methods_to_initialize_[name].native_method_ = method;
     methods_to_initialize_[name].is_native_method_ = false;
     methods_to_initialize_[name].interface_id_ = interface_id;
   } else {
-    JS_ENGINE_SCOPE();
+    {
+      JS_ENGINE_SCOPE();
 
-    JS_HANDLE_OBJECT process = main_node_->getProcess();
-    JS_LOCAL_OBJECT natives =
-        JS_VALUE_TO_OBJECT(JS_GET_NAME(process, JS_STRING_ID("natives")));
-    if (JS_IS_EMPTY(natives) || JS_IS_NULL_OR_UNDEFINED(natives)) {
-      error_console(
-          "JXEngine::DefineProxyMethod, could not find 'natives' object under "
-          "process\n");
-      return false;
+      JS_HANDLE_OBJECT process = main_node_->getProcess();
+      JS_LOCAL_OBJECT natives =
+          JS_VALUE_TO_OBJECT(JS_GET_NAME(process, JS_STRING_ID("natives")));
+      if (JS_IS_EMPTY(natives) || JS_IS_NULL_OR_UNDEFINED(natives)) {
+        error_console(
+            "JXEngine::DefineProxyMethod, could not find 'natives' object "
+            "under "
+            "process\n");
+        ret_val = false;
+        goto exit_;
+      }
+      DeclareProxy(main_node_, natives, name, interface_id, method);
     }
-    DeclareProxy(main_node_, natives, name, interface_id, method);
+  exit_:
+    _EXIT_ISOLATE_
+    return ret_val;  // silly but _EXIT_ISOLATE_ is empty for mozjs
   }
-
-  return true;
+  return ret_val;
 }
 
 bool JXEngine::DefineNativeMethod(const char *name, JS_NATIVE_METHOD method) {
+  bool ret_val = true;
   if (main_node_ == NULL) {
     methods_to_initialize_[name].native_method_ = method;
     methods_to_initialize_[name].is_native_method_ = true;
   } else {
-    JS_ENGINE_SCOPE();
+    {
+      JS_ENGINE_SCOPE();
 
-    JS_HANDLE_OBJECT process = main_node_->getProcess();
-    JS_LOCAL_OBJECT natives =
-        JS_VALUE_TO_OBJECT(JS_GET_NAME(process, JS_STRING_ID("natives")));
-    if (JS_IS_EMPTY(natives) || JS_IS_NULL_OR_UNDEFINED(natives)) {
-      error_console(
-          "JXEngine::DefineNativeMethod, could not find 'natives' object under "
-          "process\n");
-      return false;
+      JS_HANDLE_OBJECT process = main_node_->getProcess();
+      JS_LOCAL_OBJECT natives =
+          JS_VALUE_TO_OBJECT(JS_GET_NAME(process, JS_STRING_ID("natives")));
+      if (JS_IS_EMPTY(natives) || JS_IS_NULL_OR_UNDEFINED(natives)) {
+        error_console(
+            "JXEngine::DefineNativeMethod, could not find 'natives' object "
+            "under "
+            "process\n");
+        ret_val = false;
+        goto exit_;
+      }
+      NODE_SET_METHOD(natives, name, method);
     }
-    NODE_SET_METHOD(natives, name, method);
+  exit_:
+    _EXIT_ISOLATE_
+    return ret_val;  // silly but _EXIT_ISOLATE_ is empty for mozjs
   }
 
-  return true;
+  return ret_val;
 }
 
 int JXEngine::Loop() {
-  JS_ENGINE_SCOPE();
+  int ret_val = 0;
+  {
+    JS_ENGINE_SCOPE();
 
-  return uv_run_jx(main_node_->loop, UV_RUN_DEFAULT, node::commons::CleanPinger,
-                   0);
+    ret_val = uv_run_jx(main_node_->loop, UV_RUN_DEFAULT,
+                        node::commons::CleanPinger, 0);
+  }
+  _EXIT_ISOLATE_
+  return ret_val;
 }
 
 int JXEngine::LoopOnce() {
-  JS_ENGINE_SCOPE();
+  int ret_val = 0;
+  {
+    JS_ENGINE_SCOPE();
 
-  return uv_run_jx(main_node_->loop, UV_RUN_NOWAIT, node::commons::CleanPinger,
-                   0);
+    ret_val = uv_run_jx(main_node_->loop, UV_RUN_NOWAIT,
+                        node::commons::CleanPinger, 0);
+  }
+  _EXIT_ISOLATE_
+  return ret_val;
 }
 
 void JXEngine::ShutDown() {
   node::commons::process_status_ = node::JXCORE_INSTANCE_EXITED;
   jx_destroy_locks();
   node::commons::threadPoolCount = 0;
-#if defined(JS_ENGINE_MOZJS)
-#elif defined(JS_ENGINE_V8) && !defined(NDEBUG)
+#if defined(JS_ENGINE_V8) && !defined(NDEBUG)
   // Clean up. Not strictly necessary.
   V8::Dispose();
 #endif
@@ -1269,6 +1298,7 @@ JXEngine *JXEngine::ActiveInstance() {
   if (jx_engine_instances.empty()) return NULL;
 
   const int actual_thread_id = node::commons::getCurrentThreadId();
+  if (actual_thread_id < 0) return NULL;
   jx_engine_map::iterator it = jx_engine_instances.find(actual_thread_id);
   if (it == jx_engine_instances.end()) return NULL;
 

@@ -31,7 +31,8 @@ bool EngineHelper::IsInstanceAlive(JSContext *ctx) {
 
 int EngineHelper::GetThreadId() {
 #ifndef JX_TEST_ENVIRONMENT
-  return node::commons::getCurrentThreadId();
+  int n = node::commons::getCurrentThreadId();
+  return n >= 0 ? n : 0;
 #else
   return 0;
 #endif

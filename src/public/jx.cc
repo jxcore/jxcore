@@ -1,11 +1,13 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
 #include "jx.h"
+#include "../jx/extend.h"
 #include "../jxcore.h"
+#include "../jx/job.h"
 #include <stdio.h>
 #include <string.h>
 
-jxcore::JXEngine *engine = NULL;
+using namespace jxcore;
 JX_CALLBACK jx_callback;
 char *argv = NULL;
 char *app_args[2];
@@ -81,26 +83,48 @@ JS_LOCAL_METHOD(extensionCallback) {
 JS_METHOD_END
 
 void JX_DefineExtension(const char *name, JX_CALLBACK callback) {
+  auto_lock locker_(CSLOCK_RUNTIME);
   int id = extension_id++;
   assert(id < MAX_CALLBACK_ID &&
          "Maximum amount of extension methods reached.");
   callbacks[id] = callback;
+  JXEngine *engine = JXEngine::ActiveInstance();
+  if (engine == NULL) {
+    warn_console(
+        "(JX_DefineExtension) Did you initialize the JXEngine instance for "
+        "this thread?\n");
+    return;
+  }
   engine->DefineProxyMethod(name, id, extensionCallback);
+}
+
+void JX_InitializeNewEngine() {
+  auto_lock locker_(CSLOCK_RUNTIME);
+  JXEngine *engine = JXEngine::ActiveInstance();
+  const int threadId = node::commons::threadIdFromThreadPrivate();
+  if (engine != NULL && threadId == engine->threadId_) {
+    warn_console(
+        "(JX_InitializeNewEngine) Did you forget destroying the existing "
+        "JXEngine instance for this "
+        "thread?\n");
+    return;
+  }
+  engine = new jxcore::JXEngine(2, app_args, false);
+}
+
+int JX_GetThreadId() {
+  JXEngine *engine = JXEngine::ActiveInstance();
+  if (engine == NULL) return -1;
+
+  return engine->threadId_;
 }
 
 void JX_Initialize(const char *home_folder, JX_CALLBACK callback) {
   jx_callback = callback;
-
+  JXEngine::Init();
 #if defined(__IOS__) || defined(__ANDROID__) || defined(DEBUG)
   warn_console("Initializing JXcore engine\n");
 #endif
-
-  if (engine != NULL) {
-    warn_console("Destroying the previous JXcore engine instance\n");
-    engine->Destroy();
-    free(argv);
-    delete engine;
-  }
 
   size_t home_length = strlen(home_folder);
   argv = (char *)malloc((12 + home_length) * sizeof(char));
@@ -111,9 +135,6 @@ void JX_Initialize(const char *home_folder, JX_CALLBACK callback) {
   app_args[0] = argv;
   app_args[1] = argv + home_length + 4;
 
-  engine = new jxcore::JXEngine(2, app_args, false);
-  engine->Init();
-
 #if defined(__IOS__) || defined(__ANDROID__) || defined(DEBUG)
   warn_console("JXcore engine is ready\n");
 #endif
@@ -121,8 +142,10 @@ void JX_Initialize(const char *home_folder, JX_CALLBACK callback) {
 
 bool JX_Evaluate(const char *data, const char *script_name,
                  JXResult *jxresult) {
+  JXEngine *engine = JXEngine::ActiveInstance();
   if (engine == NULL) {
-    error_console("JXcore engine is not ready yet! (jx.cc:Evaluate)\n");
+    warn_console(
+        "(JX_Evaluate) Did you start the JXEngine instance for this thread?\n");
     return false;
   }
 
@@ -132,8 +155,12 @@ bool JX_Evaluate(const char *data, const char *script_name,
 }
 
 void JX_DefineMainFile(const char *data) {
+  auto_lock locker_(CSLOCK_RUNTIME);
+  JXEngine *engine = JXEngine::ActiveInstance();
   if (engine == NULL) {
-    error_console("JXcore engine is not ready yet! (jx.cc:DefineMainFile)\n");
+    warn_console(
+        "(JX_DefineMainFile) Did you initialize the JXEngine instance for this "
+        "thread?\n");
     return;
   }
 
@@ -141,8 +168,12 @@ void JX_DefineMainFile(const char *data) {
 }
 
 void JX_DefineFile(const char *name, const char *file) {
+  auto_lock locker_(CSLOCK_RUNTIME);
+  JXEngine *engine = JXEngine::ActiveInstance();
   if (engine == NULL) {
-    error_console("JXcore engine is not ready yet! (jx.cc:DefineFile)\n");
+    warn_console(
+        "(JX_DefineFile) Did you initialize the JXEngine instance for this "
+        "thread?\n");
     return;
   }
 
@@ -150,8 +181,13 @@ void JX_DefineFile(const char *name, const char *file) {
 }
 
 void JX_StartEngine() {
+  auto_lock locker_(CSLOCK_RUNTIME);
+
+  JXEngine *engine = JXEngine::ActiveInstance();
   if (engine == NULL) {
-    error_console("JXcore engine is not ready yet! (jx.cc:StartEngine)\n");
+    warn_console(
+        "(JX_StartEngine) Did you initialize the JXEngine instance for this "
+        "thread?\n");
     return;
   }
 
@@ -169,16 +205,23 @@ void JX_StartEngine() {
 }
 
 int JX_LoopOnce() {
+  JXEngine *engine = JXEngine::ActiveInstance();
   if (engine == NULL) {
-    error_console("JXcore engine is not ready yet! (jx.cc:LoopOnce)\n");
+    warn_console(
+        "(JX_LoopOnce) Did you initialize the JXEngine instance for this "
+        "thread? (ret_val: %d)\n",
+        node::commons::getCurrentThreadId());
     return 0;
   }
   return engine->LoopOnce();
 }
 
 int JX_Loop() {
+  JXEngine *engine = JXEngine::ActiveInstance();
   if (engine == NULL) {
-    error_console("JXcore engine is not ready yet! (jx.cc:Loop)\n");
+    warn_console(
+        "(JX_Loop) Did you initialize the JXEngine instance for this "
+        "thread?\n");
     return 0;
   }
   return engine->Loop();
@@ -201,8 +244,13 @@ bool JX_IsSpiderMonkey() {
 }
 
 void JX_StopEngine() {
+  auto_lock locker_(CSLOCK_RUNTIME);
+
+  JXEngine *engine = JXEngine::ActiveInstance();
   if (engine == NULL) {
-    error_console("JXcore engine is not ready yet! (jx.cc:StopEngine)\n");
+    warn_console(
+        "(JX_StopEngine) Did you initialize the JXEngine instance for this "
+        "thread?\n");
     return;
   }
 
@@ -215,6 +263,7 @@ void JX_StopEngine() {
   }
 
   engine->Destroy();
+
   delete engine;
   engine = NULL;
 #if defined(__IOS__) || defined(__ANDROID__) || defined(DEBUG)

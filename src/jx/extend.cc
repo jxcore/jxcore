@@ -44,20 +44,29 @@ void ClearExternalMethods() {
   external_method_names.clear();
 }
 
+int tryCustomLock(const int n) {
+  assert (n < CUSTOMLOCKSCOUNT && "Given lock id is undefined");
+  return uv_mutex_trylock(&customLocks[n]);
+}
+
 void customLock(const int n) {
-  if (n < CUSTOMLOCKSCOUNT) uv_mutex_lock(&customLocks[n]);
+  assert (n < CUSTOMLOCKSCOUNT && "Given lock id is undefined");
+  uv_mutex_lock(&customLocks[n]);
 }
 
 void customUnlock(const int n) {
-  if (n < CUSTOMLOCKSCOUNT) uv_mutex_unlock(&customLocks[n]);
+  assert (n < CUSTOMLOCKSCOUNT && "Given lock id is undefined");
+  uv_mutex_unlock(&customLocks[n]);
 }
 
 void threadLock(const int n) {
-  if (n < MAX_JX_THREADS + 1) uv_mutex_lock(&threadLocks[n]);
+  assert (n < MAX_JX_THREADS + 1 && "Given lock id is undefined");
+  uv_mutex_lock(&threadLocks[n]);
 }
 
 void threadUnlock(const int n) {
-  if (n < MAX_JX_THREADS + 1) uv_mutex_unlock(&threadLocks[n]);
+  assert (n < MAX_JX_THREADS + 1 && "Given lock id is undefined");
+  uv_mutex_unlock(&threadLocks[n]);
 }
 
 bool IsThreadQueueEmpty(const int tid) {  // reader reverse!

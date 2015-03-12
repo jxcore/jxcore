@@ -59,6 +59,8 @@ void JX_SetBuffer(JXResult *result, const char* val, const int32_t length);
 void JX_SetUndefined(JXResult *result);
 void JX_SetNull(JXResult *result);
 
+// do not use this for method parameters, jxcore already cleanup them after the call
+// for JX_Evaluate, this methods needs to be called to cleanup JXResult
 void JX_FreeResultData(JXResult *result);
 
 #ifdef __cplusplus

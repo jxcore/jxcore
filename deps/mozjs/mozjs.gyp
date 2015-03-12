@@ -230,19 +230,13 @@
         'JS_DEFAULT_JITREPORT_GRANULARITY=3',   # JITREPORT_GRANULARITY_OP
         'JSGC_INCREMENTAL=1',
         'IMPL_MFBT=1',
-        'JS_THREADSAFE=1', # NO NEED TO KEEP THIS
         'MOZILLA_VERSION="340"',
       ],
-      
-      'cflags!': ['-ansi'],
-      
       'configurations': {
         'Debug': {
-          'cflags': ['-g', '-O0', '-fno-strict-aliasing'],
           'defines': [ 'JS_DEBUG' ]
         },
         'Release': {
-          'cflags': ['-O3', '-fno-strict-aliasing'],
           'defines': ['NDEBUG'],
         },
       },  
@@ -390,6 +384,22 @@
           'sources':[
              'src/perf/pm_stub.cpp',
            ],
+          'ldflags': [ 'log', 'z', 'android' ],
+          'cflags!': [
+            '-O2',
+            '-Os',
+            '-pthread',
+          ],
+          'cflags': [
+            '-fomit-frame-pointer',
+            '-fno-rtti',
+            '-ffunction-sections',
+            '-funwind-tables',
+            '-fstack-protector',
+            '-fno-short-enums',
+            '-finline-limit=64',
+            '-O3'
+          ],
         }],
         ['OS in "linux android freebsd"', {
            "cflags": [

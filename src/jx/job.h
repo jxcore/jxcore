@@ -9,7 +9,7 @@ void SendMessage(const int threadId, const char *msg_data, const int length,
 
 int CreateInstances(const int count);
 
-void CreateThread(void (*entry)(void *arg), void *param);
+int CreateThread(void (*entry)(void *arg), void *param);
 }
 
 #endif  // SRC_JX_JOB_H_

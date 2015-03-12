@@ -33,15 +33,16 @@ void SendMessage(const int threadId, const char *msg_data, const int length,
   if (!hasIt) com->PingThread();
 }
 
-void CreateThread(void (*entry)(void *arg), void *param) {
+int CreateThread(void (*entry)(void *arg), void *param) {
 #ifdef JS_ENGINE_V8
   uv_thread_t thread;
-  int rc = uv_thread_create(&thread, entry, param);
-  assert(rc == 0);
+  return uv_thread_create(&thread, entry, param);
 #elif defined(JS_ENGINE_MOZJS)
-  PR_CreateThread(PR_USER_THREAD, entry, param,
-                  PR_PRIORITY_NORMAL, PR_GLOBAL_THREAD, PR_JOINABLE_THREAD,
-                  512 * 1024);
+  return PR_CreateThread(PR_USER_THREAD, entry, param, PR_PRIORITY_NORMAL,
+                         PR_GLOBAL_THREAD, PR_JOINABLE_THREAD,
+                         512 * 1024) == NULL
+             ? -1
+             : 0;
 #endif
 }
 
@@ -53,9 +54,12 @@ int CreateInstances(const int count) {
     rc = uv_thread_create(&thread, JXInstance::runScript, NULL);
     if (rc != 0) break;
 #elif defined(JS_ENGINE_MOZJS)
-    PR_CreateThread(PR_USER_THREAD, JXInstance::runScript, NULL,
-                    PR_PRIORITY_NORMAL, PR_GLOBAL_THREAD, PR_JOINABLE_THREAD,
-                    512 * 1024);
+    if (PR_CreateThread(PR_USER_THREAD, JXInstance::runScript, NULL,
+                        PR_PRIORITY_NORMAL, PR_GLOBAL_THREAD,
+                        PR_JOINABLE_THREAD, 512 * 1024) == NULL) {
+      rc = -1;
+      break;
+    }
 #endif
   }
 

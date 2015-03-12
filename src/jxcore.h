@@ -21,7 +21,6 @@ class JXEngine {
   node::commons *main_node_;
   static bool jxcore_was_shutdown_;
   static bool JS_engine_inited_;
-  bool instance_inited_;
   std::string entry_file_name_;
 
   std::map<std::string, JXMethod> methods_to_initialize_;
@@ -44,11 +43,12 @@ class JXEngine {
  public:
   int argc_;
   char **argv_;
+  int threadId_;
 
   JXEngine(int argc, char *argv[], bool self_hosted = true);
 
-  // initializes the locks, memory maps etc.
-  void Init();
+  // initializes the locks, memory maps etc. call it once per app.
+  static void Init();
 
   // Literally starts the JavaScript engine and executes the entry file
   void Start();

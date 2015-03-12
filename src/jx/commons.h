@@ -310,6 +310,7 @@ class commons {
   static commons *newInstance(const int tid);
   static commons *getInstanceByThreadId(const int id);
   static int getCurrentThreadId();
+  static int threadIdFromThreadPrivate();
   static int getAvailableThreadId(bool multi_threaded_);
 
   static uv_loop_t *getThreadLoop();

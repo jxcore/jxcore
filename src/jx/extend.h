@@ -8,7 +8,7 @@
 #include "memory_store.h"
 
 // customLock / customUnlock definitions
-#define CUSTOMLOCKSCOUNT 15
+#define CUSTOMLOCKSCOUNT 16
 #define CSLOCK_TCP 0
 #define CSLOCK_TRIGGER 1
 #define CSLOCK_THREADCOUNT 2
@@ -23,9 +23,11 @@
 #define CSLOCK_JOBS 11  // && 12 (0,1)
 #define CSLOCK_RESULTS 13
 #define CSLOCK_COMPRESS 14
+#define CSLOCK_RUNTIME 15
 
-extern void customLock(const int n);
-extern void customUnlock(const int n);
+int tryCustomLock(const int n);
+void customLock(const int n);
+void customUnlock(const int n);
 
 int AddExternalMethod(const char* name, JS_NATIVE_METHOD method);
 void ClearExternalMethods();

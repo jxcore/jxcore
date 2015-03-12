@@ -4,9 +4,10 @@
 #include "jx/job.h"
 
 void run(int argc, char *argv[]) {
+  jxcore::JXEngine::Init();
+
   jxcore::JXEngine engine(argc, argv, true);
 
-  engine.Init();
   engine.Start();
 
   engine.ShutDown();

@@ -62,11 +62,14 @@ typedef bool (*JS_NATIVE_METHOD)(JSContext *ctx, unsigned argc, JS::Value *val);
 // the whole scope every time one of the member methods exit
 // This implementation is for 'embedders' only (jxcore_init)
 #ifdef JS_ENGINE_V8
-#define JS_ENGINE_SCOPE()                     \
-  v8::Locker locker;                          \
-  v8::HandleScope handle_scope;               \
-  v8::Context::Scope context_scope(context_); \
-  JS_DEFINE_STATE_MARKER(main_node_)
+#define JS_ENGINE_SCOPE()                      \
+  v8::Locker locker(main_node_->node_isolate); \
+  if (threadId_ != 0) {                        \
+    main_node_->node_isolate->Enter();         \
+  }                                            \
+  v8::HandleScope handle_scope;                \
+  v8::Context::Scope context_scope(context_);  \
+  v8::Isolate* __contextORisolate = main_node_->node_isolate
 #elif defined(JS_ENGINE_MOZJS)
 #define JS_ENGINE_SCOPE() \
   JS_ENTER_SCOPE();       \

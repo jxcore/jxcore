@@ -57,11 +57,7 @@ inline commons *getCommonsISO(JS_ENGINE_MARKER isolate) {
   return isolates[*id];
 }
 
-inline int queryThreadId() {
-  if (!jxcore_multithreaded) return 0;
-
-  ENGINE_LOG_THIS("commons", "getCurrentThreadId");
-
+inline int l_threadIdFromThreadPrivate() {
 #if defined(_MSC_VER)
   DWORD th = GetCurrentThreadId();
   std::map<DWORD, int>::iterator it;
@@ -78,10 +74,14 @@ inline int queryThreadId() {
   return -1;
 }
 
-inline int getThreadId() {
-  const int threadId = queryThreadId();
+int commons::threadIdFromThreadPrivate() { return l_threadIdFromThreadPrivate(); }
 
-  return threadId >= 0 ? threadId : 0;
+inline int queryThreadId() {
+  if (!jxcore_multithreaded) return 0;
+
+  ENGINE_LOG_THIS("commons", "getCurrentThreadId");
+
+  return l_threadIdFromThreadPrivate();
 }
 
 inline commons *getCommons() {
@@ -99,7 +99,9 @@ inline commons *getCommons() {
 
   return iso;
 #elif defined(JS_ENGINE_MOZJS)
-  return isolates[getThreadId()];
+  int n = queryThreadId();
+  if (n < 0) n = 0;
+  return isolates[n];
 #endif
 }
 
@@ -509,7 +511,7 @@ commons *commons::newInstance(const int id) {  // for sub threads
   return com;
 }
 
-int commons::getCurrentThreadId() { return getThreadId(); }
+int commons::getCurrentThreadId() { return queryThreadId(); }
 
 // threadId generator for embedded multithreading
 int commons::getAvailableThreadId(bool multi_threaded_) {
