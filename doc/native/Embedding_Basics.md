@@ -157,4 +157,4 @@ Besides the architecture, if you have compiled JXcore with V8 engine, you should
 
 That's It!
 
-What's next: [managing multiple instances](https://github.com/jxcore/jxcore/blob/master/test/native-interface/multiple-instance/test-posix.cpp)
+Advanced sample: [managing multiple instances](https://github.com/jxcore/jxcore/blob/master/test/native-interface/multiple-instance/test-posix.cpp)
