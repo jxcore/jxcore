@@ -91,12 +91,28 @@ void sampleMethod(JXResult *results, int argc) {
 
 int main(int argc, char **args) {
   char *path = args[0];
-  JX_Initialize(path, callback);
+  // Call JX_Initialize only once per app
+  
+  JX_Initialize(args[0], callback);
+  // Creates a new engine for the current thread
+  // It's our first engine instance hence it will be the
+  // parent engine for all the other engine instances.
+  // If you need to destroy this engine instance, you should
+  // destroy everything else first. For the sake of this sample
+  // we have our first instance sitting on the main thread
+  // and it will be destroyed when the app exists.
+  JX_InitializeNewEngine();
 
   char *contents = "console.log('hello world');";
+  
+  // define the entry file contents
   JX_DefineMainFile(contents);
-
+  
+  // define native -named- method
+  // we will be reaching to this method from the javascript side like this;
+  // process.natives.sampleMethod( ... )
   JX_DefineExtension("sampleMethod", sampleMethod);
+
   JX_StartEngine();
 
   // loop for possible IO
