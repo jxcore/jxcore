@@ -1,3 +1,12 @@
+### Remarks
+JXcore inherits all the security, and memory-leak updates from the original node.js repository unconditionally.
+However, we may not apply some debatable updates from the original node.js repository unless we are not sure how it will affect
+existing applications. For example, performance regression problem from 0.10.32 (recently rolled back from the next version),
+timers related issues etc. Prior to the next release we are going to update the list below item by item with an explanation
+why we did or did not take that particular update. JXcore is an open project and your comments are valuable.
+Let us know any time if you disagree.
+
+
 2015.01.26, Version 0.10.36 (Stable)
 
 * openssl: update to 1.0.1l
