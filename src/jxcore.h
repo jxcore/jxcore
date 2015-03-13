@@ -4,17 +4,9 @@
 #define SRC_JXCORE_H_
 #include "jx/commons.h"
 #include "public/jx_result.h"
+#include "jxcore_type_wrap.h"
 
 namespace jxcore {
-
-class JXMethod {
- public:
-  JS_NATIVE_METHOD native_method_;
-  bool is_native_method_;
-  int interface_id_;
-
-  JXMethod() : native_method_(0), is_native_method_(false), interface_id_(-1) {}
-};
 
 class JXEngine {
   bool self_hosted_;

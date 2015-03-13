@@ -18,7 +18,8 @@ typedef enum {
   RT_Buffer = 6,
   RT_Undefined = 7,
   RT_Null = 8,
-  RT_Error = 9
+  RT_Error = 9,
+  RT_Function = 10,
 } JXResultType;
 
 struct _JXResult {
@@ -32,6 +33,7 @@ struct _JXResult {
 
 typedef struct _JXResult JXResult;
 
+bool JX_ResultIsFunction(JXResult *result);
 bool JX_ResultIsError(JXResult *result);
 bool JX_ResultIsInt32(JXResult *result);
 bool JX_ResultIsDouble(JXResult *result);
@@ -52,14 +54,15 @@ int32_t JX_GetDataLength(JXResult *result);
 void JX_SetInt32(JXResult *result, const int32_t val);
 void JX_SetDouble(JXResult *result, const double val);
 void JX_SetBoolean(JXResult *result, const bool val);
-void JX_SetString(JXResult *result, const char* val, const int32_t length);
-void JX_SetJSON(JXResult *result, const char* val, const int32_t length);
-void JX_SetError(JXResult *result, const char* val, const int32_t length);
-void JX_SetBuffer(JXResult *result, const char* val, const int32_t length);
+void JX_SetString(JXResult *result, const char *val, const int32_t length);
+void JX_SetJSON(JXResult *result, const char *val, const int32_t length);
+void JX_SetError(JXResult *result, const char *val, const int32_t length);
+void JX_SetBuffer(JXResult *result, const char *val, const int32_t length);
 void JX_SetUndefined(JXResult *result);
 void JX_SetNull(JXResult *result);
 
-// do not use this for method parameters, jxcore already cleanup them after the call
+// do not use this for method parameters, jxcore already cleanup them after the
+// call
 // for JX_Evaluate, this methods needs to be called to cleanup JXResult
 void JX_FreeResultData(JXResult *result);
 
