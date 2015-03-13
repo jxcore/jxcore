@@ -10,6 +10,7 @@
 #include "node_version.h"
 #include "jx/job_store.h"
 #include "string_bytes.h"
+#include "jxcore_type_wrap.h"
 
 #if defined(_MSC_VER)
 #include <windows.h>
@@ -1077,6 +1078,14 @@ JS_HANDLE_VALUE JXEngine::ConvertFromJXResult(node::commons *com,
                                              JX_GetDataLength(result), com);
       return JS_LEAVE_SCOPE(JS_VALUE_TO_OBJECT(buff->handle_));
     } break;
+    case RT_Function: {
+      if (sizeof(jxcore::JXFunctionWrapper) != result->size_)
+        return JS_LEAVE_SCOPE(JS_UNDEFINED());
+
+      jxcore::JXFunctionWrapper *wrap =
+          (jxcore::JXFunctionWrapper *)result->data_;
+      return JS_LEAVE_SCOPE(wrap->pst_fnc_);
+    } break;
     default:
       assert(0 && "This type id is not supported by JXResult");
   }
@@ -1097,6 +1106,7 @@ bool JXEngine::ConvertToJXResult(node::commons *com,
   }
 
   if (JS_IS_UNDEFINED(ret_val)) {
+    result->type_ = RT_Undefined;
     return true;
   }
 
@@ -1142,6 +1152,17 @@ bool JXEngine::ConvertToJXResult(node::commons *com,
 
     result->data_ = *str;
     result->size_ = str.Utf8Length();
+
+    return true;
+  }
+
+  if (JS_IS_FUNCTION(ret_val)) {
+    JS_LOCAL_VALUE ud_val = JS_UNDEFINED();
+    JS_LOCAL_FUNCTION fnc = JS_CAST_FUNCTION(JS_VALUE_TO_OBJECT(ret_val));
+    JXFunctionWrapper *wrap = new JXFunctionWrapper(com, fnc, ud_val);
+    result->data_ = wrap;
+    result->size_ = sizeof(JXFunctionWrapper);
+    result->type_ = RT_Function;
 
     return true;
   }
