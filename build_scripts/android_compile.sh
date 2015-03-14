@@ -40,8 +40,6 @@ fi
 export ANDROID_NDK=$1
 
 ARM7=out_android/arm
-# Enable it back with SM JIT
-# ARM64=out_android/arm64
 INTEL64=out_android/x64
 INTEL32=out_android/ia32
 FATBIN=out_android/android
@@ -50,7 +48,7 @@ MAKE_INSTALL() {
   TARGET_DIR="out_$1_droid"
   PREFIX_DIR="out_android/$1"
   mv $TARGET_DIR out
-  ./configure --prefix=$PREFIX_DIR --static-library --dest-os=android --dest-cpu=$1 --without-snapshot #--engine-mozilla
+  ./configure --prefix=$PREFIX_DIR --static-library --dest-os=android --dest-cpu=$1 --engine-mozilla
   ERROR_ABORT_MOVE "mv out $TARGET_DIR" $1
   rm -rf $PREFIX_DIR/bin
   make install
@@ -61,8 +59,7 @@ MAKE_INSTALL() {
   mv $PREFIX_DIR/bin/libchrome_zlib.a "$PREFIX_DIR/bin/libchrome_zlib_$1.a"
   mv $PREFIX_DIR/bin/libhttp_parser.a "$PREFIX_DIR/bin/libhttp_parser_$1.a"
   mv $PREFIX_DIR/bin/libjx.a "$PREFIX_DIR/bin/libjx_$1.a"
-  mv $PREFIX_DIR/bin/libv8_nosnapshot.a "$PREFIX_DIR/bin/libv8_nosnapshot_$1.a"
-  mv $PREFIX_DIR/bin/libv8_base.a "$PREFIX_DIR/bin/libv8_base_$1.a"
+  mv $PREFIX_DIR/bin/libmozjs.a "$PREFIX_DIR/bin/libmozjs_$1.a"
   mv $PREFIX_DIR/bin/libopenssl.a "$PREFIX_DIR/bin/libopenssl_$1.a"
   mv $PREFIX_DIR/bin/libuv.a "$PREFIX_DIR/bin/libuv_$1.a"
   mv $PREFIX_DIR/bin/libsqlite3.a "$PREFIX_DIR/bin/libsqlite3_$1.a"
@@ -70,8 +67,6 @@ MAKE_INSTALL() {
 
 
 COMBINE() {
-  # Enable it back with SM JIT
-  # cp "$ARM64/bin/$1_arm64.a" "$FATBIN/bin/"
   cp "$ARM7/bin/$1_arm.a" "$FATBIN/bin/"
   cp "$INTEL64/bin/$1_x64.a" "$FATBIN/bin/"
   cp "$INTEL32/bin/$1_ia32.a" "$FATBIN/bin/"
@@ -80,8 +75,6 @@ COMBINE() {
 
 
 mkdir out_arm_droid
-# Enable it back with SM JIT
-# mkdir out_arm64_droid
 mkdir out_x64_droid
 mkdir out_ia32_droid
 mkdir out_android
@@ -98,17 +91,6 @@ export LINK=arm-linux-androideabi-g++
 
 LOG $GREEN_COLOR "Compiling Android ARM7\n"
 MAKE_INSTALL arm
-
-export TOOLCHAIN=$PWD/android-toolchain-arm64
-export PATH=$TOOLCHAIN/bin:$OLD_PATH
-export AR=aarch64-linux-android-ar
-export CC=aarch64-linux-android-gcc
-export CXX=aarch64-linux-android-g++
-export LINK=aarch64-linux-android-g++
-
-# Enable it back with SM JIT
-# LOG $GREEN_COLOR "Compiling Android ARM64\n"
-# MAKE_INSTALL arm64
 
 export TOOLCHAIN=$PWD/android-toolchain-intelx64
 export PATH=$TOOLCHAIN/bin:$OLD_PATH
@@ -141,8 +123,7 @@ COMBINE "libcares"
 COMBINE "libchrome_zlib"
 COMBINE "libhttp_parser"
 COMBINE "libjx"
-COMBINE "libv8_nosnapshot"
-COMBINE "libv8_base"
+COMBINE "libmozjs"
 COMBINE "libopenssl"
 COMBINE "libuv"
 COMBINE "libsqlite3"
@@ -150,8 +131,6 @@ COMBINE "libsqlite3"
 cp src/public/*.h $FATBIN/bin
 
 rm -rf $ARM7
-# enable it back with SM
-# rm -rf $ARM64 
 rm -rf $INTEL32
 rm -rf $INTEL64
 

@@ -7,9 +7,9 @@ GRAY_COLOR='\033[0;37m'
 
 UNZIP_INSTALL=""
 LOG() {
-    COLOR="$1"
-    TEXT="$2"
-    echo -e "${COLOR}$TEXT ${NORMAL_COLOR}"
+  COLOR="$1"
+  TEXT="$2"
+  echo -e "${COLOR}$TEXT ${NORMAL_COLOR}"
 }
 
 find_arch() {
@@ -21,7 +21,7 @@ find_arch() {
 	then
 		echo "64"
 	else
-	    echo "32"
+	  echo "32"
 	fi
 }
 
@@ -29,62 +29,62 @@ find_os() {
     arch=$(find_arch "$1")
     if [[ "$1" =~ 'Darwin' ]]
     then
-        echo "jx_osx$arch"
-        return
+      echo "jx_osx$arch"
+      return
     fi
 
     if [[ "$1" =~ 'Ubuntu' ]]
     then
-        OT=$(apt-get -y install unzip)
-        echo "jx_ub$arch"
-        return
+      OT=$(apt-get -y install unzip)
+      echo "jx_ub$arch"
+      return
     fi
 
     if [[ "$1" =~ 'Debian' ]]
     then
-        OT=$(apt-get -y install unzip)
-        echo "jx_deb$arch"
-        return
+      OT=$(apt-get -y install unzip)
+      echo "jx_deb$arch"
+      return
     fi
 
     if [[ "$1" =~ 'SUSE' ]]
     then
-        OT=$(zypper install -n -y unzip)
-        echo "jx_suse$arch"
-        return
+      OT=$(zypper install -n -y unzip)
+      echo "jx_suse$arch"
+      return
     fi
 
     if [[ "$1" =~ 'Red Hat' ]]
     then
-        OT=$(yum install -y unzip)
-        echo "jx_rh$arch"
-        return
+      OT=$(yum install -y unzip)
+      echo "jx_rh$arch"
+      return
     fi
     
     if [[ "$1" =~ 'Gentoo' ]]
     then
-        echo "jx_gen$arch"
-        return
+      echo "jx_gen$arch"
+      return
     fi
     
     if [[ "$1" =~ 'ARCH' ]]
     then
     	if [[ "$arch" =~ "ARM" ]]
     	then
-        	echo "jx_ark$arch"
-        	return
-        else
-        	echo "This ARCH OS architecture is not supported yet"
-        	exit
-        fi
+        echo "jx_ark$arch"
+        return
+      else
+        echo "This ARCH OS architecture is not supported yet"
+        exit
+      fi
     fi
 
     rasp_check=$(uname -msrn)
     if [[ "$rasp_check" =~ 'raspberrypi' ]]
     then
-        OT=$(apt-get install -y unzip)
-        echo "jx_rasp"
-        return
+      OT=$(apt-get install -y unzip)
+      echo "jx_rasp"
+      return
     fi
     
     if [[ "$rasp_check" =~ 'FreeBSD' ]]
