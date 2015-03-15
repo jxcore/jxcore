@@ -2063,7 +2063,11 @@ void SetupProcessObject(const int threadId) {
   if (docs_home != NULL) {
     JS_NAME_SET(process, JS_STRING_ID("userPath"),
                 STD_TO_STRING_WITH_LENGTH(docs_home, docs_size));
+  } else {
+    JS_NAME_SET(process, JS_STRING_ID("userPath"),
+                STD_TO_STRING_WITH_LENGTH(docs_folder, docs_size));
   }
+
   free(docs_home);
 #endif
 
