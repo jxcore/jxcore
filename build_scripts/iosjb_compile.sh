@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# !! This is an unofficial experimental work by the community !!
+
 NORMAL_COLOR='\033[0m'
 RED_COLOR='\033[0;31m'
 GREEN_COLOR='\033[0;32m'
@@ -18,11 +20,11 @@ LOG() {
 
 
 ERROR_ABORT() {
-	if [[ $? != 0 ]]
-	then
-		LOG $RED_COLOR "compilation aborted\n"
-		exit	
-	fi
+  if [[ $? != 0 ]]
+  then
+    LOG $RED_COLOR "compilation aborted\n"
+    exit	
+  fi
 }
 
 
@@ -31,7 +33,7 @@ ERROR_ABORT_MOVE() {
   then
     $($1)
     LOG $RED_COLOR "compilation aborted for $2 target\n"
-	exit	
+    exit	
   fi
 }
 
@@ -50,8 +52,8 @@ MAKE_INSTALL() {
 
 
 MAKE_FAT() {
-	lipo -create "$ARM64/bin/$1" "$ARM7/bin/$1" "$ARM7s/bin/$1" -output "$FATBIN/bin/$1"
-	ERROR_ABORT
+  lipo -create "$ARM64/bin/$1" "$ARM7/bin/$1" "$ARM7s/bin/$1" -output "$FATBIN/bin/$1"
+  ERROR_ABORT
 }
 
 
@@ -77,11 +79,7 @@ rm -rf $FATBIN
 mkdir -p $FATBIN/bin
 mv $ARM7/include $FATBIN/
 
-cp deps/mozjs/src/js.msg $FATBIN/include/node/
-
 MAKE_FAT "jx"
-
-cp src/public/*.h $FATBIN/bin
 
 rm -rf $ARM7s
 rm -rf $ARM7
