@@ -2048,6 +2048,7 @@ void SetupProcessObject(const int threadId) {
   // this location via argv[0]
   char* docs_home = NULL;
   char* docs_folder = active_engine->argv_[0];
+
   size_t docs_size = strlen(docs_folder);
   for (int i = docs_size - 1; i >= 0; i--) {
     if (docs_folder[i] == '/') {
@@ -2059,10 +2060,10 @@ void SetupProcessObject(const int threadId) {
     }
   }
 
-  assert(docs_home != NULL);
-
-  JS_NAME_SET(process, JS_STRING_ID("userPath"),
-              STD_TO_STRING_WITH_LENGTH(docs_home, docs_size));
+  if (docs_home != NULL) {
+    JS_NAME_SET(process, JS_STRING_ID("userPath"),
+                STD_TO_STRING_WITH_LENGTH(docs_home, docs_size));
+  }
   free(docs_home);
 #endif
 
