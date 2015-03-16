@@ -75,7 +75,7 @@ static bool use_sni = false;
 
 bool no_deprecation;
 
-#if defined(__IOS__)  || defined(__ANDROID__)
+#if defined(__IOS__) || defined(__ANDROID__)
 char* app_sandbox_folder = NULL;
 #endif
 
@@ -671,26 +671,6 @@ static JS_LOCAL_METHOD(Chdir) {
 JS_METHOD_END
 
 static JS_LOCAL_METHOD(Cwd) {
-#if defined(__IOS__)  || defined(__ANDROID__)
-  // iOS getcwd returns / if running sandboxed. iOS sandboxed app folder has nothing
-  // related to
-  // documents etc. folder. Besides, sandboxed app folder location is not
-  // consistent!
-
-  // Still we return this location to make it easier to reach asset files
-  char* ios_cwd = getcwd(NULL, 64);
-  if (strcmp(ios_cwd, "/") == 0) {
-    if (args.Length() != 0)
-      error_console(
-          "Warning! You can not set/relate the home folder for an iOS "
-          "application.\n");
-
-    RETURN_PARAM(UTF8_TO_STRING(app_sandbox_folder));
-  } else {
-    RETURN_PARAM(UTF8_TO_STRING(ios_cwd));
-  }
-  free(ios_cwd);
-#else
 #ifdef _WIN32
   /* MAX_PATH is in characters, not bytes. Make sure we have enough headroom. */
   char buf[MAX_PATH * 4 + 1];
@@ -709,8 +689,24 @@ static JS_LOCAL_METHOD(Cwd) {
   }
 
   buf[ARRAY_SIZE(buf) - 1] = '\0';
-  RETURN_PARAM(UTF8_TO_STRING(buf));
+
+#if defined(__IOS__) || defined(__ANDROID__)
+  // iOS getcwd returns / if running sandboxed. iOS sandboxed app folder has
+  // nothing related to documents etc. folder. Besides, sandboxed app folder
+  // location is not consistent!
+  // Still we return this location to make it easier to reach asset files
+
+  if (strcmp(buf, "/") == 0) {
+    if (args.Length() != 0)
+      error_console(
+          "Warning! You can not set/relate the home folder for an iOS "
+          "application.\n");
+
+    RETURN_PARAM(UTF8_TO_STRING(app_sandbox_folder));
+  }
 #endif
+
+  RETURN_PARAM(UTF8_TO_STRING(buf));
 }
 JS_METHOD_END
 
@@ -2017,7 +2013,7 @@ void SetupProcessObject(const int threadId) {
     JS_NAME_SET(process, JS_STRING_ID("execPath"),
                 STD_TO_STRING(active_engine->argv_[0]));
   } else {
-#if defined(__IOS__)  || defined(__ANDROID__)
+#if defined(__IOS__) || defined(__ANDROID__)
     if (app_sandbox_folder != NULL) {
       free(app_sandbox_folder);
       app_sandbox_folder = NULL;
