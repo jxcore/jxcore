@@ -672,18 +672,24 @@ JS_METHOD_END
 
 static JS_LOCAL_METHOD(Cwd) {
 #if defined(__IOS__)  || defined(__ANDROID__)
-  // iOS getcwd returns / no matter what. iOS sandboxed app folder has nothing
+  // iOS getcwd returns / if running sandboxed. iOS sandboxed app folder has nothing
   // related to
   // documents etc. folder. Besides, sandboxed app folder location is not
   // consistent!
 
   // Still we return this location to make it easier to reach asset files
-  if (args.Length() != 0)
-    error_console(
-        "Warning! You can not set/relate the home folder for an iOS "
-        "application.\n");
+  char* ios_cwd = getcwd(NULL, 64);
+  if (strcmp(ios_cwd, "/") == 0) {
+    if (args.Length() != 0)
+      error_console(
+          "Warning! You can not set/relate the home folder for an iOS "
+          "application.\n");
 
-  RETURN_PARAM(UTF8_TO_STRING(app_sandbox_folder));
+    RETURN_PARAM(UTF8_TO_STRING(app_sandbox_folder));
+  } else {
+    RETURN_PARAM(UTF8_TO_STRING(ios_cwd));
+  }
+  free(ios_cwd);
 #else
 #ifdef _WIN32
   /* MAX_PATH is in characters, not bytes. Make sure we have enough headroom. */

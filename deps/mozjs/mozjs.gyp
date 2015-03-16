@@ -402,7 +402,7 @@
         }],
         ['OS in "linux android freebsd"', {
            "cflags": [
-             "-std=c++11", '-D__STDC_LIMIT_MACROS',
+             "-std=c++0x", '-D__STDC_LIMIT_MACROS',
              '-Wno-missing-field-initializers',
              '-Wno-invalid-offsetof', '-Wno-ignored-qualifiers', '-Wno-extra'
            ],
