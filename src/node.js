@@ -55,28 +55,32 @@
         st = err.stack.split('\n');
         st.shift();
       } else {
-        st = err.stack.split('\n');
+        if (!Array.isArray(err.stack)) st = err.stack.split('\n');
       }
 
-      err.stack = new Array();
-      var stackLimit = Error.stackTraceLimit ? Error.stackTraceLimit : 9;
-      var max = Math.min(stackLimit, st.length);
-      for (var i = 0; i < max; i++) {
-        var arr = st[i].split(':');
-        var msg = "    at " + st[i];
-        if (arr.length == 3) {
-          err.stack[i] = new _stackProto(msg, arr[0], arr[1], arr[2]);
-        } else {
-          err.stack[i] = new _stackProto(msg, err.fileName, err.lineNumber,
-            err.columnNumber);
+      if (Array.isArray(err.stack) && err.stack[0] && err.stack[0]._msg) {
+        // TODO(obastemur) bug ? app gives back an object that was already processed
+      } else {
+        err.stack = new Array();
+        var stackLimit = Error.stackTraceLimit ? Error.stackTraceLimit : 9;
+        var max = Math.min(stackLimit, st.length);
+        for (var i = 0; i < max; i++) {
+          var arr = st[i].split(':');
+          var msg = "    at " + st[i];
+          if (arr.length == 3) {
+            err.stack[i] = new _stackProto(msg, arr[0], arr[1], arr[2]);
+          } else {
+            err.stack[i] = new _stackProto(msg, err.fileName, err.lineNumber,
+                    err.columnNumber);
+          }
         }
-      }
 
-      err.stack.toString = function () {
-        var arr = err.stack.join("\n");
-        if (arr.length > 4 && arr.substr(arr.length - 3, 2) == 'at')
-          arr = arr.substr(0, arr.length - 3);
-        return err.name + ": " + err.message + "\n" + arr;
+        err.stack.toString = function() {
+          var arr = err.stack.join("\n");
+          if (arr.length > 4 && arr.substr(arr.length - 3, 2) == 'at')
+            arr = arr.substr(0, arr.length - 3);
+          return err.name + ": " + err.message + "\n" + arr;
+        }
       }
     };
 
