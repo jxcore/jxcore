@@ -25,9 +25,15 @@ task.logic = function () {
   }
 
   try {
-    var common = require(__filename);
+    var common = require("./_asset_file.js");
   } catch (ex) {
-    process.sendToMain("Cannot require __filename from inside logic(): " + ex + "\n__filename = " + __filename);
+    process.sendToMain("Cannot require ./_asset_file.js from inside logic(): " + ex + "\n__dirname = " + __dirname);
+  }
+
+  try {
+    var common = require("./_asset_file");
+  } catch (ex) {
+    process.sendToMain("Cannot require ./_asset_file from inside logic(): " + ex + "\n__dirname = " + __dirname);
   }
 
   try {

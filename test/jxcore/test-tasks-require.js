@@ -20,6 +20,18 @@ var method = function () {
   }
 
   try {
+    var common = require("./_asset_file.js");
+  } catch (ex) {
+    process.sendToMain("Cannot require ./_asset_file.js from inside addTask(method): " + ex + "\n__dirname = " + __dirname);
+  }
+
+  try {
+    var common = require("./_asset_file");
+  } catch (ex) {
+    process.sendToMain("Cannot require ./_asset_file from inside addTask(method): " + ex + "\n__dirname = " + __dirname);
+  }
+
+  try {
     var common = require(__filename);
   } catch (ex) {
     process.sendToMain("Cannot require __filename from inside addTask(method): " + ex + "\n__filename = " + __filename);

@@ -1,11 +1,20 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-var common = require('../common'), assert = require('assert'), 
-  dgram = require('dgram'), util = require('util'), assert = require('assert'), 
-  Buffer = require('buffer').Buffer, fork = require('child_process').fork, 
-  LOCAL_BROADCAST_HOST = '224.0.0.114', TIMEOUT = 5000, messages = [
-  new Buffer('First message to send'), new Buffer('Second message to send'),
-  new Buffer('Third message to send'), new Buffer('Fourth message to send')];
+
+var common = require('../common'),
+  assert = require('assert'),
+  dgram = require('dgram'),
+  util = require('util'),
+  assert = require('assert'),
+  Buffer = require('buffer').Buffer,
+  fork = require('child_process').fork,
+  LOCAL_BROADCAST_HOST = '224.0.0.114',
+  TIMEOUT = 5000, messages = [
+    new Buffer('First message to send'),
+    new Buffer('Second message to send'),
+    new Buffer('Third message to send'),
+    new Buffer('Fourth message to send')
+  ];
 
 if (process.argv[2] !== 'child') {
   var workers = {}, listeners = 3, listening = 0, dead = 0, i = 0, done = 0, timer = null;
