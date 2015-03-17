@@ -253,8 +253,8 @@ JS_METHOD(JXUtilsWrap, PrintError) {
 JS_METHOD_END
 
 JS_METHOD(JXUtilsWrap, SetMaxHeaderLength) {
-  if (!args.IsNumber(0)) {
-    THROW_EXCEPTION("Missing parameters (setMaxHeaderLength) expects (int).");
+  if (!args.IsUnsigned(0)) {
+    THROW_EXCEPTION("Missing parameters (setMaxHeaderLength) expects (unsigned).");
   }
 
   commons::max_header_size = args.GetInteger(0);

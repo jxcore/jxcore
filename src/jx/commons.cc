@@ -24,7 +24,7 @@ namespace node {
 
 char *commons::embedded_source_ = NULL;
 jxcore_instance_status commons::process_status_ = JXCORE_INSTANCE_NONE;
-int32_t commons::max_header_size = 32768;
+int32_t commons::max_header_size = 0; // disabled
 int commons::mapCount = 0;
 int commons::bTCP = -1;
 int commons::bTCPS = -1;
