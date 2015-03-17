@@ -144,18 +144,26 @@ class JXcoreTestConfiguration(test.TestConfiguration):
           except:
             print "Cannot load json def: " + file_path_json
 
-          if j and j.get("runtime_dependencies"):
-            for dep in j["runtime_dependencies"]:
-              args = json.loads( '{"argv" : "install ' + dep + '" }');
-              dir = dirname(file_path)
-              nd = join(dir, "node_modules")
-              if not exists(nd):
-                mkdir(nd)
-              cwd = os.getcwd()
-              fh = open("NUL","w")
-              popen = subprocess.Popen( args = [ join(cwd, self.context.GetVm(mode)), 'install', dep ], cwd = dir, stdout = fh)
-              popen.wait();
-              fh.close()
+          deps = []
+
+          if file_path.endswith('.js'):
+            if j and j.get("dependencies"):
+              deps = j.get("dependencies")
+          else:
+            if j and j.get("runtime_dependencies"):
+              deps = j.get("runtime_dependencies")
+
+          for dep in deps:
+            args = json.loads( '{"argv" : "install ' + dep + '" }');
+            dir = dirname(file_path)
+            nd = join(dir, "node_modules")
+            if not exists(nd):
+              mkdir(nd)
+            cwd = os.getcwd()
+            fh = open("NUL","w")
+            popen = subprocess.Popen( args = [ join(cwd, self.context.GetVm(mode)), 'install', dep ], cwd = dir, stdout = fh)
+            popen.wait();
+            fh.close()
 
           if j and j.get("args"):
             for argv in j["args"]:
