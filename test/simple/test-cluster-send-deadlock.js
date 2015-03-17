@@ -30,12 +30,15 @@ if (cluster.isMaster) {
       var client1 = net.connect({ host: 'localhost', port: common.PORT });
       var client2 = net.connect({ host: 'localhost', port: common.PORT });
       var waiting = 2;
-      client1.on('close', onclose);
-      client2.on('close', onclose);
+
       function onclose() {
         if (--waiting === 0)
           cluster.worker.disconnect();
       }
+
+      client1.on('close', onclose);
+      client2.on('close', onclose);
+
       setTimeout(function() {
         client1.end();
         client2.end();
