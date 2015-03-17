@@ -34,34 +34,34 @@ void GetTSC(unsigned long& tsc)
 #include <stdlib.h>
 #include <openssl/cast.h>
 
-//void main(int argc,char *argv[])
-//	{
-//	CAST_KEY key;
-//	unsigned long s1,s2,e1,e2;
-//	unsigned long data[2];
-//	int i,j;
-//
-//	for (j=0; j<6; j++)
-//		{
-//		for (i=0; i<1000; i++) /**/
-//			{
-//			CAST_encrypt(&data[0],&key);
-//			GetTSC(s1);
-//			CAST_encrypt(&data[0],&key);
-//			CAST_encrypt(&data[0],&key);
-//			CAST_encrypt(&data[0],&key);
-//			GetTSC(e1);
-//			GetTSC(s2);
-//			CAST_encrypt(&data[0],&key);
-//			CAST_encrypt(&data[0],&key);
-//			CAST_encrypt(&data[0],&key);
-//			CAST_encrypt(&data[0],&key);
-//			GetTSC(e2);
-//			CAST_encrypt(&data[0],&key);
-//			}
-//
-//		printf("cast %d %d (%d)\n",
-//			e1-s1,e2-s2,((e2-s2)-(e1-s1)));
-//		}
-//	}
+void main(int argc,char *argv[])
+	{
+	CAST_KEY key;
+	unsigned long s1,s2,e1,e2;
+	unsigned long data[2];
+	int i,j;
+
+	for (j=0; j<6; j++)
+		{
+		for (i=0; i<1000; i++) /**/
+			{
+			CAST_encrypt(&data[0],&key);
+			GetTSC(s1);
+			CAST_encrypt(&data[0],&key);
+			CAST_encrypt(&data[0],&key);
+			CAST_encrypt(&data[0],&key);
+			GetTSC(e1);
+			GetTSC(s2);
+			CAST_encrypt(&data[0],&key);
+			CAST_encrypt(&data[0],&key);
+			CAST_encrypt(&data[0],&key);
+			CAST_encrypt(&data[0],&key);
+			GetTSC(e2);
+			CAST_encrypt(&data[0],&key);
+			}
+
+		printf("cast %d %d (%d)\n",
+			e1-s1,e2-s2,((e2-s2)-(e1-s1)));
+		}
+	}
 

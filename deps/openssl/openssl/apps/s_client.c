@@ -178,13 +178,6 @@ typedef unsigned int u_int;
 #include <fcntl.h>
 #endif
 
-/* Use Windows API with STD_INPUT_HANDLE when checking for input?
-   Don't look at OPENSSL_SYS_MSDOS for this, since it is always defined if
-   OPENSSL_SYS_WINDOWS is defined */
-#if defined(OPENSSL_SYS_WINDOWS) && !defined(OPENSSL_SYS_WINCE) && defined(STD_INPUT_HANDLE)
-#define OPENSSL_USE_STD_INPUT_HANDLE
-#endif
-
 #undef PROG
 #define PROG	s_client_main
 
@@ -336,14 +329,17 @@ static void sc_usage(void)
 	BIO_printf(bio_err," -srppass arg      - password for 'user'\n");
 	BIO_printf(bio_err," -srp_lateuser     - SRP username into second ClientHello message\n");
 	BIO_printf(bio_err," -srp_moregroups   - Tolerate other than the known g N values.\n");
-	BIO_printf(bio_err," -srp_strength int - minimal mength in bits for N (default %d).\n",SRP_MINIMAL_N);
+	BIO_printf(bio_err," -srp_strength int - minimal length in bits for N (default %d).\n",SRP_MINIMAL_N);
 #endif
 	BIO_printf(bio_err," -ssl2         - just use SSLv2\n");
+#ifndef OPENSSL_NO_SSL3_METHOD
 	BIO_printf(bio_err," -ssl3         - just use SSLv3\n");
+#endif
 	BIO_printf(bio_err," -tls1_2       - just use TLSv1.2\n");
 	BIO_printf(bio_err," -tls1_1       - just use TLSv1.1\n");
 	BIO_printf(bio_err," -tls1         - just use TLSv1\n");
 	BIO_printf(bio_err," -dtls1        - just use DTLSv1\n");    
+	BIO_printf(bio_err," -fallback_scsv - send TLS_FALLBACK_SCSV\n");
 	BIO_printf(bio_err," -mtu          - set the link layer MTU\n");
 	BIO_printf(bio_err," -no_tls1_2/-no_tls1_1/-no_tls1/-no_ssl3/-no_ssl2 - turn off that protocol\n");
 	BIO_printf(bio_err," -bugs         - Switch on all SSL implementation bug workarounds\n");
@@ -624,6 +620,7 @@ int MAIN(int argc, char **argv)
 	char *sess_out = NULL;
 	struct sockaddr peer;
 	int peerlen = sizeof(peer);
+	int fallback_scsv = 0;
 	int enable_timeouts = 0 ;
 	long socket_mtu = 0;
 #ifndef OPENSSL_NO_JPAKE
@@ -812,7 +809,7 @@ int MAIN(int argc, char **argv)
 		else if	(strcmp(*argv,"-ssl2") == 0)
 			meth=SSLv2_client_method();
 #endif
-#ifndef OPENSSL_NO_SSL3
+#ifndef OPENSSL_NO_SSL3_METHOD
 		else if	(strcmp(*argv,"-ssl3") == 0)
 			meth=SSLv3_client_method();
 #endif
@@ -829,6 +826,10 @@ int MAIN(int argc, char **argv)
 			{
 			meth=DTLSv1_client_method();
 			socket_type=SOCK_DGRAM;
+			}
+		else if (strcmp(*argv,"-fallback_scsv") == 0)
+			{
+			fallback_scsv = 1;
 			}
 		else if (strcmp(*argv,"-timeout") == 0)
 			enable_timeouts=1;
@@ -1242,6 +1243,10 @@ bad:
 		SSL_set_session(con, sess);
 		SSL_SESSION_free(sess);
 		}
+
+	if (fallback_scsv)
+		SSL_set_mode(con, SSL_MODE_SEND_FALLBACK_SCSV);
+
 #ifndef OPENSSL_NO_TLSEXT
 	if (servername != NULL)
 		{
@@ -1316,10 +1321,22 @@ re_start:
 			BIO_ctrl(sbio, BIO_CTRL_DGRAM_SET_SEND_TIMEOUT, 0, &timeout);
 			}
 
-		if (socket_mtu > 28)
+		if (socket_mtu)
 			{
+			if(socket_mtu < DTLS_get_link_min_mtu(con))
+				{
+				BIO_printf(bio_err,"MTU too small. Must be at least %ld\n",
+					DTLS_get_link_min_mtu(con));
+				BIO_free(sbio);
+				goto shut;
+				}
 			SSL_set_options(con, SSL_OP_NO_QUERY_MTU);
-			SSL_set_mtu(con, socket_mtu - 28);
+			if(!DTLS_set_link_mtu(con, socket_mtu))
+				{
+				BIO_printf(bio_err, "Failed to set MTU\n");
+				BIO_free(sbio);
+				goto shut;
+				}
 			}
 		else
 			/* want to do MTU discovery */
@@ -1613,10 +1630,10 @@ SSL_set_tlsext_status_ids(con, ids);
 					tv.tv_usec = 0;
 					i=select(width,(void *)&readfds,(void *)&writefds,
 						 NULL,&tv);
-#if defined(OPENSSL_USE_STD_INPUT_HANDLE)
-					if(!i && (!((_kbhit()) || (WAIT_OBJECT_0 == WaitForSingleObject(GetStdHandle(STD_INPUT_HANDLE), 0))) || !read_tty) ) continue;
-#else
+#if defined(OPENSSL_SYS_WINCE) || defined(OPENSSL_SYS_MSDOS)
 					if(!i && (!_kbhit() || !read_tty) ) continue;
+#else
+					if(!i && (!((_kbhit()) || (WAIT_OBJECT_0 == WaitForSingleObject(GetStdHandle(STD_INPUT_HANDLE), 0))) || !read_tty) ) continue;
 #endif
 				} else 	i=select(width,(void *)&readfds,(void *)&writefds,
 					 NULL,timeoutp);
@@ -1821,10 +1838,10 @@ printf("read=%d pending=%d peek=%d\n",k,SSL_pending(con),SSL_peek(con,zbuf,10240
 			}
 
 #if defined(OPENSSL_SYS_WINDOWS) || defined(OPENSSL_SYS_MSDOS)
-#if defined(OPENSSL_USE_STD_INPUT_HANDLE)
-		else if ((_kbhit()) || (WAIT_OBJECT_0 == WaitForSingleObject(GetStdHandle(STD_INPUT_HANDLE), 0)))
-#else
+#if defined(OPENSSL_SYS_WINCE) || defined(OPENSSL_SYS_MSDOS)
 		else if (_kbhit())
+#else
+		else if ((_kbhit()) || (WAIT_OBJECT_0 == WaitForSingleObject(GetStdHandle(STD_INPUT_HANDLE), 0)))
 #endif
 #elif defined (OPENSSL_SYS_NETWARE)
 		else if (_kbhit())

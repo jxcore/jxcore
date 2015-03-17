@@ -1,4 +1,3 @@
-# Copyright (c) 2014 Nubisa Inc. 
 # All the updates are made under the file's license
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -761,7 +760,7 @@
                 'openssl/crypto/des/fcrypt_b.c'
               ]
             }],
-            ['(OS=="mac" or OS=="ios") and target_arch=="ia32"', {
+            ['OS in "mac ios" and target_arch=="ia32"', {
               'sources': [
                 'asm/x86-macosx-gas/aes/aes-586.s',
                 'asm/x86-macosx-gas/aes/aesni-x86.s',
@@ -786,7 +785,7 @@
                 'openssl/crypto/whrlpool/wp_block.c'
               ]
             }],
-            ['(OS=="mac" or OS=="ios") and target_arch=="x64"', {
+            ['OS in "mac ios" and target_arch=="x64"', {
               'defines': [
                 'OPENSSL_BN_ASM_MONT5',
                 'OPENSSL_BN_ASM_GF2m',
