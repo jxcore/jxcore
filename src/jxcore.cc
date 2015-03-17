@@ -360,6 +360,7 @@ char **JXEngine::Init(int argc, char *argv[], bool engine_inited_already) {
 static bool jxcore_first_instance = true;
 bool JXEngine::jxcore_was_shutdown_ = false;
 bool JXEngine::JS_engine_inited_ = false;
+static std::map<std::string, JXMethod> methods_archive;
 
 #define jx_engine_map std::map<int, JXEngine *>
 jx_engine_map jx_engine_instances;
@@ -636,6 +637,24 @@ void DeclareProxy(node::commons *com, JS_HANDLE_OBJECT_REF methods,
   JS_METHOD_CALL(defineProxy, JS_GET_GLOBAL(), 2, args);
 }
 
+void JXEngine::InitializeProxyMethods(node::commons *com) {
+  JS_ENTER_SCOPE();
+  JS_DEFINE_STATE_MARKER(com);
+  JS_HANDLE_OBJECT process_l = com->getProcess();
+
+  JS_LOCAL_OBJECT methods = JS_NEW_EMPTY_OBJECT();
+  for (std::map<std::string, JXMethod>::iterator it = methods_archive.begin();
+       it != methods_archive.end(); ++it) {
+    if (it->second.is_native_method_)
+      NODE_SET_METHOD(methods, it->first.c_str(), it->second.native_method_);
+    else
+      DeclareProxy(com, methods, it->first.c_str(), it->second.interface_id_,
+                   it->second.native_method_);
+  }
+
+  JS_NAME_SET(process_l, JS_STRING_ID("natives"), methods);
+}
+
 #if defined(JS_ENGINE_MOZJS)
 void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
   char **argv_copy;
@@ -698,18 +717,13 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
                 STD_TO_STRING(entry_file_name_.c_str()));
   }
 
-  JS_LOCAL_OBJECT methods = JS_NEW_EMPTY_OBJECT();
   for (std::map<std::string, JXMethod>::iterator it =
            methods_to_initialize_.begin();
        it != methods_to_initialize_.end(); ++it) {
-    if (it->second.is_native_method_)
-      NODE_SET_METHOD(methods, it->first.c_str(), it->second.native_method_);
-    else
-      DeclareProxy(main_node_, methods, it->first.c_str(),
-                   it->second.interface_id_, it->second.native_method_);
+    methods_archive[it->first] = it->second;
   }
 
-  JS_NAME_SET(process_l, JS_STRING_ID("natives"), methods);
+  InitializeProxyMethods(main_node_);
   methods_to_initialize_.clear();
 
   node::Load(process_l);
@@ -860,17 +874,12 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
                   STD_TO_STRING(entry_file_name_.c_str()));
     }
 
-    JS_LOCAL_OBJECT methods = JS_NEW_EMPTY_OBJECT();
     for (std::map<std::string, JXMethod>::iterator it =
              methods_to_initialize_.begin();
          it != methods_to_initialize_.end(); ++it) {
-      if (it->second.is_native_method_)
-        NODE_SET_METHOD(methods, it->first.c_str(), it->second.native_method_);
-      else
-        DeclareProxy(main_node_, methods, it->first.c_str(),
-                     it->second.interface_id_, it->second.native_method_);
+      methods_archive[it->first] = it->second;
     }
-    JS_NAME_SET(process_l, JS_STRING_ID("natives"), methods);
+    InitializeProxyMethods(main_node_);
     methods_to_initialize_.clear();
 
     node::Load(process_l);

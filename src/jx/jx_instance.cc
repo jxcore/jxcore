@@ -4,7 +4,8 @@
 #include "job_store.h"
 #include "extend.h"
 #include "job.h"
-#include "wrappers/thread_wrap.h"
+#include "../wrappers/thread_wrap.h"
+#include "../jxcore.h"
 
 #if !defined(_MSC_VER)
 #include <strings.h>
@@ -101,6 +102,8 @@ void JXInstance::runScript(void *x) {
     JS_HANDLE_OBJECT process_l = com->getProcess();
 
     customUnlock(CSLOCK_NEWINSTANCE);
+
+    JXEngine::InitializeProxyMethods(com);
 
     node::Load(process_l);
 

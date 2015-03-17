@@ -37,6 +37,9 @@ class JXEngine {
   char **argv_;
   int threadId_;
 
+  // internal
+  static void InitializeProxyMethods(node::commons *com);
+
   JXEngine(int argc, char *argv[], bool self_hosted = true);
 
   // initializes the locks, memory maps etc. call it once per app.
