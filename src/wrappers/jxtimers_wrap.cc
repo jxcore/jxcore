@@ -21,6 +21,8 @@ namespace node {
 static bool watcher_alive_ = false;
 
 void JXTimersWrap::checkKeys() {
+  std::queue<std::string> todelete;
+
   if (XSpace::Timers() == NULL) return;
 
   XSpace::LOCKTIMERS();
@@ -36,9 +38,7 @@ void JXTimersWrap::checkKeys() {
       if (node::commons::process_status_ != JXCORE_INSTANCE_ALIVE) break;
 
       if (timer.start + timer.slice < total) {
-        XSpace::LOCKSTORE();
-        XSpace::Store()->erase(it->first);
-        XSpace::UNLOCKSTORE();
+        todelete.push(it->first);
         timers->erase(it->first);
         counter = 1;
         break;
@@ -52,6 +52,14 @@ void JXTimersWrap::checkKeys() {
     }
   }
   XSpace::UNLOCKTIMERS();
+  if(!todelete.empty()) {
+    XSpace::LOCKSTORE();
+    while(!todelete.empty()) {
+      XSpace::Store()->erase(todelete.front());
+      todelete.pop();
+    }
+    XSpace::UNLOCKSTORE();
+  }
 }
 
 void JXTimersWrap::Watcher(void *w) {
