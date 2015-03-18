@@ -14,7 +14,8 @@ Now we can compile jxcore for android. type;
 ```bash
 $> build_scripts/android_compile.sh ~/androidNDK/
 ```
-`above script uses SpiderMonkey JIT, if you want/need V8, use android_compile_v8.sh instead`
+
+The previous script uses SpiderMonkey, if you want/need V8, please use android_compile_v8.sh instead.
 
 This one should take a while. When it's finished, you can find the binaries and include files for ARM and INTEL platforms inside `out_android/android` folder.
 
