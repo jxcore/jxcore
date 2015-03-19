@@ -30,6 +30,9 @@ var checkFile = function (assetPath) {
 
     assert.ok(assetStats instanceof fs.Stats, "asset stats is not instanceof fs.Stats");
     assert.ok(realStats instanceof fs.Stats, "real stats is not instanceof fs.Stats");
+
+    assert.strictEqual(typeof assetStats, "object", "`typeof stats` for asset is '" + (typeof assetStats) + "' instead of 'object'");
+    assert.strictEqual(typeof realStats, "object", "`typeof stats` for real file is '" + (typeof realStats) + "' instead of 'object'");
   });
 };
 

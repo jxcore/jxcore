@@ -27,6 +27,9 @@ var checkFile = function (assetPath) {
 
   assert.ok(realStats, "Stats of real file " + realPath + " are: " + realStats);
   assert.ok(assetStats, "Stats of asset file " + assetPath + " are: " + assetStats);
+
+  assert.strictEqual(typeof assetStats, "object", "`typeof stats` for asset is '" + (typeof assetStats) + "' instead of 'object'");
+  assert.strictEqual(typeof realStats, "object", "`typeof stats` for real file is '" + (typeof realStats) + "' instead of 'object'");
 };
 
 checkFile("assets/file.txt");
