@@ -28,23 +28,23 @@ void JXTimersWrap::checkKeys() {
   XSpace::LOCKTIMERS();
   _timerStore *timers = XSpace::Timers();
   if (timers != NULL) {
-    _timerStore::const_iterator it = timers->begin();
+    _timerStore::iterator it = timers->begin();
     _timerStore::const_iterator endit = timers->end();
     uint64_t total = uv_hrtime();
     long counter = 0;
 
-    for (; it != endit; it++) {
-      ttlTimer timer = it->second;
+    for (; it != endit; ) {
+      const ttlTimer &timer = it->second;
       if (node::commons::process_status_ != JXCORE_INSTANCE_ALIVE) break;
 
       if (timer.start + timer.slice < total) {
         todelete.push(it->first);
-        timers->erase(it->first);
-        counter = 1;
-        break;
+        timers->erase(++it);
+        endit = timers->end();
+      }else{
+        it++;
+        counter++;
       }
-
-      counter++;
     }
 
     if (counter == 0) {
