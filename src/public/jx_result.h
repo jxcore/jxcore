@@ -33,6 +33,9 @@ struct _JXResult {
 
 typedef struct _JXResult JXResult;
 
+bool JX_CallFunction(JXResult *fnc, JXResult *params, const int argc,
+                     JXResult *out);
+
 bool JX_ResultIsFunction(JXResult *result);
 bool JX_ResultIsError(JXResult *result);
 bool JX_ResultIsInt32(JXResult *result);
