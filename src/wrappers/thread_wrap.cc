@@ -34,11 +34,11 @@ JS_METHOD_END
 JS_METHOD(ThreadWrap, Free) { JS_FORCE_GC(); }
 JS_METHOD_END
 
-#define CHECK_EMBEDDED_THREADS()                                              \
-  if (node::commons::embedded_multithreading_) {                              \
-    THROW_EXCEPTION(                                                          \
-        "Multithreading is already enabled for embedding interface, you can " \
-        "not use both");                                                      \
+#define CHECK_EMBEDDED_THREADS()                                            \
+  if (node::commons::embedded_multithreading_) {                            \
+    THROW_EXCEPTION(                                                        \
+        "Multi-tasking is already enabled for native embedding interface, " \
+        "you can not use both");                                            \
   }
 
 JS_METHOD(ThreadWrap, Kill) {
@@ -85,14 +85,12 @@ JS_METHOD(ThreadWrap, GetCPUCount) {
 }
 JS_METHOD_END
 
-
 JS_METHOD(ThreadWrap, ThreadCount) {
   CHECK_EMBEDDED_THREADS()
 
   RETURN_PARAM(STD_TO_INTEGER(getThreadCount()));
 }
 JS_METHOD_END
-
 
 JS_METHOD(ThreadWrap, SetExiting) {
   CHECK_EMBEDDED_THREADS()
@@ -142,7 +140,6 @@ JS_METHOD(ThreadWrap, AddTask) {
   int cbId = args.GetInteger(3);
   bool notRemember = args.GetBoolean(4);
 
-  bool hasOps = false, newJob = false;
   int openThreads = 0;
 
   if (taskId == -1) {  // reset_thread
@@ -160,13 +157,10 @@ JS_METHOD(ThreadWrap, AddTask) {
       nth++;
 
       jxcore::addNewJob(m, j);
-      hasOps = jxcore::increaseJobCount() > 0;
-    } else {
-      hasOps = true;
+      jxcore::increaseJobCount();
+    } else if (!skip_thread_creation) {
       openThreads = getIncreaseThreadCount();
     }
-
-    newJob = true;
   }
 
   int rc = 0;
