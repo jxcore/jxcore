@@ -92,3 +92,5 @@ tmp_jx
 *.gypi_v8
 
 *.exe
+
+*.log
