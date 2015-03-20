@@ -90,3 +90,5 @@ tmp_jx
 
 *.gypi_sm
 *.gypi_v8
+
+*.exe
