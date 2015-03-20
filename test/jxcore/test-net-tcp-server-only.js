@@ -12,13 +12,11 @@ if (process.threadId != -1)
   process.keepAlive();
 
 process.on('exit', function (code) {
-  //console.log("Exiting " );
   assert.ok(started, "Client did not connect to the server.")
 });
 
 process.release();
 server.listen(port, function () {
-  //console.log("started" + process.threadId);
   started = true;
   server.close();
 

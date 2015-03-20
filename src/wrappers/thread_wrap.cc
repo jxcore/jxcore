@@ -148,6 +148,12 @@ JS_METHOD(ThreadWrap, AddTask) {
     }
     openThreads = 1;
   } else {
+	// if you are looking for the place where we cleanup the memory
+	// check the source codes where jxcore destroys the main instance
+	// jxcore does not store the same function definition again and again
+	// that's why it doesn't clean up right after running the job.
+	// the very same function can be executed in the future, as long as the main
+	// instance is alive.
     jxcore::Job *j = new jxcore::Job(*strMethod, mlen, *strParam, plen, taskId,
                                      cbId, notRemember);
 
