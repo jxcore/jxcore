@@ -26,6 +26,7 @@ var headerlength = parseInt(process.argv[process.argv.length - 1]);
 if (maxHeaderLength >= 0) {
   http.setMaxHeaderLength(maxHeaderLength);
 } else {
+  http.setMaxHeaderLength(32768);
   // default value
   maxHeaderLength = 32768;
 }
