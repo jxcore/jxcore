@@ -29,20 +29,22 @@ void JXTimersWrap::checkKeys() {
   _timerStore *timers = XSpace::Timers();
   if (timers != NULL) {
     _timerStore::iterator it = timers->begin();
-    _timerStore::const_iterator endit = timers->end();
     uint64_t total = uv_hrtime();
     long counter = 0;
 
-    for (; it != endit; ) {
+    while (it != timers->end()) {
       const ttlTimer &timer = it->second;
       if (node::commons::process_status_ != JXCORE_INSTANCE_ALIVE) break;
 
       if (timer.start + timer.slice < total) {
         todelete.push(it->first);
-        timers->erase(++it);
-        endit = timers->end();
+#ifdef HAS_BTREE_MAP
+        it = timers->erase(it);
+#else
+        timers->erase(it++);
+#endif
       }else{
-        it++;
+        ++it;
         counter++;
       }
     }
