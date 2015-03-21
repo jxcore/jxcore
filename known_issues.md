@@ -15,7 +15,8 @@ SpiderMonkey Debugger Interface
 REPL issues with SpiderMonkey build (see. tools/test.py simple)
 
 ##5
-Embedded interface test cases & MT stability updates
+MT new interface consistency
+FS extension edge cases
 
 ##6
 packages: name conflicting, when calling `require("xxx")` - (node_modules/xxx) from inside xxx.js
