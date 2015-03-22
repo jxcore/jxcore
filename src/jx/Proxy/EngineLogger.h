@@ -21,6 +21,22 @@
 // Works on single thread!
 // #define JXCORE_PRINT_NATIVE_CALLS 1
 
+// Enabling JXCORE_PRINT_NATIVE_CALLS_FILE_LINE adds the source file and line
+// after the native method in the log report.
+// Recommend this is enabled to differentiate different JS_LOCAL_METHOD(New)
+// calls which may not be unique, such as LOCAL::New and LOCAL::SetAutoPadding
+#define JXCORE_PRINT_NATIVE_CALLS_FILE_LINE 1
+
+// Minimum number of native function call invocations to make it into report.
+#ifndef JXCORE_PRINT_NATIVE_CALLS_MIN_COUNT
+#define JXCORE_PRINT_NATIVE_CALLS_MIN_COUNT 1
+#endif
+
+// Minimum native function call total time to make it into report.
+#ifndef JXCORE_PRINT_NATIVE_CALLS_MIN_TIME
+#define JXCORE_PRINT_NATIVE_CALLS_MIN_TIME 1000.0
+#endif
+
 #ifdef JXCORE_PRINT_NATIVE_CALLS
 #include "uv.h"
 
@@ -28,17 +44,14 @@ class JX_Logger {
   static uint64_t cumulo_;
   uint64_t my_cumulo_;
 
-  const char* cname_;
-  const char* mname_;
-  const char* fname_;
-  int line_;
+  const char* name_;
   uint64_t enter_;
 
   void Log(bool first);
 
  public:
-  JX_Logger(const char* cname, const char* mname, const char* fname, int ln)
-      : cname_(cname), mname_(mname), fname_(fname), line_(ln), enter_(0) {
+  JX_Logger(const char* name)
+      : name_(name), enter_(0) {
     Log(true);
   }
 
@@ -46,11 +59,20 @@ class JX_Logger {
 
   ~JX_Logger() { Log(false); }
 };
+
+#ifdef JXCORE_PRINT_NATIVE_CALLS_FILE_LINE
+#define JX_STRINGIZE_LINE2(L) #L
+#define JX_STRINGIZE_LINE(L)  JX_STRINGIZE_LINE2(L)
+#define JX_FILE_AND_LINE      " " __FILE__ ":" JX_STRINGIZE_LINE(__LINE__)
+#else
+#define JX_FILE_AND_LINE
+#endif
+
 #define ENGINE_LOG_THIS(cname, mname) \
-  JX_Logger ___jxlog___(cname, mname, __FILE__, __LINE__)
+  JX_Logger ___jxlog___(cname "::" mname JX_FILE_AND_LINE)
 
 #define ENGINE_LOG_THAT(cname, mname, n) \
-  JX_Logger ___jxlog___##n(cname, mname, __FILE__, __LINE__)
+  JX_Logger ___jxlog___##n(cname "::" mname JX_FILE_AND_LINE)
 
 #define ENGINE_PRINT_LOGS() JX_Logger::Print()
 #else

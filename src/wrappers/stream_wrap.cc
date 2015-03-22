@@ -495,7 +495,7 @@ void StreamWrap::AfterWrite(uv_write_t* req, int status) {
 }
 
 JS_METHOD_NO_COM(StreamWrap, Shutdown) {
-  ENGINE_LOG_THIS("StreamWrap", "Shutdown");
+  //ENGINE_LOG_THIS("StreamWrap", "Shutdown"); //already logged in JS_METHOD_NO_COM
   ENGINE_UNWRAP(StreamWrap);
 
   ShutdownWrap* req_wrap = new ShutdownWrap(wrap->com);
