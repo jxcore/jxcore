@@ -34,9 +34,9 @@ class LogDetails {
   }
 };
 
-typedef std::map<std::string, LogDetails *> LogItem;
+typedef std::map<std::string, LogDetails *> LogDetailsMap;
 
-std::map<std::string, LogDetails *> logs;
+LogDetailsMap logs;
 
 void JX_Logger::Log(bool first) {
   if (!first) {
@@ -46,24 +46,17 @@ void JX_Logger::Log(bool first) {
     else
       return;
 
-    std::string nameof = cname_;
-    nameof += "::";
-    nameof += mname_;
-
-    if (nameof.length() == 2) return;
-
-    LogItem::iterator it = logs.find(nameof);
-
-    if (it == logs.end()) {
-      logs[nameof] = new LogDetails();
+    LogDetails*& entry = logs[name_];
+    if (!entry) {
+      entry = new LogDetails();
     }
 
     uint64_t fix = (cumulo_ - my_cumulo_);
 
     if (fix > diff) fix = 0;
 
-    logs[nameof]->total_time_spent_ += diff - fix;
-    logs[nameof]->total_calls_++;
+    entry->total_time_spent_ += diff - fix;
+    entry->total_calls_++;
 
     cumulo_ += diff;
   } else {
@@ -74,29 +67,29 @@ void JX_Logger::Log(bool first) {
 
 void JX_Logger::Print() {
 #if defined(JS_ENGINE_V8)
-  char *engine_name = "V8";
+  const char *engine_name = "V8";
 #elif defined(JS_ENGINE_MOZJS)
-  char *engine_name = "MozJS";
+  const char *engine_name = "MozJS";
 #endif
 
   printf("JXcore's native logs for the actual JXEngine(%s) instance :\n\n",
          engine_name);
+  printf("     Total-Time     Calls     Time/Call  Name\n");
 
-  LogItem::iterator it = logs.begin();
-
-  printf("ID\tName\t\tTotal-Calls\tTotal-Time\n");
-  for (int32_t z = 0; it != logs.end(); it++) {
-    // do not show any measurement for the samples less than 100
-    if (it->second->total_calls_ < 100) continue;
-    printf("%d\t%s\t\t%d\t%.3f\n", z++, it->first.c_str(),
-           it->second->total_calls_,
-           (double)it->second->total_time_spent_ / 1000);
-  }
-  fflush(stdout);
-
-  for (int32_t z = 0; it != logs.end(); it++) {
+  for (LogDetailsMap::iterator it = logs.begin(); it != logs.end(); it++) {
+    // do not show any measurement for the samples less than thresholds
+    double total_time = (double)it->second->total_time_spent_ / 1000;
+    if (it->second->total_calls_ >= JXCORE_PRINT_NATIVE_CALLS_MIN_COUNT
+        && total_time >= JXCORE_PRINT_NATIVE_CALLS_MIN_TIME) {
+      printf("%15.3f %9ld %13.3f  %s\n",
+        total_time, it->second->total_calls_,
+        total_time / it->second->total_calls_,
+        it->first.c_str());
+    }
     delete it->second;
   }
+
+  fflush(stdout);
   logs.clear();
 }
 #endif
