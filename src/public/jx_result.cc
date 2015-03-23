@@ -145,6 +145,8 @@ int32_t JX_GetDataLength(JXResult *result) {
 void JX_FreeResultData(JXResult *result) {
   assert(result != NULL && "JXResult object wasn't initialized");
 
+  if (result->persistent_) return;
+
   UNWRAP_COM(result);
   ENTER_ENGINE_SCOPE();
 
@@ -356,23 +358,7 @@ bool JX_ClearPersistent(JXResult *result) {
          "Empty, Null or Undefined JS Value can not be persistent");
 
   bool pre = result->persistent_;
-  UNWRAP_COM(result);
-  ENTER_ENGINE_SCOPE();
+  result->persistent_ = false;
 
-  if (pre) {
-    result->persistent_ = false;
-    if (result->type_ == RT_Function) {
-      assert(sizeof(jxcore::JXFunctionWrapper) == result->size_ &&
-             "This can not be a function, check type mixing");
-      jxcore::JXFunctionWrapper *wrap =
-          (jxcore::JXFunctionWrapper *)result->data_;
-      wrap->Dispose();
-    } else {
-      jxcore::JXValueWrapper *wrap = (jxcore::JXValueWrapper *)result->data_;
-      delete wrap;
-    }
-  }
-
-  LEAVE_ENGINE_SCOPE();
   return pre;
 }
