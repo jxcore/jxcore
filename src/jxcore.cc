@@ -1065,7 +1065,7 @@ JS_HANDLE_VALUE JX_Parse(node::commons *com, const char *str,
 bool JXEngine::ConvertToJXResult(node::commons *com,
                                  JS_HANDLE_VALUE_REF ret_val,
                                  JXResult *result) {
-  assert(result->context_ && "JXResult object wasn't initialized");
+  assert(result->com_ && "JXResult object wasn't initialized");
   result->persistent_ = false;
 
   JS_DEFINE_STATE_MARKER(com);
