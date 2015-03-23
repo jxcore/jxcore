@@ -2064,8 +2064,67 @@
       return;
     }
 
+    // downloads the file though proxy, if --proxy or --https-proxy argv is provided
+    var download_through_proxy = function (url, target, cb) {
+
+      var url_module = NativeModule.require('url');
+      var parsed_url = url_module.parse(url);
+
+      var proxy_url = parsed_url.protocol.toLowerCase() === "https:" ? getOptions("--https-proxy") : getOptions("--proxy");
+      if (!proxy_url)
+        return false;
+
+      var parsed_proxy_url = url_module.parse(proxy_url);
+
+      var http = NativeModule.require('http');
+      var https = NativeModule.require('https');
+
+      // tunnel options
+      var opts = {
+        host: parsed_proxy_url.hostname,
+        port: parsed_proxy_url.port,
+        method: 'CONNECT',
+        path: parsed_url.hostname,
+        headers : {
+          Host: parsed_url.hostname
+        }
+      };
+
+      if (parsed_proxy_url.auth)
+        opts.headers["Proxy-Authorization"] = 'Basic ' + new Buffer(parsed_proxy_url.auth).toString('base64');
+
+      http.request(opts).on('connect', function(res, socket, head) {
+        https.get({
+          host: parsed_url.hostname,
+          path : parsed_url.path,
+          socket: socket,
+          agent: false
+        }, function(res) {
+          var file = fs.createWriteStream(target);
+          res.on('data', function (chunk) {
+            file.write(chunk);
+          }).on('end', function () {
+            file.end();
+          });
+          file.on('finish', function () {
+            file.close();
+            setTimeout(cb, 1000);
+          })
+        });
+      }).on('error', function(e) {
+        console.error(e);
+        process.exit(1);
+      }).end();
+
+      return true;
+    };
+
     var args = process.argv;
     var download = function (url, target, cb) {
+
+      if (download_through_proxy(url, target, cb))
+        return;
+
       var http = NativeModule.require('https');
       var req = http.request(url, function (res) {
         var file = fs.createWriteStream(target);
@@ -2083,7 +2142,7 @@
       req.end();
     };
     var name = "";
-    var npm_str = "https://s3.amazonaws.com/nodejx/npmjxv4.jx";
+    var npm_str = "https://s3.amazonaws.com/nodejx/npmjxv5.jx";
     var isWindows = process.platform === 'win32';
     var homeFolder = process.__npmjxpath || process.env.HOME
       || process.env.HOMEPATH || process.env.USERPROFILE;
