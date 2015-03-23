@@ -375,6 +375,7 @@ JXEngine::JXEngine(int argc, char **argv, bool self_hosted) {
            "instances");
   }
 
+  inside_scope_ = false;
   threadId_ = node::commons::getAvailableThreadId(!jx_engine_instances.empty());
   jx_engine_instances[threadId_] = this;
 
@@ -451,6 +452,8 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
   argc_ = argc;
 
   const int actual_thread_id = threadId_;
+
+  EnterScope();
 
 #ifdef JS_ENGINE_V8
 #if HAVE_OPENSSL
@@ -589,6 +592,8 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
   main_iso_.Dispose();
 #endif
 
+  LeaveScope();
+
   // Clean up the copy:
   if (argc > 0) free(argv_copy);
 
@@ -683,6 +688,8 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
     }
   }
 
+  EnterScope();
+
   if (actual_thread_id == 0) {
     main_node_ = new node::commons(0);
     main_node_->node_isolate = ENGINE_NS::Isolate::New(0);
@@ -729,6 +736,8 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
   node::Load(process_l);
 
   if (argc > 0) free(argv_copy);
+
+  LeaveScope();
 }
 
 void JXEngine::Destroy() {
@@ -742,6 +751,8 @@ void JXEngine::Destroy() {
            "First instance can not be destroyed before others");
     main_node_->instance_status_ = node::JXCORE_INSTANCE_EXITING;
   }
+  EnterScope();
+
   JS_HANDLE_OBJECT process_l = main_node_->getProcess();
   JSContext *ctx = main_iso_.ctx_;
   JSRuntime *rt = JS_GetRuntime(ctx);
@@ -791,6 +802,8 @@ void JXEngine::Destroy() {
 
   JS_DestroyRuntime(rt);
 
+  LeaveScope();
+
   jx_engine_map::iterator it = jx_engine_instances.find(main_node_->threadId);
   if (it != jx_engine_instances.end()) jx_engine_instances.erase(it);
 
@@ -803,7 +816,9 @@ void JXEngine::Destroy() {
 #define _EXIT_ISOLATE_                \
   if (threadId_ != 0) {               \
     main_node_->node_isolate->Exit(); \
-  }
+  }                                   \
+  LeaveScope();
+
 void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
   if (!JS_engine_inited_) {
     const char *replaceInvalid = getenv("NODE_INVALID_UTF8");
@@ -832,6 +847,9 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
   } else {
     main_node_ = node::commons::newInstance(actual_thread_id);
   }
+
+  EnterScope();
+
   // This needs to run *before* V8::Initialize()
   // Use copy here as to not modify the original argv:
   Init(argc, argv_copy, JS_engine_inited_);
@@ -886,6 +904,7 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
 
     if (argc > 0) free(argv_copy);
   }
+
   _EXIT_ISOLATE_
 }
 
@@ -897,6 +916,7 @@ void JXEngine::Destroy() {
     else
       main_node_->instance_status_ = node::JXCORE_INSTANCE_EXITING;
     JS_ENGINE_SCOPE();
+    EnterScope();
 
     JS_HANDLE_OBJECT process_l = main_node_->getProcess();
     node::EmitExit(process_l);
@@ -935,10 +955,11 @@ void JXEngine::Destroy() {
   _EXIT_ISOLATE_
 }
 #elif defined(JS_ENGINE_MOZJS)
-#define _EXIT_ISOLATE_
+#define _EXIT_ISOLATE_ LeaveScope();
 #endif
 
-char *Stringify(node::commons *com, JS_HANDLE_OBJECT obj, size_t *data_length) {
+char *JX_Stringify(node::commons *com, JS_HANDLE_OBJECT obj,
+                   size_t *data_length) {
   JS_ENTER_SCOPE();
   JS_DEFINE_STATE_MARKER(com);
 
@@ -991,8 +1012,8 @@ char *Stringify(node::commons *com, JS_HANDLE_OBJECT obj, size_t *data_length) {
   return *str;
 }
 
-JS_HANDLE_VALUE Parse(node::commons *com, const char *str,
-                      const size_t length) {
+JS_HANDLE_VALUE JX_Parse(node::commons *com, const char *str,
+                         const size_t length) {
   JS_ENTER_SCOPE();
   JS_DEFINE_STATE_MARKER(com);
 
@@ -1034,79 +1055,19 @@ JS_HANDLE_VALUE Parse(node::commons *com, const char *str,
   to_->data_ = NULL;         \
   to_->size_ = 0
 
-#define MANAGE_EXCEPTION                                                      \
-  JS_LOCAL_VALUE exception = try_catch.Exception();                           \
-  if (JS_IS_OBJECT(exception)) {                                              \
-    result->type_ = RT_Error;                                                 \
-    result->data_ =                                                           \
-        Stringify(main_node_, JS_VALUE_TO_OBJECT(exception), &result->size_); \
-    return true;                                                              \
-  } else if (JS_IS_STRING(exception)) {                                       \
-    result->type_ = RT_Error;                                                 \
-    jxcore::JXString str_err(exception);                                      \
-    str_err.DisableAutoGC();                                                  \
-    result->data_ = *str_err;                                                 \
-    result->size_ = str_err.Utf8Length();                                     \
-    return true;                                                              \
-  } else {                                                                    \
-    node::ReportException(try_catch, true);                                   \
-    return false;                                                             \
-  }
-
-JS_HANDLE_VALUE JXEngine::ConvertFromJXResult(node::commons *com,
-                                              JXResult *result) {
-  JS_ENTER_SCOPE();
-  JS_DEFINE_STATE_MARKER(com);
-
-  switch (result->type_) {
-    case RT_Undefined:
-      return JS_LEAVE_SCOPE(JS_UNDEFINED());
-      break;
-    case RT_Null:
-      return JS_LEAVE_SCOPE(JS_NULL());
-      break;
-    case RT_Int32:
-      return JS_LEAVE_SCOPE(STD_TO_NUMBER(JX_GetInt32(result)));
-      break;
-    case RT_Double:
-      return JS_LEAVE_SCOPE(STD_TO_NUMBER(JX_GetDouble(result)));
-      break;
-    case RT_Boolean:
-      return JS_LEAVE_SCOPE(STD_TO_BOOLEAN(JX_GetBoolean(result)));
-      break;
-    case RT_JSON: {
-      return JS_LEAVE_SCOPE(
-          Parse(com, JX_GetString(result), JX_GetDataLength(result)));
-    } break;
-    case RT_Error:
-    case RT_String:
-      return JS_LEAVE_SCOPE(STD_TO_STRING(JX_GetString(result)));
-      break;
-    case RT_Buffer: {
-      node::Buffer *buff = node::Buffer::New(JX_GetString(result),
-                                             JX_GetDataLength(result), com);
-      return JS_LEAVE_SCOPE(JS_VALUE_TO_OBJECT(buff->handle_));
-    } break;
-    case RT_Function: {
-      if (sizeof(jxcore::JXFunctionWrapper) != result->size_)
-        return JS_LEAVE_SCOPE(JS_UNDEFINED());
-
-      jxcore::JXFunctionWrapper *wrap =
-          (jxcore::JXFunctionWrapper *)result->data_;
-      return JS_LEAVE_SCOPE(wrap->pst_fnc_);
-    } break;
-    default:
-      assert(0 && "This type id is not supported by JXResult");
-  }
-
-  // :/ for compiler warning
-  return JS_LEAVE_SCOPE(JS_UNDEFINED());
-}
+#define MANAGE_EXCEPTION                            \
+  JS_LOCAL_VALUE exception = try_catch.Exception(); \
+  result->type_ = RT_Error;                         \
+  result->data_ = new JXValueWrapper(exception);    \
+  result->size_ = 1;                                \
+  return true;
 
 bool JXEngine::ConvertToJXResult(node::commons *com,
                                  JS_HANDLE_VALUE_REF ret_val,
                                  JXResult *result) {
-  assert(result->context_);
+  assert(result->context_ && "JXResult object wasn't initialized");
+  result->persistent_ = false;
+
   JS_DEFINE_STATE_MARKER(com);
 
   if (JS_IS_NULL(ret_val)) {
@@ -1121,55 +1082,41 @@ bool JXEngine::ConvertToJXResult(node::commons *com,
 
   if (JS_IS_BOOLEAN(ret_val)) {
     result->type_ = RT_Boolean;
-    bool *data = ALLOC_MEMORY(bool, 1);
-    data[0] = BOOLEAN_TO_STD(ret_val);
-    result->data_ = (void *)data;
     result->size_ = sizeof(bool);
-
-    return true;
   }
 
   if (JS_IS_NUMBER(ret_val)) {
     if (JS_IS_INT32(ret_val)) {
       result->type_ = RT_Int32;
-      int32_t *data = ALLOC_MEMORY(int32_t, 1);
-      data[0] = INT32_TO_STD(ret_val);
-      result->data_ = (void *)data;
       result->size_ = sizeof(int32_t);
     } else {
       result->type_ = RT_Double;
-      double *data = ALLOC_MEMORY(double, 1);
-      data[0] = NUMBER_TO_STD(ret_val);
-      result->data_ = (void *)data;
       result->size_ = sizeof(double);
     }
-    return true;
   }
 
   if (node::Buffer::jxHasInstance(ret_val, com)) {
     result->type_ = RT_Buffer;
-    node::Buffer::DataAndLength(ret_val, &result->data_, &result->size_);
-
-    return true;
+    result->size_ = node::Buffer::Length(ret_val);
   }
 
   if (JS_IS_STRING(ret_val)) {
     result->type_ = RT_String;
+    JS_LOCAL_STRING str = JS_VALUE_TO_STRING(ret_val);
+    result->size_ = JS_GET_STRING_LENGTH(str);
+  }
 
-    JXString str(ret_val);
-    str.DisableAutoGC();
-
-    result->data_ = *str;
-    result->size_ = str.Utf8Length();
-
+  if (result->size_ != 0) {
+    JXValueWrapper *pr_wrap = new JXValueWrapper(ret_val);
+    result->data_ = (void *)pr_wrap;
     return true;
   }
 
   if (JS_IS_FUNCTION(ret_val)) {
     JS_LOCAL_VALUE ud_val = JS_UNDEFINED();
     JS_LOCAL_FUNCTION fnc = JS_CAST_FUNCTION(JS_VALUE_TO_OBJECT(ret_val));
-    JXFunctionWrapper *wrap = new JXFunctionWrapper(com, fnc, ud_val);
-    result->data_ = wrap;
+    JXFunctionWrapper *fnc_wrap = new JXFunctionWrapper(com, fnc, ud_val);
+    result->data_ = fnc_wrap;
     result->size_ = sizeof(JXFunctionWrapper);
     result->type_ = RT_Function;
 
@@ -1178,18 +1125,17 @@ bool JXEngine::ConvertToJXResult(node::commons *com,
 
   if (!JS_IS_OBJECT(ret_val)) {
     result->type_ = RT_Error;
-    // totally waste of resources but it should work bug free.
     JS_LOCAL_STRING dummy = STD_TO_STRING("Unsupported return type.");
-    jxcore::JXString message(dummy);
-    message.DisableAutoGC();
-    result->data_ = *message;
-    result->size_ = message.Utf8Length();
+    result->size_ = JS_GET_STRING_LENGTH(dummy);
+    result->data_ = (void *)new JXValueWrapper(dummy);
 
     return false;
   }
 
   result->type_ = RT_JSON;
-  result->data_ = Stringify(com, JS_VALUE_TO_OBJECT(ret_val), &result->size_);
+  JXValueWrapper *wrap = new JXValueWrapper(ret_val);
+  result->data_ = (void *)wrap;
+  result->size_ = 1;
 
   return true;
 }
@@ -1199,11 +1145,11 @@ bool JXEngine::Evaluate(const char *source, const char *filename,
   bool ret_val = false;
   {
     JS_ENGINE_SCOPE();
+    EnterScope();
 
     node::commons *com = main_node_;
-
     SET_UNDEFINED(result);
-    result->context_ = __contextORisolate;
+    result->com_ = com;
 
     JS_LOCAL_STRING source_ = UTF8_TO_STRING(source);
     JS_LOCAL_STRING filename_ = STD_TO_STRING(filename);
@@ -1224,6 +1170,7 @@ bool JXEngine::Evaluate(const char *source, const char *filename,
 
     ret_val = JXEngine::ConvertToJXResult(com, scr_return, result);
   }
+
   _EXIT_ISOLATE_
   return ret_val;
 }
@@ -1238,6 +1185,7 @@ bool JXEngine::DefineProxyMethod(const char *name, const int interface_id,
   } else {
     {
       JS_ENGINE_SCOPE();
+      EnterScope();
 
       JS_HANDLE_OBJECT process = main_node_->getProcess();
       JS_LOCAL_OBJECT natives =
@@ -1254,7 +1202,6 @@ bool JXEngine::DefineProxyMethod(const char *name, const int interface_id,
     }
   exit_:
     _EXIT_ISOLATE_
-    return ret_val;  // silly but _EXIT_ISOLATE_ is empty for mozjs
   }
   return ret_val;
 }
@@ -1267,6 +1214,7 @@ bool JXEngine::DefineNativeMethod(const char *name, JS_NATIVE_METHOD method) {
   } else {
     {
       JS_ENGINE_SCOPE();
+      EnterScope();
 
       JS_HANDLE_OBJECT process = main_node_->getProcess();
       JS_LOCAL_OBJECT natives =
@@ -1283,7 +1231,6 @@ bool JXEngine::DefineNativeMethod(const char *name, JS_NATIVE_METHOD method) {
     }
   exit_:
     _EXIT_ISOLATE_
-    return ret_val;  // silly but _EXIT_ISOLATE_ is empty for mozjs
   }
 
   return ret_val;
@@ -1293,6 +1240,7 @@ int JXEngine::Loop() {
   int ret_val = 0;
   {
     JS_ENGINE_SCOPE();
+    EnterScope();
 
     ret_val = uv_run_jx(main_node_->loop, UV_RUN_DEFAULT,
                         node::commons::CleanPinger, 0);
@@ -1305,6 +1253,7 @@ int JXEngine::LoopOnce() {
   int ret_val = 0;
   {
     JS_ENGINE_SCOPE();
+    EnterScope();
 
     ret_val = uv_run_jx(main_node_->loop, UV_RUN_NOWAIT,
                         node::commons::CleanPinger, 0);

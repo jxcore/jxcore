@@ -21,13 +21,13 @@ char *app_args[2];
     results = (JXResult *)malloc(sizeof(JXResult) * (len + 1));   \
     for (int i = 0; i < len; i++) {                               \
       JS_HANDLE_VALUE val = args.GetItem(i + start_arg);          \
-      results[i].context_ = context;                              \
+      results[i].com_ = context;                                  \
       results[i].data_ = NULL;                                    \
       results[i].size_ = 0;                                       \
       results[i].type_ = RT_Undefined;                            \
       jxcore::JXEngine::ConvertToJXResult(com, val, &results[i]); \
     }                                                             \
-    results[len].context_ = context;                              \
+    results[len].com_ = context;                                  \
     results[len].data_ = NULL;                                    \
     results[len].size_ = 0;                                       \
     results[len].type_ = RT_Undefined;                            \
@@ -35,7 +35,7 @@ char *app_args[2];
 
 JS_LOCAL_METHOD(asyncCallback) {
   const int start_arg = 0;
-  CONVERT_ARG_TO_RESULT(results, __contextORisolate);
+  CONVERT_ARG_TO_RESULT(results, com);
   jx_callback(results, len);
 
   for (int i = 0; i < len; i++) {
@@ -60,7 +60,7 @@ JS_LOCAL_METHOD(extensionCallback) {
     THROW_EXCEPTION("There is no extension method for given Id");
 
   const int start_arg = 1;
-  CONVERT_ARG_TO_RESULT(results, __contextORisolate);
+  CONVERT_ARG_TO_RESULT(results, com);
 
   callbacks[interface_id](results, len);
 
@@ -69,13 +69,26 @@ JS_LOCAL_METHOD(extensionCallback) {
   }
 
   if (results[len].type_ != RT_Undefined) {
+    assert(results[len].data_ != NULL && results[len].size_ != 0 &&
+           "Return value was corrupted");
+
     if (results[len].type_ == RT_Error) {
       std::string msg = JX_GetString(&results[len]);
       JX_FreeResultData(&results[len]);
       THROW_EXCEPTION(msg.c_str());
+    } else if (results[len].type_ == RT_Function) {
+      assert(sizeof(JXFunctionWrapper) == results[len].size_ &&
+             "Type mixing? This can not be a Function");
+
+      JXFunctionWrapper *fnc_wrap = (JXFunctionWrapper *)results[len].data_;
+      JS_HANDLE_FUNCTION fnc = fnc_wrap->GetFunction();
+      JX_FreeResultData(&results[len]);
+
+      RETURN_PARAM(fnc);
     }
-    JS_HANDLE_VALUE ret_val =
-        jxcore::JXEngine::ConvertFromJXResult(com, &results[len]);
+
+    JXValueWrapper *wrap = (JXValueWrapper *)results[len].data_;
+    JS_HANDLE_VALUE ret_val = wrap->value_;
     JX_FreeResultData(&results[len]);
     RETURN_PARAM(ret_val);
   }

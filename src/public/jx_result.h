@@ -24,7 +24,8 @@ typedef enum {
 
 struct _JXResult {
   // internal use only
-  void *context_;
+  void *com_;
+  bool persistent_;
 
   void *data_;
   size_t size_;
@@ -35,6 +36,9 @@ typedef struct _JXResult JXResult;
 
 bool JX_CallFunction(JXResult *fnc, JXResult *params, const int argc,
                      JXResult *out);
+
+bool JX_MakePersistent(JXResult *result);
+bool JX_ClearPersistent(JXResult *result);
 
 bool JX_ResultIsFunction(JXResult *result);
 bool JX_ResultIsError(JXResult *result);

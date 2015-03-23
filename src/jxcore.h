@@ -9,6 +9,7 @@
 namespace jxcore {
 
 class JXEngine {
+  bool inside_scope_;
   bool self_hosted_;
   node::commons *main_node_;
   static bool jxcore_was_shutdown_;
@@ -17,14 +18,6 @@ class JXEngine {
 
   std::map<std::string, JXMethod> methods_to_initialize_;
 
-#if defined(JS_ENGINE_MOZJS)
-  JS_PERSISTENT_OBJECT global_;
-  JSCompartment *jscomp_;
-  ENGINE_NS::Isolate main_iso_;
-#elif defined(JS_ENGINE_V8)
-  JS_PERSISTENT_CONTEXT context_;
-#endif
-
   void InitializeEngine(int argc, char **argv);
   void InitializeEmbeddedEngine(int argc, char **argv);
   void ParseDebugOpt(const char *arg);
@@ -32,10 +25,29 @@ class JXEngine {
   void ParseArgs(int argc, char **argv);
   char **Init(int argc, char *argv[], bool engine_inited_already);
 
+#if defined(JS_ENGINE_MOZJS)
+  JS_PERSISTENT_OBJECT global_;
+  JSCompartment *jscomp_;
+  ENGINE_NS::Isolate main_iso_;
+#elif defined(JS_ENGINE_V8)
+ public:
+  JS_PERSISTENT_CONTEXT context_;
+#endif
+
  public:
   int argc_;
   char **argv_;
   int threadId_;
+
+  inline void EnterScope() {
+    assert(!inside_scope_ && "JXEngine was already in a scope");
+    inside_scope_ = true;
+  }
+  inline void LeaveScope() {
+    assert(inside_scope_ && "JXEngine was already outside of a scope");
+    inside_scope_ = false;
+  }
+  inline bool IsInScope() { return inside_scope_; }
 
   // internal
   static void InitializeProxyMethods(node::commons *com);
@@ -68,7 +80,7 @@ class JXEngine {
    * file content is available all the threads.
    *
    * if you want to set entry file from the memory content, set last parameter
-   *to true
+   * to true
    */
   void MemoryMap(const char *filename, const char *content,
                  bool entry_file = false);
@@ -99,10 +111,12 @@ class JXEngine {
 
   static bool ConvertToJXResult(node::commons *com, JS_HANDLE_VALUE_REF ret_val,
                                 JXResult *result);
-
-  static JS_HANDLE_VALUE ConvertFromJXResult(node::commons *com,
-                                             JXResult *result);
 };
+
+char *JX_Stringify(node::commons *com, JS_HANDLE_OBJECT obj,
+                   size_t *data_length);
+JS_HANDLE_VALUE JX_Parse(node::commons *com, const char *str,
+                         const size_t length);
 }  // namespace jxcore
 
 #endif  // SRC_JXCORE_H_

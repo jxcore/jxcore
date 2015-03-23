@@ -34,14 +34,27 @@ class JXFunctionWrapper {
     }
   }
 
+  static void dummyWeakCallback(JS_PERSISTENT_VALUE_REF value, void *data) {}
+
   void Dispose() {
-    JS_CLEAR_PERSISTENT(pst_fnc_);
-    JS_CLEAR_PERSISTENT(pst_obj_);
+    if (com_ == NULL) return;
+    com_ = NULL;
+
+    if (!JS_IS_EMPTY(pst_fnc_)) pst_fnc_.MakeWeak(NULL, dummyWeakCallback);
+
+    if (!JS_IS_EMPTY(pst_obj_)) pst_obj_.MakeWeak(NULL, dummyWeakCallback);
+  }
+
+  inline JS_HANDLE_FUNCTION GetFunction() {
+    assert(com_ != NULL && "JXFunctionWrapper was already disposed.");
+    return pst_fnc_;
   }
 
   ~JXFunctionWrapper() { Dispose(); }
 
   JS_HANDLE_VALUE Call(const int argc, JS_HANDLE_VALUE args[], bool *success) {
+    assert(com_ != NULL && "JXFunctionWrapper was already disposed.");
+
     JS_ENTER_SCOPE();
     JS_DEFINE_STATE_MARKER(com_);
 
@@ -62,6 +75,23 @@ class JXFunctionWrapper {
 
     *success = true;
     return JS_LEAVE_SCOPE(res);
+  }
+};
+
+class JXValueWrapper {
+ public:
+  JS_PERSISTENT_VALUE value_;
+
+  JXValueWrapper() {}
+
+  JXValueWrapper(JS_HANDLE_VALUE_REF value) {
+    value_ = JS_NEW_PERSISTENT_VALUE(value);
+  }
+
+  ~JXValueWrapper() {
+    if (!JS_IS_EMPTY(value_)) {
+      JS_CLEAR_PERSISTENT(value_);
+    }
   }
 };
 }  // namespace jxcore
