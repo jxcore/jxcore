@@ -41,23 +41,15 @@
 #include "uv.h"
 
 class JX_Logger {
-  static uint64_t cumulo_;
-  uint64_t my_cumulo_;
-
-  const char* name_;
-  uint64_t enter_;
-
-  void Log(bool first);
-
  public:
-  JX_Logger(const char* name)
-      : name_(name), enter_(0) {
-    Log(true);
-  }
-
+  JX_Logger(const char* name);
+  ~JX_Logger();
   static void Print();
-
-  ~JX_Logger() { Log(false); }
+ private:
+  JX_Logger();
+  JX_Logger(const JX_Logger&);
+  const char* name_;
+  uint64_t time_enter_;
 };
 
 #ifdef JXCORE_PRINT_NATIVE_CALLS_FILE_LINE

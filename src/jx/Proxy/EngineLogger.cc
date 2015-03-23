@@ -21,8 +21,6 @@
 
 #ifdef JXCORE_PRINT_NATIVE_CALLS
 
-uint64_t JX_Logger::cumulo_ = 0;
-
 class LogDetails {
  public:
   long total_calls_;
@@ -36,32 +34,24 @@ class LogDetails {
 
 typedef std::map<std::string, LogDetails *> LogDetailsMap;
 
-LogDetailsMap logs;
+static LogDetailsMap s_logs; // NOTE: not threadsafe
 
-void JX_Logger::Log(bool first) {
-  if (!first) {
-    uint64_t diff = 0;
-    if (enter_ != 0)
-      diff = uv_hrtime() - enter_;
-    else
-      return;
+JX_Logger::JX_Logger(const char* name) {
+  name_ = name;
+  time_enter_ = uv_hrtime();
+}
 
-    LogDetails*& entry = logs[name_];
-    if (!entry) {
-      entry = new LogDetails();
+JX_Logger::~JX_Logger() {
+  if (time_enter_) {
+    const uint64_t now = uv_hrtime();
+    if (now > time_enter_) {
+      LogDetails*& entry = s_logs[name_];
+      if (!entry) {
+        entry = new LogDetails();
+      }
+      entry->total_time_spent_ += now - time_enter_;
+      entry->total_calls_++;
     }
-
-    uint64_t fix = (cumulo_ - my_cumulo_);
-
-    if (fix > diff) fix = 0;
-
-    entry->total_time_spent_ += diff - fix;
-    entry->total_calls_++;
-
-    cumulo_ += diff;
-  } else {
-    enter_ = uv_hrtime();
-    my_cumulo_ = cumulo_;
   }
 }
 
@@ -72,11 +62,12 @@ void JX_Logger::Print() {
   const char *engine_name = "MozJS";
 #endif
 
-  printf("JXcore's native logs for the actual JXEngine(%s) instance :\n\n",
+  printf("JXcore native calls for the JXEngine(%s) instance:\n\n",
          engine_name);
   printf("     Total-Time     Calls     Time/Call  Name\n");
 
-  for (LogDetailsMap::iterator it = logs.begin(); it != logs.end(); it++) {
+  for (LogDetailsMap::iterator it = s_logs.begin(), E = s_logs.end();
+      it != E; ++it) {
     // do not show any measurement for the samples less than thresholds
     double total_time = (double)it->second->total_time_spent_ / 1000;
     if (it->second->total_calls_ >= JXCORE_PRINT_NATIVE_CALLS_MIN_COUNT
@@ -90,6 +81,6 @@ void JX_Logger::Print() {
   }
 
   fflush(stdout);
-  logs.clear();
+  s_logs.clear();
 }
 #endif
