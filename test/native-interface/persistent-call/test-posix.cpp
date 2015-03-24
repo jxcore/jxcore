@@ -1,17 +1,17 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 #include "../commons/common-posix.h"
 
-void callback(JXResult *results, int argc) {
+void callback(JXValue *results, int argc) {
   // do nothing
 }
 
 const char compare_base[10] = {'1', '4', 't', 't', '{',
                                'A', 'u', 'n', '{', 'n'};
 
-JXResult *fnc;
-JXResult *param1, *param2;
+JXValue *fnc;
+JXValue *param1, *param2;
 
-void sampleMethod(JXResult *results, int argc) {
+void sampleMethod(JXValue *results, int argc) {
   for (int i = 0; i < argc; i++) {
     std::string str;
     ConvertResult(&results[i], str);
@@ -21,7 +21,7 @@ void sampleMethod(JXResult *results, int argc) {
     }
   }
 
-  JXResult out;
+  JXValue out;
 
   fnc = &results[9];
   param1 = results + 3;
@@ -35,7 +35,7 @@ void sampleMethod(JXResult *results, int argc) {
 
   assert(JX_GetDataLength(&out) == 11 &&
          "Expected return value was 'test{\"a\":3}");
-  JX_FreeResultData(&out);
+  JX_Free(&out);
   assert(out.data_ == NULL && out.size_ == 0 && "JX_FreeResultData leaks?");
 }
 
@@ -55,20 +55,20 @@ int main(int argc, char **args) {
 
   while (JX_LoopOnce() != 0) usleep(1);
 
-  JXResult *params[2] = {param1, param2};
-  JXResult out;
+  JXValue *params[2] = {param1, param2};
+  JXValue out;
   JX_CallFunction(fnc, *params, 2, &out);
 
   JX_ClearPersistent(fnc);
-  JX_FreeResultData(fnc);
+  JX_Free(fnc);
   JX_ClearPersistent(param1);
-  JX_FreeResultData(param1);
+  JX_Free(param1);
   JX_ClearPersistent(param2);
-  JX_FreeResultData(param2);
+  JX_Free(param2);
 
   assert(JX_GetDataLength(&out) == 11 &&
          "Expected return value was 'test{\"a\":3}");
-  JX_FreeResultData(&out);
+  JX_Free(&out);
   assert(out.data_ == NULL && out.size_ == 0 && "JX_FreeResultData leaks?");
 
   JX_StopEngine();

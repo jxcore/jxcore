@@ -1,14 +1,14 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 #include "../commons/common-posix.h"
 
-void callback(JXResult *results, int argc) {
+void callback(JXValue *results, int argc) {
   // do nothing
 }
 
 const char compare_base[10] = {'1', '4', 't', 't', '{',
                                'A', 'u', 'n', '{', 'n'};
 
-void sampleMethod(JXResult *results, int argc) {
+void sampleMethod(JXValue *results, int argc) {
   for (int i = 0; i < argc; i++) {
     std::string str;
     ConvertResult(&results[i], str);
@@ -18,12 +18,12 @@ void sampleMethod(JXResult *results, int argc) {
     }
   }
 
-  JXResult out;
+  JXValue out;
   JX_CallFunction(&results[9], (results + 3), 2, &out);
 
   assert(JX_GetDataLength(&out) == 11 &&
          "Expected return value was 'test{\"a\":3}");
-  JX_FreeResultData(&out);
+  JX_Free(&out);
   assert(out.data_ == NULL && out.size_ == 0 && "JX_FreeResultData leaks?");
 }
 

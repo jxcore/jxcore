@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-typedef void (*JX_CALLBACK)(JXResult *result, int argc);
+typedef void (*JX_CALLBACK)(JXValue *result, int argc);
 
 // callback target is per application not per instance
 // it doesn't matter how many instances you create
@@ -21,7 +21,7 @@ void JX_Initialize(const char *home_folder, JX_CALLBACK callback);
 
 void JX_InitializeNewEngine();
 
-bool JX_Evaluate(const char *data, const char *script_name, JXResult *result);
+bool JX_Evaluate(const char *data, const char *script_name, JXValue *result);
 
 void JX_DefineMainFile(const char *data);
 
