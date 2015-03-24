@@ -1,4 +1,3 @@
-# All the updates are made under the file's license
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,6 +6,7 @@
   'variables': {
     'is_clang': 0,
     'gcc_version': 0,
+    'openssl_no_asm%': 0
   },
 
   'targets': [
@@ -652,7 +652,13 @@
         ['exclude', 'store/.*$']
       ],
       'conditions': [
-        ['target_arch!="ia32" and target_arch!="x64"', {
+        ['OS in "ios android" and target_arch in "arm armv7 armv7s arm64"', {
+          'defines': [ '__ARM_ARCH_7__' ], #openssl
+        }],
+        ['target_arch=="arm64"', {
+          'defines': [ '__ARM_ARCH_64__' ]
+        }],
+        ['target_arch!="ia32" and target_arch!="x64" and target_arch!="arm" or openssl_no_asm!=0 or OS=="ios" or OS=="android"', {
           # Disable asm
           'defines': [
             'OPENSSL_NO_ASM'
@@ -677,28 +683,33 @@
           # Enable asm
           'defines': [
             'AES_ASM',
-            'VPAES_ASM',
-            'BF_ASM',
-            'BNCO_ASM',
-            'BN_ASM',
             'CPUID_ASM',
-            'DES_ASM',
-            'LIB_BN_ASM',
-            'MD5_ASM',
-            'OPENSSL_BN_ASM',
             'OPENSSL_BN_ASM_MONT',
             'OPENSSL_CPUID_OBJ',
-            'RIP_ASM',
-            'RMD160_ASM',
             'SHA1_ASM',
             'SHA256_ASM',
             'SHA512_ASM',
             'GHASH_ASM',
-            'WHIRLPOOL_ASM',
-            'WP_ASM'
           ],
           'conditions': [
-            ['OS!="win" and OS!="mac" and OS!="ios" and target_arch=="ia32"', {
+            # Extended assembly on non-arm platforms
+            ['target_arch!="arm"', {
+              'defines': [
+                'VPAES_ASM',
+                'BN_ASM',
+                'BF_ASM',
+                'BNCO_ASM',
+                'DES_ASM',
+                'LIB_BN_ASM',
+                'MD5_ASM',
+                'OPENSSL_BN_ASM',
+                'RIP_ASM',
+                'RMD160_ASM',
+                'WHIRLPOOL_ASM',
+                'WP_ASM',
+              ],
+            }],
+            ['OS!="win" and OS!="mac" and target_arch=="ia32"', {
               'sources': [
                 'asm/x86-elf-gas/aes/aes-586.s',
                 'asm/x86-elf-gas/aes/aesni-x86.s',
@@ -723,7 +734,7 @@
                 'openssl/crypto/whrlpool/wp_block.c'
               ]
             }],
-            ['OS!="win" and OS!="mac" and OS!="ios" and target_arch=="x64"', {
+            ['OS!="win" and OS!="mac" and target_arch=="x64"', {
               'defines': [
                 'OPENSSL_BN_ASM_MONT5',
                 'OPENSSL_BN_ASM_GF2m',
@@ -760,7 +771,7 @@
                 'openssl/crypto/des/fcrypt_b.c'
               ]
             }],
-            ['OS in "mac ios" and target_arch=="ia32"', {
+            ['OS=="mac" and target_arch=="ia32"', {
               'sources': [
                 'asm/x86-macosx-gas/aes/aes-586.s',
                 'asm/x86-macosx-gas/aes/aesni-x86.s',
@@ -785,7 +796,7 @@
                 'openssl/crypto/whrlpool/wp_block.c'
               ]
             }],
-            ['OS in "mac ios" and target_arch=="x64"', {
+            ['OS=="mac" and target_arch=="x64"', {
               'defines': [
                 'OPENSSL_BN_ASM_MONT5',
                 'OPENSSL_BN_ASM_GF2m',
@@ -820,6 +831,33 @@
                 'openssl/crypto/camellia/cmll_misc.c',
                 'openssl/crypto/des/des_enc.c',
                 'openssl/crypto/des/fcrypt_b.c'
+              ]
+            }],
+            ['target_arch=="arm"', {
+              'sources': [
+                'asm/arm-elf-gas/aes/aes-armv4.s',
+                'asm/arm-elf-gas/bn/armv4-mont.s',
+                'asm/arm-elf-gas/bn/armv4-gf2m.s',
+                'asm/arm-elf-gas/sha/sha1-armv4-large.s',
+                'asm/arm-elf-gas/sha/sha512-armv4.s',
+                'asm/arm-elf-gas/sha/sha256-armv4.s',
+                'asm/arm-elf-gas/modes/ghash-armv4.s',
+                # No asm available
+                'openssl/crypto/aes/aes_cbc.c',
+                'openssl/crypto/bf/bf_enc.c',
+                'openssl/crypto/bn/bn_asm.c',
+                'openssl/crypto/cast/c_enc.c',
+                'openssl/crypto/camellia/camellia.c',
+                'openssl/crypto/camellia/cmll_cbc.c',
+                'openssl/crypto/camellia/cmll_misc.c',
+                'openssl/crypto/des/des_enc.c',
+                'openssl/crypto/des/fcrypt_b.c',
+                'openssl/crypto/rc4/rc4_enc.c',
+                'openssl/crypto/rc4/rc4_skey.c',
+                'openssl/crypto/whrlpool/wp_block.c',
+                # PCAP stuff
+                'openssl/crypto/armcap.c',
+                'openssl/crypto/armv4cpuid.S',
               ]
             }],
             ['OS=="win" and target_arch=="ia32"', {
@@ -893,9 +931,8 @@
                 'asm/x64-win32-masm/whrlpool/wp-x86_64.asm',
                 'asm/x64-win32-masm/modes/ghash-x86_64.asm',
                 'asm/x64-win32-masm/x86_64cpuid.asm',
-                # Non-generated asm
-                'openssl/crypto/bn/asm/x86_64-win32-masm.asm',
                 # No asm available
+                'openssl/crypto/bn/bn_asm.c',
                 'openssl/crypto/bf/bf_enc.c',
                 'openssl/crypto/cast/c_enc.c',
                 'openssl/crypto/camellia/cmll_misc.c',
@@ -938,15 +975,6 @@
             'DSO_DLFCN',
             'HAVE_DLFCN_H'
           ],
-        }],
-        ['target_arch in "arm armv7 armv7s arm64"', {
-          'sources': ['openssl/crypto/armcap.c'],
-        }],
-        ['OS in "ios android" and target_arch in "arm armv7 armv7s arm64"', {
-          'defines': [ '__ARM_ARCH_7__' ], #openssl
-        }],
-        ['target_arch=="arm64"', {
-          'defines': [ '__ARM_ARCH_64__' ]
         }],
       ],
       'include_dirs': [
@@ -1093,7 +1121,7 @@
         ],
         'cflags': ['-Wno-missing-field-initializers'],
         'conditions': [
-          ['OS=="mac" or OS=="ios"', {
+          ['OS=="mac"', {
             'defines': [
               # Set to ubuntu default path for convenience. If necessary,
               # override this at runtime with the SSL_CERT_DIR environment
