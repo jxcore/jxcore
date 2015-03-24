@@ -144,9 +144,12 @@ void JXEngine::ParseDebugOpt(const char *arg) {
 }
 
 void JXEngine::PrintHelp() {
+#ifndef JXCORE_EMBEDDED
   printf(
       "Usage: jx [options] [ -e script | script.js ] [arguments] \n"
+#ifdef JS_ENGINE_V8
       "       jx debug script.js [arguments] \n"
+#endif
       "\n"
       "Options:\n"
       "  compile              compile jx file from jxp project\n"
@@ -163,8 +166,12 @@ void JXEngine::PrintHelp() {
       "                       does not appear to be a terminal\n"
       "  --no-deprecation     silence deprecation warnings\n"
       "  --trace-deprecation  show stack traces on deprecations\n"
+#ifdef JS_ENGINE_V8
       "  --v8-options         print v8 command line options\n"
       "  --max-stack-size=val set max v8 stack size (bytes)\n"
+#endif
+      "  --enable-ssl2        enable ssl2\n"
+      "  --enable-ssl3        enable ssl3\n"
       "\n"
       "Environment variables:\n"
 #ifdef _WIN32
@@ -177,7 +184,8 @@ void JXEngine::PrintHelp() {
       "                       global contexts.\n"
       "NODE_DISABLE_COLORS    Set to 1 to disable colors in the REPL\n"
       "\n"
-      "Documentation can be found at http://jxcore.com/\n");
+      "Documentation can be found at http://jxcore.com/docs/\n");
+#endif
 }
 
 // Parse node command line arguments.

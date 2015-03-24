@@ -171,6 +171,7 @@
       ['node_static_library==1',
       {
         'defines!': ['HAVE_DTRACE'],
+        'defines': ['JXCORE_EMBEDDED'],
         'conditions': [
           ['OS=="win"',
           {
