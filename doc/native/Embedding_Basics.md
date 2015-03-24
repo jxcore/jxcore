@@ -28,7 +28,7 @@ The sample below demonstrates a basic usage of the interface
     fflush(stdout);               \
   } while (0)
 
-void ConvertResult(JXResult *result, std::string &to_result) {
+void ConvertResult(JXValue *result, std::string &to_result) {
   switch (result->type_) {
     case RT_Null:
       to_result = "null";
@@ -119,7 +119,7 @@ int main(int argc, char **args) {
   // or JX_Loop() without usleep / while
   while (JX_LoopOnce() != 0) usleep(1);
 
-  JXResult result;
+  JXValue result;
   JX_Evaluate(
       "var arr = process.natives.sampleMethod('String Parameter', {foo:1}); \n"
       "console.log('result: ', arr, 'length:', arr.length ); \n"
@@ -128,6 +128,7 @@ int main(int argc, char **args) {
       "}, 100);",
       "myscript", &result);
 
+  JX_Free(&result);
   // loop for possible IO
   // or JX_Loop() without usleep / while
   while (JX_LoopOnce() != 0) usleep(1);
