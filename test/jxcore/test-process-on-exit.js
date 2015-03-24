@@ -15,6 +15,7 @@ var assert = jx.assert;
 
 var str = 'ON EXIT WAS CALLED';
 var finished = false;
+var outFileName = process.cwd() + path.sep + "test-process-on-exit_out.txt";
 
 // spawned process
 if (process.argv.indexOf("spawned") !== -1) {
@@ -23,12 +24,12 @@ if (process.argv.indexOf("spawned") !== -1) {
     process.release();
 
   process.on("exit", function (code) {
-    console.log(str);
-    jx.exitNowMT();
+    // only once per process (either 0 or -1)
+    if (process.threadId <= 0)
+      fs.writeFileSync(outFileName, str);
   });
   return;
 }
-
 
 // main process
 
@@ -43,5 +44,13 @@ var arg = process.argv[2] || "";
 var cmd = '"' + process.execPath + '" ' + arg + " " + __filename.replace(".js.jx", ".jx") + ' spawned';
 var child = cp.exec(cmd, {timeout: 10000}, function (error, stdout, stderr) {
   finished = true;
-  assert.ok(stdout.toString().indexOf(str) !== -1, "process.on('exit') was not called for command: \n" + cmd);
+
+  var exists = fs.existsSync(outFileName);
+  assert.ok(exists, "Could not find output written to file " + outFileName);
+
+  // checking results of mt
+  var ret = fs.readFileSync(outFileName).toString();
+  fs.unlinkSync(outFileName);
+
+  assert.ok(ret.indexOf(str) !== -1, "process.on('exit') was not called for command: \n" + cmd);
 });
