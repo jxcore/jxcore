@@ -21,7 +21,7 @@
     fflush(stdout);               \
   } while (0)
 
-void ConvertResult(JXResult *result, std::string &to_result) {
+void ConvertResult(JXValue *result, std::string &to_result) {
   switch (result->type_) {
     case RT_Null:
       to_result = "null";

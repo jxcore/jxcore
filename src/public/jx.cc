@@ -15,10 +15,10 @@ char *app_args[2];
 // allocates one extra JXResult memory at the end of the array
 // Uses that one for a return value
 #define CONVERT_ARG_TO_RESULT(results, context)                   \
-  JXResult *results = NULL;                                       \
+  JXValue *results = NULL;                                       \
   const int len = args.Length() - start_arg;                      \
   {                                                               \
-    results = (JXResult *)malloc(sizeof(JXResult) * (len + 1));   \
+    results = (JXValue *)malloc(sizeof(JXValue) * (len + 1));   \
     for (int i = 0; i < len; i++) {                               \
       JS_HANDLE_VALUE val = args.GetItem(i + start_arg);          \
       results[i].com_ = context;                                  \
@@ -39,7 +39,7 @@ JS_LOCAL_METHOD(asyncCallback) {
   jx_callback(results, len);
 
   for (int i = 0; i < len; i++) {
-    JX_FreeResultData(&results[i]);
+    JX_Free(&results[i]);
   }
 
   free(results);
@@ -65,7 +65,7 @@ JS_LOCAL_METHOD(extensionCallback) {
   callbacks[interface_id](results, len);
 
   for (int i = 0; i < len; i++) {
-    JX_FreeResultData(&results[i]);
+    JX_Free(&results[i]);
   }
 
   if (results[len].type_ != RT_Undefined) {
@@ -74,7 +74,7 @@ JS_LOCAL_METHOD(extensionCallback) {
 
     if (results[len].type_ == RT_Error) {
       std::string msg = JX_GetString(&results[len]);
-      JX_FreeResultData(&results[len]);
+      JX_Free(&results[len]);
       THROW_EXCEPTION(msg.c_str());
     } else if (results[len].type_ == RT_Function) {
       assert(sizeof(JXFunctionWrapper) == results[len].size_ &&
@@ -82,14 +82,14 @@ JS_LOCAL_METHOD(extensionCallback) {
 
       JXFunctionWrapper *fnc_wrap = (JXFunctionWrapper *)results[len].data_;
       JS_HANDLE_FUNCTION fnc = fnc_wrap->GetFunction();
-      JX_FreeResultData(&results[len]);
+      JX_Free(&results[len]);
 
       RETURN_PARAM(fnc);
     }
 
     JXValueWrapper *wrap = (JXValueWrapper *)results[len].data_;
     JS_HANDLE_VALUE ret_val = wrap->value_;
-    JX_FreeResultData(&results[len]);
+    JX_Free(&results[len]);
     RETURN_PARAM(ret_val);
   }
 }
@@ -154,7 +154,7 @@ void JX_Initialize(const char *home_folder, JX_CALLBACK callback) {
 }
 
 bool JX_Evaluate(const char *data, const char *script_name,
-                 JXResult *jxresult) {
+                 JXValue *jxresult) {
   JXEngine *engine = JXEngine::ActiveInstance();
   if (engine == NULL) {
     warn_console(

@@ -1,12 +1,12 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 #include "../commons/common-posix.h"
 
-void callback(JXResult *results, int argc) {
+void callback(JXValue *results, int argc) {
   // do nothing
 }
 
 // native JavaScript method we'll be calling from JS land
-void sampleMethod(JXResult *results, int argc) {
+void sampleMethod(JXValue *results, int argc) {
   std::stringstream ss_result;
   for (int i = 0; i < argc; i++) {
     std::string str_result;
@@ -54,18 +54,18 @@ void *create_jxcore_instance(void *_) {
   // or JX_Loop() without usleep / while
   while (JX_LoopOnce() != 0) usleep(1);
 
-  JXResult result;
+  JXValue result;
   // evaluate a piece of JavaScript code
   JX_Evaluate(eval_str, "myscript", &result);
 
   // see if the result is a JavaScript object
-  if(!JX_ResultIsJSON(&result)) {
+  if(!JX_IsJSON(&result)) {
 	flush_console("RETURN TYPE WAS: %d\n", result.type_);
   }
-  assert(JX_ResultIsJSON(&result) && "expected result here is a JSON (JS array)");
+  assert(JX_IsJSON(&result) && "expected result here is a JSON (JS array)");
 
   // free the memory
-  JX_FreeResultData(&result);
+  JX_Free(&result);
 
   // loop for possible IO
   // or JX_Loop() without usleep / while
@@ -113,12 +113,12 @@ int main(int argc, char **args) {
   // or JX_Loop() without usleep / while
   while (JX_LoopOnce() != 0) usleep(1);
 
-  JXResult result;
+  JXValue result;
   // evaluate a piece of JavaScript code
   JX_Evaluate(eval_str, "myscript", &result);
 
   // free the memory
-  JX_FreeResultData(&result);
+  JX_Free(&result);
 
   // loop for possible IO
   // or JX_Loop() without usleep / while
