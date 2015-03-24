@@ -21,7 +21,7 @@
       ['OS != "win" and node_engine_mozilla!=1', {
         'v8_postmortem_support': 'true'
       }],
-      ['GENERATOR == "ninja" and node_engine_mozilla!=1', {
+      ['(GENERATOR == "ninja" or OS == "mac") and node_engine_mozilla!=1', {
         'OBJ_DIR': '<(PRODUCT_DIR)/obj',
         'V8_BASE': '<(PRODUCT_DIR)/libv8_base.a',
       }],
@@ -311,6 +311,11 @@
       }],
       ['OS=="freebsd" and node_use_dtrace=="true"', {
         'libraries': [ '-lelf' ],
+      }],
+      ['OS=="freebsd"', {
+        'ldflags': [
+          '-Wl,--export-dynamic',
+        ],
       }]
     ],
   }
