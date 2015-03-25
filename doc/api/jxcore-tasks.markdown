@@ -352,6 +352,51 @@ jxcore.tasks.addTask( function() {
 });
 ```
 
+## tasks.register(method)
+
+* `method` {Function}
+
+You may define a thread initialization task by using `runOnce`, it will run the given task on all the current and future threads.
+However, if you don’t know if the solution will use the multi-tasking but still you need to make sure the initializer method is set,
+you can use register for this purpose.
+
+For example:
+
+```js
+jxcore.tasks.register(function () {
+  cwdToLower = function () {
+    return process.cwd().toLowerCase();
+  };
+});
+
+jxcore.tasks.addTask(function () {
+  console.log(cwdToLower());
+});
+```
+
+It is the same as we would use the `global` object explicitly:
+
+```js
+global.cwdToLower = function () {
+  ...
+};
+```
+
+In the same manner you can define other variables or constant-like fields:
+
+```js
+jxcore.tasks.register(function () {
+  global.myVar = "something"
+});
+
+jxcore.tasks.runOnce(function () {
+  console.log("myVar", myVar, "threadId", process.threadId);
+});
+```
+
+The above example runs the task for all available threads, showing that `myVar` is available for all of them.
+
+
 ## tasks.runOnce(method, param, doNotRemember)
 
 * `method` {Function} - This is the method, which will be executed once for every existing subthread (<em>getThreadCount()</em> times).

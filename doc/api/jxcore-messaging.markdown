@@ -86,7 +86,7 @@ Defines encoding type of messages being sent both ways between server and client
 
 Both these options define locations for SSL certificate files. See also: `httpsServerPort` option.
 
-### httpServerPor
+### httpServerPort
 
 * {Number} default 8000
 
