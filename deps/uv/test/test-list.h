@@ -24,6 +24,7 @@ TEST_DECLARE   (callback_order)
 TEST_DECLARE   (run_once)
 TEST_DECLARE   (run_nowait)
 TEST_DECLARE   (loop_stop)
+TEST_DECLARE   (loop_configure)
 TEST_DECLARE   (barrier_1)
 TEST_DECLARE   (barrier_2)
 TEST_DECLARE   (barrier_3)
@@ -64,7 +65,10 @@ TEST_DECLARE   (tcp_connect_error_fault)
 TEST_DECLARE   (tcp_connect_timeout)
 TEST_DECLARE   (tcp_close_while_connecting)
 TEST_DECLARE   (tcp_close)
+#ifndef _WIN32
 TEST_DECLARE   (tcp_close_accept)
+TEST_DECLARE   (tcp_oob)
+#endif
 TEST_DECLARE   (tcp_flags)
 TEST_DECLARE   (tcp_write_to_half_open_connection)
 TEST_DECLARE   (tcp_unexpected_read)
@@ -163,6 +167,7 @@ TEST_DECLARE   (spawn_setgid_fails)
 TEST_DECLARE   (spawn_stdout_to_file)
 TEST_DECLARE   (spawn_stdout_and_stderr_to_file)
 TEST_DECLARE   (spawn_auto_unref)
+TEST_DECLARE   (spawn_closed_process_io)
 TEST_DECLARE   (fs_poll)
 TEST_DECLARE   (kill)
 TEST_DECLARE   (fs_file_noent)
@@ -214,6 +219,8 @@ TEST_DECLARE   (poll_duplex)
 TEST_DECLARE   (poll_unidirectional)
 TEST_DECLARE   (poll_close)
 #ifdef _WIN32
+TEST_DECLARE   (poll_close_doesnt_corrupt_stack)
+TEST_DECLARE   (poll_closesocket)
 TEST_DECLARE   (spawn_detect_pipe_name_collisions_on_windows)
 TEST_DECLARE   (argument_escaping)
 TEST_DECLARE   (environment_creation)
@@ -226,9 +233,11 @@ TEST_DECLARE   (spawn_setuid_setgid)
 TEST_DECLARE   (we_get_signal)
 TEST_DECLARE   (we_get_signals)
 TEST_DECLARE   (signal_multiple_loops)
+TEST_DECLARE   (closed_fd_events)
 #endif
 #ifdef __APPLE__
 TEST_DECLARE   (osx_select)
+TEST_DECLARE   (osx_select_many_fds)
 #endif
 HELPER_DECLARE (tcp4_echo_server)
 HELPER_DECLARE (tcp6_echo_server)
@@ -245,6 +254,7 @@ TASK_LIST_START
   TEST_ENTRY  (run_once)
   TEST_ENTRY  (run_nowait)
   TEST_ENTRY  (loop_stop)
+  TEST_ENTRY  (loop_configure)
   TEST_ENTRY  (barrier_1)
   TEST_ENTRY  (barrier_2)
   TEST_ENTRY  (barrier_3)
@@ -304,7 +314,10 @@ TASK_LIST_START
   TEST_ENTRY  (tcp_connect_timeout)
   TEST_ENTRY  (tcp_close_while_connecting)
   TEST_ENTRY  (tcp_close)
+#ifndef _WIN32
   TEST_ENTRY  (tcp_close_accept)
+  TEST_ENTRY  (tcp_oob)
+#endif
   TEST_ENTRY  (tcp_flags)
   TEST_ENTRY  (tcp_write_to_half_open_connection)
   TEST_ENTRY  (tcp_unexpected_read)
@@ -442,10 +455,13 @@ TASK_LIST_START
   TEST_ENTRY  (spawn_stdout_to_file)
   TEST_ENTRY  (spawn_stdout_and_stderr_to_file)
   TEST_ENTRY  (spawn_auto_unref)
+  TEST_ENTRY  (spawn_closed_process_io)
   TEST_ENTRY  (fs_poll)
   TEST_ENTRY  (kill)
 
 #ifdef _WIN32
+  TEST_ENTRY  (poll_close_doesnt_corrupt_stack)
+  TEST_ENTRY  (poll_closesocket)
   TEST_ENTRY  (spawn_detect_pipe_name_collisions_on_windows)
   TEST_ENTRY  (argument_escaping)
   TEST_ENTRY  (environment_creation)
@@ -458,10 +474,12 @@ TASK_LIST_START
   TEST_ENTRY  (we_get_signal)
   TEST_ENTRY  (we_get_signals)
   TEST_ENTRY  (signal_multiple_loops)
+  TEST_ENTRY  (closed_fd_events)
 #endif
 
 #ifdef __APPLE__
   TEST_ENTRY (osx_select)
+  TEST_ENTRY (osx_select_many_fds)
 #endif
 
   TEST_ENTRY  (fs_file_noent)

@@ -4,7 +4,26 @@ However, we may not apply some debatable updates from the original node.js repos
 existing applications. For example, performance regression problem from 0.10.32 (recently rolled back from the next version),
 timers related issues etc. Prior to the next release we are going to update the list below item by item with an explanation
 why we did or did not take that particular update. JXcore is an open project and your comments are valuable.
-Let us know any time if you disagree.
+Let us know any time if you disagree. There is no explanation given for allready rollbacked updates.
+
+2015.03.23, Version 0.10.38 (Maintenance)
+
+* openssl: upgrade to 1.0.1m (Addressing multiple CVEs)
+
+
+2015.03.11, Version 0.10.37 (Maintenance), 7d6b5b1d5ba726331f9ccaaae59af7cd53eee82e
+
+* uv: update to 0.10.36 (CVE-2015-0278)
+
+* domains: fix stack clearing after error handled (Jonas Dohse)
+
+* buffer: reword Buffer.concat error message (Chris Dickinson)
+
+* console: allow Object.prototype fields as labels (Julien Gilli)
+
+* V8: log version in profiler log file (Ben Noordhuis) !! patches v8
+
+* http: fix performance regression for GET requests (Florin-Cristian Gavrila)
 
 
 2015.01.26, Version 0.10.36 (Stable)
@@ -37,13 +56,13 @@ Let us know any time if you disagree.
 
 * crypto: update root certificates (Ben Noordhuis)
 
-* domains: fix issues with abort on uncaught (Julien Gilli)
+* domains: fix issues with abort on uncaught (Julien Gilli) !! this update patches v8. JXcore supports on 'restart' event for all the instances
 
 * timers: Avoid linear scan in _unrefActive. (Julien Gilli)
 
 * timers: fix unref() memory leak (Trevor Norris)
 
-* v8: add api for aborting on uncaught exception (Julien Gilli)
+* v8: add api for aborting on uncaught exception (Julien Gilli) !! patches v8
 
 * debugger: fix when using "use strict" (Julien Gilli)
 
@@ -73,9 +92,9 @@ Let us know any time if you disagree.
 
 * npm: Update to 1.4.28
 
-* v8: fix a crash introduced by previous release (Fedor Indutny)
+* v8: fix a crash introduced by previous release (Fedor Indutny) 
 
-* configure: add --openssl-no-asm flag (Fedor Indutny)
+* configure: add --openssl-no-asm flag (Fedor Indutny) !! JXcore uses no-asm flag only for mobile targets
 
 * crypto: use domains for any callback-taking method (Chris Dickinson)
 

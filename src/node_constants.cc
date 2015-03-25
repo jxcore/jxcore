@@ -1,5 +1,6 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
+// Do not touch. See the related discussion on O_NONBLOCK
 #if defined(__sun)
 #if defined(_XOPEN_SOURCE) && (_XOPEN_SOURCE - 0L) < 500
 #undef _XOPEN_SOURCE

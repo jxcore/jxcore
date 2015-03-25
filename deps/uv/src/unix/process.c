@@ -40,6 +40,10 @@
 extern char** environ;
 #endif
 
+#ifdef __linux__
+# include <grp.h>
+#endif
+
 static QUEUE* uv__process_queue(uv_loop_t* loop, int pid) {
   assert(pid > 0);
   return loop->process_handles + pid % ARRAY_SIZE(loop->process_handles);
@@ -361,6 +365,17 @@ static void uv__process_child_init(const uv_process_options_t* options,
   if (options->cwd && chdir(options->cwd)) {
     uv__write_int(error_fd, errno);
     _exit(127);
+  }
+
+  if (options->flags & (UV_PROCESS_SETUID | UV_PROCESS_SETGID)) {
+    /* When dropping privileges from root, the `setgroups` call will
+     * remove any extraneous groups. If we don't call this, then
+     * even though our uid has dropped, we may still have groups
+     * that enable us to do super-user things. This will fail if we
+     * aren't root, so don't bother checking the return value, this
+     * is just done as an optimistic privilege dropping function.
+     */
+    SAVE_ERRNO(setgroups(0, NULL));
   }
 
   if ((options->flags & UV_PROCESS_SETGID) && setgid(options->gid)) {

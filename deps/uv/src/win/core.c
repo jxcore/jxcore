@@ -234,6 +234,10 @@ void uv_loop_delete(uv_loop_t* loop) {
   }
 }
 
+int uv__loop_configure(uv_loop_t* loop, uv_loop_option option, va_list ap) {
+  return UV_ENOSYS;
+}
+
 int uv_backend_fd(const uv_loop_t* loop) { return -1; }
 
 int uv_backend_timeout(const uv_loop_t* loop) { return 0; }

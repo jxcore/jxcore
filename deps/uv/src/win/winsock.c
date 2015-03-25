@@ -24,6 +24,7 @@
 #include "uv.h"
 #include "internal.h"
 
+
 /* Whether there are any non-IFS LSPs stacked on TCP */
 int uv_tcp_non_ifs_lsp_ipv4;
 int uv_tcp_non_ifs_lsp_ipv6;
@@ -32,15 +33,23 @@ int uv_tcp_non_ifs_lsp_ipv6;
 struct sockaddr_in uv_addr_ip4_any_;
 struct sockaddr_in6 uv_addr_ip6_any_;
 
+
 /*
  * Retrieves the pointer to a winsock extension function.
  */
-static BOOL uv_get_extension_function(SOCKET socket, GUID guid, void** target) {
+static BOOL uv_get_extension_function(SOCKET socket, GUID guid,
+    void **target) {
   DWORD result, bytes;
 
-  result =
-      WSAIoctl(socket, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid),
-               (void*)target, sizeof(*target), &bytes, NULL, NULL);
+  result = WSAIoctl(socket,
+                    SIO_GET_EXTENSION_FUNCTION_POINTER,
+                    &guid,
+                    sizeof(guid),
+                    (void*)target,
+                    sizeof(*target),
+                    &bytes,
+                    NULL,
+                    NULL);
 
   if (result == SOCKET_ERROR) {
     *target = NULL;
@@ -50,20 +59,24 @@ static BOOL uv_get_extension_function(SOCKET socket, GUID guid, void** target) {
   }
 }
 
+
 BOOL uv_get_acceptex_function(SOCKET socket, LPFN_ACCEPTEX* target) {
   const GUID wsaid_acceptex = WSAID_ACCEPTEX;
   return uv_get_extension_function(socket, wsaid_acceptex, (void**)target);
 }
+
 
 BOOL uv_get_connectex_function(SOCKET socket, LPFN_CONNECTEX* target) {
   const GUID wsaid_connectex = WSAID_CONNECTEX;
   return uv_get_extension_function(socket, wsaid_connectex, (void**)target);
 }
 
+
 static int error_means_no_support(DWORD error) {
   return error == WSAEPROTONOSUPPORT || error == WSAESOCKTNOSUPPORT ||
          error == WSAEPFNOSUPPORT || error == WSAEAFNOSUPPORT;
 }
+
 
 void uv_winsock_init() {
   WSADATA wsa_data;
@@ -86,8 +99,11 @@ void uv_winsock_init() {
   dummy = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
 
   if (dummy != INVALID_SOCKET) {
-    opt_len = (int)sizeof protocol_info;
-    if (!getsockopt(dummy, SOL_SOCKET, SO_PROTOCOL_INFOW, (char*)&protocol_info,
+    opt_len = (int) sizeof protocol_info;
+    if (!getsockopt(dummy,
+                    SOL_SOCKET,
+                    SO_PROTOCOL_INFOW,
+                    (char*) &protocol_info,
                     &opt_len) == SOCKET_ERROR)
       uv_fatal_error(WSAGetLastError(), "getsockopt");
 
@@ -106,8 +122,11 @@ void uv_winsock_init() {
   dummy = socket(AF_INET6, SOCK_STREAM, IPPROTO_IP);
 
   if (dummy != INVALID_SOCKET) {
-    opt_len = (int)sizeof protocol_info;
-    if (!getsockopt(dummy, SOL_SOCKET, SO_PROTOCOL_INFOW, (char*)&protocol_info,
+    opt_len = (int) sizeof protocol_info;
+    if (!getsockopt(dummy,
+                    SOL_SOCKET,
+                    SO_PROTOCOL_INFOW,
+                    (char*) &protocol_info,
                     &opt_len) == SOCKET_ERROR)
       uv_fatal_error(WSAGetLastError(), "getsockopt");
 
@@ -122,6 +141,7 @@ void uv_winsock_init() {
     uv_fatal_error(WSAGetLastError(), "socket");
   }
 }
+
 
 int uv_ntstatus_to_winsock_error(NTSTATUS status) {
   switch (status) {
@@ -231,13 +251,14 @@ int uv_ntstatus_to_winsock_error(NTSTATUS status) {
           (status & (ERROR_SEVERITY_ERROR | ERROR_SEVERITY_WARNING))) {
         /* It's a windows error that has been previously mapped to an */
         /* ntstatus code. */
-        return (DWORD)(status & 0xffff);
+        return (DWORD) (status & 0xffff);
       } else {
         /* The default fallback for unmappable ntstatus codes. */
         return WSAEINVAL;
       }
   }
 }
+
 
 /*
  * This function provides a workaround for a bug in the winsock implementation
@@ -255,13 +276,12 @@ int uv_ntstatus_to_winsock_error(NTSTATUS status) {
  * the user to use the default msafd driver, doesn't work when other LSPs are
  * stacked on top of it.
  */
-int WSAAPI
-uv_wsarecv_workaround(SOCKET socket, WSABUF* buffers, DWORD buffer_count,
-                      DWORD* bytes, DWORD* flags, WSAOVERLAPPED* overlapped,
-                      LPWSAOVERLAPPED_COMPLETION_ROUTINE completion_routine) {
+int WSAAPI uv_wsarecv_workaround(SOCKET socket, WSABUF* buffers,
+    DWORD buffer_count, DWORD* bytes, DWORD* flags, WSAOVERLAPPED *overlapped,
+    LPWSAOVERLAPPED_COMPLETION_ROUTINE completion_routine) {
   NTSTATUS status;
   void* apc_context;
-  IO_STATUS_BLOCK* iosb = (IO_STATUS_BLOCK*)&overlapped->Internal;
+  IO_STATUS_BLOCK* iosb = (IO_STATUS_BLOCK*) &overlapped->Internal;
   AFD_RECV_INFO info;
   DWORD error;
 
@@ -283,8 +303,8 @@ uv_wsarecv_workaround(SOCKET socket, WSABUF* buffers, DWORD buffer_count,
     info.TdiFlags |= TDI_RECEIVE_PARTIAL;
   }
 
-  if (!((intptr_t)overlapped->hEvent & 1)) {
-    apc_context = (void*)overlapped;
+  if (!((intptr_t) overlapped->hEvent & 1)) {
+    apc_context = (void*) overlapped;
   } else {
     apc_context = NULL;
   }
@@ -292,12 +312,19 @@ uv_wsarecv_workaround(SOCKET socket, WSABUF* buffers, DWORD buffer_count,
   iosb->Status = STATUS_PENDING;
   iosb->Pointer = 0;
 
-  status = pNtDeviceIoControlFile((HANDLE)socket, overlapped->hEvent, NULL,
-                                  apc_context, iosb, IOCTL_AFD_RECEIVE, &info,
-                                  sizeof(info), NULL, 0);
+  status = pNtDeviceIoControlFile((HANDLE) socket,
+                                  overlapped->hEvent,
+                                  NULL,
+                                  apc_context,
+                                  iosb,
+                                  IOCTL_AFD_RECEIVE,
+                                  &info,
+                                  sizeof(info),
+                                  NULL,
+                                  0);
 
   *flags = 0;
-  *bytes = (DWORD)iosb->Information;
+  *bytes = (DWORD) iosb->Information;
 
   switch (status) {
     case STATUS_SUCCESS:
@@ -341,15 +368,15 @@ uv_wsarecv_workaround(SOCKET socket, WSABUF* buffers, DWORD buffer_count,
   }
 }
 
+
 /* See description of uv_wsarecv_workaround. */
-int WSAAPI uv_wsarecvfrom_workaround(
-    SOCKET socket, WSABUF* buffers, DWORD buffer_count, DWORD* bytes,
-    DWORD* flags, struct sockaddr* addr, int* addr_len,
-    WSAOVERLAPPED* overlapped,
+int WSAAPI uv_wsarecvfrom_workaround(SOCKET socket, WSABUF* buffers,
+    DWORD buffer_count, DWORD* bytes, DWORD* flags, struct sockaddr* addr,
+    int* addr_len, WSAOVERLAPPED *overlapped,
     LPWSAOVERLAPPED_COMPLETION_ROUTINE completion_routine) {
   NTSTATUS status;
   void* apc_context;
-  IO_STATUS_BLOCK* iosb = (IO_STATUS_BLOCK*)&overlapped->Internal;
+  IO_STATUS_BLOCK* iosb = (IO_STATUS_BLOCK*) &overlapped->Internal;
   AFD_RECV_DATAGRAM_INFO info;
   DWORD error;
 
@@ -374,8 +401,8 @@ int WSAAPI uv_wsarecvfrom_workaround(
     info.TdiFlags |= TDI_RECEIVE_PARTIAL;
   }
 
-  if (!((intptr_t)overlapped->hEvent & 1)) {
-    apc_context = (void*)overlapped;
+  if (!((intptr_t) overlapped->hEvent & 1)) {
+    apc_context = (void*) overlapped;
   } else {
     apc_context = NULL;
   }
@@ -383,12 +410,19 @@ int WSAAPI uv_wsarecvfrom_workaround(
   iosb->Status = STATUS_PENDING;
   iosb->Pointer = 0;
 
-  status = pNtDeviceIoControlFile((HANDLE)socket, overlapped->hEvent, NULL,
-                                  apc_context, iosb, IOCTL_AFD_RECEIVE_DATAGRAM,
-                                  &info, sizeof(info), NULL, 0);
+  status = pNtDeviceIoControlFile((HANDLE) socket,
+                                  overlapped->hEvent,
+                                  NULL,
+                                  apc_context,
+                                  iosb,
+                                  IOCTL_AFD_RECEIVE_DATAGRAM,
+                                  &info,
+                                  sizeof(info),
+                                  NULL,
+                                  0);
 
   *flags = 0;
-  *bytes = (DWORD)iosb->Information;
+  *bytes = (DWORD) iosb->Information;
 
   switch (status) {
     case STATUS_SUCCESS:
@@ -432,8 +466,9 @@ int WSAAPI uv_wsarecvfrom_workaround(
   }
 }
 
-int WSAAPI
-uv_msafd_poll(SOCKET socket, AFD_POLL_INFO* info, OVERLAPPED* overlapped) {
+
+int WSAAPI uv_msafd_poll(SOCKET socket, AFD_POLL_INFO* info_in,
+    AFD_POLL_INFO* info_out, OVERLAPPED* overlapped) {
   IO_STATUS_BLOCK iosb;
   IO_STATUS_BLOCK* iosb_ptr;
   HANDLE event = NULL;
@@ -443,12 +478,12 @@ uv_msafd_poll(SOCKET socket, AFD_POLL_INFO* info, OVERLAPPED* overlapped) {
 
   if (overlapped != NULL) {
     /* Overlapped operation. */
-    iosb_ptr = (IO_STATUS_BLOCK*)&overlapped->Internal;
+    iosb_ptr = (IO_STATUS_BLOCK*) &overlapped->Internal;
     event = overlapped->hEvent;
 
     /* Do not report iocp completion if hEvent is tagged. */
-    if ((uintptr_t)event & 1) {
-      event = (HANDLE)((uintptr_t)event & ~(uintptr_t)1);
+    if ((uintptr_t) event & 1) {
+      event = (HANDLE)((uintptr_t) event & ~(uintptr_t) 1);
       apc_context = NULL;
     } else {
       apc_context = overlapped;
@@ -465,9 +500,16 @@ uv_msafd_poll(SOCKET socket, AFD_POLL_INFO* info, OVERLAPPED* overlapped) {
   }
 
   iosb_ptr->Status = STATUS_PENDING;
-  status = pNtDeviceIoControlFile((HANDLE)socket, event, NULL, apc_context,
-                                  iosb_ptr, IOCTL_AFD_POLL, info, sizeof *info,
-                                  info, sizeof *info);
+  status = pNtDeviceIoControlFile((HANDLE) socket,
+                                  event,
+                                  NULL,
+                                  apc_context,
+                                  iosb_ptr,
+                                  IOCTL_AFD_POLL,
+                                  info_in,
+                                  sizeof *info_in,
+                                  info_out,
+                                  sizeof *info_out);
 
   if (overlapped == NULL) {
     /* If this is a blocking operation, wait for the event to become */

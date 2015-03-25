@@ -24,6 +24,7 @@
 
 static int uv__dlerror(uv_lib_t* lib, int errorno);
 
+
 int uv_dlopen(const char* filename, uv_lib_t* lib) {
   WCHAR filename_w[32768];
 
@@ -42,6 +43,7 @@ int uv_dlopen(const char* filename, uv_lib_t* lib) {
   return 0;
 }
 
+
 void uv_dlclose(uv_lib_t* lib) {
   if (lib->errmsg) {
     LocalFree((void*)lib->errmsg);
@@ -55,26 +57,56 @@ void uv_dlclose(uv_lib_t* lib) {
   }
 }
 
+
 int uv_dlsym(uv_lib_t* lib, const char* name, void** ptr) {
-  *ptr = (void*)GetProcAddress(lib->handle, name);
+  *ptr = (void*) GetProcAddress(lib->handle, name);
   return uv__dlerror(lib, *ptr ? 0 : GetLastError());
 }
+
 
 const char* uv_dlerror(uv_lib_t* lib) {
   return lib->errmsg ? lib->errmsg : "no error";
 }
 
+
+static void uv__format_fallback_error(uv_lib_t* lib, int errorno){
+  DWORD_PTR args[1] = { (DWORD_PTR) errorno };
+  LPSTR fallback_error = "error: %1!d!";
+
+  FormatMessageA(FORMAT_MESSAGE_FROM_STRING |
+                 FORMAT_MESSAGE_ARGUMENT_ARRAY |
+                 FORMAT_MESSAGE_ALLOCATE_BUFFER,
+                 fallback_error, 0, 0,
+                 (LPSTR) &lib->errmsg,
+                 0, (va_list*) args);
+}
+
+
+
 static int uv__dlerror(uv_lib_t* lib, int errorno) {
+  DWORD res;
+
   if (lib->errmsg) {
     LocalFree((void*)lib->errmsg);
     lib->errmsg = NULL;
   }
 
   if (errorno) {
-    FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
-                       FORMAT_MESSAGE_IGNORE_INSERTS,
-                   NULL, errorno, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
-                   (LPSTR) & lib->errmsg, 0, NULL);
+    res = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                         FORMAT_MESSAGE_FROM_SYSTEM |
+                         FORMAT_MESSAGE_IGNORE_INSERTS, NULL, errorno,
+                         MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
+                         (LPSTR) &lib->errmsg, 0, NULL);
+    if (!res && GetLastError() == ERROR_MUI_FILE_NOT_FOUND) {
+      res = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                           FORMAT_MESSAGE_FROM_SYSTEM |
+                           FORMAT_MESSAGE_IGNORE_INSERTS, NULL, errorno,
+                           0, (LPSTR) &lib->errmsg, 0, NULL);
+    }
+
+    if (!res) {
+      uv__format_fallback_error(lib, errorno);
+    }
   }
 
   return errorno ? -1 : 0;

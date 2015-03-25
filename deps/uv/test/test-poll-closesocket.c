@@ -19,37 +19,70 @@
  * IN THE SOFTWARE.
  */
 
+#ifdef _WIN32
+
+#include <errno.h>
+
 #include "uv.h"
 #include "task.h"
-#include <string.h>
+
+uv_os_sock_t sock;
+uv_poll_t handle;
+
+static int close_cb_called = 0;
 
 
-TEST_IMPL(dlerror) {
-  const char* path = "test/fixtures/load_error.node";
-  const char* dlerror_no_error = "no error";
-  const char* msg;
-  uv_lib_t lib;
+static void close_cb(uv_handle_t* h) {
+  close_cb_called++;
+}
+
+
+static void poll_cb(uv_poll_t* h, int status, int events) {
   int r;
 
-  lib.errmsg = NULL;
-  lib.handle = NULL;
-  msg = uv_dlerror(&lib);
-  ASSERT(msg != NULL);
-  ASSERT(strstr(msg, dlerror_no_error) != NULL);
+  ASSERT(status == 0);
+  ASSERT(h == &handle);
 
-  r = uv_dlopen(path, &lib);
-  ASSERT(r == -1);
+  r = uv_poll_start(&handle, UV_READABLE, poll_cb);
+  ASSERT(r == 0);
 
-  msg = uv_dlerror(&lib);
-  ASSERT(msg != NULL);
-  ASSERT(strstr(msg, dlerror_no_error) == NULL);
+  closesocket(sock);
+  uv_close((uv_handle_t*) &handle, close_cb);
 
-  /* Should return the same error twice in a row. */
-  msg = uv_dlerror(&lib);
-  ASSERT(msg != NULL);
-  ASSERT(strstr(msg, dlerror_no_error) == NULL);
+}
 
-  uv_dlclose(&lib);
 
+TEST_IMPL(poll_closesocket) {
+  struct WSAData wsa_data;
+  int r;
+  unsigned long on;
+  struct sockaddr_in addr;
+
+  r = WSAStartup(MAKEWORD(2, 2), &wsa_data);
+  ASSERT(r == 0);
+
+  sock = socket(AF_INET, SOCK_STREAM, 0);
+  ASSERT(sock != INVALID_SOCKET);
+  on = 1;
+  r = ioctlsocket(sock, FIONBIO, &on);
+  ASSERT(r == 0);
+
+  addr = uv_ip4_addr("127.0.0.1", TEST_PORT);
+
+  r = connect(sock, (const struct sockaddr*) &addr, sizeof addr);
+  ASSERT(r != 0);
+  ASSERT(WSAGetLastError() == WSAEWOULDBLOCK);
+
+  r = uv_poll_init_socket(uv_default_loop(), &handle, sock);
+  ASSERT(r == 0);
+  r = uv_poll_start(&handle, UV_WRITABLE, poll_cb);
+  ASSERT(r == 0);
+
+  uv_run(uv_default_loop(), UV_RUN_DEFAULT);
+
+  ASSERT(close_cb_called == 1);
+
+  MAKE_VALGRIND_HAPPY();
   return 0;
 }
+#endif

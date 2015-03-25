@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include <assert.h>
+#include <stdarg.h>
 #include <stddef.h> /* NULL */
 #include <stdlib.h> /* malloc */
 #include <string.h> /* memset */
@@ -368,3 +369,15 @@ void uv_unref(uv_handle_t* handle) { uv__handle_unref(handle); }
 void uv_stop(uv_loop_t* loop) { loop->stop_flag = 1; }
 
 uint64_t uv_now(uv_loop_t* loop) { return loop->time; }
+
+int uv_loop_configure(uv_loop_t* loop, uv_loop_option option, ...) {
+  va_list ap;
+  int err;
+
+  va_start(ap, option);
+  /* Any platform-agnostic options should be handled here. */
+  err = uv__loop_configure(loop, option, ap);
+  va_end(ap);
+
+  return err;
+}

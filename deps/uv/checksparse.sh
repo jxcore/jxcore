@@ -27,6 +27,7 @@ SPARSE_FLAGS=${SPARSE_FLAGS:-"
 "}
 
 SOURCES="
+include/uv-private/ngx-queue.h
 include/uv-private/tree.h
 include/uv-private/uv-unix.h
 include/uv.h
@@ -144,6 +145,7 @@ test/test-tcp-open.c
 test/test-tcp-read-stop.c
 test/test-tcp-shutdown-after-write.c
 test/test-tcp-unexpected-read.c
+test/test-tcp-oob.c
 test/test-tcp-write-error.c
 test/test-tcp-write-to-half-open-connection.c
 test/test-tcp-writealot.c
