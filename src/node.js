@@ -1432,8 +1432,13 @@
     var sss = argv[2].split('|');
     if (sss.length > 1) executer = sss[1];
     var fol = sss[0];
-
     fol = (path.relative(process.cwd(), fol));
+    
+    var startup_extension = path.extname(fol);
+    if(startup_extension.toLowerCase() != '.js') {
+      jxcore.utils.console.log("Project startup file must have a .js extension.", "red");
+      process.exit(1);
+    }
 
     var jxp = {
       "name": argv[3],
@@ -1537,7 +1542,13 @@
     }
 
     proj.startup = "./" + proj.startup;
-
+    var startup_extension = path.extname(proj.startup);
+    if(startup_extension.toLowerCase() != '.js') {
+      console.log("Project startup file must have a .js extension.", "red");
+      process.exit(1);
+    }
+    
+    
     if (!proj.files || !proj.files.length) {
       console
         .log("no target source file definition inside the j" + "xp",
@@ -1683,7 +1694,7 @@
       }
 
       var buff;
-      if (loc.substr(loc.length - 3) != '.js')
+      if (path.extname(loc).toLowerCase() != '.js')
         buff = scomp._cmp(content_sub.toString('base64')).toString('base64');
       else
         buff = scomp._cmp(stripBOM(content_sub + "")).toString('base64');
