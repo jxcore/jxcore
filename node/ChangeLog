@@ -48,7 +48,7 @@ Let us know any time if you disagree. There is no explanation given for allready
 
 * uv: update to v0.10.30
 
-* zlib: upgrade to v1.2.8
+* zlib: upgrade to v1.2.8 !! implicit function declarations, waiting for the next update
 
 * child_process: check execFile args is an array (Sam Roberts)
 
