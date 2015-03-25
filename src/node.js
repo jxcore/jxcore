@@ -1435,7 +1435,7 @@
     fol = (path.relative(process.cwd(), fol));
     
     var startup_extension = path.extname(fol);
-    if(startup_extension.toLowerCase() != '.js') {
+    if (startup_extension.toLowerCase() != '.js') {
       jxcore.utils.console.log("Project startup file must have a .js extension.", "red");
       process.exit(1);
     }
@@ -1543,7 +1543,7 @@
 
     proj.startup = "./" + proj.startup;
     var startup_extension = path.extname(proj.startup);
-    if(startup_extension.toLowerCase() != '.js') {
+    if (startup_extension.toLowerCase() != '.js') {
       console.log("Project startup file must have a .js extension.", "red");
       process.exit(1);
     }
