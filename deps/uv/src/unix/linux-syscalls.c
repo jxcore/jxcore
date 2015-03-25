@@ -277,11 +277,14 @@ int uv__epoll_wait(int epfd, struct uv__epoll_event* events, int nevents,
 #endif
 }
 
-int uv__epoll_pwait(int epfd, struct uv__epoll_event* events, int nevents,
-                    int timeout, const sigset_t* sigmask) {
+int uv__epoll_pwait(int epfd,
+                    struct uv__epoll_event* events,
+                    int nevents,
+                    int timeout,
+                    uint64_t sigmask) {
 #if defined(__NR_epoll_pwait)
   return syscall(__NR_epoll_pwait, epfd, events, nevents, timeout, &sigmask,
-                 sizeof(*sigmask));
+                 sizeof(sigmask));
 #else
   return errno = ENOSYS, -1;
 #endif

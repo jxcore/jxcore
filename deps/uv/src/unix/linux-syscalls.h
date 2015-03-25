@@ -117,6 +117,8 @@ struct uv__mmsghdr {
   unsigned int msg_len;
 };
 
+typedef struct timespec timespec;
+
 int uv__accept4(int fd, struct sockaddr* addr, socklen_t* addrlen, int flags);
 int uv__eventfd(unsigned int count);
 int uv__epoll_create(int size);
@@ -146,9 +148,9 @@ int uv__sendmmsg(int fd,
                  struct uv__mmsghdr* mmsg,
                  unsigned int vlen,
                  unsigned int flags);
-int uv__utimesat(int dirfd,
-                 const char* path,
-                 const struct timespec times[2],
+int uv__utimesat(int dirfd, const char* path, const
+                 // struct
+                 timespec* times,
                  int flags);
 
 #endif /* UV_LINUX_SYSCALL_H_ */
