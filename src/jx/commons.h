@@ -33,6 +33,7 @@
 #ifndef __IOS__
 #include "btree_map.h"
 #define MAP_HOST btree::btree_map
+#define HAS_BTREE_MAP
 #else
 #define MAP_HOST std::map
 #endif
