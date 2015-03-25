@@ -147,7 +147,7 @@ def files(action):
 
   if 'false' == variables.get('node_shared_openssl'):
     action(['deps/openssl/config/opensslconf.h'], 'include/node/openssl/')
-    subdir_files('deps/openssl/include/openssl', 'include/node/openssl/', action)
+    subdir_files('deps/openssl/openssl/include/openssl', 'include/node/openssl/', action)
 
   if variables.get('node_engine_mozilla') == 0: #ios target
     if 'false' == variables.get('node_shared_v8'):
