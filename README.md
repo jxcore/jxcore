@@ -38,6 +38,12 @@ Feel free to help us to implement them sooner! If you have a different opinion, 
 
 See [Testing](doc/TESTING.md) document.
 
+### JXcore Contributors
+
+Our hardworking contributors are available from [here](https://github.com/jxcore/jxcore/graphs/contributors)  
+Would you like to be one of them? Fork, Hack, and send a Pull Request.
+
+
 ### Node.JS authors list:
 
 List of Node.JS contributors can be found from [here](https://github.com/jxcore/jxcore/blob/master/node/AUTHORS)
