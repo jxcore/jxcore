@@ -27,9 +27,9 @@ using namespace js;
  * Note: on some platforms va_list is defined as an array,
  * and requires array notation.
  */
-#if (defined(XP_MACOSX) || defined(__ANDROID__)) && defined(JS_CPU_ARM)
-#define VARARGS_ASSIGN(foo, bar)        (foo) = (bar)
-#else
+//#if defined(JS_CPU_ARM)
+//#define VARARGS_ASSIGN(foo, bar)        (foo) = (bar)
+//#else
 #ifdef HAVE_VA_COPY
 #define VARARGS_ASSIGN(foo, bar)        VA_COPY(foo, bar)
 #elif defined(HAVE_VA_LIST_AS_ARRAY)
@@ -37,7 +37,7 @@ using namespace js;
 #else
 #define VARARGS_ASSIGN(foo, bar)        (foo) = (bar)
 #endif
-#endif
+//#endif
 
 struct SprintfState
 {

@@ -224,7 +224,6 @@
       ],
       
       'defines': [
-        'HAVE_VA_LIST_AS_ARRAY=1',
         'DISABLE_SHARED_JS=1',
         'STATIC_JS_API=1',
         'JS_DEFAULT_JITREPORT_GRANULARITY=3',   # JITREPORT_GRANULARITY_OP
@@ -277,6 +276,8 @@
                 ]
               }]
             ]
+        }, {
+          'defines': ['HAVE_VA_LIST_AS_ARRAY=1']
         }],
         ['target_arch=="x64"', {
           'defines':[ 'JS_PUNBOX64', 'JS_CPU_X64=1' ],
