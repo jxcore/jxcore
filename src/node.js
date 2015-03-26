@@ -1949,9 +1949,9 @@
           buffer = new Buffer(23);
           loc += pass;
           fss.readSync(fd, buffer, 0, 23, loc);
-          var ind = (buffer + "").indexOf('jxcore.bin(?@@');
+          var ind = (buffer + "").indexOf('jxcore.bi' + 'n(?@@');
           if (ind >= 0) {
-            buffer = new Buffer("jxcore.bin(?@@!!$<$?!*)");
+            buffer = new Buffer("jxcore.bin(?@" + "@!!$<$?!*)");
             fss.writeSync(fd, buffer, 0, 23, loc + ind);
             break;
           }
