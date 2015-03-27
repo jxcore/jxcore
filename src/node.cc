@@ -1637,9 +1637,6 @@ void EnableDebug(bool wait_connect, node::commons* node) {
   node->node_isolate->Exit();
 #elif defined(JS_ENGINE_MOZJS)
   // TODO(obastemur) DEBUG!!
-  JS_DEFINE_STATE_MARKER(node);
-  JS_SetRuntimeDebugMode(JS_GetRuntime(JS_GET_STATE_MARKER()), true);
-  JS_SetDebugMode(JS_GET_STATE_MARKER(), true);
 #endif
 }
 
