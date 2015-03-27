@@ -4,7 +4,6 @@
 #define SRC_JX_PROXY_MOZILLA_MOZJS_ISOLATE_H_
 #include "jsapi.h"
 #include "jsfriendapi.h"
-#include "js/OldDebugAPI.h"
 
 #ifdef __ANDROID__  // change to EMBEDDED
 #include <android/log.h>
@@ -34,12 +33,6 @@
 #define GC_SLOT_JS_CLASS (JS_OBJECT_SLOT_COUNT - 1)
 #define GC_SLOT_GC_CALL (JS_OBJECT_SLOT_COUNT - 2)
 #define JS_OBJECT_SLOT_MAX_INDEX (JS_OBJECT_SLOT_COUNT - 3)
-
-#define flush_console(...)        \
-  do {                            \
-    fprintf(stdout, __VA_ARGS__); \
-    fflush(stdout);               \
-  } while (0)
 
 namespace MozJS {
 class Isolate {
