@@ -50,6 +50,7 @@ JXString::JXString(const JS_HANDLE_VALUE_REF str, void *ctx) {
   str_ = NULL;
   autogc_ = true;
   ctx_ = str.ctx_;
+  length_ = 0;
   value_ = str.GetRawStringPointer();
   ascii_char_set_ = false;
   SetFromHandle();
@@ -64,6 +65,7 @@ JXString::JXString(JSString *str, JSContext *ctx, bool autogc, bool get_ascii) {
   str_ = NULL;
   value_ = str;
   ctx_ = ctx;
+  length_ = 0;
   ascii_char_set_ = get_ascii;
   if (!ascii_char_set_)
     SetFromHandle();

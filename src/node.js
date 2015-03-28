@@ -2,7 +2,7 @@
 
 (function (process) {
   this.global = this;
-
+  
   if (!Error.captureStackTrace) {
     var _stackProto = function (msg, fileName, lineNumber, columnNumber) {
       if (fileName.indexOf('@') >= 0) {
@@ -228,6 +228,7 @@
         process.exit(1);
       }
     }
+    
     if (!process.IsEmbedded) {
       delete (process.IsEmbedded);
     } else {
@@ -2289,4 +2290,6 @@
   };
 
   startup();
+  
+ // global.STRSTR= "XXXXX";
 });
