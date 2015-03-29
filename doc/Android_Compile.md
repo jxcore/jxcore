@@ -4,6 +4,8 @@ First, you need `Android NDK`. You can download the latest NDK from [here](https
 
 Assuming you have already extracted `Android NDK` into `~/androidNDK` folder, next step is to use our prebuilt script file to create Android toolchains before the compilation process.
 
+Before starting, please check the **prerequisites** from [this link](https://github.com/jxcore/jxcore/blob/master/doc/HOW_TO_COMPILE.md)
+
 Go to root folder of jxcore project and;
 ```bash
 $> build_scripts/android-configure.sh ~/androidNDK/
