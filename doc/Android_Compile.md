@@ -20,5 +20,3 @@ $> build_scripts/android_compile.sh ~/androidNDK/
 The previous script uses SpiderMonkey, if you want/need V8, please use android_compile_v8.sh instead.
 
 This one should take a while. When it's finished, you can find the binaries and include files for ARM and INTEL platforms inside `out_android/android` folder.
-
-**The prebuilt scripts uses V8 engine for Android platform. We are going to update them with SpiderMonkey JIT after SM ARM-JIT proxy stabilization**
