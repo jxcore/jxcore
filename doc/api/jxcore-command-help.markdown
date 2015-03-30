@@ -18,8 +18,8 @@ Many of the options are thoroughly documented in separate sections of the docume
 
 * [compile](jxcore-feature-packaging-code-protection.html#jxcore_features_package_manager_compile) - compile jx file from jxp project
 * [install](jxcore-command-install.html) - installs a module from the repository
-* [mt](jxcore-command-mt.html) - multithread the given application (no-keep)
-* [mt-keep](jxcore-command-mt.html) - multithread the given application (keep alive)
+* [mt](jxcore-command-mt.html) - runs the given application with multiple instances (no-keep)
+* [mt-keep](jxcore-command-mt.html) - runs the given application with multiple instances (keep alive)
 * [package](jxcore-feature-packaging-code-protection.html#jxcore_features_package_manager_package) - create jxp project from the folder (recursive)
 
 Other options are:

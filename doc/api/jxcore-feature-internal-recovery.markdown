@@ -1,11 +1,11 @@
 # Internal Recovery
 
 In addition to recovering the process of a crashed applications by external [monitoring process](jxcore-command-monitor.html),
-JXcore also provides automatic Internal Process Recovery as well as Internal Thread Recovery (for code running in multi-threaded mode).
+JXcore also provides automatic Internal Process Recovery as well as Internal Instance Recovery (for code running in multitasking mode).
 
 ## Internal Process Recovery
 
-Internal Process Recovery  can be enabled by attaching any callback to `restart` event **inside a main thread**.
+Internal Process Recovery  can be enabled by attaching any callback to `restart` event **inside a main instance**.
 When an exception occurs inside the application, the callback is invoked and you can decide if to allow restart of the entire process or not.
 Also, this is a good opportunity to save some data used by the application, which would otherwise be lost after the crash.
 
@@ -37,7 +37,7 @@ Current process will exit with this code and the application will be relaunched 
 In the example below we are throwing an exception, which causes `restart` event to be fired. Just before the restart, we're adding new parameter to `process.argv`, and this is the way to pass an argument to the new process.
 We do this in order to prevent circular recoveries.
 
-The code should be launched as single-threaded (without `mt`/`mt-keep` parameter), because it handles the recovery of the main process:
+The code should be launched as single-instanced (without `mt`/`mt-keep` parameter), because it handles the recovery of the main process:
 
     > jx sample.js
 
@@ -71,21 +71,21 @@ setTimeout(function () {
 There are two situations, when Internal Process Recovery is not performed:
 
 1. Application was alive for less than 5000 milliseconds. This value will be configurable in the future, but for now it's a constant.
-2. When any listener is attached to `process.on("uncaughtException")` event, the thread recovery is not active.
+2. When any listener is attached to `process.on("uncaughtException")` event, the process recovery is not active.
 It makes sense only for uncaught exceptions, which in this case are actually caught by `uncaughtException` event.
 
-## Internal Thread Recovery
+## Internal Instance Recovery
 
-This is analogous to [Internal Process Recovery](#internal_process_recovery), except that it concerns a **single thread** rather than entire application process.
+This is analogous to [Internal Process Recovery](#internal_process_recovery), except that it concerns a **sub-instance** rather than main application process.
 
-Attaching any callback to this event inside a code running in a subthread enables internal thread recovery.
-When an exception occurs inside the subthread, the callback is invoked. You can then decide to allow restart of the thread or not.
-Also this is a good opportunity to save some data used by this thread which would otherwise be lost after the crash.
+Attaching any callback to this event inside a code running in a sub-instance enables internal sub-instance recovery.
+When an exception occurs inside the sub-instance, the callback is invoked. You can then decide to allow restart of the instance or not.
+Also this is a good opportunity to save some data used by this particular sub-instance which would otherwise be lost after the crash.
 
 ```js
 process.on('restart', function (restartCallback) {
-    // do whatever you want before thread's crash
-    // and when you're done - call the callback to restart the thread
+    // do whatever you want before instance will crash
+    // and when you're done - call the callback to restart the instance
     restartCallback();
 });
 ```
@@ -94,11 +94,11 @@ Argument for the callback:
 
 * `restartCallback` {Function}
 
-This function should be invoked to allow for thread recovery. Unless it is called, the thread will die without restart.
-Any tasks, like saving some thread's data (objects, variables etc) into database or even shared memory store, must be done before calling `restartCallback`.
+This function should be invoked to allow for sub-instance recovery. Unless it is called, the sub-instance will die without restart.
+Any tasks, like saving some data (objects, variables etc) into database or even shared memory store, must be done before calling `restartCallback`.
 
 In the example below we are throwing an exception, which causes restart event to be fired.
-Also we are counting how many times the thread was restarted. Based on that value we decide when to stop.
+Also we are counting how many times the sub-instance was restarted. Based on that value we decide when to stop.
 
 The code should be run with mt-keep parameter:
 
@@ -112,15 +112,15 @@ var sid = "threadRestartCount_" + process.threadId;
 
 var counter = 0;
 
-// this is just for storing thread's restart counter.
-// we use jxcore.store.shared here, because it is static (unrelated to the threads)
+// this is just for storing restart counter of the instance.
+// we use jxcore.store.shared here, because it is static (unrelated to the instances)
 if (shared.exists(sid)) {
     counter = parseInt(shared.get(sid)) + 1;
     console.log("Thread no %s restarted %d times.", process.threadId, counter);
 }
 shared.set(sid, counter);
 
-// attaching callback to this event enables the thread recovery,
+// attaching callback to this event enables the sub-instance recovery,
 // but still you need to call restartCallback() explicitly to make a restart
 process.on('restart', function (restartCallback) {
     if (counter < 3) {
@@ -136,13 +136,13 @@ process.on('restart', function (restartCallback) {
     }
 });
 
-// this loop is used to throw an exception inside a subthread
+// this loop is used to throw an exception inside a sub-instance
 setTimeout(function () {
-    throw "Let's restart the thread!";
+    throw "Let's restart the sub-instance!";
 }, 100 * counter * process.threadId);
 ```
 
-Please note, that when any listener is attached to `process.on("uncaughtException")` event, the thread recovery is not active, because it makes sense only for uncaught exceptions, which in this case are actually caught by `uncaughtException` event.
+Please note, that when any listener is attached to `process.on("uncaughtException")` event, the sub-instance recovery is not active, because it makes sense only for uncaught exceptions, which in this case are actually caught by `uncaughtException` event.
 
 # Internal Recovery vs Process Monitor
 
@@ -150,5 +150,5 @@ Process Monitor and Internal Process Recovery should not be used simultaneously.
 so they could interfere with each other leading to an unexpected behavior.
 For example, the application could be respawned into multiple instances, or fall into uncontrolled loop of restarting.
 
-On the other hand, when your application is running in multi-threaded mode, you can still use Internal Thread Recovery
-(which allows to restart crashed threads, not the application's process) together with Process Monitor.
+On the other hand, when your application is running in multi-tasked mode, you can still use Internal Instance Recovery
+(which allows to restart crashed sub-instances, not the main application's process) together with Process Monitor.

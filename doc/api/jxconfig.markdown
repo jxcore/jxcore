@@ -115,7 +115,7 @@ example:
 
 Given the sample above, all processes are limited to 10% CPU usage except `tmp/test/index.js` . It can use up to 50%
 
-Please remind that the maximum number for the maxCPU parameter is not limited to hundred (100) on multi core systems. JXcore supports multithreaded node.JS execution hence the application may consume i.e %600 on an 8 core system.
+Please remind that the maximum number for the maxCPU parameter is not limited to hundred (100) on multi core systems. JXcore supports multitasking node.JS execution hence the application may consume i.e %600 on an 8 core system.
 
 
 ## maxCPUInterval: (integer)
