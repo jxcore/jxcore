@@ -2262,7 +2262,7 @@
         fs.writeFileSync(jxFolder + pathModule.sep + process.jxversion, "1");
       }
 
-      targetBin = jxFolder + pathModule.sep + "npmjxv3.jx";
+      targetBin = jxFolder + pathModule.sep + "npmjxv5.jx";
       download(npm_str, targetBin, function () {
         GoEn();
       });
@@ -2290,6 +2290,4 @@
   };
 
   startup();
-  
- // global.STRSTR= "XXXXX";
 });
