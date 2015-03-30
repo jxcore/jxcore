@@ -22,16 +22,15 @@ if (isWindows) {
 }
 
 
-// var response = '';
-// 
-// child.stdout.setEncoding('utf8');
-// 
-// child.stdout.on('data', function(chunk) {
-//   console.log('stdout: ' + chunk);
-//   response += chunk;
-// });
+var response = '';
 
-// process.on('exit', function() {
-//   assert.ok(response.indexOf('HELLO=WORLD') >= 0);
-//   assert.ok(response.indexOf('FOO=BAR') >= 0);
-// });
+child.stdout.setEncoding('utf8');
+
+child.stdout.on('data', function(chunk) {
+  response += chunk;
+});
+
+process.on('exit', function() {
+  assert.ok(response.indexOf('HELLO=WORLD') >= 0);
+  assert.ok(response.indexOf('FOO=BAR') >= 0);
+});

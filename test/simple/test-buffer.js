@@ -678,6 +678,13 @@ assert.equal(0xad, b[1]);
 assert.equal(0xbe, b[2]);
 assert.equal(0xef, b[3]);
 
+// force GC on next
+var qb = new Buffer(512 * 1024 * 1024);
+qb.fill(65);
+assert(qb.length == 512 * 1024 * 1024);
+qb = null;
+jxcore.tasks.forceGC();
+
 // testing invalid encoding on SlowBuffer.toString
 caught_error = null;
 try {
