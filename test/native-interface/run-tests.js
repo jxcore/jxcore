@@ -44,6 +44,7 @@ for(var o in dirs) {
   jxcore.utils.console.write(dirs[o] + ": ", "green");
   var ret = jxcore.utils.cmdSync("./test-single.sh " + args[1] + " " + dirs[o] + " " + args[2] + " 1");
   if(ret.exitCode != 0 || ret.out.length>200) {
+    jxcore.utils.console.log("\nexit code: ", ret.exitCode, "red");
     console.error(ret.out);
     process.exit(1);
   }
