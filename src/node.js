@@ -2,7 +2,7 @@
 
 (function (process) {
   this.global = this;
-
+  
   if (!Error.captureStackTrace) {
     var _stackProto = function (msg, fileName, lineNumber, columnNumber) {
       if (fileName.indexOf('@') >= 0) {
@@ -228,6 +228,7 @@
         process.exit(1);
       }
     }
+    
     if (!process.IsEmbedded) {
       delete (process.IsEmbedded);
     } else {
@@ -2261,7 +2262,7 @@
         fs.writeFileSync(jxFolder + pathModule.sep + process.jxversion, "1");
       }
 
-      targetBin = jxFolder + pathModule.sep + "npmjxv3.jx";
+      targetBin = jxFolder + pathModule.sep + "npmjxv5.jx";
       download(npm_str, targetBin, function () {
         GoEn();
       });

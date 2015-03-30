@@ -44,4 +44,6 @@ int main(int argc, char **args) {
   while (JX_LoopOnce() != 0) usleep(1);
 
   JX_StopEngine();
+  
+  return 0;
 }
