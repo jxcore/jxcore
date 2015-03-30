@@ -1,5 +1,7 @@
 JXcore is ready for `iOS` platform. On this tutorial, we will give you a step-by-step instruction on how to compile JXcore for iOS.
 
+Before starting, please check the **prerequisites** from [this link](https://github.com/jxcore/jxcore/blob/master/doc/HOW_TO_COMPILE.md)
+
 First, you need a `MAC!` and the latest `XCode` installed with iPhone device and simulator SDKs. 
 
 Go to root folder of jxcore project and:
