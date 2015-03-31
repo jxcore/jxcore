@@ -287,8 +287,10 @@ class commons {
 #elif defined(JS_ENGINE_MOZJS)
   JS_PERSISTENT_FUNCTION JSObjectMaker_;
   JS_PERSISTENT_FUNCTION JSObjectLister_;
+  JS_PERSISTENT_FUNCTION JSObjectNew_;
   MozJS::Value CreateJSObject(const char *type_name_);
   MozJS::Value GetPropertyNames(MozJS::Value *obj);
+  void CreateNewNonCallableInstance(MozJS::Value *obj, JS::MutableHandleValue val);
 #endif
 
   JS_PERSISTENT_FUNCTION fast_buffer_constructor;

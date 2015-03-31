@@ -1710,16 +1710,14 @@
 
       contents.docs[loc] = buff;
 
-      // Stat is defined as JS_FUNCTION_TEMPLATE (node_file.h)
-      // turn stat into non-callable object ECMA-5 (Object && IsCallable ->
-      // stringify -> undefined)
-      // https://bugzilla.mozilla.org/show_bug.cgi?id=509339
-      var temp_stat = {};
-      for (var o in sub_stat) {
-        temp_stat[o] = sub_stat[o];
+      if(process.versions.sm) {
+        // Stat is defined as JS_FUNCTION_TEMPLATE (node_file.h)
+        // turn stat into non-callable object ECMA-5 (Object && IsCallable ->
+        // stringify -> undefined)
+        // https://bugzilla.mozilla.org/show_bug.cgi?id=509339
+        sub_stat = Object.create(sub_stat);
       }
-      sub_stat = temp_stat;
-
+      
       contents.stats[loc] = JSON.stringify(sub_stat);
     }
 
@@ -1757,15 +1755,14 @@
         contents.docs[loc] = scomp._cmp(asset_content.toString('base64'))
           .toString('base64');
 
-        // Stat is defined as JS_FUNCTION_TEMPLATE (node_file.h)
-        // turn stat into non-callable object ECMA-5 (Object && IsCallable ->
-        // stringify -> undefined)
-        // https://bugzilla.mozilla.org/show_bug.cgi?id=509339
-        var temp_stat = {};
-        for (var o in _stat) {
-          temp_stat[o] = _stat[o];
+        if(process.versions.sm) {
+          // Stat is defined as JS_FUNCTION_TEMPLATE (node_file.h)
+          // turn stat into non-callable object ECMA-5 (Object && IsCallable ->
+          // stringify -> undefined)
+          // https://bugzilla.mozilla.org/show_bug.cgi?id=509339
+          _stat = Object.create(_stat);
         }
-        _stat = temp_stat;
+        
         contents.stats[loc] = JSON.stringify(_stat);
 
         if (i % 5 == 0 || buff.length > 1e6) jxcore.tasks.forceGC();

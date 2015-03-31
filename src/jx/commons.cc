@@ -24,7 +24,7 @@ namespace node {
 
 char *commons::embedded_source_ = NULL;
 jxcore_instance_status commons::process_status_ = JXCORE_INSTANCE_NONE;
-int32_t commons::max_header_size = 0; // disabled
+int32_t commons::max_header_size = 0;  // disabled
 int commons::mapCount = 0;
 int commons::bTCP = -1;
 int commons::bTCPS = -1;
@@ -74,7 +74,9 @@ inline int l_threadIdFromThreadPrivate() {
   return -1;
 }
 
-int commons::threadIdFromThreadPrivate() { return l_threadIdFromThreadPrivate(); }
+int commons::threadIdFromThreadPrivate() {
+  return l_threadIdFromThreadPrivate();
+}
 
 inline int queryThreadId() {
   if (!jxcore_multithreaded) return 0;
@@ -199,18 +201,37 @@ MozJS::Value commons::GetPropertyNames(MozJS::Value *obj) {
     JS_LOCAL_FUNCTION objectMethod = JS_CAST_FUNCTION(
         JS_COMPILE_AND_RUN(STD_TO_STRING(
                                "(function(obj) {\n"
-                               "var arr=[];\n"
-                               "for(var o in obj) {\n"
-                               "if(typeof obj[o] != 'function')arr.push(o);"
-                               "}\n"
-                               "return arr;"
+                               "  var arr=[];\n"
+                               "  for(var o in obj) {\n"
+                               "    if(typeof obj[o] != 'function')arr.push(o);"
+                               "  }\n"
+                               "  return arr;"
                                "})"),
-                           STD_TO_STRING("native:jxcore_js_object")));
+                           STD_TO_STRING("native:jxcore_js_prop_names")));
     JSObjectLister_ = JS_NEW_PERSISTENT_FUNCTION(objectMethod);
   }
 
   MozJS::Value glob = jxcore::getGlobal(threadId);
   return JS_METHOD_CALL(JSObjectLister_, glob, 1, obj);
+}
+
+void commons::CreateNewNonCallableInstance(MozJS::Value *obj,
+                                           JS::MutableHandleValue val) {
+  JS_DEFINE_STATE_MARKER(this);
+  if (JSObjectNew_.IsEmpty()) {
+    JS_LOCAL_FUNCTION objectMethod = JS_CAST_FUNCTION(
+        JS_COMPILE_AND_RUN(STD_TO_STRING(
+                               "(function(obj) {\n"
+                               "  obj = obj.constructor;\n"
+                               "  var x = new obj();\n"
+                               "  return Object.create(x);\n"
+                               "})"),
+                           STD_TO_STRING("native:jxcore_js_new_instance")));
+    JSObjectNew_ = JS_NEW_PERSISTENT_FUNCTION(objectMethod);
+  }
+
+  MozJS::Value glob = jxcore::getGlobal(threadId);
+  val.set(JS_METHOD_CALL(JSObjectNew_, glob, 1, obj).GetRawValue());
 }
 #endif
 
@@ -241,6 +262,7 @@ void commons::Dispose() {
 #elif defined(JS_ENGINE_MOZJS)
   if (!JSObjectMaker_.IsEmpty()) JS_CLEAR_PERSISTENT(JSObjectMaker_);
   if (!JSObjectLister_.IsEmpty()) JS_CLEAR_PERSISTENT(JSObjectLister_);
+  if (!JSObjectNew_.IsEmpty()) JS_CLEAR_PERSISTENT(JSObjectNew_);
 #endif
 
   JS_CLEAR_PERSISTENT(cloneObjectMethod);

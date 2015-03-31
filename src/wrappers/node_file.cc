@@ -249,16 +249,22 @@ JS_METHOD(File, Close) {
 }
 JS_METHOD_END
 
-JS_LOCAL_OBJECT BuildStatsObject(const uv_statbuf_t* s) {
-  JS_ENTER_SCOPE_COM();
-  if (com == NULL) return JS_LOCAL_OBJECT();
+JS_LOCAL_OBJECT BuildStatsObject(commons* com, const uv_statbuf_t* s) {
+  JS_ENTER_SCOPE();
 
   JS_DEFINE_STATE_MARKER(com);
 
+#ifdef JS_ENGINE_MOZJS
+  // create non Callable Stat. V8 alternative creates the new instance non-callable
+  JS::RootedValue rt_stat(__contextORisolate);
+  com->CreateNewNonCallableInstance(&com->nf_stats_constructor_template, &rt_stat);
+  JS_LOCAL_OBJECT stats(rt_stat.get(), __contextORisolate);
+#elif defined(JS_ENGINE_V8)
   JS_LOCAL_OBJECT stats = JS_NEW_DEFAULT_INSTANCE(
       JS_GET_FUNCTION(com->nf_stats_constructor_template));
 
   if (JS_IS_EMPTY(stats) || JS_IS_NULL(stats)) return JS_LOCAL_OBJECT();
+#endif
 
 #define X(name, v)                                     \
   {                                                    \
@@ -304,6 +310,13 @@ JS_LOCAL_OBJECT BuildStatsObject(const uv_statbuf_t* s) {
   return JS_LEAVE_SCOPE(stats);
 }
 
+JS_LOCAL_OBJECT BuildStatsObject(const uv_statbuf_t* s) {
+  JS_ENTER_SCOPE_COM();
+  if (com == NULL) return JS_LOCAL_OBJECT();
+
+  return BuildStatsObject(com, s);
+}
+
 JS_METHOD(File, Stat) {
   if (!args.IsString(0)) THROW_TYPE_EXCEPTION("path must be a string");
 
@@ -315,7 +328,7 @@ JS_METHOD(File, Stat) {
   } else {
     SYNC_CALL(stat, *path, *path)
     RETURN_PARAM(
-        BuildStatsObject(static_cast<const uv_statbuf_t*>(SYNC_REQ.ptr)));
+        BuildStatsObject(com, static_cast<const uv_statbuf_t*>(SYNC_REQ.ptr)));
   }
 }
 JS_METHOD_END
@@ -331,7 +344,7 @@ JS_METHOD(File, LStat) {
   } else {
     SYNC_CALL(lstat, *path, *path)
     RETURN_PARAM(
-        BuildStatsObject(static_cast<const uv_statbuf_t*>(SYNC_REQ.ptr)));
+        BuildStatsObject(com, static_cast<const uv_statbuf_t*>(SYNC_REQ.ptr)));
   }
 }
 JS_METHOD_END
@@ -348,7 +361,7 @@ JS_METHOD(File, FStat) {
   } else {
     SYNC_CALL(fstat, 0, fd)
     RETURN_PARAM(
-        BuildStatsObject(static_cast<const uv_statbuf_t*>(SYNC_REQ.ptr)));
+        BuildStatsObject(com, static_cast<const uv_statbuf_t*>(SYNC_REQ.ptr)));
   }
 }
 JS_METHOD_END
