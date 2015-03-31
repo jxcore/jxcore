@@ -1,6 +1,6 @@
 # Process
 
-This API is a collection of JXcore methods and properties for accessing from both main thread and a subthread.
+This API is a collection of JXcore methods and properties for accessing from both main instance and a sub-instance.
 
 All of the methods described here are accessible from global `process` object, for example:
 
@@ -10,7 +10,7 @@ process.keepAlive();
 
 ## Event: 'restart'
 
-Attaching any callback to `restart` event, depending on the context in which it is performed, enables internal process or thread recovery.
+Attaching any callback to `restart` event, depending on the context in which it is performed, enables internal process or sub-instance recovery.
 
 Internal Recovery is a separate section described [here](jxcore-feature-internal-recovery.html).
 
@@ -36,7 +36,7 @@ Now when we run it, it displays `true`:
 
 * `timeout` {Number}
 
-> This method is implemented only in the subthread context. When called from a main thread it does nothing.
+> This method is implemented only in the sub-instance context. When called from a main instance it does nothing.
 
 Marks the main process to be alive. This will inform the thread pool,
 that the task has an intention to continue working (probably by doing some delayed or async work).
@@ -44,7 +44,7 @@ that the task has an intention to continue working (probably by doing some delay
 Normally the thread pool knows, that the task is working only until it returns from the task method.
 But if you would use in the task code e.g. delayed execution with `setTimeout()` or `setInterval()`, or any async call,
 the task method may return faster, before those delayed/async jobs will have chance to complete.
-This is a moment, when `keepAlive()` comes in handy. Later in the code, you can call `release()` to signal the main thread, that the task has completed.
+This is a moment, when `keepAlive()` comes in handy. Later in the code, you can call `release()` to signal the main instance, that the task has completed.
 
 The `timeout` parameter specifies, how many milliseconds the task should be kept alive, before automatic release will happen.
 This parameter is optional, and if you don’t provide it, task will be alive forever, or until `process.release()` will be called.
@@ -69,7 +69,7 @@ var method = function (obj) {
 jxcore.tasks.addTask(method);
 ```
 
-The `keepAlive()` method even if is callable only from a subthread, does not really keep the subthread alive, but the main thread.
+The `keepAlive()` method even if is callable only from a sub-instance, does not really keep it alive, but the main instance.
 
 Internally, it increments a counter. On the other hand, every `process.release()` invocation - decrements it.
 So when you want to end the application - you should call the `release()` method the same amount of times as you have called `keepAlive()`.
@@ -77,10 +77,10 @@ When that counter is zero - the main process may exit now.
 
 ## process.release()
 
-> This method is implemented only in the subthread context. When called from a main thread it does nothing.
+> This method is implemented only in the sub-instance context. When called from a main instance it does nothing.
 
 Unmarks the current task (from which the method was called) from being alive. You can use this method to inform the thread pool, that the task finished its work.
-If you will do this for all of the tasks, the main thread could freely exit then, and the application may close itself naturally with exit code = 0.
+If you will do this for all of the tasks, the main instance could freely exit then, and the application may close itself naturally with exit code = 0.
 
 Please refer to `process.keepAlive()` method for full example.
 
@@ -92,17 +92,17 @@ process.release();
 
 * `param` {Object}
 
-> This method is implemented only in the subthread context. When called from a main thread it does nothing.
+> This method is implemented only in the sub-instance context. When called from a main instance it does nothing.
 
-Sends a message to the main thread, and there it can be received by attaching to [`message`](jxcore-tasks.html#jxcore_tasks_event_message) event.
+Sends a message to the main instance, and there it can be received by attaching to [`message`](jxcore-tasks.html#jxcore_tasks_event_message) event.
 The `param` can be any value, for example string or json literal object.
 
 ```js
 process.sendToMain( { obj: "something" } );
 
-// now the main thread can receive the message like this:
+// now the main instance can receive the message like this:
 jxcore.tasks.on('message', function (threadId, param) {
-   console.log('Main thread received a message from subthread no ' + threadId +
+   console.log('Main instance received a message from sub-instance no ' + threadId +
       '. Message: ', param);
 });
 ```
@@ -112,7 +112,7 @@ jxcore.tasks.on('message', function (threadId, param) {
 * `threadId` {Number}
 * `param` {Object}
 
-Sends a message to the specific thread identified by `threadId`.
+Sends a message to the specific instance identified by `threadId`.
 The `param` can be any value, such as a string or json literal object.
 
 
@@ -120,24 +120,24 @@ The `param` can be any value, such as a string or json literal object.
 
 * `param` {Object}
 
-Similar to `sendToMain()`, except that it sends a message to all of the threads from the thread pool.
+Similar to `sendToMain()`, except that it sends a message to all of the sub-instances from the thread pool.
 
 ## process.subThread
 
-This property returns `true`, if the current code block runs under the subthread, or `false` otherwise.
+This property returns `true`, if the current code block runs under the sub-instance, or `false` otherwise.
 
 ```js
 if (process.subThread) {
-   console.log("we are in a subthread.");
+   console.log("we are in a sub-instance.");
 }
 ```
 
 ## process.threadId
 
-Returns the ID of the subthread. For multithreaded application it is a number between 0 and 62 (because the maximum amount of subthreads is 63).
-You can also control the number of subthreads for your application, see here for more information: [Defaults](jxcore-feature-multithreading.html#defaults).
+Returns the ID of the sub-instance. For multi-instanced application it is a number between 0 and 62 (because the maximum amount of sub-instances is 63).
+You can also control the number of sub-instances for your application, see here for more information: [Defaults](jxcore-feature-multitasking.html#defaults).
 
-Since one of the subthreads can have its index equal to 0, we should not test it with:
+Since one of the sub-instances can have its index equal to 0, we should not test it with:
 
 ```
 if (process.threadId) {
@@ -145,14 +145,14 @@ if (process.threadId) {
 }
 ```
 
-For a main thread, `threadId` always returns -1.
+For a main instance, `threadId` always returns -1.
 
 ## process.unloadThread()
 
-> This method is implemented only in the subthread context. When called from a main thread it does nothing.
+> This method is implemented only in the sub-instance context. When called from a main instance it does nothing.
 
-This method marks the subthread to be removed from the thread pool and eventually removes it.
-The removal itself will happen as soon as the subthread finishes execution of its latest task.
+This method marks the sub-instance to be removed from the thread pool and eventually removes it.
+The removal itself will happen as soon as the sub-instance finishes execution of its latest task.
 
-You may want to use this method to release subthread’s resources, if you don’t plan to use it soon.
-Adding any tasks later will create a fresh subthread automatically on demand.
+You may want to use this method to release sub-instance’s resources, if you don’t plan to use it soon.
+Adding any tasks later will create a fresh sub-instance automatically on demand.

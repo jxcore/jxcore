@@ -9,7 +9,7 @@ Indeed, the best news is, that Memory Store is kept outside V8′s heap memory s
 As a result it doesn't fall under it's limitations (similar to Multithreaded isolates).
 Keeping V8 away from high memory pressure also results in more responsive application since the unexpected garbage collection may keep the application blocked several seconds.
 
-The Memory Store works like a standard key/value store. It is available for both main and sub threads and also as a separate or shared object.
+The Memory Store works like a standard key/value store. It is available for both main and sub-instances and also as a separate or shared object.
 
 The `key` for the element has to be unique in the scope of entire store. Basically key should be a string type, but you can also use number and it will be converted to string internally.
 The `element` also should be a string type, but you can use a number and it will be converted to string internally.
@@ -20,7 +20,7 @@ The Memory store is a global object and can be used anywhere:
 var store = jxcore.store;
 ```
 
-or for multi-threaded access:
+or for multi-instanced access:
 
 ```js
 var shared = jxcore.store.shared;
@@ -30,9 +30,9 @@ var shared = jxcore.store.shared;
 
 ## jxcore.store
 
-When used in multi-threading, every subthread has it’s own `jxcore.store` object.
-It can be considered as a static global per store context, which means, that threads cannot share the same `jxcore.store` among themselves.
-But all of the tasks running inside a particular thread have shared access to it.
+When used in multi-tasking, every sub-instance has it’s own `jxcore.store` object.
+It can be considered as a static global per store context, which means, that sub-instances cannot share the same `jxcore.store` among themselves.
+But all of the tasks running inside a particular sub-instance have shared access to it.
 
 ### store.exists(key, element)
 
@@ -119,13 +119,13 @@ store.set(1.45, 2.77);     // equivalent to store.set("1.45", "2.77");
 
 ## jxcore.store.shared
 
-In some scenarios you may need a single store, which you could access from any thread. Use `jxcore.store.shared` object for this purpose.
+In some scenarios you may need a single store, which you could access from any sub-instance. Use `jxcore.store.shared` object for this purpose.
 You should be aware of the following principles, even if all operations on this store are thread-safe.
 First of all, access time may take little longer comparing to the single threaded `jxcore.store` especially when using operations,
 which modify content of the data store (`set()`, `remove()` and `get()` – the last one also removes the item).
-Also, when different threads are simultaneously writing/modifying value of the same key, the final stored value is the one that is updated last.
+Also, when different sub-instances are simultaneously writing/modifying value of the same key, the final stored value is the one that is updated last.
 
-Thread-safe `jxcore.store.shared` has exactly the same methods as single threaded `jxcore.store`, but also implements some other members, specific for multi-threading.
+Thread-safe `jxcore.store.shared` has exactly the same methods as single-instanced `jxcore.store`, but also implements some other members, specific for multi-tasking.
 
 ### store.shared.exists(key, element)
 
@@ -194,7 +194,7 @@ See `store.set(key, element)`.
 * `errorCallback` {Function}
 
 Allows to execute number of store related operations on a single `key` in one continuous safe block.
-During it's execution, access to this element (the key and it's value) is locked for other threads.
+During it's execution, access to this element (the key and it's value) is locked for other sub-instances.
 The default maximum blocking time is defined by `setBlockTimeout()` parameter.
 
 The `safeBlockFunction` is the execution block. This should be a function without any arguments.
@@ -221,7 +221,7 @@ Functionality of the `safeBlockFunction` should be limited only to operations on
 
 Every `safeBlock()` invocation locks the key and it's value for a specific amount of time defined by `setBlockTimeout()`.
 
-The `errorCallback` will be invoked whenever an exception occurs inside the `safeBlockFunction`. Exception is caught in a safe manner, so the key and its value will be unlocked for other threads access.
+The `errorCallback` will be invoked whenever an exception occurs inside the `safeBlockFunction`. Exception is caught in a safe manner, so the key and its value will be unlocked for other instances access.
 
 ```js
 jxcore.store.shared.safeBlock("myNumber",
@@ -238,7 +238,7 @@ jxcore.store.shared.safeBlock("myNumber",
 
 Sets the maximum time (milliseconds) during which the key in a `safeBlock` is locked.
 By default its value is 10000 milliseconds.
-When it elapses, JXcore automatically unlocks the key for other threads access.
+When it elapses, JXcore automatically unlocks the key for other sub-instances access.
 
 ### store.shared.setIfEqualsTo(key, newValue, checkValue)
 

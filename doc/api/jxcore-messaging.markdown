@@ -52,7 +52,7 @@ When enabled, the running server displays additional (informative) log messages 
 
 * {Boolean} default `true`
 
-When JXM.io server runs in multi-threaded mode and this option is enabled,
+When JXM.io server runs in multi-instanced mode and this option is enabled,
 each of the log and error messages displayed to the console contains information about thread ID, from which the message comes.
 
 Example output:
@@ -150,7 +150,7 @@ Error codes are defined in JMI.io settings file.
 ### start
 
 This event is raised after the server is successfully started.
-When the server is running in multithreaded mode ([mt /mt-keep](jxcore-command-mt.html) command), this event occurs for each of the subthreads.
+When the server is running in multi-instanced mode ([mt /mt-keep](jxcore-command-mt.html) command), this event occurs for each of the sub-instances.
 
 ```js
 server.on("start", function() {

@@ -1,11 +1,11 @@
 # Sorted by Features
 * [JXcore config](jxconfig.html)
 * [Memory Store](jxcore-store.html)
-* [Multithreading](jxcore-feature-multithreading.html)
+* [Multi-tasking](jxcore-feature-multitasking.html)
 * Package Manager:
     * [Module Installer](jxcore-command-install.html)
     * [Packaging & Code Protection](jxcore-feature-packaging-code-protection.html)
-* Process & Thread Recovery:
+* Process & Instance Recovery:
     * [Internal Recovery](jxcore-feature-internal-recovery.html)
     * [Process Monitor](jxcore-command-monitor.html)
 * [JXM.io Messaging Backend](jxcore-messaging.html)
@@ -23,7 +23,7 @@
 * [Monitor](jxcore-monitor.html)
 * [Store](jxcore-store.html)
 * [Tasks](jxcore-tasks.html)
-* [Process](jxcore-thread.html)
+* [Process](jxcore-process.html)
 * [Utils](jxcore-utils.html)
 
 # Native modules API

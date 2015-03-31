@@ -43,12 +43,12 @@
 @include jxcore-command-monitor
 @include jxcore-command-mt
 @include jxcore-feature-internal-recovery
-@include jxcore-feature-multithreading
+@include jxcore-feature-multitasking
 @include jxcore-feature-packaging-code-protection
 @include jxcore-messaging
 @include jxcore-monitor
 @include jxcore-store
 @include jxcore-tasks
-@include jxcore-thread
+@include jxcore-process
 @include jxcore-utils
 @include jxconfig

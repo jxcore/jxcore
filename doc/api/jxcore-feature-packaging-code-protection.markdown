@@ -85,7 +85,7 @@ JX packages can be executed as follows:
 
 Obviously, you need to have JXcore installed first. For this, please visit [Downloads](http://jxcore.com/downloads/) page.
 
-You can also run the package in multiple threads.
+You can also run the package in multiple instances.
 
     > jx mt my_project.jx
 

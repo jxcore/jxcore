@@ -293,7 +293,7 @@ To test:
     console.log(fn()); // 'hello world'
 
 
-### Wrapping C++ objects (multithreading in mind)
+### Wrapping C++ objects (multitasking in mind)
 
 Here we will create a wrapper for a C++ object/class `MyObject` that can be
 instantiated in JavaScript through the `new` operator. First prepare the main
@@ -330,7 +330,7 @@ Then in `myobject.h` make your wrapper inherit from `node::ObjectWrap`:
       static v8::Handle<v8::Value> New(const v8::Arguments& args);
       static v8::Handle<v8::Value> PlusOne(const v8::Arguments& args);
 
-      //Multithreading ready static Persistent variable
+      //Multitasking ready static Persistent variable
       static JX::ThreadStore<v8::Persistent<v8::Function> > c_constructor;
 
       double value_;
@@ -407,7 +407,7 @@ Test it with:
     console.log( obj.plusOne() ); // 12
     console.log( obj.plusOne() ); // 13
 
-Or test it under multithreading:
+Or test it under multitasking:
 
     var obj = {
         define: function () {

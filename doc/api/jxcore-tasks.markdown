@@ -1,7 +1,7 @@
-# Multithreaded Javascript Tasks
+# Multi-instanced Javascript Tasks
 
-JXcore, in addition to running multithreaded applications with `mt`/`mt-keep` command, offers Multithreaded Javascript Tasks feature,
-which allows you from the code running in the main thread to add tasks for execution in a subthread.
+JXcore, in addition to running multi-instanced applications with `mt`/`mt-keep` command, offers Multi-instanced Javascript Tasks feature,
+which allows you from the code running in the main instance to add tasks for execution in a sub-instances.
 
 The main idea in this approach is to define the tasks, which you will then add to the thread pool for execution.
 For this, you can use any of the methods described in the API section.
@@ -29,13 +29,13 @@ method.define = function () {
 jxcore.tasks.runOnce(method);
 ```
 
-Note that this particular example does nothing but running hello.js file in multiple threads. The same result can be obtained by using mt:keep option as follows:
+Note that this particular example does nothing but running hello.js file in multiple instances. The same result can be obtained by using mt:keep option as follows:
 
     > jx mt:keep hello.js
 
-We have written a blog post showing How to turn your existing application into a multi-threaded one with a few lines of code.
+We have written a blog post showing How to turn your existing application into a multi-instanced one with a few lines of code.
 
-See also general description of JXcore [multithreading](jxcore-feature-multithreading.html).
+See also general description of JXcore [multitasking](jxcore-feature-multitasking.html).
 
 # Passing arguments to tasks
 
@@ -103,26 +103,26 @@ jxcore.tasks.on('emptyQueue', function () {
 
 Please keep in mind, that if you plan to use some delayed/async work inside a task,
 the `emptyQueue` event can be fired before they will have chance to complete.
-Refer to [`process.keepAlive()`](jxcore-thread.html#jxcore_thread_process_keepalive_timeout) method for that matter.
+Refer to [`process.keepAlive()`](jxcore-process.html#jxcore_process_process_keepalive_timeout) method for that matter.
 
 ## Event: 'message'
 
 * `threadId` {Number}
 * `param` {Object}
 
-This event fires every time, when the main process receives a message sent by a subthread with `process.sendToMain()` method.
+This event fires every time, when the main process receives a message sent by a sub-instance with `process.sendToMain()` method.
 
 ```js
 var callback = function (threadId, params) {
-   console.log('Main thread received a message from subthread no ' + threadId
+   console.log('Main instance received a message from sub-instance no ' + threadId
       + '. Message: ', params);
 };
 
-// this event fires on the main thread, after it receives a message from a subthread
+// this event fires on the main instance, after it receives a message from a sub-instance
 jxcore.tasks.on('message', callback);
 
-// a subthread sends the message with sendToMain().
-// see the Subthreads API for more information
+// a sub-instance sends the message with sendToMain().
+// see the API for more information
 process.sendToMain( { obj: "something" } );
 ```
 
@@ -133,38 +133,38 @@ process.sendToMain( { obj: "something" } );
 * `callback` {Function} [optional]
 * `obj` {Object} [optional]
 
-Adds new task **as a method** to be processed in a separate thread. The task will be processed as soon as possible.
-If there is any idle subthread, it will be used to execute the task immediately. Otherwise it may wait until the other tasks will finish or some of the subthreads will become idle.
+Adds new task **as a method** to be processed in a separate instance. The task will be processed as soon as possible.
+If there is any idle sub-instance, it will be used to execute the task immediately. Otherwise it may wait until the other tasks will finish or some of the sub-instances will become idle.
 
 The task is the function `method` with optional `param` as an argument. After the method completes, the `callback` will be invoked.
 It can receive one or two arguments, depending if `obj` is provided or not.
 
-`obj` is a context object from the main thread and it can contain any value.
+`obj` is a context object from the main instance and it can contain any value.
 If it’s not provided, the `callback` method will have only one argument, and it will be the result of the task `method`.
 Otherwise, the `callback` will contain two arguments.
 The first one is the `obj` object described here, while the second argument is the result of the task `method`.
 
 There are few principles regarding adding the tasks, that you should be aware of:
 
-1. You cannot specify, in which of the subthreads your task will run. The subthread will be chosen automatically. You can find out, which subthread is used for that task only from inside the task itself (see `threadId` property in Subthreads API).
-2. If for example on your system `getThreadCount()` returns 3, and you add 3 tasks one after another, there is no guarantee, that each of them will run in its own subthread, but still it is one of the possibilities. But things can go also in many other ways: all of the 3 tasks can run in the same subthread, or two of them in one subthread, and the third in another, etc.
+1. You cannot specify, in which of the sub-instances your task will run. The sub-instance will be chosen automatically. You can find out, which sub-instance is used for that task only from inside the task itself (see `process.threadId` property).
+2. If for example on your system `getThreadCount()` returns 3, and you add 3 tasks one after another, there is no guarantee, that each of them will run in its own sub-instance, but still it is one of the possibilities. But things can go also in many other ways: all of the 3 tasks can run in the same sub-instance, or two of them in one, and the third in another, etc.
 3. Do not assume the tasks will be executed in the order of which they were added.
 4. When the task `method` returns from its execution block (for example by calling return statement),
 it is considered as completed.
 This means, that if you use in the task code any delayed execution with `setTimeout()` or `setInterval()`, or async calls,
 the task method may return faster, before those delayed/async jobs will have chance to complete.
-For gaining control over task’s execution time, please use `process.keepAlive()` and `process.release()` methods from Subthreads API.
+For gaining control over task’s execution time, please use `process.keepAlive()` and `process.release()` methods from [process](jxcore-process.html)  API.
 
 Adding a task with one-argument callback:
 
 ```js
 var method = function (param) {
-   console.log("We are in a subthread now. Argument value is:", param);
+   console.log("We are in a sub-instance now. Argument value is:", param);
    return "ok";
 };
 
 jxcore.tasks.addTask(method, { str: "hello" }, function (result) {
-   console.log("This is result from subthreaded method:", result);
+   console.log("This is result from method running in sub-instance:", result);
    // should display "ok"
 });
 ```
@@ -172,7 +172,7 @@ jxcore.tasks.addTask(method, { str: "hello" }, function (result) {
 Adding a task with two-argument callback:
 
 ```js
-// we're going to pass some object from the main thread to the callback
+// we're going to pass some object from the main instance to the callback
 var mainThreadVariable = {
     log : function(txt) {
         console.log(txt);
@@ -200,7 +200,7 @@ JXcore adds `runTask()` method to function's prototype, so each function can be 
 
 ```js
 var method = function (param) {
-    console.log("We are in a subthread now. Argument value is:", param);
+    console.log("We are in a sub-instance now. Argument value is:", param);
     return "ok";
 };
 
@@ -220,38 +220,38 @@ method.runTask({ str: "hello" }, callback, mainThreadVariable);
 
 ## tasks.addTask(object, param, callback, obj)
 
-* `object` {Function} - this is the object containing `define()` and/or `logic()` methods, which will be executed in a subthread.
+* `object` {Function} - this is the object containing `define()` and/or `logic()` methods, which will be executed in a sub-instance.
 * `param` {Object} - argument for `logic()` method
 * `callback` {Function} [optional]
 * `obj` {Object} [optional]
 
-Adds new task **as an object** to be processed in a separate thread. The task will be processed as soon as possible.
-If there is any idle subthread, it will be used to execute the task immediately. Otherwise it may wait until the other tasks will finish or some of the subthreads will become idle.
+Adds new task **as an object** to be processed in a separate sub-instance. The task will be processed as soon as possible.
+If there is any idle sub-instance, it will be used to execute the task immediately. Otherwise it may wait until the other tasks will finish or some of the sub-instances will become idle.
 
 After the task completes, the `callback` will be invoked.
 It can receive one or two arguments, depending if `obj` is provided or not.
 
-`obj` is a context object from the main thread and it can contain any value.
+`obj` is a context object from the main instance and it can contain any value.
 If it’s not provided, the `callback` method will have only one argument, and it will be the result of the task's `logic()` method.
 Otherwise, the `callback` will contain two arguments.
 The first one is the `obj` object described here, while the second argument is the result of `logic()`.
 
 There is one important thing to be noted here: the `callback` is invoked only when there is no `waitLogic` defined or when it evaluates to `false` (see `waitLogic` description below).
 
-As you already might know from previous part of the documentation, the subthreads are separated from the main thread as well as from each other. Moreover, tasks themselves are also separated from each other, even if they are running in the same subthread.
+As you already might know from previous part of the documentation, the sub-instances are separated from the main instance as well as from each other. Moreover, tasks themselves are also separated from each other, even if they are running in the same sub-instance.
 
-There are however some scenarios, where it could be useful to share some data between the tasks being executed in the same thread
+There are however some scenarios, where it could be useful to share some data between the tasks being executed in the same sub-instance.
 
 For this case we implemented *define & logic* approach.
 
 ```js
 var task = {};
 task.define = function() {
-    // you may define here static variables, accessible to all tasks on this subthread
+    // you may define here static variables, accessible to all tasks on this sub-instance
     var x = 0;
 };
 task.logic = function(param) {
-    // this method runs once per every task in the subthread
+    // this method runs once per every task in the sub-instance
     // variables declared in define() method are freely accessible from inside logic().
     // you can also modify them
     x = 10;
@@ -260,16 +260,16 @@ task.logic = function(param) {
 
 ### define()
 
-  * This method runs only once per whole subthread (at first `addTask()` invocation.)
-  * Purpose of this method is to declare variables, initialize objects, make some e.g. database connections, etc. All of them will be static and accessible to all tasks, which means any subsequent `logic()` invocations of this particular task object, running on this subthread.
+  * This method runs only once per whole sub-instance (at first `addTask()` invocation.)
+  * Purpose of this method is to declare variables, initialize objects, make some e.g. database connections, etc. All of them will be static and accessible to all tasks, which means any subsequent `logic()` invocations of this particular task object, running on this sub-instance.
   * This is a required method which neither takes any parameters nor returns any values. Any parameters will be ignored.
 
 ### logic(param)
 
   * This is the actual task’s execution code.
   * It may receive one argument and this can be any javascript object.
-  * Variables and objects declared in `define()` method are freely accessible from inside `logic()` method. You can also freely modify them, but please remember that since everything declared in `define()` is static, if you change some variable’s value in one task, it will have affect for all subsequent tasks which run in this subthread. Also do not assume the tasks will be executed in the order of which they were added.
-  * This method is optional which means that the entire task’s job should be embedded inside the `define()` method. As mentioned before, it will run only once per subthread, no matter how many times the task was added to the subthread’s queue.
+  * Variables and objects declared in `define()` method are freely accessible from inside `logic()` method. You can also freely modify them, but please remember that since everything declared in `define()` is static, if you change some variable’s value in one task, it will have affect for all subsequent tasks which run in this sub-instance. Also do not assume the tasks will be executed in the order of which they were added.
+  * This method is optional which means that the entire task’s job should be embedded inside the `define()` method. As mentioned before, it will run only once per sub-instance, no matter how many times the task was added to the queue.
 
 ### waitLogic `boolean`
 
@@ -341,7 +341,7 @@ var task = {
   define: function () {
   },
   logic: function (param) {
-    console.log("We are in a subthread now. Argument value is:", param);
+    console.log("We are in a sub-instance now. Argument value is:", param);
     return "ok";
   }
 };
@@ -367,7 +367,7 @@ Forces garbage collection on V8 heap. Please use it with caution. It may trigger
 
 ## tasks.getThreadCount()
 
-Returns the number of subthreads currently used by application (size of the thread pool).
+Returns the number of sub-instances currently used by application (size of the thread pool).
 
 ## tasks.jobCount()
 
@@ -375,26 +375,26 @@ Returns number of tasks currently waiting in the queue.
 
 ## tasks.killThread(threadId)
 
-Kills a thread with given thread ID. This can be used for controlling the execution time of the task.
+Kills a sub-instance with given ID. This can be used for controlling the execution time of the task.
 
-In example below, when the task starts it notifies the main thread about that fact.
-From that moment the main thread may start counting the timeout for killing the thread.
+In example below, when the task starts it notifies the main instance about that fact.
+From that moment the main instance may start counting the timeout for killing the sub-instance.
 
 ```js
-// main thread receives the message from a task
+// main instance receives the message from a task
 jxcore.tasks.on("message", function(threadId, obj){
     if(obj.started){
         //kill the task after a second
         setTimeout(function(){
             jxcore.tasks.killThread(threadId);
-            console.log("thread killed", threadId);
+            console.log("sub-instance killed", threadId);
         },1000);
     }
 });
 
 // adding a task
 jxcore.tasks.addTask( function() {
-    // informing the main thread, that task is just started
+    // informing the main instance, that task is just started
     process.sendToMain({started:true});
 
     // looping forever
@@ -407,7 +407,7 @@ jxcore.tasks.addTask( function() {
 
 * `method` {Function}
 
-You may define a thread initialization task by using `runOnce`, it will run the given task on all the current and future threads.
+You may define a sub-instance initialization task by using `runOnce`, it will run the given task on all the current and future sub-instances.
 However, if you don’t know if the solution will use the multi-tasking but still you need to make sure the initializer method is set,
 you can use register for this purpose.
 
@@ -445,27 +445,27 @@ jxcore.tasks.runOnce(function () {
 });
 ```
 
-The above example runs the task for all available threads, showing that `myVar` is available for all of them.
+The above example runs the task for all available sub-instances, showing that `myVar` is available for all of them.
 
 
 ## tasks.runOnce(method, param, doNotRemember)
 
-* `method` {Function} - This is the method, which will be executed once for every existing subthread (<em>getThreadCount()</em> times).
+* `method` {Function} - This is the method, which will be executed once for every existing sub-instance (<em>getThreadCount()</em> times).
 * `param` {Object} - Argument for that method.
 * `doNotRemember` {Boolean}
 
-Adds new task (the `method` function with optional `param` argument) to be processed just once for every existing subthread.
-In other words, every subthread will call the task once.
-You can get number of subthreads by calling `getThreadCount()` method.
-Every subthread will process its task as soon as possible.
-If there are no other tasks in the subthread’s queue, the task will be executed immediately.
-Otherwise it may wait until the other tasks in this subthread will finish.
+Adds new task (the `method` function with optional `param` argument) to be processed just once for every existing sub-instance.
+In other words, every sub-instance will call the task once.
+You can get number of sub-instances by calling `getThreadCount()` method.
+Every sub-instance will process its task as soon as possible.
+If there are no other tasks in the queue, the task will be executed immediately.
+Otherwise it may wait until the other tasks in this sub-instance will finish.
 
-If you don't want the method definition to be remembered by future threads – use `doNotRemember`. It's `false` by default.
+If you don't want the method definition to be remembered by future sub-instances – use `doNotRemember`. It's `false` by default.
 
 Running tasks with `runOnce()` method will also get `emptyQueue` event fired.
 
-One of the cases for using `runOnce()` could be setting up a http server on each thread.
+One of the cases for using `runOnce()` could be setting up a http server on each sub-instance.
 
 ```js
 jxcore.tasks.runOnce(method, "some parameter");
@@ -479,18 +479,18 @@ jxcore.tasks.runOnce(method, "some parameter");
 * `callback` {Function} [optional]
 * `obj` {Object} [optional]
 
-Runs a task (`method` with `param` argument) on individual subthread no `threadId`.
+Runs a task (`method` with `param` argument) on individual sub-instance identified as `threadId`.
 
 After the method completes, the `callback` will be invoked.
 It can receive one or two arguments, depending on whether or not `obj` is provided.
 
-`obj` is a context object from the main thread and it can contain any value.
+`obj` is a context object from the main instance and it can contain any value.
 If it’s not provided, the `callback` method will have only one argument, and it will be the result of the task `method`.
 Otherwise, the `callback` will contain two arguments.
 The first one is the `obj` object described here, while the second argument is the result of the task `method`.
 
 *Remind that, in case you provide the task in 'define/logic' form, runOnThread runs both of them every time.
-If this is not inconvenient for your scenario, you may check whether the define was called before on that particular thread by marking a global member.*
+If this is not inconvenient for your scenario, you may check whether the define was called before on that particular instance by marking a global member.*
 
 ### method.runOnce(param, doNotRemember)
 
@@ -502,7 +502,7 @@ JXcore adds `runOnce()` method to function's prototype, so each function can be 
 
 ```js
 var method = function (param) {
-    console.log("Subthread no " + process.threadId + ". Argument value is:", param);
+    console.log("Sub-instance no " + process.threadId + ". Argument value is:", param);
 };
 
 method.runOnce("hello");
@@ -512,11 +512,11 @@ method.runOnce("hello");
 
 * `value` {Number}
 
-Sets the number of subthreads that you want to have in the thread pool for the application.
+Sets the number of sub-instances that you want to have in the thread pool for the application.
 
-Generally, there is no need to use this method as JXcore by default will create 2 subthreads. In some scenarios you may want to change this number, but if you do, you must call `tasks.setThreadCount()` before the first use of `jxcore.tasks` object. After that, any subsequent calls of this method will be simply ignored.
+Generally, there is no need to use this method as JXcore by default will create 2 sub-instances. In some scenarios you may want to change this number, but if you do, you must call `tasks.setThreadCount()` before the first use of `jxcore.tasks` object. After that, any subsequent calls of this method will be simply ignored.
 
-The minimum, and default value is 2. The maximum value is 63, but keep in mind, that this amount of subthreads may not always bring performance benefits. In the contrary – in some cases may do even worse, depending on the task implementation, so make sure that you always do some proper testing. Setting value outside this range will raise an exception.
+The minimum, and default value is 2. The maximum value is 63, but keep in mind, that this amount of sub-instances may not always bring performance benefits. In the contrary – in some cases may do even worse, depending on the task implementation, so make sure that you always do some proper testing. Setting value outside this range will raise an exception.
 
 ```js
 jxcore.tasks.setThreadCount(5);
@@ -529,5 +529,5 @@ jxcore.tasks.setThreadCount(10)
 
 ## tasks.unloadThreads()
 
-Marks all subthreads to be removed from the thread pool. If they are idle – the method removes them immediately.
+Marks all sub-instances to be removed from the thread pool. If they are idle – the method removes them immediately.
 Otherwise it waits, until they finish their last tasks and removes them afterwards.
