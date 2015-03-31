@@ -678,9 +678,10 @@ static JS_LOCAL_METHOD(Cwd) {
   char buf[PATH_MAX + 1];
 #endif
 
+  size_t len = sizeof(buf);
   // keep uv_cwd from multi-thread access
   customLock(CSLOCK_UVFS);
-  uv_err_t r = uv_cwd(buf, ARRAY_SIZE(buf) - 1);
+  uv_err_t r = uv_cwd(buf, len);
   customUnlock(CSLOCK_UVFS);
 
   if (r.code != UV_OK) {
@@ -691,16 +692,12 @@ static JS_LOCAL_METHOD(Cwd) {
   buf[ARRAY_SIZE(buf) - 1] = '\0';
 
 #if defined(__IOS__) || defined(__ANDROID__)
-  // iOS getcwd returns / if running sandboxed. iOS sandboxed app folder has
-  // nothing related to documents etc. folder. Besides, sandboxed app folder
-  // location is not consistent!
-  // Still we return this location to make it easier to reach asset files
+  // we do not know the embedded environment. test result
 
   if (strcmp(buf, "/") == 0) {
     if (args.Length() != 0)
       error_console(
-          "Warning! You can not set/relate the home folder for an iOS "
-          "application.\n");
+          "Warning! You can not set/relate the home folder on this platform\n");
 
     RETURN_PARAM(UTF8_TO_STRING(app_sandbox_folder));
   }
@@ -1636,7 +1633,7 @@ void EnableDebug(bool wait_connect, node::commons* node) {
 
   node->node_isolate->Exit();
 #elif defined(JS_ENGINE_MOZJS)
-  // TODO(obastemur) DEBUG!!
+// TODO(obastemur) DEBUG!!
 #endif
 }
 
@@ -2015,8 +2012,7 @@ void SetupProcessObject(const int threadId) {
       free(app_sandbox_folder);
       app_sandbox_folder = NULL;
     }
-    // iOS retuns the path for executable. We can reach the sandbox folder from
-    // there
+
     for (int i = size - 1; i >= 0; i--) {
       if (execPath[i] == '/') {
         app_sandbox_folder = (char*)malloc(sizeof(char) * (i + 2));
@@ -2042,9 +2038,7 @@ void SetupProcessObject(const int threadId) {
 #endif
 
 #if defined(__IOS__) || defined(__ANDROID__)
-  // iOS documents folder is on separate location
-  // mobile embedded application is expected to return
-  // this location via argv[0]
+  // mobile app delivers the full path via argv[0]
   char* docs_home = NULL;
   char* docs_folder = active_engine->argv_[0];
 
@@ -2075,8 +2069,11 @@ void SetupProcessObject(const int threadId) {
   JS_ACCESSOR_SET(process, STD_TO_STRING("debugPort"), DebugPortGetter,
                   DebugPortSetter);
 
+  // this embedded means the native binary.
+  // TODO(?) solve the embedded term confusion.
   JS_NAME_SET(process, JS_STRING_ID("IsEmbedded"),
               STD_TO_BOOLEAN(com->is_embedded_));
+
   // define various internal methods
   JS_METHOD_SET(process, "_getActiveRequests", GetActiveRequests);
   JS_METHOD_SET(process, "_getActiveHandles", GetActiveHandles);
@@ -2123,8 +2120,8 @@ void SetupProcessObject(const int threadId) {
   JS_SET_INDEXED_EXTERNAL(info_box, com->tick_infobox,
                           ENGINE_NS::kExternalUnsignedIntArray, 3);
 #elif JS_ENGINE_MOZJS
-  // Above implementation also works over MozJS proxy but we need a faster
-  // implementation
+  // Above implementation also works over MozJS proxy
+  // but we need a faster implementation
   JS_BIND_NEW_ARRAY_BUFFER(info_box, Uint32, uint32_t, 3, com->tick_infobox,
                            __tickbox);
 #endif

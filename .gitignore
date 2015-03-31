@@ -94,3 +94,5 @@ tmp_jx
 *.exe
 
 *.log
+
+.cproject
