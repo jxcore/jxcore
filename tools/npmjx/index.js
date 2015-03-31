@@ -5,12 +5,6 @@ var http = require('https')
   , path = require('path')
   , fs = require("fs");
 
-if (process.argv[1].toLowerCase().lastIndexOf('npmjxv3.jx') != process.argv[1].length - 10) {
-  console.error("usage: jx install [package_name]");
-  console.error(">>", process.argv.join(" "));
-  process.exit(1);
-}
-
 var getOptions = function (name) {
   for (var o = 0; o < process.argv.length; o++) {
     if (process.argv[o] == name) {
@@ -139,9 +133,10 @@ var extract = function (loc, target, cb, targz) {
     else {
       var clear = false;
       try {
-        if (fs.existsSync(__dirname + path.sep + "npmjxv3.jx")) {
+        var fname = path.join(__dirname, path.basename(process.argv[1]));
+        if (fs.existsSync(fname)) {
           clear = true;
-          fs.unlink(__dirname + path.sep + "npmjxv3.jx");
+          fs.unlink(fname);
         }
       } catch (e) {
       }

@@ -9,7 +9,7 @@
     "startup": "index.js",
     "execute": "index.js",
     "extract": false,
-    "output": "npmjxv5.jx",
+    "output": "npmjxv6.jx",
 	"files": [
 		"index.js",
 		"node_modules/tar.gz/example/example.js",
