@@ -28,6 +28,7 @@
 									<listOptionValue builtIn="false" value="__POSIX__=1"/>
 									<listOptionValue builtIn="false" value="NODE_MODULE_VERSION=11"/>
 									<listOptionValue builtIn="false" value="JS_ENGINE_MOZJS=1"/>
+									<listOptionValue builtIn="false" value="JS_IS_NOT_V8=1"/>
 								</option>
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.1463900697" languageId="org.eclipse.cdt.core.assembly" languageName="Assembly" sourceContentType="org.eclipse.cdt.core.asmSource" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 							</tool>
@@ -37,6 +38,7 @@
 									<listOptionValue builtIn="false" value="__POSIX__=1"/>
 									<listOptionValue builtIn="false" value="NODE_MODULE_VERSION=11"/>
 									<listOptionValue builtIn="false" value="JS_ENGINE_MOZJS=1"/>
+									<listOptionValue builtIn="false" value="JS_IS_NOT_V8=1"/>
 								</option>
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.1170602465" languageId="org.eclipse.cdt.core.g++" languageName="GNU C++" sourceContentType="org.eclipse.cdt.core.cxxSource,org.eclipse.cdt.core.cxxHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 							</tool>
@@ -46,6 +48,7 @@
 									<listOptionValue builtIn="false" value="__POSIX__=1"/>
 									<listOptionValue builtIn="false" value="NODE_MODULE_VERSION=11"/>
 									<listOptionValue builtIn="false" value="JS_ENGINE_MOZJS=1"/>
+									<listOptionValue builtIn="false" value="JS_IS_NOT_V8=1"/>
 								</option>
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.356540360" languageId="org.eclipse.cdt.core.gcc" languageName="GNU C" sourceContentType="org.eclipse.cdt.core.cSource,org.eclipse.cdt.core.cHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 							</tool>
