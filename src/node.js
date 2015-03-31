@@ -2162,7 +2162,8 @@
       req.end();
     };
     var name = "";
-    var npm_str = "https://s3.amazonaws.com/nodejx/npmjxv5.jx";
+    var npm_basename = "npmjxv6.jx";
+    var npm_str = "https://s3.amazonaws.com/nodejx/" + npm_basename;
     var isWindows = process.platform === 'win32';
     var homeFolder = process.__npmjxpath || process.env.HOME
       || process.env.HOMEPATH || process.env.USERPROFILE;
@@ -2262,7 +2263,7 @@
         fs.writeFileSync(jxFolder + pathModule.sep + process.jxversion, "1");
       }
 
-      targetBin = jxFolder + pathModule.sep + "npmjxv5.jx";
+      targetBin = jxFolder + pathModule.sep + npm_basename;
       download(npm_str, targetBin, function () {
         GoEn();
       });
