@@ -967,6 +967,9 @@ JS_GetThreadId(JSContext *cx);
 extern JS_PUBLIC_API(void)
 JS_SetThreadId(JSContext *cx, const int32_t threadId);
 
+extern JS_PUBLIC_API(int)
+JS_SetRTGC(JSContext *cx, bool enabled);
+
 /* Microseconds since the epoch, midnight, January 1, 1970 UTC. */
 extern JS_PUBLIC_API(int64_t)
 JS_Now(void);

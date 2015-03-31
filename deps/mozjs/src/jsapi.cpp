@@ -143,6 +143,21 @@ JS_SetThreadId(JSContext *cx, const int32_t threadId)
     cx->threadId = threadId;
 }
 
+JS_PUBLIC_API(int)
+JS_SetRTGC(JSContext *cx, bool enabled)
+{
+    JSRuntime *rt = cx->runtime();
+    if (rt->mainThread.suppressGC == 0 && !enabled) return 0;
+
+    int pre = rt->mainThread.suppressGC;
+    if (enabled)
+      rt->mainThread.suppressGC++;
+    else
+      rt->mainThread.suppressGC--;
+
+    return pre;
+}
+
 JS_PUBLIC_API(int64_t)
 JS_Now()
 {
