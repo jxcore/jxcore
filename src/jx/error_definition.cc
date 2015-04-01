@@ -265,6 +265,16 @@ void OnFatalError(JSContext *JS_GET_STATE_MARKER(), const char *message,
   JS_LOCAL_VALUE current_exception;
   if (tt.HasCaught()) {
     current_exception = tt.Exception();
+
+    // check if the exception received from vm user context
+    node::commons *com = node::commons::getInstance();
+    if (com) {
+      JSContext* real_ctx = com->node_isolate->GetRaw();
+      if (__contextORisolate != real_ctx) {
+    	com->temp_exception_ = current_exception;
+    	return;
+      }
+    }
   } else if (JSREPORT_IS_WARNING(report->flags)) {
     return;  // internal warning (i.e. ASMJS)
   }

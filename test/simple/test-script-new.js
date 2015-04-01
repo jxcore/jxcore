@@ -32,7 +32,8 @@ try {
   error = e;
 }
 assert.ok(error);
-if(process.versions.v8)
+
+if(process.versions.v8 || error.message.indexOf('not defined') >= 0)
   assert.ok(error.message.indexOf('not defined') >= 0);
 else  
 {
@@ -47,7 +48,6 @@ hello = 5;
 script = new Script('hello = 2');
 script.runInNewContext();
 assert.equal(5, hello);
-
 
 common.debug('pass values in and out');
 code = 'foo = 1;' +

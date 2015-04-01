@@ -285,6 +285,7 @@ class commons {
   JS_PERSISTENT_FUNCTION_TEMPLATE ta_ft_cache[16];
   JS_PERSISTENT_FUNCTION_TEMPLATE dv_ft_cache;
 #elif defined(JS_ENGINE_MOZJS)
+  JS_HANDLE_VALUE temp_exception_;
   JS_PERSISTENT_FUNCTION JSObjectMaker_;
   JS_PERSISTENT_FUNCTION JSObjectLister_;
   JS_PERSISTENT_FUNCTION JSObjectNew_;

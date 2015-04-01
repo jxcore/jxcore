@@ -127,17 +127,21 @@ void CloneObject(JS_STATE_MARKER, JS_HANDLE_OBJECT recv,
       __contextORisolate,
       STD_TO_STRING(
           "(function(source, target) {\n"
-          "if(!target) target = global;\n"
-          "if(Array.isArray(source)){for(var o in "
-          "source){target[o]=source[o];}return;}\n"
+          "  if (!target) target = global;\n"
+          "    if (Array.isArray(source)) {\n"
+          "      for(var o in source) {\n"
+          "        target[o]=source[o];\n"
+          "      }\n"
+          "    return;\n"
+          "  }\n"
           "Object.getOwnPropertyNames(source).forEach(function(key) {\n"
-          "try {\n"
-          "var desc = Object.getOwnPropertyDescriptor(source, key);\n"
-          "if (desc.value === source) desc.value = target;\n"
-          "Object.defineProperty(target, key, desc);\n"
-          "} catch (e) {\n"
-          " // Catch sealed properties errors\n"
-          "}\n"
+          "  try {\n"
+          "    var desc = Object.getOwnPropertyDescriptor(source, key);\n"
+          "    if (desc.value === source) desc.value = target;\n"
+          "      Object.defineProperty(target, key, desc);\n"
+          "  } catch (e) {\n"
+          "     // Catch sealed properties errors\n"
+          "  }\n"
           "});\n"
           "})"),
       STD_TO_STRING("binding:script"), &global);
@@ -469,15 +473,15 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(
           ? JS_VALUE_TO_STRING(args.GetItem(filename_index))
           : STD_TO_STRING("evalmachine.<anonymous>");
 
-  JS_HANDLE_CONTEXT context;
+  JS_HANDLE_CONTEXT context = __contextORisolate;
   MozJS::Isolate *iso = NULL;
 
   if (context_flag == newContext || context_flag == userContext) {
     iso = JS_NEW_EMPTY_CONTEXT();
     context = iso->GetRaw();
-  } else {
-    context = __contextORisolate;
+    JS_SetErrorReporter(context, node::OnFatalError);
   }
+
   // Catch errors
   JS_TRY_CATCH(try_catch);
 
@@ -534,10 +538,10 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(
     mscript = jxcore::GetScriptMemory(__contextORisolate,
                                       script.GetRawScriptPointer());
   } else {
-	WrappedScript *n_script = ObjectWrap::Unwrap<WrappedScript>(_this);
-	if (!n_script) {
-	  THROW_EXCEPTION("Must be called as a method of Script.");
-	}
+    WrappedScript *n_script = ObjectWrap::Unwrap<WrappedScript>(_this);
+    if (!n_script) {
+      THROW_EXCEPTION("Must be called as a method of Script.");
+    }
 
     if (JS_IS_EMPTY((n_script->script_))) {
       THROW_EXCEPTION(
@@ -549,6 +553,7 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(
   }
 
   if (output_flag == returnResult) {
+	std::string ex_message = "", ex_stack = "";
     if (context_flag == userContext || context_flag == newContext) {
       JS_LOCAL_OBJECT sandbox_backup = JS_LOCAL_OBJECT(
           jxcore::NewTransplantObject(__contextORisolate), __contextORisolate);
@@ -565,6 +570,18 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(
       JS_LOCAL_OBJECT obj_fs(fake_sandbox, context);
       result = script_pr.Run(obj_fs);
 
+      if( !JS_IS_EMPTY(com->temp_exception_) ) {
+    	JS::RootedValue rt_ex(context, com->temp_exception_.GetRawValue());
+    	JS_LOCAL_VALUE msg_ = com->temp_exception_.Get("message");
+    	if(!msg_.IsEmpty())
+    	  ex_message += STRING_TO_STD(msg_);
+
+    	JS_LOCAL_VALUE stk_ = com->temp_exception_.Get("stack");
+		if(!stk_.IsEmpty())
+		  ex_stack += STRING_TO_STD(stk_);
+
+    	com->temp_exception_.Clear();
+      }
     } else {
       MozJS::Script script(jxcore::GetScript(context, mscript), context);
       result = script.Run();
@@ -579,10 +596,20 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(
         jxcore::JXString fname(filename);
         std::string str = "Uncaught exception at ";
         str += *fname;
+        if (ex_message.length() != 0) {
+          str += "\n\t";
+          str += ex_message;
+        }
 
         err_val = ENGINE_NS::Exception::Error(STD_TO_STRING(str.c_str()))
                       .GetErrorObject();
-        JS_NAME_SET(err_val, "stack", filename);
+
+        if (ex_stack.length() == 0) {
+          JS_NAME_SET(err_val, "stack", filename);
+        } else {
+          JS_LOCAL_STRING stack_str = UTF8_TO_STRING(ex_stack.c_str());
+          JS_NAME_SET(err_val, "stack", stack_str);
+        }
 
         THROW_EXCEPTION_OBJECT(err_val);
       }
@@ -594,7 +621,7 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(
       THROW_EXCEPTION_OBJECT(err_val);
     }
   } else {
-	result = _this;
+    result = _this;
     WrappedScript *n_script = ObjectWrap::Unwrap<WrappedScript>(_this);
     if (!n_script) {
       LEAVE_COMPARTMENT(false);
