@@ -17,6 +17,10 @@ class EngineHelper {
 
   static void FromJSString(const String &str, auto_str *out,
                            bool get_ascii = false);
+
+  static void FromJSString(const Value &str, auto_str *out,
+                             bool get_ascii = false);
+
   static void FromJSString(JSString *str, JSContext *ctx, auto_str *out,
                            bool get_ascii = false);
 

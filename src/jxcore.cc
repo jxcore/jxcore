@@ -230,10 +230,10 @@ void JXEngine::ParseArgs(int argc, char **argv) {
 #endif
       } else if (strcmp(arg, "--enable-ssl2") == 0) {
         node::SSL2_ENABLE = true;
-        argv[i] = const_cast<char*>("");
+        argv[i] = const_cast<char *>("");
       } else if (strcmp(arg, "--enable-ssl3") == 0) {
         node::SSL3_ENABLE = true;
-        argv[i] = const_cast<char*>("");
+        argv[i] = const_cast<char *>("");
       } else if (strcmp(arg, "--eval") == 0 || strcmp(arg, "-e") == 0 ||
                  strcmp(arg, "--print") == 0 || strcmp(arg, "-pe") == 0 ||
                  strcmp(arg, "-p") == 0) {
@@ -362,7 +362,8 @@ char **JXEngine::Init(int argc, char *argv[], bool engine_inited_already) {
 #if defined(JS_ENGINE_V8)
   if (!engine_inited_already) v8::V8::SetFatalErrorHandler(node::OnFatalError);
 #elif defined(JS_ENGINE_MOZJS)
-  JS_SetErrorReporter(main_node_->node_isolate->ctx_, node::OnFatalError);
+  JS_SetErrorReporter(main_node_->node_isolate->ctx_,
+                      node::OnFatalError);
 #endif
 
   if (!engine_inited_already) {
@@ -501,6 +502,7 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
     JS_engine_inited_ = true;
     v8::V8::Initialize();
   }
+  do {
 #elif defined(JS_ENGINE_MOZJS)
   bool was_inited = JS_engine_inited_;
   if (!JS_engine_inited_) {
@@ -524,100 +526,93 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
 
   JSContext *ctx = main_iso_.ctx_;
   JSRuntime *rt = JS_GetRuntime(ctx);
+  do {
+    JS_SetInterruptCallback(rt, JSEngineInterrupt);
+    JS_SetGCCallback(rt, GCOnMozJS, NULL);
 
-  JS_SetInterruptCallback(rt, JSEngineInterrupt);
-  JS_SetGCCallback(rt, GCOnMozJS, NULL);
-
-  Init(argc, argv_copy, was_inited);
+    Init(argc, argv_copy, was_inited);
 #endif
-  {
+    do {
 #ifdef JS_ENGINE_V8
-    v8::Locker locker;
-    v8::HandleScope handle_scope;
-    v8::Persistent<v8::Context> context = v8::Context::New();
-    v8::Context::Scope context_scope(context);
-    if (actual_thread_id == 0) {
-      main_node_->node_isolate = v8::Isolate::GetCurrent();
-      main_node_->setMainIsolate();
-    }
+      v8::Locker locker;
+      v8::HandleScope handle_scope;
+      v8::Persistent<v8::Context> context = v8::Context::New();
+      v8::Context::Scope context_scope(context);
+      if (actual_thread_id == 0) {
+        main_node_->node_isolate = v8::Isolate::GetCurrent();
+        main_node_->setMainIsolate();
+      }
 #elif defined(JS_ENGINE_MOZJS)
-    JSAutoRequest ar(ctx);
-    JS::RootedObject global(ctx, jxcore::NewGlobalObject(ctx));
-    assert(global != NULL);
-    JSAutoCompartment ac(ctx, global);
+      JSAutoRequest ar(ctx);
+      JS::RootedObject global(ctx, jxcore::NewGlobalObject(ctx));
+      assert(global != NULL);
+      JSAutoCompartment ac(ctx, global);
 #endif
 
-    node::SetupProcessObject(actual_thread_id);
-    JS_HANDLE_OBJECT process_l = main_node_->getProcess();
-    if (entry_file_name_.length() != 0) {
-      JS_DEFINE_STATE_MARKER(main_node_);
-      JS_NAME_SET(process_l, JS_STRING_ID("entry_file_name_"),
-                  STD_TO_STRING(entry_file_name_.c_str()));
-    }
+      node::SetupProcessObject(actual_thread_id);
+      JS_HANDLE_OBJECT process_l = main_node_->getProcess();
+      if (entry_file_name_.length() != 0) {
+        JS_DEFINE_STATE_MARKER(main_node_);
+        JS_NAME_SET(process_l, JS_STRING_ID("entry_file_name_"),
+                    STD_TO_STRING(entry_file_name_.c_str()));
+      }
 
 #ifdef JS_ENGINE_V8
-    v8_typed_array::AttachBindings(context->Global());
+      v8_typed_array::AttachBindings(context->Global());
 #endif
 
-    // Create all the objects, load modules, do everything.
-    // so your next reading stop should be node::Load()!
-    node::Load(process_l);
+      node::Load(process_l);
 
-    // All our arguments are loaded. We've evaluated all of the scripts. We
-    // might even have created TCP servers. Now we enter the main eventloop. If
-    // there are no watchers on the loop (except for the ones that were
-    // uv_unref'd) then this function exits. As long as there are active
-    // watchers, it blocks.
-    uv_run_jx(main_node_->loop, UV_RUN_DEFAULT, node::commons::CleanPinger, 0);
+      // All our arguments are loaded. We've evaluated all of the scripts. We
+      // might even have created TCP servers. Now we enter the main eventloop.
+      // If
+      // there are no watchers on the loop (except for the ones that were
+      // uv_unref'd) then this function exits. As long as there are active
+      // watchers, it blocks.
+      uv_run_jx(main_node_->loop, UV_RUN_DEFAULT, node::commons::CleanPinger,
+                0);
 
-    node::EmitExit(process_l);
+      node::EmitExit(process_l);
 
-    if (main_node_->threadId == 0 && getThreadCount() > 0)
-      WaitThreadExit(main_node_->loop);
+      if (main_node_->threadId == 0 && getThreadCount() > 0)
+        WaitThreadExit(main_node_->loop);
 
-    node::RunAtExit();
+      node::RunAtExit();
+
+      if (main_node_->threadId == 0) {
+        node::MemoryWrap::MapClear(true);
+        Job::removeTaskers();
+      }
+
+#ifdef JS_ENGINE_V8
+#ifndef NDEBUG
+      context.Dispose();
+#endif
+#endif
+    } while (0);
+#if defined HAVE_DTRACE || defined HAVE_ETW || defined HAVE_SYSTEMTAP
+    node::cleanUpDTrace();
+#endif
 
     if (main_node_->threadId == 0) {
-      node::MemoryWrap::MapClear(true);
-      Job::removeTaskers();
+      node::commons::process_status_ = node::JXCORE_INSTANCE_EXITED;
+    } else {
+      main_node_->instance_status_ = node::JXCORE_INSTANCE_EXITED;
     }
 
-#ifdef JS_ENGINE_V8
-#ifndef NDEBUG
-    context.Dispose();
-#endif
-#endif
-  }
-#if defined HAVE_DTRACE || defined HAVE_ETW || defined HAVE_SYSTEMTAP
-  node::cleanUpDTrace();
-#endif
+    if (main_node_->threadId == 0) {
+      node::commons::threadPoolCount = 0;
+    }
+
+    main_node_->Dispose();
+    delete main_node_;
+  } while (0);
 
 #ifdef JS_ENGINE_V8
 #ifndef NDEBUG
-  // Clean up. Not strictly necessary.
-  V8::Dispose();
-  main_node_->Dispose();
+    // Clean up. Not strictly necessary.
+    V8::Dispose();
 #endif  // NDEBUG
-#elif defined(JS_ENGINE_MOZJS)
-  main_node_->Dispose();
-  JS_DestroyContext(ctx);
-  if (main_node_->threadId == 0)
-    node::commons::process_status_ = node::JXCORE_INSTANCE_EXITED;
-  else
-    main_node_->instance_status_ = node::JXCORE_INSTANCE_EXITED;
-
-  // SM can't do GC under GC. we need the destroy other contexts separately
-  std::list<JSContext *>::iterator itc = main_node_->free_context_list_.begin();
-
-  while (itc != main_node_->free_context_list_.end()) {
-    JSContext *ctx_sub = *itc;
-    JS_DestroyContext(*itc);
-    itc++;
-  }
-  main_node_->free_context_list_.clear();
-
-  JS_DestroyRuntime(rt);
-  main_iso_.Dispose();
 #endif
 
   LeaveScope();
@@ -627,11 +622,6 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
 
   jx_engine_map::iterator it = jx_engine_instances.find(actual_thread_id);
   if (it != jx_engine_instances.end()) jx_engine_instances.erase(it);
-
-  if (main_node_->threadId == 0) {
-    node::commons::threadPoolCount = 0;
-  }
-  delete main_node_;
 }
 
 void DeclareProxy(node::commons *com, JS_HANDLE_OBJECT_REF methods,
@@ -740,9 +730,8 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
   JS::RootedObject global(ctx, jxcore::NewGlobalObject(ctx));
   assert(global != NULL);
   jscomp_ = JS_EnterCompartment(ctx, global);
-
-  JS_LOCAL_OBJECT global_object(global, ctx);
-  global_ = JS_NEW_PERSISTENT_OBJECT(global_object);
+  global_ = new MozJS::Value(global, ctx);
+  global_->AddRoot();
 
   node::SetupProcessObject(actual_thread_id);
   JS_HANDLE_OBJECT process_l = main_node_->getProcess();
@@ -769,74 +758,84 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
 }
 
 void JXEngine::Destroy() {
-  if (jx_engine_instances.size() == 1)
-    node::commons::process_status_ = node::JXCORE_INSTANCE_EXITING;
-  else {
-    // do not destroy the initial JXcore instance before others
-    // JavaScript Runtimes are related to each other and the first JSRT
-    // is the parent of all the others
-    assert(threadId_ != 0 &&
-           "First instance can not be destroyed before others");
-    main_node_->instance_status_ = node::JXCORE_INSTANCE_EXITING;
-  }
-  EnterScope();
-
-  JS_HANDLE_OBJECT process_l = main_node_->getProcess();
   JSContext *ctx = main_iso_.ctx_;
   JSRuntime *rt = JS_GetRuntime(ctx);
+  {
+    if (jx_engine_instances.size() == 1)
+      node::commons::process_status_ = node::JXCORE_INSTANCE_EXITING;
+    else {
+      // do not destroy the initial JXcore instance before others
+      // JavaScript Runtimes are related to each other and the first JSRT
+      // is the parent of all the others
+      assert(threadId_ != 0 &&
+             "First instance can not be destroyed before others");
+      main_node_->instance_status_ = node::JXCORE_INSTANCE_EXITING;
+    }
+    EnterScope();
 
-  node::EmitExit(process_l);
+    JS_HANDLE_OBJECT process_l = main_node_->getProcess();
 
-  // wait for the internal task threads
-  // an app can have either task threads or embedded threads
-  // as a result, any thread with id bigger than 0 can't have
-  // task threads.
-  if (main_node_->threadId == 0 && getThreadCount() > 0)
-    WaitThreadExit(main_node_->loop);
+    node::EmitExit(process_l);
 
-  node::RunAtExit();
+    // wait for the internal task threads
+    // an app can have either task threads or embedded threads
+    // as a result, any thread with id bigger than 0 can't have
+    // task threads.
+    if (main_node_->threadId == 0 && getThreadCount() > 0)
+      WaitThreadExit(main_node_->loop);
 
-  // clean task thread related data
-  if (main_node_->threadId == 0) {
-    node::MemoryWrap::MapClear(true);
-    Job::removeTaskers();
+    node::RunAtExit();
+
+    // clean task thread related data
+    if (main_node_->threadId == 0) {
+      node::MemoryWrap::MapClear(true);
+      Job::removeTaskers();
+    }
+
+    JS_DEFINE_STATE_MARKER(main_node_);
+
+    global_->RemoveRoot();
+
+    // clean persistent stuff
+    main_node_->Dispose();
+
+    JS_LeaveCompartment(ctx, jscomp_);
+    JS_EndRequest(ctx);
+
+    delete global_;
+
+    // do not destroy last context or runtime.
+    // we use main runtime as a parent for all the others.
+    if (jx_engine_instances.size() == 1)
+      node::commons::process_status_ = node::JXCORE_INSTANCE_EXITED;
+    else {
+      main_node_->instance_status_ = node::JXCORE_INSTANCE_EXITED;
+      JS_DestroyContext(ctx);
+    }
+
+    // SM can't do GC under GC. we need the destroy other contexts separately
+    std::list<JSContext *>::iterator itc =
+        main_node_->free_context_list_.begin();
+
+    while (itc != main_node_->free_context_list_.end()) {
+      JSContext *ctx_sub = *itc;
+      JS_DestroyContext(*itc);
+      itc++;
+    }
+    main_node_->free_context_list_.clear();
+
+    delete main_node_;
   }
 
-  JS_DEFINE_STATE_MARKER(main_node_);
+  if (node::commons::process_status_ != node::JXCORE_INSTANCE_EXITED)
+    JS_DestroyRuntime(rt);
 
-  global_->RemoveRoot();
-
-  // clean persistent stuff
-  main_node_->Dispose();
-
-  JS_LeaveCompartment(ctx, jscomp_);
-  JS_EndRequest(ctx);
-  JS_DestroyContext(ctx);
-
-  if (jx_engine_instances.size() == 1)
-    node::commons::process_status_ = node::JXCORE_INSTANCE_EXITED;
-  else
-    main_node_->instance_status_ = node::JXCORE_INSTANCE_EXITED;
-
-  // SM can't do GC under GC. we need the destroy other contexts separately
-  std::list<JSContext *>::iterator itc = main_node_->free_context_list_.begin();
-
-  while (itc != main_node_->free_context_list_.end()) {
-    JSContext *ctx_sub = *itc;
-    JS_DestroyContext(*itc);
-    itc++;
-  }
-  main_node_->free_context_list_.clear();
-
-  JS_DestroyRuntime(rt);
+  main_iso_.Dispose();
 
   LeaveScope();
 
   jx_engine_map::iterator it = jx_engine_instances.find(main_node_->threadId);
   if (it != jx_engine_instances.end()) jx_engine_instances.erase(it);
-
-  main_iso_.Dispose();
-  delete main_node_;
 }
 #endif
 
@@ -1067,16 +1066,6 @@ JS_HANDLE_VALUE JX_Parse(node::commons *com, const char *str,
 
   return JS_LEAVE_SCOPE(result);
 }
-
-// For MozJS implementation, JXString memory is managed by SpiderMonkey.
-// In order not to call strdup on JSON, and String return types, below will
-// use SM interface for other types to make it consistent.
-#ifdef JS_ENGINE_V8
-#define ALLOC_MEMORY(type, size) (type *) malloc(sizeof(type) * size)
-#elif defined(JS_ENGINE_MOZJS)
-#define ALLOC_MEMORY(type, size) \
-  (type *) JS_malloc(__contextORisolate, sizeof(type) * size)
-#endif
 
 #define SET_UNDEFINED(to_)   \
   to_->type_ = RT_Undefined; \

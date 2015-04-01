@@ -41,6 +41,28 @@ class String;
 JX_AUTO_POINTER(auto_str, char);
 JX_AUTO_POINTER(auto_jschar, char16_t);
 
+class SuppressGC {
+  JSContext *ctx_;
+  bool disposed_;
+
+ public:
+  SuppressGC(JSContext *cx) : ctx_(cx) {
+    JS_SetRTGC(cx, true);
+    disposed_ = false;
+  }
+
+  int Dispose() {
+    disposed_ = true;
+    return JS_SetRTGC(ctx_, false);
+  }
+
+  ~SuppressGC() {
+    if (!disposed_) {
+      JS_SetRTGC(ctx_, false);
+    }
+  }
+};
+
 class StringTools {
  public:
   static JSString *JS_ConvertToJSString(JSContext *cx, const char *source,
@@ -57,6 +79,16 @@ class StringTools {
 class Value;
 typedef void (*JS_FINALIZER_METHOD)(Value &val, void *data);
 
+struct _ValueData {
+  JSContext *ctx_;
+  JS::Value value_;
+  bool empty_;
+  bool fake_rooting_;
+  bool is_exception_;
+};
+
+typedef struct _ValueData ValueData;
+
 class Value {
   friend class StringTools;
   friend class Script;
@@ -68,7 +100,7 @@ class Value {
   bool rooted_;
   bool empty_;
   bool fake_rooting_;
-  JS::Value value_;
+  JS::Heap<JS::Value> value_;
 
  public:
   JSContext *ctx_;
@@ -79,6 +111,7 @@ class Value {
   Value(const Value &value, bool rooted);
   Value(const Value &value);
   Value &operator=(const Value &value);
+  Value &operator=(const ValueData &value);
 
   ~Value();
 
@@ -89,7 +122,7 @@ class Value {
 
   void AddRoot();
   void RemoveRoot();
-  Value RootCopy();
+  ValueData RootCopy();
   void MakeWeak(void *_ = NULL, JS_FINALIZER_METHOD method = NULL);
   void ClearWeak();
   void Clear();
@@ -142,6 +175,7 @@ class Value {
   inline JS::Value GetRawValue() { return value_; }
 
   inline JSObject *GetRawObjectPointer() const {
+    if (empty_) return nullptr;
     if (value_.isObject())
       return value_.toObjectOrNull();
     else
@@ -149,9 +183,9 @@ class Value {
   }
 
   inline JSString *GetRawStringPointer() const {
-    JS::RootedValue rt_value_(ctx_, value_);
-
-    return JS::ToString(ctx_, rt_value_);
+    if (empty_) return nullptr;
+    JS::RootedValue rv(ctx_, value_);
+    return JS::ToString(ctx_, rv);
   }
 
   void SetIndexedPropertiesToExternalArrayData(void *data, const int data_type,
@@ -195,8 +229,7 @@ class Value {
   bool SetIndex(const int index, const Value &val);
   bool SetIndex(const int index, JS::HandleValue val);
 
-  bool DefineGetterSetter(const String &_name, JSPropertyOp getter,
-                          JSStrictPropertyOp setter,
+  bool DefineGetterSetter(const String &_name, JSPropertyOp getter, JSStrictPropertyOp setter,
                           const Value &initial_value);
 
   bool DeleteProperty(const String &_name);
@@ -254,12 +287,7 @@ class String : public Value {
   static String FromSTD(JSContext *ctx, const uint16_t *str, const int len);
 
   String &operator=(const String &value);
-
-  String RootCopy() {
-	String str = *this;
-    str.fake_rooting_ = true;
-    return str;
-  }
+  String &operator=(const ValueData &value);
 };
 
 class Script {
@@ -300,7 +328,7 @@ class Script {
   JSScript *GetRawScriptPointer() { return value_; }
 
   Script RootCopy() {
-	Script scr = *this;
+    Script scr = *this;
     scr.fake_rooting_ = true;
     return scr;
   }

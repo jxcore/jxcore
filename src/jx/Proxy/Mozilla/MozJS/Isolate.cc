@@ -9,7 +9,7 @@ namespace MozJS {
 Isolate* Isolates[JXCORE_MAX_THREAD_COUNT] = {NULL};
 JSRuntime* runtimes[JXCORE_MAX_THREAD_COUNT] = {NULL};
 
-int threadIds[65] = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12,
+static int threadIds[65] = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12,
                      13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
                      26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
                      39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
@@ -34,6 +34,7 @@ Isolate* Isolate::GetCurrent() { return Isolates[GetThreadId()]; }
 Isolate* Isolate::New(int threadId) {  // for_thread is true only for initial
                                        // context
   const bool for_thread = threadId != -1;
+  JSRuntime *rt;
 
   if (for_thread) {
     if (runtimes[threadId] != NULL) {
@@ -43,26 +44,32 @@ Isolate* Isolate::New(int threadId) {  // for_thread is true only for initial
 
     if (threadId == 0)
       runtimes[threadId] =
-          JS_NewRuntime(64L * 1024L * 1024L, 8L * 1024L * 1024L);
+          JS_NewRuntime(64L * 1024L * 1024L, 2L * 1024L * 1024L);
     else
       runtimes[threadId] =
-          JS_NewRuntime(64L * 1024L * 1024L, 8L * 1024L * 1024L, runtimes[0]);
+          JS_NewRuntime(64L * 1024L * 1024L, 2L * 1024L * 1024L, runtimes[0]);
 
-    assert(runtimes[threadId] != NULL);
+    rt = runtimes[threadId];
+    assert(rt != NULL);
 
-    JS_SetRuntimePrivate(runtimes[threadId], &threadIds[threadId]);
+    JS_SetRuntimePrivate(rt, &threadIds[threadId]);
 
-    JS_SetGCParameter(runtimes[threadId], JSGC_MAX_BYTES, 0xffffffff);
-    JS_SetNativeStackQuota(runtimes[threadId], 256 * sizeof(size_t) * 1024);
-    JS_SetGCParameter(runtimes[threadId], JSGC_MODE, JSGC_MODE_INCREMENTAL);
-    JS_SetDefaultLocale(runtimes[threadId], "UTF-8");
+    JS_SetGCParameter(rt, JSGC_MAX_BYTES, 0xffffffff);
+    JS_SetNativeStackQuota(rt, 256 * sizeof(size_t) * 1024);
+    JS_SetGCParameter(rt, JSGC_MODE, JSGC_MODE_INCREMENTAL);
+    JS_SetDefaultLocale(rt, "UTF-8");
 
-#if !defined(__ANDROID__) && !defined(__IOS__)
-    JS_SetGCParametersBasedOnAvailableMemory(runtimes[threadId], 513);
-#endif
+    // use incremental GC in case of low resources.
+    JS_SetGCParameter(rt, JSGC_DYNAMIC_HEAP_GROWTH, 1);
+	JS_SetGCParameter(rt, JSGC_DYNAMIC_MARK_SLICE, 1);
+	JS_SetGCParameter(rt, JSGC_SLICE_TIME_BUDGET, 10);
+
+//#if !defined(__ANDROID__) && !defined(__IOS__)
+//    JS_SetGCParametersBasedOnAvailableMemory(rt, 513);
+//#endif
 
 #ifndef __IOS__
-    JS::RuntimeOptionsRef(runtimes[threadId])
+    JS::RuntimeOptionsRef(rt)
         .setBaseline(true)
         .setIon(true)
         .setAsmJS(true)
@@ -70,9 +77,9 @@ Isolate* Isolate::New(int threadId) {  // for_thread is true only for initial
 #endif
   } else {
     threadId = GetThreadId();
+    rt = runtimes[threadId];
   }
 
-  JSRuntime* rt = runtimes[threadId];
   JSContext* ctx = JS_NewContext(rt, 32 * 1024);
 
   assert(ctx != NULL);

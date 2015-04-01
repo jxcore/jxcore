@@ -112,13 +112,14 @@ Script Script::Compile(JSContext *cx, const Value &hst,
 
   JS::RootedObject host(cx, hst.value_.toObjectOrNull());
   JS::RootedScript rs(cx);
+  JS::MutableHandle<JSScript *> mrs(&rs);
 
   if (!JS_CompileUCScriptJX(cx, host, source.str_, source.length_, filename, 1,
-                            for_asm_js, &rs)) {
+                            for_asm_js, mrs)) {
     return script;
   }
 
-  script.value_ = rs;
+  script.value_ = mrs.get();
   script.empty_ = false;
 
   return script;
@@ -133,17 +134,19 @@ Script Script::Compile(JSContext *cx, const Value &hst, const auto_str &source,
 
   JS::RootedObject host(cx, hst.value_.toObjectOrNull());
   JS::RootedScript rs(cx);
+  JS::MutableHandle<JSScript *> mrs(&rs);
   {
     JSAutoCompartment ac(cx, host);
     JS::CompileOptions compile_options(cx);
     compile_options.setFileAndLine(filename, 1);
     compile_options.setCompileAndGo(false);
 
-    JS_CompileScript(cx, host, source.str_, source.length_, compile_options,
-                     &rs);
+    if (!JS_CompileScript(cx, host, source.str_, source.length_,
+                          compile_options, mrs))
+      return script;
   }
 
-  script.value_ = rs;
+  script.value_ = mrs.get();
   if (!script.value_) {
     return script;
   }
@@ -181,17 +184,21 @@ Value Script::Run(const Value &host_object_) {
   JSCompartment *jsco = JS_EnterCompartment(ctx_, hst);
   JS::RootedObject host(ctx_, hst);
 
-  Value result(Value::NewEmptyObject(ctx_), ctx_);
+  Value result;
+  result.ctx_ = ctx_;
 
   JS::RootedScript rs_scr(ctx_, value_);
   JS::RootedValue rv_res(ctx_, result.value_);
-  if (!JS_ExecuteScript(ctx_, host, rs_scr, &rv_res)) {
-    result.value_ = rv_res;
+  JS::MutableHandle<JS::Value> mt_res(&rv_res);
+
+  if (!JS_ExecuteScript(ctx_, host, rs_scr, mt_res)) {
+    result.value_ = mt_res.get();
     result.empty_ = true;
     goto ret_urn;
   }
 
-  result.value_ = rv_res;
+  result.empty_ = false;
+  result.value_ = mt_res.get();
 
 ret_urn:
   JS_LeaveCompartment(ctx_, jsco);
@@ -213,17 +220,19 @@ Value::Value() {
 
 Value::Value(const JS::Value &value, JSContext *ctx, bool rooted) {
   value_ = value;
-  rooted_ = rooted;
   empty_ = false;
   ctx_ = ctx;
   if (rooted) {
-    JS::AddValueRootOLD(ctx, &value_);
+    AddRoot();
+  } else {
+    rooted_ = false;
   }
   fake_rooting_ = false;
   is_exception_ = false;
 }
 
-Value::Value(const Value &value) : value_(value.value_) {
+Value::Value(const Value &value) {
+  value_ = value.value_;
   rooted_ = false;
   empty_ = value.empty_;
   ctx_ = value.ctx_;
@@ -233,12 +242,12 @@ Value::Value(const Value &value) : value_(value.value_) {
 
 Value::Value(const Value &value, bool rooted) {
   value_ = value.value_;
-  rooted_ = rooted;
   empty_ = value.empty_;
   ctx_ = value.ctx_;
   if (rooted) {
-    assert(!empty_);
-    JS::AddValueRootOLD(value.ctx_, &value_);
+    AddRoot();
+  } else {
+    rooted_ = false;
   }
   fake_rooting_ = false;
   is_exception_ = false;
@@ -253,10 +262,7 @@ bool Value::IsArray() const {
   EMPTY_RETURN();
   if (value_.isNullOrUndefined() || !value_.isObject()) return false;
 
-  JS::RootedObject obj(ctx_);
-  JS::RootedValue rt_value_(ctx_, value_);
-  if (!JS_ValueToObject(ctx_, rt_value_, &obj)) return false;
-
+  JS::RootedObject obj(ctx_, value_.toObjectOrNull());
   return JS_IsArrayObject(ctx_, obj);
 }
 
@@ -276,9 +282,7 @@ bool Value::IsDate() const {
   EMPTY_RETURN();
   if (value_.isNullOrUndefined() || !value_.isObject()) return false;
 
-  JS::RootedObject obj(ctx_);
-  JS::RootedValue rt_value_(ctx_, value_);
-  if (!JS_ValueToObject(ctx_, rt_value_, &obj)) return false;
+  JS::RootedObject obj(ctx_, value_.toObjectOrNull());
   return JS_ObjectIsDate(ctx_, obj);
 }
 
@@ -350,13 +354,10 @@ bool Value::IsObject() const {
 bool Value::IsRegExp() const {
   EMPTY_RETURN();
 
-  if (!value_.isObject()) return false;
+  if (value_.isNullOrUndefined() || !value_.isObject()) return false;
 
-  JSObject *obj = value_.toObjectOrNull();
-  if (obj == nullptr) return false;
-
-  JS::RootedObject rt_obj(ctx_, obj);
-  return JS_ObjectIsRegExp(ctx_, rt_obj);
+  JS::RootedObject obj(ctx_, value_.toObjectOrNull());
+  return JS_ObjectIsRegExp(ctx_, obj);
 }
 
 bool Value::IsString() const {
@@ -382,6 +383,8 @@ bool Value::Equals(Value *that) const {
 }
 
 int32_t Value::Int32Value() {
+  if (empty_) return 0;
+
   if (value_.isInt32()) {
     return value_.toInt32();
   } else if (value_.isNumber()) {
@@ -416,6 +419,8 @@ int64_t Value::IntegerValue() {
 }
 
 bool Value::BooleanValue() {
+  if (empty_) return false;
+
   if (value_.isBoolean())
     return value_.toBoolean();
   else if (value_.isNumber())
@@ -425,6 +430,8 @@ bool Value::BooleanValue() {
 }
 
 double Value::NumberValue() {
+  if (empty_) return 0;
+
   if (value_.isNumber())
     return value_.toNumber();
   else if (value_.isBoolean())
@@ -440,33 +447,43 @@ double Value::NumberValue() {
   return 0;
 }
 
-String Value::ToString() {
-  Value &_this = *this;
-  return String(_this);
-}
+String Value::ToString() { return String(*this); }
 
-#define DEFINE_OPERATOR(left, right)                      \
-  left &left::operator=(const right &value) {             \
-    value_ = value.value_;                                \
-    rooted_ = value.fake_rooting_;                        \
-    empty_ = value.empty_;                                \
-    ctx_ = value.ctx_;                                    \
-    is_exception_ = value.is_exception_;                  \
-    if (empty_) {                                         \
-      rooted_ = false;                                    \
-    } else if (rooted_) {                                 \
-      rooted_ = JS::AddValueRootOLD(value.ctx_, &value_); \
-    }                                                     \
-    fake_rooting_ = false;                                \
-    return *this;                                         \
+#define DEFINE_OPERATOR(left, right)          \
+  left &left::operator=(const right &value) { \
+    value_ = value.value_;                    \
+    rooted_ = value.fake_rooting_;            \
+    empty_ = value.empty_;                    \
+    ctx_ = value.ctx_;                        \
+    is_exception_ = value.is_exception_;      \
+    if (empty_) {                             \
+      rooted_ = false;                        \
+    } else if (rooted_) {                     \
+      rooted_ = false;                        \
+      AddRoot();                              \
+    }                                         \
+    fake_rooting_ = false;                    \
+    return *this;                             \
   }
 
 DEFINE_OPERATOR(Value, Value)
 DEFINE_OPERATOR(String, String)
+DEFINE_OPERATOR(Value, ValueData)
+DEFINE_OPERATOR(String, ValueData)
+
+ValueData Value::RootCopy() {
+  ValueData val;
+  val.ctx_ = ctx_;
+  val.empty_ = empty_;
+  val.is_exception_ = is_exception_;
+  val.value_ = value_;
+  val.fake_rooting_ = true;
+  return val;
+}
 
 void Value::AddRoot() {
   if (!rooted_ && !empty_) {
-    rooted_ = JS::AddValueRootOLD(ctx_, &value_);
+    rooted_ = JS::AddNamedValueRootRT(JS_GetRuntime(ctx_), &value_, nullptr);
   }
 }
 
@@ -474,14 +491,20 @@ void Value::RemoveRoot() {
   if (rooted_ && !empty_) {
     rooted_ = false;
     if (!EngineHelper::IsInstanceAlive(ctx_)) return;
-    JS::RemoveValueRootOLD(ctx_, &value_);
+    jsval tmp = value_;
+    JS::RemoveValueRootRT(JS_GetRuntime(ctx_), &value_);
+    value_ = tmp;
   }
 }
 
 #define INNER_VALUE_TO_OBJECT(name, force_unroot) \
   JS::RootedObject name##rt(ctx_);                \
-  JS::RootedValue value__(ctx_, value_);          \
-  JS_ValueToObject(ctx_, value__, &name##rt);     \
+  if (value_.isObject()) {                        \
+    name##rt = value_.toObjectOrNull();           \
+  } else {                                        \
+    JS::RootedValue rv(ctx_, value_);             \
+    JS_ValueToObject(ctx_, rv, &name##rt);        \
+  }                                               \
   JSObject *name = name##rt
 
 void Value::SetPrivate(void *data) {
@@ -592,6 +615,23 @@ Value Value::Null(JSContext *ctx) {
   return Value(val, ctx);
 }
 
+struct ObjectStore {
+ public:
+  void *extData_;
+  uint32_t extLength_;
+  int extType_;
+};
+
+void indexed_finalize(JSFreeOp *fop, JSObject *obj) {
+  if (JS_HasPrivate(obj)) {
+    void *ptr = JS_GetPrivate(obj);
+    if (ptr != nullptr) {
+      ObjectStore *store = (ObjectStore *)ptr;
+      delete store;
+    }
+  }
+}
+
 static JSClass empty_class_definition = {
     "JXObject",
     JSCLASS_HAS_PRIVATE | JSCLASS_HAS_RESERVED_SLOTS(JS_OBJECT_SLOT_COUNT) |
@@ -615,28 +655,26 @@ static JSClass empty_reserved_definition = {
     0,                     0,                   0,
     0,                     0};
 
-struct ObjectStore {
- public:
-  void *extData_;
-  uint32_t extLength_;
-  int extType_;
-};
-
-void indexed_finalize(JSFreeOp *fop, JSObject *obj) {
-  if (JS_HasPrivate(obj)) {
-    void *ptr = JS_GetPrivate(obj);
-    if (ptr != nullptr) {
-      ObjectStore *store = (ObjectStore *)ptr;
-      delete store;
-    }
-  }
-}
-
 static JSClass index_reserved_definition = {
     "QJXIndexed",          JSCLASS_HAS_PRIVATE, JS_PropertyStub,
     JS_DeletePropertyStub, JS_PropertyStub,     JS_StrictPropertyStub,
     JS_EnumerateStub,      JS_ResolveStub,      JS_ConvertStub,
     indexed_finalize,      0,                   0,
+    0,                     0};
+
+static JSClass empty_prop_definition = {
+    "JXPropObject",
+    JSCLASS_HAS_PRIVATE | JSCLASS_HAS_RESERVED_SLOTS(JS_OBJECT_SLOT_COUNT) |
+        JSCLASS_NEW_RESOLVE,
+    JS_PropertyStub, JS_DeletePropertyStub, JS_PropertyStub,
+    JS_StrictPropertyStub, JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub,
+    Value::empty_finalize, 0, 0, 0, 0};
+
+static JSClass constructor_class_definition = {
+    "NativeFunction",      JSCLASS_HAS_PRIVATE, JS_PropertyStub,
+    JS_DeletePropertyStub, JS_PropertyStub,     JS_StrictPropertyStub,
+    JS_EnumerateStub,      JS_ResolveStub,      JS_ConvertStub,
+    NULL,                  0,                   0,
     0,                     0};
 
 void Value::SetIndexedPropertiesToExternalArrayData(void *data,
@@ -648,9 +686,9 @@ void Value::SetIndexedPropertiesToExternalArrayData(void *data,
 
   ObjectStore *store = nullptr;
   if (!this->Has(JXCORE_INDEXED_NAME)) {
-    MozJS::Value index_ref(JS_NewObject(ctx_, &index_reserved_definition,
-                                        JS::NullPtr(), JS::NullPtr()),
-                           ctx_);
+    JSObject *jsobj = JS_NewObject(ctx_, &index_reserved_definition,
+                                   JS::NullPtr(), JS::NullPtr());
+    MozJS::Value index_ref(jsobj, ctx_);
 
     store = new ObjectStore();
     index_ref.SetPrivate(store);
@@ -751,8 +789,7 @@ bool Value::HasInstance(const Value &val) {
   const JSClass *csp = JS_GetClass(object_);
   if (csp == NULL) return false;
 
-  bool res = JS_InstanceOf(ctx_, rv_obj, csp, NULL);
-  return res;
+  return JS_InstanceOf(ctx_, rv_obj, csp, NULL);
 }
 
 bool Value::StrictEquals(const Value &val) {
@@ -767,17 +804,8 @@ void Value::ToSTDString(auto_str *out) const {
   if (!value_.isString()) {
     return;
   }
-  String str;
-  str.ctx_ = ctx_;
-  str.value_ = value_;
-  str.empty_ = false;
-  EngineHelper::FromJSString(str, out);
-}
 
-Value Value::RootCopy() {
-  Value val = *this;
-  val.fake_rooting_ = true;
-  return val;
+  EngineHelper::FromJSString(value_.toString(), ctx_, out);
 }
 
 void Value::MakeWeak(void *_, JS_FINALIZER_METHOD method) {
@@ -792,7 +820,7 @@ void Value::ClearWeak() { AddRoot(); }
 
 void Value::Clear() {
   if (empty_) return;
-  value_ = JSVAL_VOID;
+  value_ = JS::UndefinedValue();
   empty_ = true;
 }
 
@@ -801,11 +829,12 @@ void Value::Dispose() { RemoveRoot(); }
 // STRING
 String::String(JSString *obj, JSContext *ctx, bool rooted) {
   value_ = JS::StringValue(obj);
-  rooted_ = rooted;
   ctx_ = ctx;
   empty_ = false;
   if (rooted) {
-    JS::AddValueRootOLD(ctx_, &value_);
+    AddRoot();
+  } else {
+    rooted_ = false;
   }
   fake_rooting_ = false;
   is_exception_ = false;
@@ -813,11 +842,12 @@ String::String(JSString *obj, JSContext *ctx, bool rooted) {
 
 String::String(const JS::Value &val, JSContext *ctx, bool rooted) {
   value_ = val;
-  rooted_ = rooted;
   ctx_ = ctx;
   empty_ = false;
   if (rooted) {
-    JS::AddValueRootOLD(ctx_, &value_);
+    AddRoot();
+  } else {
+    rooted_ = false;
   }
   fake_rooting_ = false;
   is_exception_ = false;
@@ -825,12 +855,13 @@ String::String(const JS::Value &val, JSContext *ctx, bool rooted) {
 
 String::String(JSContext *ctx, const char *str, const int len, bool rooted) {
   ctx_ = ctx;
-  String _str = String::FromSTD(ctx, str, len);
-  value_ = _str.value_;
-  rooted_ = rooted;
+  JSString *jsstr = JS_NewStringCopyN(ctx, str, len != 0 ? len : strlen(str));
+  value_ = JS::StringValue(jsstr);
   empty_ = false;
   if (rooted) {
-    JS::AddValueRootOLD(ctx_, &value_);
+    AddRoot();
+  } else {
+    rooted_ = false;
   }
   fake_rooting_ = false;
   is_exception_ = false;
@@ -904,13 +935,13 @@ String String::FromSTD(JSContext *ctx, const uint16_t *str, const int len) {
 
 Value::Value(JSObject *obj, JSContext *ctx, bool rooted) {
   assert(obj != NULL);
-
   value_ = JS::ObjectOrNullValue(obj);
   ctx_ = ctx;
   empty_ = false;
-  rooted_ = rooted;
   if (rooted) {
-    JS::AddValueRootOLD(ctx_, &value_);
+    AddRoot();
+  } else {
+    rooted_ = false;
   }
   fake_rooting_ = false;
   is_exception_ = false;
@@ -932,8 +963,10 @@ void Value::empty_finalize(JSFreeOp *fop, JSObject *obj) {
 
         int *tid = (int *)JS_GetRuntimePrivate(fop->runtime());
         JSContext *ctx = Isolate::GetByThreadId(*tid)->GetRaw();
-        jsval val = JS::ObjectOrNullValue(robj);
-        JS::RemoveValueRootOLD(ctx, &val);
+
+        JS::Heap<JS::Value> hval;
+        hval = JS::ObjectOrNullValue(robj);
+        JS::RemoveValueRootRT(JS_GetRuntime(ctx), &hval);
       }
     }
   }
@@ -1014,9 +1047,11 @@ void Value::SetFinalizer(JS_FINALIZER_METHOD method) {
   objectFinalizer->target = method;
   JS_SetPrivate(reserved_obj, objectFinalizer);
 
-  jsval rval = JS::ObjectOrNullValue(reserved_obj);
-  JS::AddValueRootOLD(ctx_, &rval);
-  JS_SetReservedSlot(object_, GC_SLOT_GC_CALL, rval);
+  JS::Heap<JS::Value> hval;
+  hval = JS::ObjectOrNullValue(reserved_obj);
+
+  JS::AddNamedValueRoot(ctx_, &hval, nullptr);
+  JS_SetReservedSlot(object_, GC_SLOT_GC_CALL, hval);
 }
 
 void Value::SetGlobalFinalizer(JSFinalizeOp method) {
@@ -1027,21 +1062,6 @@ JSObject *Value::NewEmptyObject(JSContext *ctx) {
   return JS_NewObject(ctx, &empty_class_definition, JS::NullPtr(),
                       JS::NullPtr());
 }
-
-static JSClass empty_prop_definition = {
-    "JXPropObject",
-    JSCLASS_HAS_PRIVATE | JSCLASS_HAS_RESERVED_SLOTS(JS_OBJECT_SLOT_COUNT) |
-        JSCLASS_NEW_RESOLVE,
-    JS_PropertyStub, JS_DeletePropertyStub, JS_PropertyStub,
-    JS_StrictPropertyStub, JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub,
-    Value::empty_finalize, 0, 0, 0, 0};
-
-static bool resolver_(JSContext *__contextORisolate, JS::HandleObject ___obj,
-                      JS::HandleId ___id) {
-  return true;
-}
-
-static bool enumer_(JSContext *cx, JS::HandleObject obj) { return true; }
 
 JSObject *Value::NewEmptyPropertyObject(JSContext *ctx, JSPropertyOp add_get,
                                         JSStrictPropertyOp set,
@@ -1068,13 +1088,13 @@ JSObject *Value::NewEmptyPropertyObject(JSContext *ctx, JSPropertyOp add_get,
   if (enumerate != NULL) {
     emp->enumerate = enumerate;
   } else {
-    emp->enumerate = enumer_;
+    emp->enumerate = JS_EnumerateStub;
   }
 
   if (resolve != NULL) {
     emp->resolve = resolve;
   } else {
-    emp->resolve = resolver_;
+    emp->resolve = JS_ResolveStub;
   }
 
   JSObject *obj = JS_NewObject(ctx, emp, JS::NullPtr(), JS::NullPtr());
@@ -1084,8 +1104,9 @@ JSObject *Value::NewEmptyPropertyObject(JSContext *ctx, JSPropertyOp add_get,
 
   JS_SetPrivate(reserved_obj, emp);
 
-  jsval rval = JS::ObjectOrNullValue(reserved_obj);
-  JS::AddValueRootOLD(ctx, &rval);
+  JS::Heap<JS::Value> rval;
+  rval = JS::ObjectOrNullValue(reserved_obj);
+  JS::AddNamedValueRoot(ctx, &rval, nullptr);
   JS_SetReservedSlot(obj, GC_SLOT_JS_CLASS, rval);
 
   return obj;
@@ -1145,7 +1166,8 @@ bool Value::Has(const char *name) const {
   JS::RootedValue value__(ctx_, value_);
   JS_ValueToObject(ctx_, value__, &object_rt);
 
-  if (object_rt == nullptr) return false;
+  if (!object_rt) return false;
+
   if (!JS_HasProperty(ctx_, object_rt, name, &foundp)) {
     foundp = false;
   }
@@ -1164,8 +1186,7 @@ Value Value::Get(const String &_name) const {
   auto_str name;
   _name.ToSTDString(&name);
 
-  Value val = Get(name.str_);
-  return val;
+  return Get(name.str_);
 }
 
 Value Value::Get(const char *name) const {
@@ -1173,14 +1194,16 @@ Value Value::Get(const char *name) const {
   val.ctx_ = ctx_;
   val.empty_ = false;
 
-  JS::RootedValue ret_val(ctx_);
   JS::RootedObject object_rt(ctx_);
   JS::RootedValue value__(ctx_, value_);
   JS_ValueToObject(ctx_, value__, &object_rt);
 
   if (object_rt == nullptr) return Value();
-  if (JS_GetProperty(ctx_, object_rt, name, &ret_val))
-    val.value_ = ret_val;
+
+  JS::RootedValue ret_val(ctx_);
+  JS::MutableHandleValue mt_rval(&ret_val);
+  if (JS_GetProperty(ctx_, object_rt, name, mt_rval))
+    val.value_ = mt_rval.get();
   else
     val.value_ = JSVAL_NULL;
 
@@ -1192,12 +1215,14 @@ Value Value::GetIndex(const int index) {
   val.ctx_ = ctx_;
   val.empty_ = false;
 
-  JS::RootedValue ret_val(ctx_);
   INNER_VALUE_TO_OBJECT(object_, false);
 
   if (object_ == nullptr) return Value();
-  if (JS_GetElement(ctx_, object_rt, index, &ret_val))
-    val.value_ = ret_val;
+
+  JS::RootedValue ret_val(ctx_);
+  JS::MutableHandleValue mt_rval(&ret_val);
+  if (JS_GetElement(ctx_, object_rt, index, mt_rval))
+    val.value_ = mt_rval.get();
   else
     val.value_ = JSVAL_NULL;
   return val;
@@ -1283,24 +1308,26 @@ bool Value::SetIndex(const int index, const Value &val) {
 bool Value::SetIndex(const int index, JS::HandleValue val) {
   INNER_VALUE_TO_OBJECT(object_, false);
 
-  bool result = JS_SetElement(ctx_, object_rt, index, val);
-
-  return result;
+  return JS_SetElement(ctx_, object_rt, index, val);
 }
 
 bool Value::DefineGetterSetter(const String &_name, JSPropertyOp getter,
-                               JSStrictPropertyOp setter,
-                               const Value &initial_value) {
+                               JSStrictPropertyOp setter, const Value &initial_value) {
   INNER_VALUE_TO_OBJECT(object_, false);
   JS::RootedId ri_id(ctx_);
   JS::RootedValue rt_nmval(ctx_, _name.value_);
   JS_ValueToId(ctx_, rt_nmval, &ri_id);
 
   JS::RootedValue rt_inval(ctx_, initial_value.value_);
-  bool success = JS_DefinePropertyById(ctx_, object_rt, ri_id, rt_inval, 0,
-                                       getter, setter);
 
-  return success;
+//  SM 37+
+//  return JS_DefinePropertyById(ctx_, object_rt, ri_id, rt_inval,
+//                               JSPROP_SHARED | JSPROP_PERMANENT, getter,
+//                               setter);
+
+  return JS_DefinePropertyById(ctx_, object_rt, ri_id, rt_inval,
+                               0, getter,
+                               setter);
 }
 
 Value Value::CompileAndRun(JSContext *ctx_, String script, String filename,
@@ -1342,18 +1369,18 @@ Value Value::GetConstructor() {
 }
 
 JSObject *Value::NewInstance(int argc, jsval *args) {
-  // ENGINE_LOG_THIS("Value", "Call8");
   INNER_VALUE_TO_OBJECT(object_, false);
 
   JSObject *rv;
 
   JS::RootedValue ret_val(ctx_);
-  if (!JS_GetProperty(ctx_, object_rt, "constructor", &ret_val)) {
+  JS::MutableHandle<JS::Value> mt_retval(&ret_val);
+  if (!JS_GetProperty(ctx_, object_rt, "constructor", mt_retval)) {
     rv = JS_New(ctx_, object_rt,
                 JS::HandleValueArray::fromMarkedLocation(argc, args));
   } else {
     JS::RootedObject from(ctx_);
-    JS_ValueToObject(ctx_, ret_val, &from);
+    JS_ValueToObject(ctx_, mt_retval, &from);
     rv = JS_New(ctx_, from,
                 JS::HandleValueArray::fromMarkedLocation(argc, args));
   }
@@ -1362,7 +1389,6 @@ JSObject *Value::NewInstance(int argc, jsval *args) {
 }
 
 Value Value::NewInstance(int argc, Value *_args) {
-  // ENGINE_LOG_THIS("Value", "Call7");
   jsval *args;
   if (argc > 0) {
     args = new jsval[argc];
@@ -1382,7 +1408,6 @@ Value Value::NewInstance(int argc, Value *_args) {
 }
 
 Value Value::Call(const String &_name, int argc, Value *_args) const {
-  // ENGINE_LOG_THIS("Value", "Call6");
   auto_str name;
   EngineHelper::FromJSString(_name, &name);
 
@@ -1390,7 +1415,6 @@ Value Value::Call(const String &_name, int argc, Value *_args) const {
 }
 
 Value Value::Call(const char *name, int argc, Value *_args) const {
-  // ENGINE_LOG_THIS("Value", "Call5");
   Value rval;
   jsval *args = NULL;
 
@@ -1401,13 +1425,14 @@ Value Value::Call(const char *name, int argc, Value *_args) const {
 
   rval.ctx_ = ctx_;
   JS::RootedValue rov(ctx_);
-  if (!Call(name, argc, args, &rov)) {
+  JS::MutableHandle<JS::Value> mt_rval(&rov);
+  if (!Call(name, argc, args, mt_rval)) {
     if (args != NULL) delete args;
     return Value();
   }
 
   rval.empty_ = false;
-  rval.value_ = rov;
+  rval.value_ = mt_rval.get();
 
   if (args != NULL) delete args;
 
@@ -1415,17 +1440,17 @@ Value Value::Call(const char *name, int argc, Value *_args) const {
 }
 
 Value Value::Call(const char *name, int argc, jsval *args) const {
-  // ENGINE_LOG_THIS("Value", "Call3");
   Value rval;
 
   rval.ctx_ = ctx_;
   JS::RootedValue rov(ctx_);
-  if (!Call(name, argc, args, &rov)) {
+  JS::MutableHandle<JS::Value> mt_rval(&rov);
+  if (!Call(name, argc, args, mt_rval)) {
     return Value();
   }
 
   rval.empty_ = false;
-  rval.value_ = rov;
+  rval.value_ = mt_rval.get();
 
   return rval;
 }
@@ -1446,7 +1471,6 @@ bool Value::Call(const char *name, int argc, JS::Value *args,
 }
 
 Value Value::Call(const Value &host, int argc, jsval *args) const {
-  // ENGINE_LOG_THIS("Value", "Call2");
   if (host.IsString()) {
     auto_str host_str;
     host.ToSTDString(&host_str);
@@ -1465,10 +1489,11 @@ Value Value::Call(const Value &host, int argc, jsval *args) const {
 
   rval.empty_ = false;
   JS::RootedValue rov(ctx_);
+  JS::MutableHandle<JS::Value> mt_rval(&rov);
   JS_CallFunctionValue(ctx_, rob, prop,
                        JS::HandleValueArray::fromMarkedLocation(argc, args),
-                       &rov);
-  rval.value_ = rov;
+                       mt_rval);
+  rval.value_ = mt_rval.get();
 
   return rval;
 }
@@ -1491,19 +1516,17 @@ Value Value::Call(const Value &host, int argc, Value *_args) const {
     for (int i = 0; i < argc; i++) args[i] = _args[i].value_;
   }
 
-  JS::RootedValue rt_hval(ctx_, host.value_);
-  JS::RootedObject rob(ctx_);
-  if (!JS_ValueToObject(ctx_, rt_hval, &rob)) {
-    if (args != NULL) delete args;
-    return rval;
-  }
+  if (!host.value_.isObject() || host.value_.isNullOrUndefined()) return rval;
+
+  JS::RootedObject rob(ctx_, host.value_.toObjectOrNull());
 
   rval.empty_ = false;
   JS::RootedValue rov(ctx_);
+  JS::MutableHandleValue mt_rval(&rov);
   JS_CallFunctionValue(ctx_, rob, prop,
                        JS::HandleValueArray::fromMarkedLocation(argc, args),
-                       &rov);
-  rval.value_ = rov;
+                       mt_rval);
+  rval.value_ = mt_rval.get();
 
   if (args != NULL) delete args;
 
@@ -1511,12 +1534,10 @@ Value Value::Call(const Value &host, int argc, Value *_args) const {
 }
 
 unsigned Value::ArrayLength() const {
+  if (!value_.isObject() || value_.isNull()) return 0;
+
+  JS::RootedObject object_rt(ctx_, value_.toObjectOrNull());
   unsigned ln = 0;
-
-  JS::RootedObject object_rt(ctx_);
-  JS::RootedValue value__(ctx_, value_);
-  JS_ValueToObject(ctx_, value__, &object_rt);
-
   if (JS_GetArrayLength(ctx_, object_rt, &ln))
     return ln;
   else
@@ -1535,19 +1556,13 @@ Value Value::NewEmptyFunction(JSContext *cx) {
 
   return Value(funobj, cx);
 
-  // Below is a backup implementation for JS_CompileFunction
-  //  String scr = String::FromSTD(cx, "(function(){ var _ = function(){};
-  // return _; })", 0);
+  //  String scr = String::FromSTD(cx,
+  //                               "(function(){ var _ = function(){};"
+  //                               "return _; })",
+  //                               0);
   //  String name = String::FromSTD(cx, "Value_NewEmptyFunction", 0);
   //  return Value::CompileAndRun(cx, scr, name);
 }
-
-static JSClass constructor_class_definition = {
-    "NativeFunction",      JSCLASS_HAS_PRIVATE, JS_PropertyStub,
-    JS_DeletePropertyStub, JS_PropertyStub,     JS_StrictPropertyStub,
-    JS_EnumerateStub,      JS_ResolveStub,      JS_ConvertStub,
-    NULL,                  0,                   0,
-    0,                     0};
 
 Value::Value(JSNative native, bool instance, JSContext *cx) {
   ctx_ = cx;
@@ -1572,13 +1587,5 @@ Value::Value(JSNative native, bool instance, JSContext *cx) {
   rooted_ = false;
 }
 
-Value::~Value() {
-#ifdef DEBUG
-  if (rooted_) {
-    if (EngineHelper::IsInstanceAlive(ctx_)) {
-      assert(!rooted_ && "Don't let rooted/persistent object die");
-    }
-  }
-#endif
-}
+Value::~Value() { value_ = JS::UndefinedValue(); }
 }  // namespace MozJS

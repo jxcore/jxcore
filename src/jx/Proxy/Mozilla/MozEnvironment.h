@@ -11,7 +11,13 @@
 
 #define JS_GET_GLOBAL() jxcore::getGlobal(JS_GetThreadId(__contextORisolate))
 
-#define JS_FORCE_GC() JS_GC(JS_GetRuntime(JS_GET_STATE_MARKER()))
+#define JS_FORCE_GC()                                                  \
+  do {                                                                 \
+    int x = JS_SetRTGC(__contextORisolate, false) - 1;                 \
+    for (int i = 0; i < x; i++) JS_SetRTGC(__contextORisolate, false); \
+    JS_GC(JS_GetRuntime(JS_GET_STATE_MARKER()));                       \
+    for (int i = -1; i < x; i++) JS_SetRTGC(__contextORisolate, true); \
+  } while (0)
 
 #define JS_TERMINATE_EXECUTION(mcom)                                      \
   do {                                                                    \
@@ -44,7 +50,7 @@
       (x != NULL) ? x->node_isolate->GetRaw() : JS_CURRENT_CONTEXT()
 #define JS_DEFINE_STATE_MARKER_(x) JSContext* __contextORisolate = x
 
-#define JS_DEFINE_COM_AND_MARKER()           \
+#define JS_DEFINE_COM_AND_MARKER()                   \
   node::commons* com = node::commons::getInstance(); \
   JS_DEFINE_STATE_MARKER(com)
 

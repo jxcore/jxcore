@@ -234,6 +234,8 @@
                        const v8::AccessorInfo& ___info) { \
   DEFINE_JS_GETTER_DETAILS
 
+#define JS_GETTER_METHOD_(name) JS_GETTER_METHOD(name)
+
 #define JS_GETTER_CLASS_METHOD(clss, name)                      \
   JS_HANDLE_VALUE clss::name(JS_LOCAL_STRING property,          \
                              const v8::AccessorInfo& ___info) { \
@@ -242,6 +244,8 @@
 #define JS_GETTER_METHOD_END             \
   return JS_LEAVE_SCOPE(JS_UNDEFINED()); \
   }
+
+#define JS_GETTER_METHOD_END_ JS_GETTER_METHOD_END
 
 #define RETURN_GETTER_PARAM(x) RETURN_PARAM(x)
 

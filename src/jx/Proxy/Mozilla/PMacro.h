@@ -24,7 +24,7 @@
   type *wrap = static_cast<type *>(args.GetHolder()); \
   node::commons *com;                                 \
   if (!wrap)                                          \
-    com = node::commons::getInstance();                        \
+    com = node::commons::getInstance();               \
   else                                                \
   node::commons *com = wrap->com
 
@@ -44,10 +44,11 @@
       JS_GetThreadId(JS_GET_STATE_MARKER()));                \
   jxcore::PArguments args(JS_GET_STATE_MARKER(), __argc, __jsval);
 
-#define JS_METHOD(class_name, method_name)                            \
-  bool class_name::method_name(JSContext *JS_GET_STATE_MARKER(),      \
-                               unsigned __argc, JS::Value *__jsval) { \
-    ENGINE_LOG_THIS(#class_name, #method_name);                       \
+#define JS_METHOD(class_name, method_name)                                     \
+  bool class_name::method_name(JSContext *__contextORisolate, unsigned __argc, \
+                               JS::Value *__jsval) {                           \
+    MozJS::SuppressGC __gc__(__contextORisolate);                              \
+    ENGINE_LOG_THIS(#class_name, #method_name);                                \
   __JS_METHOD_BEGIN_COM()
 
 #define RETURN_TRUE() RETURN_PARAM(STD_TO_BOOLEAN(true))
@@ -67,23 +68,26 @@
     return args.ret_val_;     \
   } while (0)
 
-#define JS_LOCAL_METHOD(method_name)                                  \
-  bool method_name(JSContext *JS_GET_STATE_MARKER(), unsigned __argc, \
-                   JS::Value *__jsval) {                              \
-    ENGINE_LOG_THIS("LOCAL", #method_name);                           \
+#define JS_LOCAL_METHOD(method_name)                               \
+  bool method_name(JSContext *__contextORisolate, unsigned __argc, \
+                   JS::Value *__jsval) {                           \
+    MozJS::SuppressGC __gc__(__contextORisolate);                  \
+    ENGINE_LOG_THIS("LOCAL", #method_name);                        \
   __JS_METHOD_BEGIN_COM()
 
 // IF node::commons *com is available from wrap use below
-#define JS_METHOD_NO_COM(class_name, method_name)                     \
-  bool class_name::method_name(JSContext *JS_GET_STATE_MARKER(),      \
-                               unsigned __argc, JS::Value *__jsval) { \
-    ENGINE_LOG_THIS(#class_name, #method_name);                       \
+#define JS_METHOD_NO_COM(class_name, method_name)                              \
+  bool class_name::method_name(JSContext *__contextORisolate, unsigned __argc, \
+                               JS::Value *__jsval) {                           \
+    MozJS::SuppressGC __gc__(__contextORisolate);                              \
+    ENGINE_LOG_THIS(#class_name, #method_name);                                \
   __JS_METHOD_BEGIN_NO_COM()
 
-#define JS_LOCAL_METHOD_NO_COM(method_name)                           \
-  bool method_name(JSContext *JS_GET_STATE_MARKER(), unsigned __argc, \
-                   JS::Value *__jsval) {                              \
-    ENGINE_LOG_THIS("LOCAL", #method_name);                           \
+#define JS_LOCAL_METHOD_NO_COM(method_name)                        \
+  bool method_name(JSContext *__contextORisolate, unsigned __argc, \
+                   JS::Value *__jsval) {                           \
+    MozJS::SuppressGC __gc__(__contextORisolate);                  \
+    ENGINE_LOG_THIS("LOCAL", #method_name);                        \
   __JS_METHOD_BEGIN_NO_COM()
 
 #define DEFINE_JS_METHOD(name)                                 \
@@ -163,6 +167,7 @@
   static bool Initialize(JS_LOCAL_OBJECT &target) {                       \
     bool ___NO_NEW_INSTANCE = false;                                      \
     JS_DEFINE_STATE_MARKER_(MozJS::Isolate::GetCurrent()->GetRaw());      \
+    MozJS::SuppressGC __gc__(__contextORisolate);                         \
     node::commons *com = node::commons::getInstanceByThreadId(            \
         JS_GetThreadId(JS_GET_STATE_MARKER()));                           \
     JS::RootedObject ___lnobject(JS_GET_STATE_MARKER(),                   \
@@ -202,6 +207,7 @@
   static bool Initialize(JS_LOCAL_OBJECT &target) {                          \
     bool ___NO_NEW_INSTANCE = false;                                         \
     JS_DEFINE_STATE_MARKER_(MozJS::Isolate::GetCurrent()->GetRaw());         \
+    MozJS::SuppressGC __gc__(__contextORisolate);                            \
     node::commons *com = node::commons::getInstanceByThreadId(               \
         JS_GetThreadId(JS_GET_STATE_MARKER()));                              \
     JS::RootedObject ___lnobject(JS_GET_STATE_MARKER(),                      \
@@ -225,6 +231,7 @@
   static bool Initialize(JS_LOCAL_OBJECT &constructor) {             \
     bool ___NO_NEW_INSTANCE = true;                                  \
     JS_DEFINE_STATE_MARKER_(MozJS::Isolate::GetCurrent()->GetRaw()); \
+    MozJS::SuppressGC __gc__(__contextORisolate);                    \
     node::commons *com = node::commons::getInstanceByThreadId(       \
         JS_GetThreadId(JS_GET_STATE_MARKER()));
 
@@ -233,6 +240,7 @@
   static bool Initialize(JS_LOCAL_OBJECT &constructor) {             \
     bool ___NO_NEW_INSTANCE = true;                                  \
     JS_DEFINE_STATE_MARKER_(MozJS::Isolate::GetCurrent()->GetRaw()); \
+    MozJS::SuppressGC __gc__(__contextORisolate);                    \
     JS_ENTER_SCOPE();
 
 #define END_INIT_MEMBERS \
@@ -249,13 +257,12 @@
   return true;                                    \
   }
 
-#define __SET_CLASS_METHOD(x, name, method, pcount)                      \
-  do {                                                                   \
-    JS_LOCAL_STRING name_string = STD_TO_STRING(name);                   \
-    if (___NO_NEW_INSTANCE)                                              \
-      x.SetStaticFunction(name_string, method, pcount);                  \
-    else                                                                 \
-      x.GetConstructor().SetStaticFunction(name_string, method, pcount); \
+#define __SET_CLASS_METHOD(x, name, method, pcount)               \
+  do {                                                            \
+    if (___NO_NEW_INSTANCE)                                       \
+      x.SetStaticFunction(name, method, pcount);                  \
+    else                                                          \
+      x.GetConstructor().SetStaticFunction(name, method, pcount); \
   } while (0)
 
 #define SET_CLASS_METHOD(name, method, pcount) \
@@ -362,6 +369,7 @@
     *succeeded = true;        \
     return true;              \
   } while (0)
+
 #define RETURN_DELETER_FALSE() \
   do {                         \
     *succeeded = false;        \

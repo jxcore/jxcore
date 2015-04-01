@@ -48,103 +48,117 @@ void JXInstance::runScript(void *x) {
 
   node::commons *com = node::commons::newInstance(threadId + 1);
   int resetCount = 0;
+  bool reset;
 
 #ifdef JS_ENGINE_V8
-  v8::Isolate *isolate = com->node_isolate;
+  do {
+    v8::Isolate *isolate = com->node_isolate;
 #elif defined(JS_ENGINE_MOZJS)
   ENGINE_NS::Isolate *isolate = com->node_isolate;
   JSContext *ctx = isolate->ctx_;
   JSRuntime *rt = JS_GetRuntime(ctx);
+  do {
 
-  JS_SetInterruptCallback(rt, _JSEngineInterrupt);
-  JS_SetGCCallback(rt, _GCOnMozJS, NULL);
+    JS_SetInterruptCallback(rt, _JSEngineInterrupt);
+    JS_SetGCCallback(rt, _GCOnMozJS, NULL);
 #endif
-  {
+    do {
 #ifdef JS_ENGINE_V8
-    v8::Locker locker(isolate);
-    v8::Isolate::Scope isolateScope(isolate);
-    v8::HandleScope handle_scope;
-    JS_DEFINE_STATE_MARKER(com);
-    JS_LOCAL_OBJECT_TEMPLATE _global = JS_NEW_OBJECT_TEMPLATE();
+      v8::Locker locker(isolate);
+      v8::Isolate::Scope isolateScope(isolate);
+      v8::HandleScope handle_scope;
+      JS_DEFINE_STATE_MARKER(com);
+      JS_LOCAL_OBJECT_TEMPLATE _global = JS_NEW_OBJECT_TEMPLATE();
 
-    v8::Handle<v8::Context> context = JS_NEW_CONTEXT(NULL, _global);
-    v8::Context::Scope context_scope(context);
+      v8::Handle<v8::Context> context = JS_NEW_CONTEXT(NULL, _global);
+      v8::Context::Scope context_scope(context);
 
-    v8_typed_array::AttachBindings(context->Global());
-    JS_LOCAL_OBJECT global = context->Global();
+      v8_typed_array::AttachBindings(context->Global());
+      JS_LOCAL_OBJECT global = context->Global();
 #elif defined(JS_ENGINE_MOZJS)
-    JSAutoRequest ar(ctx);
-    JS::RootedObject _global(ctx, jxcore::NewGlobalObject(ctx));
-    assert(_global != NULL);
-    JSAutoCompartment ac(ctx, _global);
-    JS_LOCAL_OBJECT global(_global, ctx);
-    JS_DEFINE_STATE_MARKER(com);
-    JS_SetErrorReporter(ctx, node::OnFatalError);
+      JSAutoRequest ar(ctx);
+      JS::RootedObject _global(ctx, jxcore::NewGlobalObject(ctx));
+      assert(_global != NULL);
+      JSAutoCompartment ac(ctx, _global);
+      JS_LOCAL_OBJECT global(_global, ctx);
+      JS_DEFINE_STATE_MARKER(com);
+      JS_SetErrorReporter(ctx, node::OnFatalError);
 #endif
 
-    uv_idle_t *t = com->tick_spinner;
-    uv_idle_init(com->loop, t);
+      uv_idle_t *t = com->tick_spinner;
+      uv_idle_init(com->loop, t);
 
-    uv_check_init(com->loop, com->check_immediate_watcher);
-    uv_unref((uv_handle_t *)com->check_immediate_watcher);
-    uv_idle_init(com->loop, com->idle_immediate_dummy);
+      uv_check_init(com->loop, com->check_immediate_watcher);
+      uv_unref((uv_handle_t *)com->check_immediate_watcher);
+      uv_idle_init(com->loop, com->idle_immediate_dummy);
 
-    JS_LOCAL_OBJECT inner = JS_NEW_EMPTY_OBJECT();
+      JS_LOCAL_OBJECT inner = JS_NEW_EMPTY_OBJECT();
+#ifdef JS_ENGINE_MOZJS
+      JS::RootedObject r_inner(ctx, inner.GetRawObjectPointer());
+#endif
 
-    JS_METHOD_SET(inner, "compiler", Compiler);
-    JS_METHOD_SET(inner, "callBack", CallBack);
-    JS_METHOD_SET(inner, "refWaitCounter", refWaitCounter);
-    JS_METHOD_SET(inner, "setThreadOnHold", setThreadOnHold);
+      JS_METHOD_SET(inner, "compiler", Compiler);
+      JS_METHOD_SET(inner, "callBack", CallBack);
+      JS_METHOD_SET(inner, "refWaitCounter", refWaitCounter);
+      JS_METHOD_SET(inner, "setThreadOnHold", setThreadOnHold);
 
-    JS_NAME_SET(global, JS_STRING_ID("tools"), inner);
+      JS_NAME_SET(global, JS_STRING_ID("tools"), inner);
 
-    node::SetupProcessObject(threadId + 1);
-    JS_HANDLE_OBJECT process_l = com->getProcess();
+      node::SetupProcessObject(threadId + 1);
+      JS_HANDLE_OBJECT process_l = com->getProcess();
 
-    customUnlock(CSLOCK_NEWINSTANCE);
+      customUnlock(CSLOCK_NEWINSTANCE);
 
-    JXEngine::InitializeProxyMethods(com);
+      JXEngine::InitializeProxyMethods(com);
 
-    node::Load(process_l);
+      node::Load(process_l);
 
-    uv_run_jx(com->loop, UV_RUN_DEFAULT, node::commons::CleanPinger,
-              threadId + 1);
+      uv_run_jx(com->loop, UV_RUN_DEFAULT, node::commons::CleanPinger,
+                threadId + 1);
 
-    if (!com->expects_reset)
-      node::EmitExit(process_l);
-    else
-      resetCount = com->waitCounter;
+      if (!com->expects_reset)
+        node::EmitExit(process_l);
+      else
+        resetCount = com->waitCounter;
 
-    node::RunAtExit();
+      node::RunAtExit();
 
-    com->Dispose();
-  }
+      com->Dispose();
+    } while (0);
 
+    reset = com->expects_reset;
 #ifdef JS_ENGINE_V8
-  com->node_isolate->Dispose();
+    com->node_isolate->Dispose();
+    delete com;
 #elif defined(JS_ENGINE_MOZJS)
-  JS_DestroyContext(ctx);
+    JS_DestroyContext(ctx);
 
-  com->instance_status_ = node::JXCORE_INSTANCE_EXITED;
+    com->instance_status_ = node::JXCORE_INSTANCE_EXITED;
 
-  // SM can't do GC under GC. we need the destroy other contexts separately
-  std::list<JSContext *>::iterator itc = com->free_context_list_.begin();
+    // SM can't do GC under GC. we need the destroy other contexts separately
+    std::list<JSContext *>::iterator itc = com->free_context_list_.begin();
 
-  while (itc != com->free_context_list_.end()) {
-    JS_DestroyContext(*itc);
-    itc++;
-  }
-  com->free_context_list_.clear();
+    while (itc != com->free_context_list_.end()) {
+      JS_DestroyContext(*itc);
+      itc++;
+    }
+    com->free_context_list_.clear();
 
+    com->node_isolate->Dispose();
+    delete com;
+#endif
+
+  } while (0);
+
+#ifdef JS_ENGINE_MOZJS
   JS_DestroyRuntime(rt);
-  com->node_isolate->Dispose();
 #endif
 
   reduceThreadCount();
   node::removeCommons();
   Job::removeTasker(threadId);
 
-  if (com->expects_reset) {
+  if (reset) {
     char mess[64];
     int ln = snprintf(mess, sizeof(mess),
                       "{\"threadId\":%d , \"resetMe\":true, \"counter\":%d}",
@@ -152,8 +166,6 @@ void JXInstance::runScript(void *x) {
     mess[ln] = '\0';
     jxcore::SendMessage(0, mess, strlen(mess), false);
   }
-
-  delete com;
 }
 
 static void handleJob(node::commons *com, Job *j,
@@ -209,7 +221,8 @@ static void handleTasks(node::commons *com, const JS_HANDLE_FUNCTION &func,
       break;
     }
 
-    assert(j->script != NULL && "Something is wrong job->script shouldn't be null!");
+    assert(j->script != NULL &&
+           "Something is wrong job->script shouldn't be null!");
 
     JS_INDEX_SET(arr, 1, UTF8_TO_STRING(j->script));
     JS_HANDLE_VALUE argv[1] = {arr};

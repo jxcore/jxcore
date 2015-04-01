@@ -26,7 +26,7 @@ class JXEngine {
   char **Init(int argc, char *argv[], bool engine_inited_already);
 
 #if defined(JS_ENGINE_MOZJS)
-  JS_PERSISTENT_OBJECT global_;
+  JS_PERSISTENT_OBJECT *global_;
   JSCompartment *jscomp_;
   ENGINE_NS::Isolate main_iso_;
 #elif defined(JS_ENGINE_V8)

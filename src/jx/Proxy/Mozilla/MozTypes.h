@@ -293,6 +293,12 @@
 #define JS_CALL_PARAMS(name, count, ...) JS::Value name[count] = {__VA_ARGS__}
 
 // MozJS only
+/*
+ *  {                                                                        \
+      const JS::AutoCheckCannotGC gc;                                        \
+      __data = JS_GetArrayBufferData(__arr_buf, gc);                         \
+    }                                                                        \
+ */
 #define JS_BIND_NEW_ARRAY_BUFFER(obj, name, type, size, target, target_type) \
   do {                                                                       \
     JSObject *__arr_buf =                                                    \
@@ -300,7 +306,8 @@
     JS::RootedObject __rt_obj_arr(JS_GET_STATE_MARKER(), __arr_buf);         \
     JSObject *__obj_arr = JS_New##name##ArrayWithBuffer(                     \
         JS_GET_STATE_MARKER(), __rt_obj_arr, 0, size);                       \
-    uint8_t *__data = JS_GetArrayBufferData(__arr_buf);                      \
+    uint8_t *__data;                                                         \
+    __data = JS_GetArrayBufferData(__arr_buf);                               \
     target = (target_type *)__data;                                          \
     obj = MozJS::Value(__obj_arr, JS_GET_STATE_MARKER());                    \
   } while (0)
