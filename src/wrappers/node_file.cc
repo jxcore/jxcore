@@ -24,6 +24,8 @@ namespace node {
 
 #define THROW_BAD_ARGS TYPE_ERROR("Bad argument")
 
+JS_LOCAL_OBJECT BuildStatsObject(commons* com, const uv_statbuf_t* s);
+
 class FSReqWrap : public ReqWrap<uv_fs_t> {
  public:
   void* operator new(size_t size, char* storage) { return storage; }
@@ -131,7 +133,7 @@ static void After(uv_fs_t* req) {
       case UV_FS_STAT:
       case UV_FS_LSTAT:
       case UV_FS_FSTAT:
-        argv[1] = BuildStatsObject(static_cast<const uv_statbuf_t*>(req->ptr));
+        argv[1] = BuildStatsObject(com, static_cast<const uv_statbuf_t*>(req->ptr));
         break;
 
       case UV_FS_READLINK:
@@ -263,7 +265,7 @@ JS_LOCAL_OBJECT BuildStatsObject(commons* com, const uv_statbuf_t* s) {
   JS_LOCAL_OBJECT stats = JS_NEW_DEFAULT_INSTANCE(
       JS_GET_FUNCTION(com->nf_stats_constructor_template));
 
-  if (JS_IS_EMPTY(stats) || JS_IS_NULL(stats)) return JS_LOCAL_OBJECT();
+  if (JS_IS_EMPTY(stats)) return JS_LOCAL_OBJECT();
 #endif
 
 #define X(name, v)                                     \
@@ -314,7 +316,7 @@ JS_LOCAL_OBJECT BuildStatsObject(const uv_statbuf_t* s) {
   JS_ENTER_SCOPE_COM();
   if (com == NULL) return JS_LOCAL_OBJECT();
 
-  return BuildStatsObject(com, s);
+  return JS_LEAVE_SCOPE(BuildStatsObject(com, s));
 }
 
 JS_METHOD(File, Stat) {
