@@ -1321,7 +1321,11 @@
   };
 
   NativeModule.getCached = function (id) {
-    return NativeModule._cache[id];
+    if (NativeModule._cache.hasOwnProperty(id)) {
+      return NativeModule._cache[id];
+    } else {
+      return null;
+    }
   };
 
   NativeModule.exists = function (id) {
