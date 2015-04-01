@@ -224,7 +224,11 @@ void commons::CreateNewNonCallableInstance(MozJS::Value *obj,
                                "(function(obj) {\n"
                                "  obj = obj.constructor;\n"
                                "  var x = new obj();\n"
-                               "  return Object.create(x);\n"
+                               "  x = Object.create(x);\n"
+                               "  x.toString = function() {\n"
+                               "    return '[object Object]';\n"
+                               "  };\n"
+                               "  return x;\n"
                                "})"),
                            STD_TO_STRING("native:jxcore_js_new_instance")));
     JSObjectNew_ = JS_NEW_PERSISTENT_FUNCTION(objectMethod);
