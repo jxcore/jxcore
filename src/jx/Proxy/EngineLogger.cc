@@ -19,6 +19,12 @@
 #include <string>
 #include <stdlib.h>
 
+#ifdef DEBUG
+void SOFT_BREAK_POINT() {
+  return;
+}
+#endif
+
 #ifdef JXCORE_PRINT_NATIVE_CALLS
 
 class LogDetails {

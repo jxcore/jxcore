@@ -37,6 +37,14 @@
 #define JXCORE_PRINT_NATIVE_CALLS_MIN_TIME 1000.0
 #endif
 
+#ifdef DEBUG
+void SOFT_BREAK_POINT();
+#else
+#ifndef SOFT_BREAK_POINT()
+#define SOFT_BREAK_POINT()
+#endif
+#endif
+
 #ifdef JXCORE_PRINT_NATIVE_CALLS
 #include "uv.h"
 
