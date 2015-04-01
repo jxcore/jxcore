@@ -5,7 +5,7 @@ Prerequisites (Unix only):
     * GNU Make 3.81 or newer
     * libexecinfo (FreeBSD and OpenBSD only)
     * for SpiderMonkey : 'which' python module (sudo easy_install tools/which-1.1.0-py2.7.egg)
-    * for Windows (VS2012+) 
+    * for Windows (VS2012+) and Visual C++ Redistributable
 
 First clone the source codes from Github: (or Download as a .zip file)
 ```bash
@@ -28,7 +28,7 @@ make install
 make install
 ```
 
-On Windows;
+On Windows:
 
 ```
 / $> vcbuild.bat
