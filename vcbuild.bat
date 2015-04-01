@@ -39,14 +39,15 @@ set noperfctr_msi_arg=
 set engine_mozilla=
 set static_library=
 set compress_internals=
+set c_platform=
 
 :next-arg
 if "%1"=="" goto args-done
 if /i "%1"=="debug"         set config=Debug&goto arg-ok
 if /i "%1"=="release"       set config=Release&goto arg-ok
 if /i "%1"=="clean"         set target=Clean&goto arg-ok
-if /i "%1"=="ia32"          set target_arch=ia32&goto arg-ok
-if /i "%1"=="x86"           set target_arch=ia32&goto arg-ok
+if /i "%1"=="ia32"          set c_platform="/p:Platform=Win32"&set target_arch=ia32&goto arg-ok
+if /i "%1"=="x86"           set c_platform="/p:Platform=Win32"&set target_arch=ia32&goto arg-ok
 if /i "%1"=="x64"           set target_arch=x64&goto arg-ok
 if /i "%1"=="noprojgen"     set noprojgen=1&goto arg-ok
 if /i "%1"=="nobuild"       set nobuild=1&goto arg-ok
@@ -136,8 +137,8 @@ goto run
 
 :msbuild-found
 @rem Build the sln with msbuild.
-msbuild jx.sln /m /t:%target% /p:Configuration=%config% /clp:NoSummary;NoItemAndPropertyList;Verbosity=minimal /nologo
-if errorlevel 1 goto exit
+msbuild jx.sln /m /t:%target% /p:Configuration="%config%" %c_platform% /clp:NoSummary;NoItemAndPropertyList;Verbosity=minimal /nologo
+goto exit
 
 :sign
 @rem Skip signing if the `nosign` option was specified.
