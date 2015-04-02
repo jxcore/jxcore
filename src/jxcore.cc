@@ -1,8 +1,5 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-#include <stdlib.h>
-#include <map>
-#include <list>
 #include "jxcore.h"
 #include "jx/extend.h"
 #include "wrappers/memory_wrap.h"
@@ -12,6 +9,9 @@
 #include "string_bytes.h"
 #include "jxcore_type_wrap.h"
 #include "wrappers/node_crypto.h"
+#include <stdlib.h>
+#include <map>
+#include <list>
 
 #if defined(_MSC_VER)
 #include <windows.h>

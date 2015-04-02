@@ -1,11 +1,11 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-#include "jx.h"
 #include "../jx/extend.h"
 #include "../jxcore.h"
 #include "../jx/job.h"
 #include <stdio.h>
 #include <string.h>
+#include "jx.h"
 
 using namespace jxcore;
 JX_CALLBACK jx_callback;

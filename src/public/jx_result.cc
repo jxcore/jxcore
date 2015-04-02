@@ -1,6 +1,6 @@
-#include "jx_result.h"
 #include "../jx/commons.h"
 #include "../jxcore.h"
+#include "jx_result.h"
 
 #define _FREE_MEM_(x)                                             \
   jxcore::JXValueWrapper *wrap##x_ = (jxcore::JXValueWrapper *)x; \

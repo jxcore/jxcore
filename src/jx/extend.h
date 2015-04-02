@@ -3,9 +3,9 @@
 #ifndef SRC_JX_EXTEND_H_
 #define SRC_JX_EXTEND_H_
 
-#include <queue>
 #include "commons.h"
 #include "memory_store.h"
+#include <queue>
 
 // customLock / customUnlock definitions
 #define CUSTOMLOCKSCOUNT 16
