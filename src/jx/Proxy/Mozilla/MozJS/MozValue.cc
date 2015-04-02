@@ -1312,7 +1312,8 @@ bool Value::SetIndex(const int index, JS::HandleValue val) {
 }
 
 bool Value::DefineGetterSetter(const String &_name, JSPropertyOp getter,
-                               JSStrictPropertyOp setter, const Value &initial_value) {
+                               JSStrictPropertyOp setter,
+                               const Value &initial_value) {
   INNER_VALUE_TO_OBJECT(object_, false);
   JS::RootedId ri_id(ctx_);
   JS::RootedValue rt_nmval(ctx_, _name.value_);
@@ -1320,13 +1321,12 @@ bool Value::DefineGetterSetter(const String &_name, JSPropertyOp getter,
 
   JS::RootedValue rt_inval(ctx_, initial_value.value_);
 
-//  SM 37+
-//  return JS_DefinePropertyById(ctx_, object_rt, ri_id, rt_inval,
-//                               JSPROP_SHARED | JSPROP_PERMANENT, getter,
-//                               setter);
+  //  SM 37+
+  //  return JS_DefinePropertyById(ctx_, object_rt, ri_id, rt_inval,
+  //                               JSPROP_SHARED | JSPROP_PERMANENT, getter,
+  //                               setter);
 
-  return JS_DefinePropertyById(ctx_, object_rt, ri_id, rt_inval,
-                               0, getter,
+  return JS_DefinePropertyById(ctx_, object_rt, ri_id, rt_inval, 0, getter,
                                setter);
 }
 

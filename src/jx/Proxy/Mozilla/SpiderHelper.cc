@@ -33,8 +33,9 @@ JSObject *NewTransplantObject(JSContext *ctx) {
   return JS_NewObject(ctx, &transplant_class, JS::NullPtr(), JS::NullPtr());
 }
 
-JSObject *CrossCompartmentCopy(JSContext *orig_context, JSContext *new_context,
-                               MozJS::Value &source, bool global_object) {
+void CrossCompartmentCopy(JSContext *orig_context, JSContext *new_context,
+                          MozJS::Value &source, bool global_object,
+                          JS::MutableHandleObject retval) {
   JS::RootedObject cs_root(orig_context, source.GetRawObjectPointer());
 
   JSObject *tp_obj;
@@ -44,7 +45,7 @@ JSObject *CrossCompartmentCopy(JSContext *orig_context, JSContext *new_context,
     tp_obj = NewTransplantObject(new_context);
   }
   JS::RootedObject cs_fake_target(new_context, tp_obj);
-  return JS_TransplantObject(new_context, cs_root, cs_fake_target);
+  retval.set(JS_TransplantObject(new_context, cs_root, cs_fake_target));
 }
 
 JSObject *NewContextGlobal(JSContext *ctx) {

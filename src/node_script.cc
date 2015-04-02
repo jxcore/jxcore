@@ -290,19 +290,6 @@ JS_METHOD(WrappedScript, CompileRunInNewContext) {
 }
 JS_METHOD_END
 
-#ifdef JS_ENGINE_MOZJS
-static JSObject *CrossCompartmentClone(MozJS::Value &orig_obj,
-                                       JSContext *newc) {
-  JSContext *context = orig_obj.ctx_;
-  MozJS::Value target_sandbox(jxcore::NewTransplantObject(context), context);
-  JSObject *cs_sandbox =
-      jxcore::CrossCompartmentCopy(context, newc, target_sandbox, false);
-
-  CloneObject(context, target_sandbox, orig_obj, target_sandbox);
-  return cs_sandbox;
-}
-#endif
-
 #ifdef JS_ENGINE_V8
 template <WrappedScript::EvalInputFlags input_flag,
           WrappedScript::EvalContextFlags context_flag,
@@ -433,6 +420,16 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(jxcore::PArguments &args,
   return result == args.This() ? result : JS_LEAVE_SCOPE(result);
 }
 #elif defined(JS_ENGINE_MOZJS)
+static void CrossCompartmentClone(MozJS::Value &orig_obj, JSContext *newc,
+                                  JS::MutableHandleObject retval) {
+  JSContext *context = orig_obj.ctx_;
+  MozJS::Value target_sandbox(jxcore::NewTransplantObject(context), context);
+
+  jxcore::CrossCompartmentCopy(context, newc, target_sandbox, false, retval);
+
+  CloneObject(context, target_sandbox, orig_obj, target_sandbox);
+}
+
 template <WrappedScript::EvalInputFlags input_flag,
           WrappedScript::EvalContextFlags context_flag,
           WrappedScript::EvalOutputFlags output_flag>
@@ -497,11 +494,11 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(
       JS_NAME_SET(result, JS_STRING_ID("result"), result_backup);             \
     }                                                                         \
     MozJS::Value source_sandbox(fake_sandbox, context);                       \
-    JSObject *cs_sandbox =                                                    \
-        CrossCompartmentClone(source_sandbox, __contextORisolate);            \
-    JSObject *result_sandbox = nullptr;                                       \
+    JS::RootedObject cs_sandbox(__contextORisolate);                          \
+    CrossCompartmentClone(source_sandbox, __contextORisolate, &cs_sandbox);   \
+    JS::RootedObject result_sandbox(__contextORisolate);                      \
     if (copy_result) {                                                        \
-      result_sandbox = CrossCompartmentClone(result, __contextORisolate);     \
+      CrossCompartmentClone(result, __contextORisolate, &result_sandbox);     \
     }                                                                         \
     JS_LeaveCompartment(context, comp);                                       \
     MozJS::Value comp_sandbox(cs_sandbox, __contextORisolate);                \
@@ -553,13 +550,17 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(
   }
 
   if (output_flag == returnResult) {
-	std::string ex_message = "", ex_stack = "";
+    std::string ex_message = "", ex_stack = "";
     if (context_flag == userContext || context_flag == newContext) {
       JS_LOCAL_OBJECT sandbox_backup = JS_LOCAL_OBJECT(
           jxcore::NewTransplantObject(__contextORisolate), __contextORisolate);
 
-      fake_sandbox = jxcore::CrossCompartmentCopy(__contextORisolate, context,
-                                                  sandbox_backup, true);
+      JS::RootedObject prep(__contextORisolate);
+      jxcore::CrossCompartmentCopy(__contextORisolate, context, sandbox_backup,
+                                   true, &prep);
+
+      fake_sandbox = prep.get();
+
       CloneObject(__contextORisolate, sandbox_backup, sandbox, sandbox_backup);
 
       comp = JS_EnterCompartment(context, fake_sandbox);
@@ -570,17 +571,15 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(
       JS_LOCAL_OBJECT obj_fs(fake_sandbox, context);
       result = script_pr.Run(obj_fs);
 
-      if( !JS_IS_EMPTY(com->temp_exception_) ) {
-    	JS::RootedValue rt_ex(context, com->temp_exception_.GetRawValue());
-    	JS_LOCAL_VALUE msg_ = com->temp_exception_.Get("message");
-    	if(!msg_.IsEmpty())
-    	  ex_message += STRING_TO_STD(msg_);
+      if (!JS_IS_EMPTY(com->temp_exception_)) {
+        JS::RootedValue rt_ex(context, com->temp_exception_.GetRawValue());
+        JS_LOCAL_VALUE msg_ = com->temp_exception_.Get("message");
+        if (!msg_.IsEmpty()) ex_message += STRING_TO_STD(msg_);
 
-    	JS_LOCAL_VALUE stk_ = com->temp_exception_.Get("stack");
-		if(!stk_.IsEmpty())
-		  ex_stack += STRING_TO_STD(stk_);
+        JS_LOCAL_VALUE stk_ = com->temp_exception_.Get("stack");
+        if (!stk_.IsEmpty()) ex_stack += STRING_TO_STD(stk_);
 
-    	com->temp_exception_.Clear();
+        com->temp_exception_.Clear();
       }
     } else {
       MozJS::Script script(jxcore::GetScript(context, mscript), context);
@@ -615,7 +614,8 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(
       }
 
       err_val = try_catch.Exception();
-      JSObject *new_error = CrossCompartmentClone(err_val, __contextORisolate);
+      JS::RootedObject new_error(__contextORisolate);
+      CrossCompartmentClone(err_val, __contextORisolate, &new_error);
       LEAVE_COMPARTMENT(false);
       err_val = JS_LOCAL_OBJECT(new_error, __contextORisolate);
       THROW_EXCEPTION_OBJECT(err_val);
