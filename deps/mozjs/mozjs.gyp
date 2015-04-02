@@ -19,6 +19,7 @@
       ],
       
       'sources': [ 
+	   'incs/mozilla/Char16.h',
        'incs/mozilla/double-conversion/bignum.cc',
        'incs/mozilla/double-conversion/bignum-dtoa.cc',
        'incs/mozilla/double-conversion/cached-powers.cc',
@@ -424,8 +425,17 @@
              'src/jit/ExecutableAllocatorWin.cpp',
            ],
            'include_dirs': [
-             'pre_built'
+             'pre_built',
+			 'incs/nss/nspr/pr/include',
            ],
+		   'dependencies': [ 'incs/nss/nss.gyp:nspr' ],
+		   'conditions':[
+		     ['target_arch=="x64"', {
+			   'defines':['_AMD64_']
+			 }, {
+			   'defines':['_X86_']
+			 }]
+		   ]
          },
          { #no WIN
            'cflags': [

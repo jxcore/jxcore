@@ -6,6 +6,7 @@
 
 /* Implementations of hash functions. */
 
+#include "Char16.h"
 #include "mozilla/HashFunctions.h"
 #include "mozilla/Types.h"
 

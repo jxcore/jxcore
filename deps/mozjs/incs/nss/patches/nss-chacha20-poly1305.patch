@@ -1,0 +1,1868 @@
+diff -r c3565a90b8c4 lib/freebl/blapi.h
+--- a/lib/freebl/blapi.h	Fri Jan 03 20:59:10 2014 +0100
++++ b/lib/freebl/blapi.h	Tue Jan 07 12:11:36 2014 -0800
+@@ -986,6 +986,38 @@
+ 		 unsigned int *outputLen, unsigned int maxOutputLen,
+ 		 const unsigned char *input, unsigned int inputLen);
+ 
++/******************************************/
++/*
++** ChaCha20+Poly1305 AEAD
++*/
++
++extern SECStatus
++ChaCha20Poly1305_InitContext(ChaCha20Poly1305Context *ctx,
++			     const unsigned char *key, unsigned int keyLen,
++			     unsigned int tagLen);
++
++extern ChaCha20Poly1305Context *
++ChaCha20Poly1305_CreateContext(const unsigned char *key, unsigned int keyLen,
++			       unsigned int tagLen);
++
++extern void
++ChaCha20Poly1305_DestroyContext(ChaCha20Poly1305Context *ctx, PRBool freeit);
++
++extern SECStatus
++ChaCha20Poly1305_Seal(const ChaCha20Poly1305Context *ctx,
++		      unsigned char *output, unsigned int *outputLen,
++		      unsigned int maxOutputLen,
++		      const unsigned char *input, unsigned int inputLen,
++		      const unsigned char *nonce, unsigned int nonceLen,
++		      const unsigned char *ad, unsigned int adLen);
++
++extern SECStatus
++ChaCha20Poly1305_Open(const ChaCha20Poly1305Context *ctx,
++		      unsigned char *output, unsigned int *outputLen,
++		      unsigned int maxOutputLen,
++		      const unsigned char *input, unsigned int inputLen,
++		      const unsigned char *nonce, unsigned int nonceLen,
++		      const unsigned char *ad, unsigned int adLen);
+ 
+ /******************************************/
+ /*
+diff -r c3565a90b8c4 lib/freebl/blapit.h
+--- a/lib/freebl/blapit.h	Fri Jan 03 20:59:10 2014 +0100
++++ b/lib/freebl/blapit.h	Tue Jan 07 12:11:36 2014 -0800
+@@ -222,6 +222,7 @@
+ struct SHA512ContextStr     ;
+ struct AESKeyWrapContextStr ;
+ struct SEEDContextStr       ;	
++struct ChaCha20Poly1305ContextStr;
+ 
+ typedef struct DESContextStr        DESContext;
+ typedef struct RC2ContextStr        RC2Context;
+@@ -240,6 +241,7 @@
+ typedef struct SHA512ContextStr     SHA384Context;
+ typedef struct AESKeyWrapContextStr AESKeyWrapContext;
+ typedef struct SEEDContextStr	    SEEDContext;	
++typedef struct ChaCha20Poly1305ContextStr ChaCha20Poly1305Context;	
+ 
+ /***************************************************************************
+ ** RSA Public and Private Key structures
+diff -r c3565a90b8c4 lib/freebl/chacha20/chacha20.c
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/lib/freebl/chacha20/chacha20.c	Tue Jan 07 12:11:36 2014 -0800
+@@ -0,0 +1,108 @@
++/* This Source Code Form is subject to the terms of the Mozilla Public
++ * License, v. 2.0. If a copy of the MPL was not distributed with this
++ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
++
++/* Adopted from the public domain code in NaCl by djb. */
++
++#include <string.h>
++#include <stdio.h>
++
++#include "prtypes.h"
++#include "chacha20.h"
++
++#define ROTL32(v, n) (((v) << (n)) | ((v) >> (32 - (n))))
++#define ROTATE(v, c) ROTL32((v), (c))
++#define XOR(v, w) ((v) ^ (w))
++#define PLUS(x, y) ((x) + (y))
++
++#define U32TO8_LITTLE(p, v) \
++	{ (p)[0] = ((v)      ) & 0xff; (p)[1] = ((v) >>  8) & 0xff; \
++	  (p)[2] = ((v) >> 16) & 0xff; (p)[3] = ((v) >> 24) & 0xff; }
++#define U8TO32_LITTLE(p)   \
++	(((PRUint32)((p)[0])      ) | ((PRUint32)((p)[1]) <<  8) | \
++	 ((PRUint32)((p)[2]) << 16) | ((PRUint32)((p)[3]) << 24)   )
++
++#define QUARTERROUND(a,b,c,d) \
++  x[a] = PLUS(x[a],x[b]); x[d] = ROTATE(XOR(x[d],x[a]),16); \
++  x[c] = PLUS(x[c],x[d]); x[b] = ROTATE(XOR(x[b],x[c]),12); \
++  x[a] = PLUS(x[a],x[b]); x[d] = ROTATE(XOR(x[d],x[a]), 8); \
++  x[c] = PLUS(x[c],x[d]); x[b] = ROTATE(XOR(x[b],x[c]), 7);
++
++static void ChaChaCore(unsigned char output[64], const PRUint32 input[16],
++		       int num_rounds) {
++    PRUint32 x[16];
++    int i;
++
++    memcpy(x, input, sizeof(PRUint32) * 16);
++    for (i = num_rounds; i > 0; i -= 2) {
++	QUARTERROUND( 0, 4, 8,12)
++	QUARTERROUND( 1, 5, 9,13)
++	QUARTERROUND( 2, 6,10,14)
++	QUARTERROUND( 3, 7,11,15)
++	QUARTERROUND( 0, 5,10,15)
++	QUARTERROUND( 1, 6,11,12)
++	QUARTERROUND( 2, 7, 8,13)
++	QUARTERROUND( 3, 4, 9,14)
++    }
++
++    for (i = 0; i < 16; ++i) {
++	x[i] = PLUS(x[i], input[i]);
++    }
++    for (i = 0; i < 16; ++i) {
++	U32TO8_LITTLE(output + 4 * i, x[i]);
++    }
++}
++
++static const unsigned char sigma[16] = "expand 32-byte k";
++
++void ChaCha20XOR(unsigned char *out, const unsigned char *in, unsigned int inLen,
++		 const unsigned char key[32], const unsigned char nonce[8],
++		 uint64_t counter) {
++    unsigned char block[64];
++    PRUint32 input[16];
++    unsigned int u;
++    unsigned int i;
++
++    input[4] = U8TO32_LITTLE(key + 0);
++    input[5] = U8TO32_LITTLE(key + 4);
++    input[6] = U8TO32_LITTLE(key + 8);
++    input[7] = U8TO32_LITTLE(key + 12);
++
++    input[8] = U8TO32_LITTLE(key + 16);
++    input[9] = U8TO32_LITTLE(key + 20);
++    input[10] = U8TO32_LITTLE(key + 24);
++    input[11] = U8TO32_LITTLE(key + 28);
++
++    input[0] = U8TO32_LITTLE(sigma + 0);
++    input[1] = U8TO32_LITTLE(sigma + 4);
++    input[2] = U8TO32_LITTLE(sigma + 8);
++    input[3] = U8TO32_LITTLE(sigma + 12);
++
++    input[12] = (PRUint32)counter;
++    input[13] = (PRUint32)(counter >> 32);
++    input[14] = U8TO32_LITTLE(nonce + 0);
++    input[15] = U8TO32_LITTLE(nonce + 4);
++
++    while (inLen >= 64) {
++	ChaChaCore(block, input, 20);
++	for (i = 0; i < 64; i++) {
++	    out[i] = in[i] ^ block[i];
++	}
++
++	input[12]++;
++	if (input[12] == 0) {
++	    input[13]++;
++	}
++
++	inLen -= 64;
++	in += 64;
++	out += 64;
++    }
++
++    if (inLen > 0) {
++	ChaChaCore(block, input, 20);
++	for (i = 0; i < inLen; i++) {
++	    out[i] = in[i] ^ block[i];
++	}
++    }
++}
+diff -r c3565a90b8c4 lib/freebl/chacha20/chacha20.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/lib/freebl/chacha20/chacha20.h	Tue Jan 07 12:11:36 2014 -0800
+@@ -0,0 +1,22 @@
++/*
++ * chacha20.h - header file for ChaCha20 implementation.
++ *
++ * This Source Code Form is subject to the terms of the Mozilla Public
++ * License, v. 2.0. If a copy of the MPL was not distributed with this
++ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
++
++#ifndef FREEBL_CHACHA20_H_
++#define FREEBL_CHACHA20_H_
++
++#include <stdint.h>
++
++/* ChaCha20XOR encrypts |inLen| bytes from |in| with the given key and
++ * nonce and writes the result to |out|, which may be equal to |in|. The
++ * initial block counter is specified by |counter|. */
++extern void ChaCha20XOR(unsigned char *out,
++			const unsigned char *in, unsigned int inLen,
++			const unsigned char key[32],
++			const unsigned char nonce[8],
++			uint64_t counter);
++
++#endif  /* FREEBL_CHACHA20_H_ */
+diff -r c3565a90b8c4 lib/freebl/chacha20/chacha20_vec.c
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/lib/freebl/chacha20/chacha20_vec.c	Tue Jan 07 12:11:36 2014 -0800
+@@ -0,0 +1,281 @@
++/* This Source Code Form is subject to the terms of the Mozilla Public
++ * License, v. 2.0. If a copy of the MPL was not distributed with this
++ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
++
++/* This implementation is by Ted Krovetz and was submitted to SUPERCOP and
++ * marked as public domain. It was been altered to allow for non-aligned inputs
++ * and to allow the block counter to be passed in specifically. */
++
++#include <string.h>
++
++#include "chacha20.h"
++
++#ifndef CHACHA_RNDS
++#define CHACHA_RNDS 20    /* 8 (high speed), 20 (conservative), 12 (middle) */
++#endif
++
++/* Architecture-neutral way to specify 16-byte vector of ints	      */
++typedef unsigned vec __attribute__ ((vector_size (16)));
++
++/* This implementation is designed for Neon, SSE and AltiVec machines. The
++ * following specify how to do certain vector operations efficiently on
++ * each architecture, using intrinsics.
++ * This implementation supports parallel processing of multiple blocks,
++ * including potentially using general-purpose registers.
++ */
++#if __ARM_NEON__
++#include <arm_neon.h>
++#define GPR_TOO   1
++#define VBPI      2
++#define ONE       (vec)vsetq_lane_u32(1,vdupq_n_u32(0),0)
++#define LOAD(m)   (vec)(*((vec*)(m)))
++#define STORE(m,r) (*((vec*)(m))) = (r)
++#define ROTV1(x)  (vec)vextq_u32((uint32x4_t)x,(uint32x4_t)x,1)
++#define ROTV2(x)  (vec)vextq_u32((uint32x4_t)x,(uint32x4_t)x,2)
++#define ROTV3(x)  (vec)vextq_u32((uint32x4_t)x,(uint32x4_t)x,3)
++#define ROTW16(x) (vec)vrev32q_u16((uint16x8_t)x)
++#if __clang__
++#define ROTW7(x)  (x << ((vec){ 7, 7, 7, 7})) ^ (x >> ((vec){25,25,25,25}))
++#define ROTW8(x)  (x << ((vec){ 8, 8, 8, 8})) ^ (x >> ((vec){24,24,24,24}))
++#define ROTW12(x) (x << ((vec){12,12,12,12})) ^ (x >> ((vec){20,20,20,20}))
++#else
++#define ROTW7(x)  (vec)vsriq_n_u32(vshlq_n_u32((uint32x4_t)x,7),(uint32x4_t)x,25)
++#define ROTW8(x)  (vec)vsriq_n_u32(vshlq_n_u32((uint32x4_t)x,8),(uint32x4_t)x,24)
++#define ROTW12(x) (vec)vsriq_n_u32(vshlq_n_u32((uint32x4_t)x,12),(uint32x4_t)x,20)
++#endif
++#elif __SSE2__
++#include <emmintrin.h>
++#define GPR_TOO   0
++#if __clang__
++#define VBPI      4
++#else
++#define VBPI      3
++#endif
++#define ONE       (vec)_mm_set_epi32(0,0,0,1)
++#define LOAD(m)   (vec)_mm_loadu_si128((__m128i*)(m))
++#define STORE(m,r) _mm_storeu_si128((__m128i*)(m), (__m128i) (r))
++#define ROTV1(x)  (vec)_mm_shuffle_epi32((__m128i)x,_MM_SHUFFLE(0,3,2,1))
++#define ROTV2(x)  (vec)_mm_shuffle_epi32((__m128i)x,_MM_SHUFFLE(1,0,3,2))
++#define ROTV3(x)  (vec)_mm_shuffle_epi32((__m128i)x,_MM_SHUFFLE(2,1,0,3))
++#define ROTW7(x)  (vec)(_mm_slli_epi32((__m128i)x, 7) ^ _mm_srli_epi32((__m128i)x,25))
++#define ROTW12(x) (vec)(_mm_slli_epi32((__m128i)x,12) ^ _mm_srli_epi32((__m128i)x,20))
++#if __SSSE3__
++#include <tmmintrin.h>
++#define ROTW8(x)  (vec)_mm_shuffle_epi8((__m128i)x,_mm_set_epi8(14,13,12,15,10,9,8,11,6,5,4,7,2,1,0,3))
++#define ROTW16(x) (vec)_mm_shuffle_epi8((__m128i)x,_mm_set_epi8(13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2))
++#else
++#define ROTW8(x)  (vec)(_mm_slli_epi32((__m128i)x, 8) ^ _mm_srli_epi32((__m128i)x,24))
++#define ROTW16(x) (vec)(_mm_slli_epi32((__m128i)x,16) ^ _mm_srli_epi32((__m128i)x,16))
++#endif
++#else
++#error -- Implementation supports only machines with neon or SSE2
++#endif
++
++#ifndef REVV_BE
++#define REVV_BE(x)  (x)
++#endif
++
++#ifndef REVW_BE
++#define REVW_BE(x)  (x)
++#endif
++
++#define BPI      (VBPI + GPR_TOO)  /* Blocks computed per loop iteration   */
++
++#define DQROUND_VECTORS(a,b,c,d)		\
++    a += b; d ^= a; d = ROTW16(d);	      \
++    c += d; b ^= c; b = ROTW12(b);	      \
++    a += b; d ^= a; d = ROTW8(d);	       \
++    c += d; b ^= c; b = ROTW7(b);	       \
++    b = ROTV1(b); c = ROTV2(c);  d = ROTV3(d);  \
++    a += b; d ^= a; d = ROTW16(d);	      \
++    c += d; b ^= c; b = ROTW12(b);	      \
++    a += b; d ^= a; d = ROTW8(d);	       \
++    c += d; b ^= c; b = ROTW7(b);	       \
++    b = ROTV3(b); c = ROTV2(c); d = ROTV1(d);
++
++#define QROUND_WORDS(a,b,c,d) \
++  a = a+b; d ^= a; d = d<<16 | d>>16; \
++  c = c+d; b ^= c; b = b<<12 | b>>20; \
++  a = a+b; d ^= a; d = d<< 8 | d>>24; \
++  c = c+d; b ^= c; b = b<< 7 | b>>25;
++
++#define WRITE_XOR(in, op, d, v0, v1, v2, v3)		   \
++    STORE(op + d + 0, LOAD(in + d + 0) ^ REVV_BE(v0));      \
++    STORE(op + d + 4, LOAD(in + d + 4) ^ REVV_BE(v1));      \
++    STORE(op + d + 8, LOAD(in + d + 8) ^ REVV_BE(v2));      \
++    STORE(op + d +12, LOAD(in + d +12) ^ REVV_BE(v3));
++
++void ChaCha20XOR(
++    unsigned char *out,
++    const unsigned char *in,
++    unsigned int inlen,
++    const unsigned char key[32],
++    const unsigned char nonce[8],
++    uint64_t counter)
++{
++    unsigned iters, i, *op=(unsigned *)out, *ip=(unsigned *)in, *kp;
++#if defined(__ARM_NEON__)
++    unsigned *np;
++#endif
++    vec s0, s1, s2, s3;
++#if !defined(__ARM_NEON__) && !defined(__SSE2__)
++    __attribute__ ((aligned (16))) unsigned key[8], nonce[4];
++#endif
++    __attribute__ ((aligned (16))) unsigned chacha_const[] =
++	{0x61707865,0x3320646E,0x79622D32,0x6B206574};
++#if defined(__ARM_NEON__) || defined(__SSE2__)
++    kp = (unsigned *)key;
++#else
++    ((vec *)key)[0] = REVV_BE(((vec *)key)[0]);
++    ((vec *)key)[1] = REVV_BE(((vec *)key)[1]);
++    nonce[0] = REVW_BE(((unsigned *)nonce)[0]);
++    nonce[1] = REVW_BE(((unsigned *)nonce)[1]);
++    nonce[2] = REVW_BE(((unsigned *)nonce)[2]);
++    nonce[3] = REVW_BE(((unsigned *)nonce)[3]);
++    kp = (unsigned *)key;
++    np = (unsigned *)nonce;
++#endif
++#if defined(__ARM_NEON__)
++    np = (unsigned*) nonce;
++#endif
++    s0 = LOAD(chacha_const);
++    s1 = LOAD(&((vec*)kp)[0]);
++    s2 = LOAD(&((vec*)kp)[1]);
++    s3 = (vec) {
++	counter & 0xffffffff,
++	counter >> 32,
++	((uint32_t*)nonce)[0],
++	((uint32_t*)nonce)[1]
++    };
++
++    for (iters = 0; iters < inlen/(BPI*64); iters++) {
++#if GPR_TOO
++	register unsigned x0, x1, x2, x3, x4, x5, x6, x7, x8,
++		  x9, x10, x11, x12, x13, x14, x15;
++#endif
++#if VBPI > 2
++	vec v8,v9,v10,v11;
++#endif
++#if VBPI > 3
++	vec v12,v13,v14,v15;
++#endif
++
++	vec v0,v1,v2,v3,v4,v5,v6,v7;
++	v4 = v0 = s0; v5 = v1 = s1; v6 = v2 = s2; v3 = s3;
++	v7 = v3 + ONE;
++#if VBPI > 2
++	v8 = v4; v9 = v5; v10 = v6;
++	v11 =  v7 + ONE;
++#endif
++#if VBPI > 3
++	v12 = v8; v13 = v9; v14 = v10;
++	v15 = v11 + ONE;
++#endif
++#if GPR_TOO
++	x0 = chacha_const[0]; x1 = chacha_const[1];
++	x2 = chacha_const[2]; x3 = chacha_const[3];
++	x4 = kp[0]; x5 = kp[1]; x6  = kp[2]; x7  = kp[3];
++	x8 = kp[4]; x9 = kp[5]; x10 = kp[6]; x11 = kp[7];
++	x12 = (counter & 0xffffffff)+BPI*iters+(BPI-1); x13 = counter >> 32;
++	x14 = np[0]; x15 = np[1];
++#endif
++	for (i = CHACHA_RNDS/2; i; i--) {
++	    DQROUND_VECTORS(v0,v1,v2,v3)
++	    DQROUND_VECTORS(v4,v5,v6,v7)
++#if VBPI > 2
++	    DQROUND_VECTORS(v8,v9,v10,v11)
++#endif
++#if VBPI > 3
++	    DQROUND_VECTORS(v12,v13,v14,v15)
++#endif
++#if GPR_TOO
++	    QROUND_WORDS( x0, x4, x8,x12)
++	    QROUND_WORDS( x1, x5, x9,x13)
++	    QROUND_WORDS( x2, x6,x10,x14)
++	    QROUND_WORDS( x3, x7,x11,x15)
++	    QROUND_WORDS( x0, x5,x10,x15)
++	    QROUND_WORDS( x1, x6,x11,x12)
++	    QROUND_WORDS( x2, x7, x8,x13)
++	    QROUND_WORDS( x3, x4, x9,x14)
++#endif
++	}
++
++	WRITE_XOR(ip, op, 0, v0+s0, v1+s1, v2+s2, v3+s3)
++	s3 += ONE;
++	WRITE_XOR(ip, op, 16, v4+s0, v5+s1, v6+s2, v7+s3)
++	s3 += ONE;
++#if VBPI > 2
++	WRITE_XOR(ip, op, 32, v8+s0, v9+s1, v10+s2, v11+s3)
++	s3 += ONE;
++#endif
++#if VBPI > 3
++	WRITE_XOR(ip, op, 48, v12+s0, v13+s1, v14+s2, v15+s3)
++	s3 += ONE;
++#endif
++	ip += VBPI*16;
++	op += VBPI*16;
++#if GPR_TOO
++	op[0]  = REVW_BE(REVW_BE(ip[0])  ^ (x0  + chacha_const[0]));
++	op[1]  = REVW_BE(REVW_BE(ip[1])  ^ (x1  + chacha_const[1]));
++	op[2]  = REVW_BE(REVW_BE(ip[2])  ^ (x2  + chacha_const[2]));
++	op[3]  = REVW_BE(REVW_BE(ip[3])  ^ (x3  + chacha_const[3]));
++	op[4]  = REVW_BE(REVW_BE(ip[4])  ^ (x4  + kp[0]));
++	op[5]  = REVW_BE(REVW_BE(ip[5])  ^ (x5  + kp[1]));
++	op[6]  = REVW_BE(REVW_BE(ip[6])  ^ (x6  + kp[2]));
++	op[7]  = REVW_BE(REVW_BE(ip[7])  ^ (x7  + kp[3]));
++	op[8]  = REVW_BE(REVW_BE(ip[8])  ^ (x8  + kp[4]));
++	op[9]  = REVW_BE(REVW_BE(ip[9])  ^ (x9  + kp[5]));
++	op[10] = REVW_BE(REVW_BE(ip[10]) ^ (x10 + kp[6]));
++	op[11] = REVW_BE(REVW_BE(ip[11]) ^ (x11 + kp[7]));
++	op[12] = REVW_BE(REVW_BE(ip[12]) ^ (x12 + (counter & 0xffffffff)+BPI*iters+(BPI-1)));
++	op[13] = REVW_BE(REVW_BE(ip[13]) ^ (x13 + (counter >> 32)));
++	op[14] = REVW_BE(REVW_BE(ip[14]) ^ (x14 + np[0]));
++	op[15] = REVW_BE(REVW_BE(ip[15]) ^ (x15 + np[1]));
++	s3 += ONE;
++	ip += 16;
++	op += 16;
++#endif
++    }
++
++    for (iters = inlen%(BPI*64)/64; iters != 0; iters--) {
++	vec v0 = s0, v1 = s1, v2 = s2, v3 = s3;
++	for (i = CHACHA_RNDS/2; i; i--) {
++	    DQROUND_VECTORS(v0,v1,v2,v3);
++	}
++	WRITE_XOR(ip, op, 0, v0+s0, v1+s1, v2+s2, v3+s3)
++	s3 += ONE;
++	ip += 16;
++	op += 16;
++    }
++
++    inlen = inlen % 64;
++    if (inlen) {
++	__attribute__ ((aligned (16))) vec buf[4];
++	vec v0,v1,v2,v3;
++	v0 = s0; v1 = s1; v2 = s2; v3 = s3;
++	for (i = CHACHA_RNDS/2; i; i--) {
++	    DQROUND_VECTORS(v0,v1,v2,v3);
++	}
++
++	if (inlen >= 16) {
++	    STORE(op + 0, LOAD(ip + 0) ^ REVV_BE(v0 + s0));
++	    if (inlen >= 32) {
++		STORE(op + 4, LOAD(ip + 4) ^ REVV_BE(v1 + s1));
++		if (inlen >= 48) {
++		    STORE(op + 8, LOAD(ip + 8) ^ REVV_BE(v2 + s2));
++		    buf[3] = REVV_BE(v3 + s3);
++		} else {
++		    buf[2] = REVV_BE(v2 + s2);
++		}
++	    } else {
++		buf[1] = REVV_BE(v1 + s1);
++	    }
++	} else {
++	    buf[0] = REVV_BE(v0 + s0);
++	}
++
++	for (i=inlen & ~15; i<inlen; i++) {
++	    ((char *)op)[i] = ((char *)ip)[i] ^ ((char *)buf)[i];
++	}
++    }
++}
+diff -r c3565a90b8c4 lib/freebl/chacha20poly1305.c
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/lib/freebl/chacha20poly1305.c	Tue Jan 07 12:11:36 2014 -0800
+@@ -0,0 +1,169 @@
++/* This Source Code Form is subject to the terms of the Mozilla Public
++ * License, v. 2.0. If a copy of the MPL was not distributed with this
++ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
++
++#ifdef FREEBL_NO_DEPEND
++#include "stubs.h"
++#endif
++
++#include <string.h>
++#include <stdio.h>
++
++#include "seccomon.h"
++#include "secerr.h"
++#include "blapit.h"
++#include "poly1305/poly1305.h"
++#include "chacha20/chacha20.h"
++#include "chacha20poly1305.h"
++
++/* Poly1305Do writes the Poly1305 authenticator of the given additional data
++ * and ciphertext to |out|. */
++static void
++Poly1305Do(unsigned char *out,
++	   const unsigned char *ad, unsigned int adLen,
++	   const unsigned char *ciphertext, unsigned int ciphertextLen,
++	   const unsigned char key[32])
++{
++    poly1305_state state;
++    unsigned int j;
++    unsigned char lengthBytes[8];
++    unsigned int i;
++
++    Poly1305Init(&state, key);
++    j = adLen;
++    for (i = 0; i < sizeof(lengthBytes); i++) {
++	lengthBytes[i] = j;
++	j >>= 8;
++    }
++    Poly1305Update(&state, ad, adLen);
++    Poly1305Update(&state, lengthBytes, sizeof(lengthBytes));
++    j = ciphertextLen;
++    for (i = 0; i < sizeof(lengthBytes); i++) {
++	lengthBytes[i] = j;
++	j >>= 8;
++    }
++    Poly1305Update(&state, ciphertext, ciphertextLen);
++    Poly1305Update(&state, lengthBytes, sizeof(lengthBytes));
++    Poly1305Finish(&state, out);
++}
++
++SECStatus
++ChaCha20Poly1305_InitContext(ChaCha20Poly1305Context *ctx,
++			     const unsigned char *key, unsigned int keyLen,
++			     unsigned int tagLen)
++{
++    if (keyLen != 32) {
++	PORT_SetError(SEC_ERROR_BAD_KEY);
++	return SECFailure;
++    }
++    if (tagLen == 0 || tagLen > 16) {
++	PORT_SetError(SEC_ERROR_INPUT_LEN);
++	return SECFailure;
++    }
++
++    memcpy(ctx->key, key, sizeof(ctx->key));
++    ctx->tagLen = tagLen;
++
++    return SECSuccess;
++}
++
++ChaCha20Poly1305Context *
++ChaCha20Poly1305_CreateContext(const unsigned char *key, unsigned int keyLen,
++			       unsigned int tagLen)
++{
++    ChaCha20Poly1305Context *ctx;
++
++    ctx = PORT_New(ChaCha20Poly1305Context);
++    if (ctx == NULL) {
++	return NULL;
++    }
++
++    if (ChaCha20Poly1305_InitContext(ctx, key, keyLen, tagLen) != SECSuccess) {
++	PORT_Free(ctx);
++	ctx = NULL;
++    }
++
++    return ctx;
++}
++
++void
++ChaCha20Poly1305_DestroyContext(ChaCha20Poly1305Context *ctx, PRBool freeit)
++{
++    memset(ctx, 0, sizeof(*ctx));
++    if (freeit) {
++	PORT_Free(ctx);
++    }
++}
++
++SECStatus
++ChaCha20Poly1305_Seal(const ChaCha20Poly1305Context *ctx,
++		      unsigned char *output, unsigned int *outputLen,
++		      unsigned int maxOutputLen,
++		      const unsigned char *input, unsigned int inputLen,
++		      const unsigned char *nonce, unsigned int nonceLen,
++		      const unsigned char *ad, unsigned int adLen)
++{
++    unsigned char block[64];
++    unsigned char tag[16];
++
++    if (nonceLen != 8) {
++	PORT_SetError(SEC_ERROR_INPUT_LEN);
++	return SECFailure;
++    }
++    *outputLen = inputLen + ctx->tagLen;
++    if (maxOutputLen < *outputLen) {
++	PORT_SetError(SEC_ERROR_OUTPUT_LEN);
++	return SECFailure;
++    }
++
++    memset(block, 0, sizeof(block));
++    // Generate a block of keystream. The first 32 bytes will be the poly1305
++    // key. The remainder of the block is discarded.
++    ChaCha20XOR(block, block, sizeof(block), ctx->key, nonce, 0);
++    ChaCha20XOR(output, input, inputLen, ctx->key, nonce, 1);
++
++    Poly1305Do(tag, ad, adLen, output, inputLen, block);
++    memcpy(output + inputLen, tag, ctx->tagLen);
++
++    return SECSuccess;
++}
++
++SECStatus
++ChaCha20Poly1305_Open(const ChaCha20Poly1305Context *ctx,
++		      unsigned char *output, unsigned int *outputLen,
++		      unsigned int maxOutputLen,
++		      const unsigned char *input, unsigned int inputLen,
++		      const unsigned char *nonce, unsigned int nonceLen,
++		      const unsigned char *ad, unsigned int adLen)
++{
++    unsigned char block[64];
++    unsigned char tag[16];
++
++    if (nonceLen != 8) {
++	PORT_SetError(SEC_ERROR_INPUT_LEN);
++	return SECFailure;
++    }
++    if (inputLen < ctx->tagLen) {
++	PORT_SetError(SEC_ERROR_INPUT_LEN);
++	return SECFailure;
++    }
++    *outputLen = inputLen - ctx->tagLen;
++    if (maxOutputLen < *outputLen) {
++	PORT_SetError(SEC_ERROR_OUTPUT_LEN);
++	return SECFailure;
++    }
++
++    memset(block, 0, sizeof(block));
++    // Generate a block of keystream. The first 32 bytes will be the poly1305
++    // key. The remainder of the block is discarded.
++    ChaCha20XOR(block, block, sizeof(block), ctx->key, nonce, 0);
++    Poly1305Do(tag, ad, adLen, input, inputLen - ctx->tagLen, block);
++    if (NSS_SecureMemcmp(tag, &input[inputLen - ctx->tagLen], ctx->tagLen) != 0) {
++	PORT_SetError(SEC_ERROR_BAD_DATA);
++	return SECFailure;
++    }
++
++    ChaCha20XOR(output, input, inputLen - ctx->tagLen, ctx->key, nonce, 1);
++
++    return SECSuccess;
++}
+diff -r c3565a90b8c4 lib/freebl/chacha20poly1305.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/lib/freebl/chacha20poly1305.h	Tue Jan 07 12:11:36 2014 -0800
+@@ -0,0 +1,15 @@
++/* This Source Code Form is subject to the terms of the Mozilla Public
++ * License, v. 2.0. If a copy of the MPL was not distributed with this
++ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
++
++#ifndef _CHACHA20_POLY1305_H_
++#define _CHACHA20_POLY1305_H_ 1
++
++/* ChaCha20Poly1305ContextStr saves the key and tag length for a
++ * ChaCha20+Poly1305 AEAD operation. */
++struct ChaCha20Poly1305ContextStr {
++    unsigned char key[32];
++    unsigned char tagLen;
++};
++
++#endif /* _CHACHA20_POLY1305_H_ */
+diff -r c3565a90b8c4 lib/freebl/poly1305/poly1305-donna-x64-sse2-incremental-source.c
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/lib/freebl/poly1305/poly1305-donna-x64-sse2-incremental-source.c	Tue Jan 07 12:11:36 2014 -0800
+@@ -0,0 +1,623 @@
++/* This Source Code Form is subject to the terms of the Mozilla Public
++ * License, v. 2.0. If a copy of the MPL was not distributed with this
++ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
++
++/* This implementation of poly1305 is by Andrew Moon
++ * (https://github.com/floodyberry/poly1305-donna) and released as public
++ * domain. It implements SIMD vectorization based on the algorithm described in
++ * http://cr.yp.to/papers.html#neoncrypto. Unrolled to 2 powers, i.e. 64 byte
++ * block size. */
++
++#include <emmintrin.h>
++#include <stdint.h>
++
++#include "poly1305.h"
++
++#define ALIGN(x) __attribute__((aligned(x)))
++#define INLINE inline
++#define U8TO64_LE(m) (*(uint64_t*)(m))
++#define U8TO32_LE(m) (*(uint32_t*)(m))
++#define U64TO8_LE(m,v) (*(uint64_t*)(m)) = v
++
++typedef __m128i xmmi;
++typedef unsigned __int128 uint128_t;
++
++static const uint32_t ALIGN(16) poly1305_x64_sse2_message_mask[4] = {(1 << 26) - 1, 0, (1 << 26) - 1, 0};
++static const uint32_t ALIGN(16) poly1305_x64_sse2_5[4] = {5, 0, 5, 0};
++static const uint32_t ALIGN(16) poly1305_x64_sse2_1shl128[4] = {(1 << 24), 0, (1 << 24), 0};
++
++static uint128_t INLINE
++add128(uint128_t a, uint128_t b) {
++	return a + b;
++}
++
++static uint128_t INLINE
++add128_64(uint128_t a, uint64_t b) {
++	return a + b;
++}
++
++static uint128_t INLINE
++mul64x64_128(uint64_t a, uint64_t b) {
++	return (uint128_t)a * b;
++}
++
++static uint64_t INLINE
++lo128(uint128_t a) {
++	return (uint64_t)a;
++}
++
++static uint64_t INLINE
++shr128(uint128_t v, const int shift) {
++	return (uint64_t)(v >> shift);
++}
++
++static uint64_t INLINE
++shr128_pair(uint64_t hi, uint64_t lo, const int shift) {
++	return (uint64_t)((((uint128_t)hi << 64) | lo) >> shift);
++}
++
++typedef struct poly1305_power_t {
++	union {
++		xmmi v;
++		uint64_t u[2];
++		uint32_t d[4];
++	} R20,R21,R22,R23,R24,S21,S22,S23,S24;
++} poly1305_power;
++
++typedef struct poly1305_state_internal_t {
++	poly1305_power P[2];     /* 288 bytes, top 32 bit halves unused = 144 bytes of free storage */
++	union {
++		xmmi H[5];           /*  80 bytes  */
++		uint64_t HH[10];
++	};
++	/* uint64_t r0,r1,r2;       [24 bytes] */
++	/* uint64_t pad0,pad1;      [16 bytes] */
++	uint64_t started;        /*   8 bytes  */
++	uint64_t leftover;       /*   8 bytes  */
++	uint8_t buffer[64];      /*  64 bytes  */
++} poly1305_state_internal;   /* 448 bytes total + 63 bytes for alignment = 511 bytes raw */
++
++static poly1305_state_internal INLINE
++*poly1305_aligned_state(poly1305_state *state) {
++	return (poly1305_state_internal *)(((uint64_t)state + 63) & ~63);
++}
++
++/* copy 0-63 bytes */
++static void INLINE
++poly1305_block_copy(uint8_t *dst, const uint8_t *src, size_t bytes) {
++	size_t offset = src - dst;
++	if (bytes & 32) {
++		_mm_storeu_si128((xmmi *)(dst + 0), _mm_loadu_si128((xmmi *)(dst + offset + 0)));
++		_mm_storeu_si128((xmmi *)(dst + 16), _mm_loadu_si128((xmmi *)(dst + offset + 16)));
++		dst += 32;
++	}
++	if (bytes & 16) { _mm_storeu_si128((xmmi *)dst, _mm_loadu_si128((xmmi *)(dst + offset))); dst += 16; }
++	if (bytes &  8) { *(uint64_t *)dst = *(uint64_t *)(dst + offset); dst += 8; }
++	if (bytes &  4) { *(uint32_t *)dst = *(uint32_t *)(dst + offset); dst += 4; }
++	if (bytes &  2) { *(uint16_t *)dst = *(uint16_t *)(dst + offset); dst += 2; }
++	if (bytes &  1) { *( uint8_t *)dst = *( uint8_t *)(dst + offset);           }
++}
++
++/* zero 0-15 bytes */
++static void INLINE
++poly1305_block_zero(uint8_t *dst, size_t bytes) {
++	if (bytes &  8) { *(uint64_t *)dst = 0; dst += 8; }
++	if (bytes &  4) { *(uint32_t *)dst = 0; dst += 4; }
++	if (bytes &  2) { *(uint16_t *)dst = 0; dst += 2; }
++	if (bytes &  1) { *( uint8_t *)dst = 0; }
++}
++
++static size_t INLINE
++poly1305_min(size_t a, size_t b) {
++	return (a < b) ? a : b;
++}
++
++void
++Poly1305Init(poly1305_state *state, const unsigned char key[32]) {
++	poly1305_state_internal *st = poly1305_aligned_state(state);
++	poly1305_power *p;
++	uint64_t r0,r1,r2;
++	uint64_t t0,t1;
++
++	/* clamp key */
++	t0 = U8TO64_LE(key + 0);
++	t1 = U8TO64_LE(key + 8);
++	r0 = t0 & 0xffc0fffffff; t0 >>= 44; t0 |= t1 << 20;
++	r1 = t0 & 0xfffffc0ffff; t1 >>= 24;
++	r2 = t1 & 0x00ffffffc0f;
++
++	/* store r in un-used space of st->P[1] */
++	p = &st->P[1];
++	p->R20.d[1] = (uint32_t)(r0      );
++	p->R20.d[3] = (uint32_t)(r0 >> 32);
++	p->R21.d[1] = (uint32_t)(r1      );
++	p->R21.d[3] = (uint32_t)(r1 >> 32);
++	p->R22.d[1] = (uint32_t)(r2      );
++	p->R22.d[3] = (uint32_t)(r2 >> 32);
++
++	/* store pad */
++	p->R23.d[1] = U8TO32_LE(key + 16);
++	p->R23.d[3] = U8TO32_LE(key + 20);
++	p->R24.d[1] = U8TO32_LE(key + 24);
++	p->R24.d[3] = U8TO32_LE(key + 28);
++
++	/* H = 0 */
++	st->H[0] = _mm_setzero_si128();
++	st->H[1] = _mm_setzero_si128();
++	st->H[2] = _mm_setzero_si128();
++	st->H[3] = _mm_setzero_si128();
++	st->H[4] = _mm_setzero_si128();
++
++	st->started = 0;
++	st->leftover = 0;
++}
++
++static void
++poly1305_first_block(poly1305_state_internal *st, const uint8_t *m) {
++	const xmmi MMASK = _mm_load_si128((xmmi *)poly1305_x64_sse2_message_mask);
++	const xmmi FIVE = _mm_load_si128((xmmi*)poly1305_x64_sse2_5);
++	const xmmi HIBIT = _mm_load_si128((xmmi*)poly1305_x64_sse2_1shl128);
++	xmmi T5,T6;
++	poly1305_power *p;
++	uint128_t d[3];
++	uint64_t r0,r1,r2;
++	uint64_t r20,r21,r22,s22;
++	uint64_t pad0,pad1;
++	uint64_t c;
++	uint64_t i;
++
++	/* pull out stored info */
++	p = &st->P[1];
++
++	r0   = ((uint64_t)p->R20.d[3] << 32) | (uint64_t)p->R20.d[1];
++	r1   = ((uint64_t)p->R21.d[3] << 32) | (uint64_t)p->R21.d[1];
++	r2   = ((uint64_t)p->R22.d[3] << 32) | (uint64_t)p->R22.d[1];
++	pad0 = ((uint64_t)p->R23.d[3] << 32) | (uint64_t)p->R23.d[1];
++	pad1 = ((uint64_t)p->R24.d[3] << 32) | (uint64_t)p->R24.d[1];
++
++	/* compute powers r^2,r^4 */
++	r20 = r0;
++	r21 = r1;
++	r22 = r2;
++	for (i = 0; i < 2; i++) {
++		s22 = r22 * (5 << 2);
++
++		d[0] = add128(mul64x64_128(r20, r20), mul64x64_128(r21 * 2, s22));
++		d[1] = add128(mul64x64_128(r22, s22), mul64x64_128(r20 * 2, r21));
++		d[2] = add128(mul64x64_128(r21, r21), mul64x64_128(r22 * 2, r20));
++
++		                           r20 = lo128(d[0]) & 0xfffffffffff; c = shr128(d[0], 44);
++		d[1] = add128_64(d[1], c); r21 = lo128(d[1]) & 0xfffffffffff; c = shr128(d[1], 44);
++		d[2] = add128_64(d[2], c); r22 = lo128(d[2]) & 0x3ffffffffff; c = shr128(d[2], 42);
++		r20 += c * 5; c = (r20 >> 44); r20 = r20 & 0xfffffffffff;
++		r21 += c;
++
++		p->R20.v = _mm_shuffle_epi32(_mm_cvtsi32_si128((uint32_t)( r20                     ) & 0x3ffffff), _MM_SHUFFLE(1,0,1,0));
++		p->R21.v = _mm_shuffle_epi32(_mm_cvtsi32_si128((uint32_t)((r20 >> 26) | (r21 << 18)) & 0x3ffffff), _MM_SHUFFLE(1,0,1,0));
++		p->R22.v = _mm_shuffle_epi32(_mm_cvtsi32_si128((uint32_t)((r21 >> 8)               ) & 0x3ffffff), _MM_SHUFFLE(1,0,1,0));
++		p->R23.v = _mm_shuffle_epi32(_mm_cvtsi32_si128((uint32_t)((r21 >> 34) | (r22 << 10)) & 0x3ffffff), _MM_SHUFFLE(1,0,1,0));
++		p->R24.v = _mm_shuffle_epi32(_mm_cvtsi32_si128((uint32_t)((r22 >> 16)              )            ), _MM_SHUFFLE(1,0,1,0));
++		p->S21.v = _mm_mul_epu32(p->R21.v, FIVE);
++		p->S22.v = _mm_mul_epu32(p->R22.v, FIVE);
++		p->S23.v = _mm_mul_epu32(p->R23.v, FIVE);
++		p->S24.v = _mm_mul_epu32(p->R24.v, FIVE);
++		p--;
++	}
++
++	/* put saved info back */
++	p = &st->P[1];
++	p->R20.d[1] = (uint32_t)(r0        );
++	p->R20.d[3] = (uint32_t)(r0   >> 32);
++	p->R21.d[1] = (uint32_t)(r1        );
++	p->R21.d[3] = (uint32_t)(r1   >> 32);
++	p->R22.d[1] = (uint32_t)(r2        );
++	p->R22.d[3] = (uint32_t)(r2   >> 32);
++	p->R23.d[1] = (uint32_t)(pad0      );
++	p->R23.d[3] = (uint32_t)(pad0 >> 32);
++	p->R24.d[1] = (uint32_t)(pad1      );
++	p->R24.d[3] = (uint32_t)(pad1 >> 32);
++
++	/* H = [Mx,My] */
++	T5 = _mm_unpacklo_epi64(_mm_loadl_epi64((xmmi *)(m + 0)), _mm_loadl_epi64((xmmi *)(m + 16)));
++	T6 = _mm_unpacklo_epi64(_mm_loadl_epi64((xmmi *)(m + 8)), _mm_loadl_epi64((xmmi *)(m + 24)));
++	st->H[0] = _mm_and_si128(MMASK, T5);
++	st->H[1] = _mm_and_si128(MMASK, _mm_srli_epi64(T5, 26));
++	T5 = _mm_or_si128(_mm_srli_epi64(T5, 52), _mm_slli_epi64(T6, 12));
++	st->H[2] = _mm_and_si128(MMASK, T5);
++	st->H[3] = _mm_and_si128(MMASK, _mm_srli_epi64(T5, 26));
++	st->H[4] = _mm_or_si128(_mm_srli_epi64(T6, 40), HIBIT);
++}
++
++static void
++poly1305_blocks(poly1305_state_internal *st, const uint8_t *m, size_t bytes) {
++	const xmmi MMASK = _mm_load_si128((xmmi *)poly1305_x64_sse2_message_mask);
++	const xmmi FIVE = _mm_load_si128((xmmi*)poly1305_x64_sse2_5);
++	const xmmi HIBIT = _mm_load_si128((xmmi*)poly1305_x64_sse2_1shl128);
++
++	poly1305_power *p;
++	xmmi H0,H1,H2,H3,H4;
++	xmmi T0,T1,T2,T3,T4,T5,T6;
++	xmmi M0,M1,M2,M3,M4;
++	xmmi C1,C2;
++
++	H0 = st->H[0];
++	H1 = st->H[1];
++	H2 = st->H[2];
++	H3 = st->H[3];
++	H4 = st->H[4];
++
++	while (bytes >= 64) {
++		/* H *= [r^4,r^4] */
++		p = &st->P[0];
++		T0 = _mm_mul_epu32(H0, p->R20.v);
++		T1 = _mm_mul_epu32(H0, p->R21.v);
++		T2 = _mm_mul_epu32(H0, p->R22.v);
++		T3 = _mm_mul_epu32(H0, p->R23.v);
++		T4 = _mm_mul_epu32(H0, p->R24.v);
++		T5 = _mm_mul_epu32(H1, p->S24.v); T6 = _mm_mul_epu32(H1, p->R20.v); T0 = _mm_add_epi64(T0, T5); T1 = _mm_add_epi64(T1, T6);
++		T5 = _mm_mul_epu32(H2, p->S23.v); T6 = _mm_mul_epu32(H2, p->S24.v); T0 = _mm_add_epi64(T0, T5); T1 = _mm_add_epi64(T1, T6);
++		T5 = _mm_mul_epu32(H3, p->S22.v); T6 = _mm_mul_epu32(H3, p->S23.v); T0 = _mm_add_epi64(T0, T5); T1 = _mm_add_epi64(T1, T6);
++		T5 = _mm_mul_epu32(H4, p->S21.v); T6 = _mm_mul_epu32(H4, p->S22.v); T0 = _mm_add_epi64(T0, T5); T1 = _mm_add_epi64(T1, T6);
++		T5 = _mm_mul_epu32(H1, p->R21.v); T6 = _mm_mul_epu32(H1, p->R22.v); T2 = _mm_add_epi64(T2, T5); T3 = _mm_add_epi64(T3, T6);
++		T5 = _mm_mul_epu32(H2, p->R20.v); T6 = _mm_mul_epu32(H2, p->R21.v); T2 = _mm_add_epi64(T2, T5); T3 = _mm_add_epi64(T3, T6);
++		T5 = _mm_mul_epu32(H3, p->S24.v); T6 = _mm_mul_epu32(H3, p->R20.v); T2 = _mm_add_epi64(T2, T5); T3 = _mm_add_epi64(T3, T6);
++		T5 = _mm_mul_epu32(H4, p->S23.v); T6 = _mm_mul_epu32(H4, p->S24.v); T2 = _mm_add_epi64(T2, T5); T3 = _mm_add_epi64(T3, T6);
++		T5 = _mm_mul_epu32(H1, p->R23.v);                                   T4 = _mm_add_epi64(T4, T5);
++		T5 = _mm_mul_epu32(H2, p->R22.v);                                   T4 = _mm_add_epi64(T4, T5);
++		T5 = _mm_mul_epu32(H3, p->R21.v);                                   T4 = _mm_add_epi64(T4, T5);
++		T5 = _mm_mul_epu32(H4, p->R20.v);                                   T4 = _mm_add_epi64(T4, T5);
++
++		/* H += [Mx,My]*[r^2,r^2] */
++		T5 = _mm_unpacklo_epi64(_mm_loadl_epi64((xmmi *)(m + 0)), _mm_loadl_epi64((xmmi *)(m + 16)));
++		T6 = _mm_unpacklo_epi64(_mm_loadl_epi64((xmmi *)(m + 8)), _mm_loadl_epi64((xmmi *)(m + 24)));
++		M0 = _mm_and_si128(MMASK, T5);
++		M1 = _mm_and_si128(MMASK, _mm_srli_epi64(T5, 26));
++		T5 = _mm_or_si128(_mm_srli_epi64(T5, 52), _mm_slli_epi64(T6, 12));
++		M2 = _mm_and_si128(MMASK, T5);
++		M3 = _mm_and_si128(MMASK, _mm_srli_epi64(T5, 26));
++		M4 = _mm_or_si128(_mm_srli_epi64(T6, 40), HIBIT);
++
++		p = &st->P[1];
++		T5 = _mm_mul_epu32(M0, p->R20.v); T6 = _mm_mul_epu32(M0, p->R21.v); T0 = _mm_add_epi64(T0, T5); T1 = _mm_add_epi64(T1, T6);
++		T5 = _mm_mul_epu32(M1, p->S24.v); T6 = _mm_mul_epu32(M1, p->R20.v); T0 = _mm_add_epi64(T0, T5); T1 = _mm_add_epi64(T1, T6);
++		T5 = _mm_mul_epu32(M2, p->S23.v); T6 = _mm_mul_epu32(M2, p->S24.v); T0 = _mm_add_epi64(T0, T5); T1 = _mm_add_epi64(T1, T6);
++		T5 = _mm_mul_epu32(M3, p->S22.v); T6 = _mm_mul_epu32(M3, p->S23.v); T0 = _mm_add_epi64(T0, T5); T1 = _mm_add_epi64(T1, T6);
++		T5 = _mm_mul_epu32(M4, p->S21.v); T6 = _mm_mul_epu32(M4, p->S22.v); T0 = _mm_add_epi64(T0, T5); T1 = _mm_add_epi64(T1, T6);
++		T5 = _mm_mul_epu32(M0, p->R22.v); T6 = _mm_mul_epu32(M0, p->R23.v); T2 = _mm_add_epi64(T2, T5); T3 = _mm_add_epi64(T3, T6);
++		T5 = _mm_mul_epu32(M1, p->R21.v); T6 = _mm_mul_epu32(M1, p->R22.v); T2 = _mm_add_epi64(T2, T5); T3 = _mm_add_epi64(T3, T6);
++		T5 = _mm_mul_epu32(M2, p->R20.v); T6 = _mm_mul_epu32(M2, p->R21.v); T2 = _mm_add_epi64(T2, T5); T3 = _mm_add_epi64(T3, T6);
++		T5 = _mm_mul_epu32(M3, p->S24.v); T6 = _mm_mul_epu32(M3, p->R20.v); T2 = _mm_add_epi64(T2, T5); T3 = _mm_add_epi64(T3, T6);
++		T5 = _mm_mul_epu32(M4, p->S23.v); T6 = _mm_mul_epu32(M4, p->S24.v); T2 = _mm_add_epi64(T2, T5); T3 = _mm_add_epi64(T3, T6);
++		T5 = _mm_mul_epu32(M0, p->R24.v);                                   T4 = _mm_add_epi64(T4, T5);
++		T5 = _mm_mul_epu32(M1, p->R23.v);                                   T4 = _mm_add_epi64(T4, T5);
++		T5 = _mm_mul_epu32(M2, p->R22.v);                                   T4 = _mm_add_epi64(T4, T5);
++		T5 = _mm_mul_epu32(M3, p->R21.v);                                   T4 = _mm_add_epi64(T4, T5);
++		T5 = _mm_mul_epu32(M4, p->R20.v);                                   T4 = _mm_add_epi64(T4, T5);
++
++		/* H += [Mx,My] */
++		T5 = _mm_unpacklo_epi64(_mm_loadl_epi64((xmmi *)(m + 32)), _mm_loadl_epi64((xmmi *)(m + 48)));
++		T6 = _mm_unpacklo_epi64(_mm_loadl_epi64((xmmi *)(m + 40)), _mm_loadl_epi64((xmmi *)(m + 56)));
++		M0 = _mm_and_si128(MMASK, T5);
++		M1 = _mm_and_si128(MMASK, _mm_srli_epi64(T5, 26));
++		T5 = _mm_or_si128(_mm_srli_epi64(T5, 52), _mm_slli_epi64(T6, 12));
++		M2 = _mm_and_si128(MMASK, T5);
++		M3 = _mm_and_si128(MMASK, _mm_srli_epi64(T5, 26));
++		M4 = _mm_or_si128(_mm_srli_epi64(T6, 40), HIBIT);
++
++		T0 = _mm_add_epi64(T0, M0);
++		T1 = _mm_add_epi64(T1, M1);
++		T2 = _mm_add_epi64(T2, M2);
++		T3 = _mm_add_epi64(T3, M3);
++		T4 = _mm_add_epi64(T4, M4);
++
++		/* reduce */
++		C1 = _mm_srli_epi64(T0, 26); C2 = _mm_srli_epi64(T3, 26); T0 = _mm_and_si128(T0, MMASK); T3 = _mm_and_si128(T3, MMASK); T1 = _mm_add_epi64(T1, C1); T4 = _mm_add_epi64(T4, C2);
++		C1 = _mm_srli_epi64(T1, 26); C2 = _mm_srli_epi64(T4, 26); T1 = _mm_and_si128(T1, MMASK); T4 = _mm_and_si128(T4, MMASK); T2 = _mm_add_epi64(T2, C1); T0 = _mm_add_epi64(T0, _mm_mul_epu32(C2, FIVE));
++		C1 = _mm_srli_epi64(T2, 26); C2 = _mm_srli_epi64(T0, 26); T2 = _mm_and_si128(T2, MMASK); T0 = _mm_and_si128(T0, MMASK); T3 = _mm_add_epi64(T3, C1); T1 = _mm_add_epi64(T1, C2);
++		C1 = _mm_srli_epi64(T3, 26);                              T3 = _mm_and_si128(T3, MMASK);                                T4 = _mm_add_epi64(T4, C1);
++
++		/* H = (H*[r^4,r^4] + [Mx,My]*[r^2,r^2] + [Mx,My]) */
++		H0 = T0;
++		H1 = T1;
++		H2 = T2;
++		H3 = T3;
++		H4 = T4;
++
++		m += 64;
++		bytes -= 64;
++	}
++
++	st->H[0] = H0;
++	st->H[1] = H1;
++	st->H[2] = H2;
++	st->H[3] = H3;
++	st->H[4] = H4;
++}
++
++static size_t
++poly1305_combine(poly1305_state_internal *st, const uint8_t *m, size_t bytes) {
++	const xmmi MMASK = _mm_load_si128((xmmi *)poly1305_x64_sse2_message_mask);
++	const xmmi HIBIT = _mm_load_si128((xmmi*)poly1305_x64_sse2_1shl128);
++	const xmmi FIVE = _mm_load_si128((xmmi*)poly1305_x64_sse2_5);
++
++	poly1305_power *p;
++	xmmi H0,H1,H2,H3,H4;
++	xmmi M0,M1,M2,M3,M4;
++	xmmi T0,T1,T2,T3,T4,T5,T6;
++	xmmi C1,C2;
++
++	uint64_t r0,r1,r2;
++	uint64_t t0,t1,t2,t3,t4;
++	uint64_t c;
++	size_t consumed = 0;
++
++	H0 = st->H[0];
++	H1 = st->H[1];
++	H2 = st->H[2];
++	H3 = st->H[3];
++	H4 = st->H[4];
++
++	/* p = [r^2,r^2] */
++	p = &st->P[1];
++
++	if (bytes >= 32) {
++		/* H *= [r^2,r^2] */
++		T0 = _mm_mul_epu32(H0, p->R20.v);
++		T1 = _mm_mul_epu32(H0, p->R21.v);
++		T2 = _mm_mul_epu32(H0, p->R22.v);
++		T3 = _mm_mul_epu32(H0, p->R23.v);
++		T4 = _mm_mul_epu32(H0, p->R24.v);
++		T5 = _mm_mul_epu32(H1, p->S24.v); T6 = _mm_mul_epu32(H1, p->R20.v); T0 = _mm_add_epi64(T0, T5); T1 = _mm_add_epi64(T1, T6);
++		T5 = _mm_mul_epu32(H2, p->S23.v); T6 = _mm_mul_epu32(H2, p->S24.v); T0 = _mm_add_epi64(T0, T5); T1 = _mm_add_epi64(T1, T6);
++		T5 = _mm_mul_epu32(H3, p->S22.v); T6 = _mm_mul_epu32(H3, p->S23.v); T0 = _mm_add_epi64(T0, T5); T1 = _mm_add_epi64(T1, T6);
++		T5 = _mm_mul_epu32(H4, p->S21.v); T6 = _mm_mul_epu32(H4, p->S22.v); T0 = _mm_add_epi64(T0, T5); T1 = _mm_add_epi64(T1, T6);
++		T5 = _mm_mul_epu32(H1, p->R21.v); T6 = _mm_mul_epu32(H1, p->R22.v); T2 = _mm_add_epi64(T2, T5); T3 = _mm_add_epi64(T3, T6);
++		T5 = _mm_mul_epu32(H2, p->R20.v); T6 = _mm_mul_epu32(H2, p->R21.v); T2 = _mm_add_epi64(T2, T5); T3 = _mm_add_epi64(T3, T6);
++		T5 = _mm_mul_epu32(H3, p->S24.v); T6 = _mm_mul_epu32(H3, p->R20.v); T2 = _mm_add_epi64(T2, T5); T3 = _mm_add_epi64(T3, T6);
++		T5 = _mm_mul_epu32(H4, p->S23.v); T6 = _mm_mul_epu32(H4, p->S24.v); T2 = _mm_add_epi64(T2, T5); T3 = _mm_add_epi64(T3, T6);
++		T5 = _mm_mul_epu32(H1, p->R23.v);                                   T4 = _mm_add_epi64(T4, T5);
++		T5 = _mm_mul_epu32(H2, p->R22.v);                                   T4 = _mm_add_epi64(T4, T5);
++		T5 = _mm_mul_epu32(H3, p->R21.v);                                   T4 = _mm_add_epi64(T4, T5);
++		T5 = _mm_mul_epu32(H4, p->R20.v);                                   T4 = _mm_add_epi64(T4, T5);
++
++		/* H += [Mx,My] */
++		T5 = _mm_unpacklo_epi64(_mm_loadl_epi64((xmmi *)(m + 0)), _mm_loadl_epi64((xmmi *)(m + 16)));
++		T6 = _mm_unpacklo_epi64(_mm_loadl_epi64((xmmi *)(m + 8)), _mm_loadl_epi64((xmmi *)(m + 24)));
++		M0 = _mm_and_si128(MMASK, T5);
++		M1 = _mm_and_si128(MMASK, _mm_srli_epi64(T5, 26));
++		T5 = _mm_or_si128(_mm_srli_epi64(T5, 52), _mm_slli_epi64(T6, 12));
++		M2 = _mm_and_si128(MMASK, T5);
++		M3 = _mm_and_si128(MMASK, _mm_srli_epi64(T5, 26));
++		M4 = _mm_or_si128(_mm_srli_epi64(T6, 40), HIBIT);
++
++		T0 = _mm_add_epi64(T0, M0);
++		T1 = _mm_add_epi64(T1, M1);
++		T2 = _mm_add_epi64(T2, M2);
++		T3 = _mm_add_epi64(T3, M3);
++		T4 = _mm_add_epi64(T4, M4);
++
++		/* reduce */
++		C1 = _mm_srli_epi64(T0, 26); C2 = _mm_srli_epi64(T3, 26); T0 = _mm_and_si128(T0, MMASK); T3 = _mm_and_si128(T3, MMASK); T1 = _mm_add_epi64(T1, C1); T4 = _mm_add_epi64(T4, C2);
++		C1 = _mm_srli_epi64(T1, 26); C2 = _mm_srli_epi64(T4, 26); T1 = _mm_and_si128(T1, MMASK); T4 = _mm_and_si128(T4, MMASK); T2 = _mm_add_epi64(T2, C1); T0 = _mm_add_epi64(T0, _mm_mul_epu32(C2, FIVE));
++		C1 = _mm_srli_epi64(T2, 26); C2 = _mm_srli_epi64(T0, 26); T2 = _mm_and_si128(T2, MMASK); T0 = _mm_and_si128(T0, MMASK); T3 = _mm_add_epi64(T3, C1); T1 = _mm_add_epi64(T1, C2);
++		C1 = _mm_srli_epi64(T3, 26);                              T3 = _mm_and_si128(T3, MMASK);                                T4 = _mm_add_epi64(T4, C1);
++
++		/* H = (H*[r^2,r^2] + [Mx,My]) */
++		H0 = T0;
++		H1 = T1;
++		H2 = T2;
++		H3 = T3;
++		H4 = T4;
++
++		consumed = 32;
++	}
++
++	/* finalize, H *= [r^2,r] */
++	r0 = ((uint64_t)p->R20.d[3] << 32) | (uint64_t)p->R20.d[1];
++	r1 = ((uint64_t)p->R21.d[3] << 32) | (uint64_t)p->R21.d[1];
++	r2 = ((uint64_t)p->R22.d[3] << 32) | (uint64_t)p->R22.d[1];
++
++	p->R20.d[2] = (uint32_t)( r0                    ) & 0x3ffffff;
++	p->R21.d[2] = (uint32_t)((r0 >> 26) | (r1 << 18)) & 0x3ffffff;
++	p->R22.d[2] = (uint32_t)((r1 >> 8)              ) & 0x3ffffff;
++	p->R23.d[2] = (uint32_t)((r1 >> 34) | (r2 << 10)) & 0x3ffffff;
++	p->R24.d[2] = (uint32_t)((r2 >> 16)             )            ;
++	p->S21.d[2] = p->R21.d[2] * 5;
++	p->S22.d[2] = p->R22.d[2] * 5;
++	p->S23.d[2] = p->R23.d[2] * 5;
++	p->S24.d[2] = p->R24.d[2] * 5;
++
++	/* H *= [r^2,r] */
++	T0 = _mm_mul_epu32(H0, p->R20.v);
++	T1 = _mm_mul_epu32(H0, p->R21.v);
++	T2 = _mm_mul_epu32(H0, p->R22.v);
++	T3 = _mm_mul_epu32(H0, p->R23.v);
++	T4 = _mm_mul_epu32(H0, p->R24.v);
++	T5 = _mm_mul_epu32(H1, p->S24.v); T6 = _mm_mul_epu32(H1, p->R20.v); T0 = _mm_add_epi64(T0, T5); T1 = _mm_add_epi64(T1, T6);
++	T5 = _mm_mul_epu32(H2, p->S23.v); T6 = _mm_mul_epu32(H2, p->S24.v); T0 = _mm_add_epi64(T0, T5); T1 = _mm_add_epi64(T1, T6);
++	T5 = _mm_mul_epu32(H3, p->S22.v); T6 = _mm_mul_epu32(H3, p->S23.v); T0 = _mm_add_epi64(T0, T5); T1 = _mm_add_epi64(T1, T6);
++	T5 = _mm_mul_epu32(H4, p->S21.v); T6 = _mm_mul_epu32(H4, p->S22.v); T0 = _mm_add_epi64(T0, T5); T1 = _mm_add_epi64(T1, T6);
++	T5 = _mm_mul_epu32(H1, p->R21.v); T6 = _mm_mul_epu32(H1, p->R22.v); T2 = _mm_add_epi64(T2, T5); T3 = _mm_add_epi64(T3, T6);
++	T5 = _mm_mul_epu32(H2, p->R20.v); T6 = _mm_mul_epu32(H2, p->R21.v); T2 = _mm_add_epi64(T2, T5); T3 = _mm_add_epi64(T3, T6);
++	T5 = _mm_mul_epu32(H3, p->S24.v); T6 = _mm_mul_epu32(H3, p->R20.v); T2 = _mm_add_epi64(T2, T5); T3 = _mm_add_epi64(T3, T6);
++	T5 = _mm_mul_epu32(H4, p->S23.v); T6 = _mm_mul_epu32(H4, p->S24.v); T2 = _mm_add_epi64(T2, T5); T3 = _mm_add_epi64(T3, T6);
++	T5 = _mm_mul_epu32(H1, p->R23.v);                                   T4 = _mm_add_epi64(T4, T5);
++	T5 = _mm_mul_epu32(H2, p->R22.v);                                   T4 = _mm_add_epi64(T4, T5);
++	T5 = _mm_mul_epu32(H3, p->R21.v);                                   T4 = _mm_add_epi64(T4, T5);
++	T5 = _mm_mul_epu32(H4, p->R20.v);                                   T4 = _mm_add_epi64(T4, T5);
++
++	C1 = _mm_srli_epi64(T0, 26); C2 = _mm_srli_epi64(T3, 26); T0 = _mm_and_si128(T0, MMASK); T3 = _mm_and_si128(T3, MMASK); T1 = _mm_add_epi64(T1, C1); T4 = _mm_add_epi64(T4, C2);
++	C1 = _mm_srli_epi64(T1, 26); C2 = _mm_srli_epi64(T4, 26); T1 = _mm_and_si128(T1, MMASK); T4 = _mm_and_si128(T4, MMASK); T2 = _mm_add_epi64(T2, C1); T0 = _mm_add_epi64(T0, _mm_mul_epu32(C2, FIVE));
++	C1 = _mm_srli_epi64(T2, 26); C2 = _mm_srli_epi64(T0, 26); T2 = _mm_and_si128(T2, MMASK); T0 = _mm_and_si128(T0, MMASK); T3 = _mm_add_epi64(T3, C1); T1 = _mm_add_epi64(T1, C2);
++	C1 = _mm_srli_epi64(T3, 26);                              T3 = _mm_and_si128(T3, MMASK);                                T4 = _mm_add_epi64(T4, C1);
++
++	/* H = H[0]+H[1] */
++	H0 = _mm_add_epi64(T0, _mm_srli_si128(T0, 8));
++	H1 = _mm_add_epi64(T1, _mm_srli_si128(T1, 8));
++	H2 = _mm_add_epi64(T2, _mm_srli_si128(T2, 8));
++	H3 = _mm_add_epi64(T3, _mm_srli_si128(T3, 8));
++	H4 = _mm_add_epi64(T4, _mm_srli_si128(T4, 8));
++
++	t0 = _mm_cvtsi128_si32(H0)    ; c = (t0 >> 26); t0 &= 0x3ffffff;
++	t1 = _mm_cvtsi128_si32(H1) + c; c = (t1 >> 26); t1 &= 0x3ffffff;
++	t2 = _mm_cvtsi128_si32(H2) + c; c = (t2 >> 26); t2 &= 0x3ffffff;
++	t3 = _mm_cvtsi128_si32(H3) + c; c = (t3 >> 26); t3 &= 0x3ffffff;
++	t4 = _mm_cvtsi128_si32(H4) + c; c = (t4 >> 26); t4 &= 0x3ffffff;
++	t0 =              t0 + (c * 5); c = (t0 >> 26); t0 &= 0x3ffffff;
++	t1 =              t1 + c;
++
++	st->HH[0] =  ((t0      ) | (t1 << 26)             ) & 0xfffffffffffull;
++	st->HH[1] =  ((t1 >> 18) | (t2 <<  8) | (t3 << 34)) & 0xfffffffffffull;
++	st->HH[2] =  ((t3 >> 10) | (t4 << 16)             ) & 0x3ffffffffffull;
++
++	return consumed;
++}
++
++void
++Poly1305Update(poly1305_state *state, const unsigned char *m, size_t bytes) {
++	poly1305_state_internal *st = poly1305_aligned_state(state);
++	size_t want;
++
++	/* need at least 32 initial bytes to start the accelerated branch */
++	if (!st->started) {
++		if ((st->leftover == 0) && (bytes > 32)) {
++			poly1305_first_block(st, m);
++			m += 32;
++			bytes -= 32;
++		} else {
++			want = poly1305_min(32 - st->leftover, bytes);
++			poly1305_block_copy(st->buffer + st->leftover, m, want);
++			bytes -= want;
++			m += want;
++			st->leftover += want;
++			if ((st->leftover < 32) || (bytes == 0))
++				return;
++			poly1305_first_block(st, st->buffer);
++			st->leftover = 0;
++		}
++		st->started = 1;
++	}
++
++	/* handle leftover */
++	if (st->leftover) {
++		want = poly1305_min(64 - st->leftover, bytes);
++		poly1305_block_copy(st->buffer + st->leftover, m, want);
++		bytes -= want;
++		m += want;
++		st->leftover += want;
++		if (st->leftover < 64)
++			return;
++		poly1305_blocks(st, st->buffer, 64);
++		st->leftover = 0;
++	}
++
++	/* process 64 byte blocks */
++	if (bytes >= 64) {
++		want = (bytes & ~63);
++		poly1305_blocks(st, m, want);
++		m += want;
++		bytes -= want;
++	}
++
++	if (bytes) {
++		poly1305_block_copy(st->buffer + st->leftover, m, bytes);
++		st->leftover += bytes;
++	}
++}
++
++void
++Poly1305Finish(poly1305_state *state, unsigned char mac[16]) {
++	poly1305_state_internal *st = poly1305_aligned_state(state);
++	size_t leftover = st->leftover;
++	uint8_t *m = st->buffer;
++	uint128_t d[3];
++	uint64_t h0,h1,h2;
++	uint64_t t0,t1;
++	uint64_t g0,g1,g2,c,nc;
++	uint64_t r0,r1,r2,s1,s2;
++	poly1305_power *p;
++
++	if (st->started) {
++		size_t consumed = poly1305_combine(st, m, leftover);
++		leftover -= consumed;
++		m += consumed;
++	}
++
++	/* st->HH will either be 0 or have the combined result */
++	h0 = st->HH[0];
++	h1 = st->HH[1];
++	h2 = st->HH[2];
++
++	p = &st->P[1];
++	r0 = ((uint64_t)p->R20.d[3] << 32) | (uint64_t)p->R20.d[1];
++	r1 = ((uint64_t)p->R21.d[3] << 32) | (uint64_t)p->R21.d[1];
++	r2 = ((uint64_t)p->R22.d[3] << 32) | (uint64_t)p->R22.d[1];
++	s1 = r1 * (5 << 2);
++	s2 = r2 * (5 << 2);
++
++	if (leftover < 16)
++		goto poly1305_donna_atmost15bytes;
++
++poly1305_donna_atleast16bytes:
++	t0 = U8TO64_LE(m + 0);
++	t1 = U8TO64_LE(m + 8);
++	h0 += t0 & 0xfffffffffff;
++	t0 = shr128_pair(t1, t0, 44);
++	h1 += t0 & 0xfffffffffff;
++	h2 += (t1 >> 24) | ((uint64_t)1 << 40);
++
++poly1305_donna_mul:
++	d[0] = add128(add128(mul64x64_128(h0, r0), mul64x64_128(h1, s2)), mul64x64_128(h2, s1));
++	d[1] = add128(add128(mul64x64_128(h0, r1), mul64x64_128(h1, r0)), mul64x64_128(h2, s2));
++	d[2] = add128(add128(mul64x64_128(h0, r2), mul64x64_128(h1, r1)), mul64x64_128(h2, r0));
++	                           h0 = lo128(d[0]) & 0xfffffffffff; c = shr128(d[0], 44);
++	d[1] = add128_64(d[1], c); h1 = lo128(d[1]) & 0xfffffffffff; c = shr128(d[1], 44);
++	d[2] = add128_64(d[2], c); h2 = lo128(d[2]) & 0x3ffffffffff; c = shr128(d[2], 42);
++	h0   += c * 5;
++
++	m += 16;
++	leftover -= 16;
++	if (leftover >= 16) goto poly1305_donna_atleast16bytes;
++
++	/* final bytes */
++poly1305_donna_atmost15bytes:
++	if (!leftover) goto poly1305_donna_finish;
++
++	m[leftover++] = 1;
++	poly1305_block_zero(m + leftover, 16 - leftover);
++	leftover = 16;
++
++	t0 = U8TO64_LE(m+0);
++	t1 = U8TO64_LE(m+8);
++	h0 += t0 & 0xfffffffffff; t0 = shr128_pair(t1, t0, 44);
++	h1 += t0 & 0xfffffffffff;
++	h2 += (t1 >> 24);
++
++	goto poly1305_donna_mul;
++
++poly1305_donna_finish:
++	             c = (h0 >> 44); h0 &= 0xfffffffffff;
++	h1 += c;     c = (h1 >> 44); h1 &= 0xfffffffffff;
++	h2 += c;     c = (h2 >> 42); h2 &= 0x3ffffffffff;
++	h0 += c * 5;
++
++	g0 = h0 + 5; c = (g0 >> 44); g0 &= 0xfffffffffff;
++	g1 = h1 + c; c = (g1 >> 44); g1 &= 0xfffffffffff;
++	g2 = h2 + c - ((uint64_t)1 << 42);
++
++	c = (g2 >> 63) - 1;
++	nc = ~c;
++	h0 = (h0 & nc) | (g0 & c);
++	h1 = (h1 & nc) | (g1 & c);
++	h2 = (h2 & nc) | (g2 & c);
++
++	/* pad */
++	t0 = ((uint64_t)p->R23.d[3] << 32) | (uint64_t)p->R23.d[1];
++	t1 = ((uint64_t)p->R24.d[3] << 32) | (uint64_t)p->R24.d[1];
++	h0 += (t0 & 0xfffffffffff)    ; c = (h0 >> 44); h0 &= 0xfffffffffff; t0 = shr128_pair(t1, t0, 44);
++	h1 += (t0 & 0xfffffffffff) + c; c = (h1 >> 44); h1 &= 0xfffffffffff; t1 = (t1 >> 24);
++	h2 += (t1                ) + c;
++
++	U64TO8_LE(mac + 0, ((h0      ) | (h1 << 44)));
++	U64TO8_LE(mac + 8, ((h1 >> 20) | (h2 << 24)));
++}
+diff -r c3565a90b8c4 lib/freebl/poly1305/poly1305.c
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/lib/freebl/poly1305/poly1305.c	Tue Jan 07 12:11:36 2014 -0800
+@@ -0,0 +1,254 @@
++/* This Source Code Form is subject to the terms of the Mozilla Public
++ * License, v. 2.0. If a copy of the MPL was not distributed with this
++ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
++
++/* This implementation of poly1305 is by Andrew Moon
++ * (https://github.com/floodyberry/poly1305-donna) and released as public
++ * domain. */
++
++#include <string.h>
++#include <stdint.h>
++
++#include "poly1305.h"
++
++#if defined(NSS_X86) || defined(NSS_X64)
++/* We can assume little-endian. */
++static uint32_t U8TO32_LE(const unsigned char *m) {
++	uint32_t r;
++	memcpy(&r, m, sizeof(r));
++	return r;
++}
++
++static void U32TO8_LE(unsigned char *m, uint32_t v) {
++	memcpy(m, &v, sizeof(v));
++}
++#else
++static uint32_t U8TO32_LE(const unsigned char *m) {
++	return (uint32_t)m[0] |
++	       (uint32_t)m[1] << 8 |
++	       (uint32_t)m[2] << 16 |
++	       (uint32_t)m[3] << 24;
++}
++
++static void U32TO8_LE(unsigned char *m, uint32_t v) {
++	m[0] = v;
++	m[1] = v >> 8;
++	m[2] = v >> 16;
++	m[3] = v >> 24;
++}
++#endif
++
++static uint64_t
++mul32x32_64(uint32_t a, uint32_t b) {
++	return (uint64_t)a * b;
++}
++
++struct poly1305_state_st {
++	uint32_t r0,r1,r2,r3,r4;
++	uint32_t s1,s2,s3,s4;
++	uint32_t h0,h1,h2,h3,h4;
++	unsigned char buf[16];
++	unsigned int buf_used;
++	unsigned char key[16];
++};
++
++/* update updates |state| given some amount of input data. This function may
++ * only be called with a |len| that is not a multiple of 16 at the end of the
++ * data. Otherwise the input must be buffered into 16 byte blocks. */
++static void update(struct poly1305_state_st *state, const unsigned char *in,
++		   size_t len) {
++	uint32_t t0,t1,t2,t3;
++	uint64_t t[5];
++	uint32_t b;
++	uint64_t c;
++	size_t j;
++	unsigned char mp[16];
++
++	if (len < 16)
++		goto poly1305_donna_atmost15bytes;
++
++poly1305_donna_16bytes:
++	t0 = U8TO32_LE(in);
++	t1 = U8TO32_LE(in+4);
++	t2 = U8TO32_LE(in+8);
++	t3 = U8TO32_LE(in+12);
++
++	in += 16;
++	len -= 16;
++
++	state->h0 += t0 & 0x3ffffff;
++	state->h1 += ((((uint64_t)t1 << 32) | t0) >> 26) & 0x3ffffff;
++	state->h2 += ((((uint64_t)t2 << 32) | t1) >> 20) & 0x3ffffff;
++	state->h3 += ((((uint64_t)t3 << 32) | t2) >> 14) & 0x3ffffff;
++	state->h4 += (t3 >> 8) | (1 << 24);
++
++poly1305_donna_mul:
++	t[0] = mul32x32_64(state->h0,state->r0) +
++	       mul32x32_64(state->h1,state->s4) +
++	       mul32x32_64(state->h2,state->s3) +
++	       mul32x32_64(state->h3,state->s2) +
++	       mul32x32_64(state->h4,state->s1);
++	t[1] = mul32x32_64(state->h0,state->r1) +
++	       mul32x32_64(state->h1,state->r0) +
++	       mul32x32_64(state->h2,state->s4) +
++	       mul32x32_64(state->h3,state->s3) +
++	       mul32x32_64(state->h4,state->s2);
++	t[2] = mul32x32_64(state->h0,state->r2) +
++	       mul32x32_64(state->h1,state->r1) +
++	       mul32x32_64(state->h2,state->r0) +
++	       mul32x32_64(state->h3,state->s4) +
++	       mul32x32_64(state->h4,state->s3);
++	t[3] = mul32x32_64(state->h0,state->r3) +
++	       mul32x32_64(state->h1,state->r2) +
++	       mul32x32_64(state->h2,state->r1) +
++	       mul32x32_64(state->h3,state->r0) +
++	       mul32x32_64(state->h4,state->s4);
++	t[4] = mul32x32_64(state->h0,state->r4) +
++	       mul32x32_64(state->h1,state->r3) +
++	       mul32x32_64(state->h2,state->r2) +
++	       mul32x32_64(state->h3,state->r1) +
++	       mul32x32_64(state->h4,state->r0);
++
++	           state->h0 = (uint32_t)t[0] & 0x3ffffff; c =           (t[0] >> 26);
++	t[1] += c; state->h1 = (uint32_t)t[1] & 0x3ffffff; b = (uint32_t)(t[1] >> 26);
++	t[2] += b; state->h2 = (uint32_t)t[2] & 0x3ffffff; b = (uint32_t)(t[2] >> 26);
++	t[3] += b; state->h3 = (uint32_t)t[3] & 0x3ffffff; b = (uint32_t)(t[3] >> 26);
++	t[4] += b; state->h4 = (uint32_t)t[4] & 0x3ffffff; b = (uint32_t)(t[4] >> 26);
++	state->h0 += b * 5;
++
++	if (len >= 16)
++		goto poly1305_donna_16bytes;
++
++	/* final bytes */
++poly1305_donna_atmost15bytes:
++	if (!len)
++		return;
++
++	for (j = 0; j < len; j++)
++		mp[j] = in[j];
++	mp[j++] = 1;
++	for (; j < 16; j++)
++		mp[j] = 0;
++	len = 0;
++
++	t0 = U8TO32_LE(mp+0);
++	t1 = U8TO32_LE(mp+4);
++	t2 = U8TO32_LE(mp+8);
++	t3 = U8TO32_LE(mp+12);
++
++	state->h0 += t0 & 0x3ffffff;
++	state->h1 += ((((uint64_t)t1 << 32) | t0) >> 26) & 0x3ffffff;
++	state->h2 += ((((uint64_t)t2 << 32) | t1) >> 20) & 0x3ffffff;
++	state->h3 += ((((uint64_t)t3 << 32) | t2) >> 14) & 0x3ffffff;
++	state->h4 += (t3 >> 8);
++
++	goto poly1305_donna_mul;
++}
++
++void Poly1305Init(poly1305_state *statep, const unsigned char key[32]) {
++	struct poly1305_state_st *state = (struct poly1305_state_st*) statep;
++	uint32_t t0,t1,t2,t3;
++
++	t0 = U8TO32_LE(key+0);
++	t1 = U8TO32_LE(key+4);
++	t2 = U8TO32_LE(key+8);
++	t3 = U8TO32_LE(key+12);
++
++	/* precompute multipliers */
++	state->r0 = t0 & 0x3ffffff; t0 >>= 26; t0 |= t1 << 6;
++	state->r1 = t0 & 0x3ffff03; t1 >>= 20; t1 |= t2 << 12;
++	state->r2 = t1 & 0x3ffc0ff; t2 >>= 14; t2 |= t3 << 18;
++	state->r3 = t2 & 0x3f03fff; t3 >>= 8;
++	state->r4 = t3 & 0x00fffff;
++
++	state->s1 = state->r1 * 5;
++	state->s2 = state->r2 * 5;
++	state->s3 = state->r3 * 5;
++	state->s4 = state->r4 * 5;
++
++	/* init state */
++	state->h0 = 0;
++	state->h1 = 0;
++	state->h2 = 0;
++	state->h3 = 0;
++	state->h4 = 0;
++
++	state->buf_used = 0;
++	memcpy(state->key, key + 16, sizeof(state->key));
++}
++
++void Poly1305Update(poly1305_state *statep, const unsigned char *in,
++		     size_t in_len) {
++	unsigned int i;
++	struct poly1305_state_st *state = (struct poly1305_state_st*) statep;
++
++	if (state->buf_used) {
++		unsigned int todo = 16 - state->buf_used;
++		if (todo > in_len)
++			todo = in_len;
++		for (i = 0; i < todo; i++)
++			state->buf[state->buf_used + i] = in[i];
++		state->buf_used += todo;
++		in_len -= todo;
++		in += todo;
++
++		if (state->buf_used == 16) {
++			update(state, state->buf, 16);
++			state->buf_used = 0;
++		}
++	}
++
++	if (in_len >= 16) {
++		size_t todo = in_len & ~0xf;
++		update(state, in, todo);
++		in += todo;
++		in_len &= 0xf;
++	}
++
++	if (in_len) {
++		for (i = 0; i < in_len; i++)
++			state->buf[i] = in[i];
++		state->buf_used = in_len;
++	}
++}
++
++void Poly1305Finish(poly1305_state *statep, unsigned char mac[16]) {
++	struct poly1305_state_st *state = (struct poly1305_state_st*) statep;
++	uint64_t f0,f1,f2,f3;
++	uint32_t g0,g1,g2,g3,g4;
++	uint32_t b, nb;
++
++	if (state->buf_used)
++		update(state, state->buf, state->buf_used);
++
++	                    b = state->h0 >> 26; state->h0 = state->h0 & 0x3ffffff;
++	state->h1 +=     b; b = state->h1 >> 26; state->h1 = state->h1 & 0x3ffffff;
++	state->h2 +=     b; b = state->h2 >> 26; state->h2 = state->h2 & 0x3ffffff;
++	state->h3 +=     b; b = state->h3 >> 26; state->h3 = state->h3 & 0x3ffffff;
++	state->h4 +=     b; b = state->h4 >> 26; state->h4 = state->h4 & 0x3ffffff;
++	state->h0 += b * 5;
++
++	g0 = state->h0 + 5; b = g0 >> 26; g0 &= 0x3ffffff;
++	g1 = state->h1 + b; b = g1 >> 26; g1 &= 0x3ffffff;
++	g2 = state->h2 + b; b = g2 >> 26; g2 &= 0x3ffffff;
++	g3 = state->h3 + b; b = g3 >> 26; g3 &= 0x3ffffff;
++	g4 = state->h4 + b - (1 << 26);
++
++	b = (g4 >> 31) - 1;
++	nb = ~b;
++	state->h0 = (state->h0 & nb) | (g0 & b);
++	state->h1 = (state->h1 & nb) | (g1 & b);
++	state->h2 = (state->h2 & nb) | (g2 & b);
++	state->h3 = (state->h3 & nb) | (g3 & b);
++	state->h4 = (state->h4 & nb) | (g4 & b);
++
++	f0 = ((state->h0      ) | (state->h1 << 26)) + (uint64_t)U8TO32_LE(&state->key[0]);
++	f1 = ((state->h1 >>  6) | (state->h2 << 20)) + (uint64_t)U8TO32_LE(&state->key[4]);
++	f2 = ((state->h2 >> 12) | (state->h3 << 14)) + (uint64_t)U8TO32_LE(&state->key[8]);
++	f3 = ((state->h3 >> 18) | (state->h4 <<  8)) + (uint64_t)U8TO32_LE(&state->key[12]);
++
++	U32TO8_LE(&mac[ 0], (uint32_t)f0); f1 += (f0 >> 32);
++	U32TO8_LE(&mac[ 4], (uint32_t)f1); f2 += (f1 >> 32);
++	U32TO8_LE(&mac[ 8], (uint32_t)f2); f3 += (f2 >> 32);
++	U32TO8_LE(&mac[12], (uint32_t)f3);
++}
+diff -r c3565a90b8c4 lib/freebl/poly1305/poly1305.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/lib/freebl/poly1305/poly1305.h	Tue Jan 07 12:11:36 2014 -0800
+@@ -0,0 +1,31 @@
++/*
++ * poly1305.h - header file for Poly1305 implementation.
++ *
++ * This Source Code Form is subject to the terms of the Mozilla Public
++ * License, v. 2.0. If a copy of the MPL was not distributed with this
++ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
++
++#ifndef FREEBL_POLY1305_H_
++#define FREEBL_POLY1305_H_
++
++typedef unsigned char poly1305_state[512];
++
++/* Poly1305Init sets up |state| so that it can be used to calculate an
++ * authentication tag with the one-time key |key|. Note that |key| is a
++ * one-time key and therefore there is no `reset' method because that would
++ * enable several messages to be authenticated with the same key. */
++extern void Poly1305Init(poly1305_state* state,
++			 const unsigned char key[32]);
++
++/* Poly1305Update processes |in_len| bytes from |in|. It can be called zero or
++ * more times after poly1305_init. */
++extern void Poly1305Update(poly1305_state* state,
++			   const unsigned char *in,
++			   size_t inLen);
++
++/* Poly1305Finish completes the poly1305 calculation and writes a 16 byte
++ * authentication tag to |mac|. */
++extern void Poly1305Finish(poly1305_state* state,
++			   unsigned char mac[16]);
++
++#endif  /* FREEBL_POLY1305_H_ */
+diff -r c3565a90b8c4 lib/pk11wrap/pk11mech.c
+--- a/lib/pk11wrap/pk11mech.c	Fri Jan 03 20:59:10 2014 +0100
++++ b/lib/pk11wrap/pk11mech.c	Tue Jan 07 12:11:36 2014 -0800
+@@ -152,6 +152,8 @@
+ 	return CKM_SEED_CBC;
+     case CKK_CAMELLIA:
+ 	return CKM_CAMELLIA_CBC;
++    case CKK_NSS_CHACHA20:
++	return CKM_NSS_CHACHA20_POLY1305;
+     case CKK_AES:
+ 	return CKM_AES_CBC;
+     case CKK_DES:
+@@ -219,6 +221,8 @@
+     case CKM_CAMELLIA_CBC_PAD:
+     case CKM_CAMELLIA_KEY_GEN:
+ 	return CKK_CAMELLIA;
++    case CKM_NSS_CHACHA20_POLY1305:
++	return CKK_NSS_CHACHA20;
+     case CKM_AES_ECB:
+     case CKM_AES_CBC:
+     case CKM_AES_CCM:
+@@ -429,6 +433,8 @@
+     case CKM_CAMELLIA_CBC_PAD:
+     case CKM_CAMELLIA_KEY_GEN:
+ 	return CKM_CAMELLIA_KEY_GEN;
++    case CKM_NSS_CHACHA20_POLY1305:
++	return CKM_NSS_CHACHA20_KEY_GEN;
+     case CKM_AES_ECB:
+     case CKM_AES_CBC:
+     case CKM_AES_CCM:
+diff -r c3565a90b8c4 lib/softoken/pkcs11.c
+--- a/lib/softoken/pkcs11.c	Fri Jan 03 20:59:10 2014 +0100
++++ b/lib/softoken/pkcs11.c	Tue Jan 07 12:11:36 2014 -0800
+@@ -368,6 +368,9 @@
+      {CKM_SEED_MAC,		{16, 16, CKF_SN_VR},		PR_TRUE},
+      {CKM_SEED_MAC_GENERAL,	{16, 16, CKF_SN_VR},		PR_TRUE},
+      {CKM_SEED_CBC_PAD,		{16, 16, CKF_EN_DE_WR_UN},	PR_TRUE},
++     /* ------------------------- ChaCha20 Operations ---------------------- */
++     {CKM_NSS_CHACHA20_KEY_GEN,	{32, 32, CKF_GENERATE},		PR_TRUE},
++     {CKM_NSS_CHACHA20_POLY1305,{32, 32, CKF_EN_DE},		PR_TRUE},
+      /* ------------------------- Hashing Operations ----------------------- */
+      {CKM_MD2,			{0,   0, CKF_DIGEST},		PR_FALSE},
+      {CKM_MD2_HMAC,		{1, 128, CKF_SN_VR},		PR_TRUE},
+diff -r c3565a90b8c4 lib/softoken/pkcs11c.c
+--- a/lib/softoken/pkcs11c.c	Fri Jan 03 20:59:10 2014 +0100
++++ b/lib/softoken/pkcs11c.c	Tue Jan 07 12:11:36 2014 -0800
+@@ -632,6 +632,97 @@
+     return rv;
+ }
+ 
++static SFTKChaCha20Poly1305Info *
++sftk_ChaCha20Poly1305_CreateContext(const unsigned char *key,
++				    unsigned int keyLen,
++				    const CK_NSS_AEAD_PARAMS* params)
++{
++    SFTKChaCha20Poly1305Info *ctx;
++
++    if (params->ulIvLen != sizeof(ctx->nonce)) {
++	PORT_SetError(SEC_ERROR_INPUT_LEN);
++	return NULL;
++    }
++
++    ctx = PORT_New(SFTKChaCha20Poly1305Info);
++    if (ctx == NULL) {
++	return NULL;
++    }
++
++    if (ChaCha20Poly1305_InitContext(&ctx->freeblCtx, key, keyLen,
++				     params->ulTagLen) != SECSuccess) {
++	PORT_Free(ctx);
++	return NULL;
++    }
++
++    memcpy(ctx->nonce, params->pIv, sizeof(ctx->nonce));
++
++    if (params->ulAADLen > sizeof(ctx->ad)) {
++	/* Need to allocate an overflow buffer for the additional data. */
++	ctx->adOverflow = (unsigned char *)PORT_Alloc(params->ulAADLen);
++	if (!ctx->adOverflow) {
++	    PORT_Free(ctx);
++	    return NULL;
++	}
++	memcpy(ctx->adOverflow, params->pAAD, params->ulAADLen);
++    } else {
++	ctx->adOverflow = NULL;
++	memcpy(ctx->ad, params->pAAD, params->ulAADLen);
++    }
++    ctx->adLen = params->ulAADLen;
++
++    return ctx;
++}
++
++static void
++sftk_ChaCha20Poly1305_DestroyContext(SFTKChaCha20Poly1305Info *ctx,
++				     PRBool freeit)
++{
++    ChaCha20Poly1305_DestroyContext(&ctx->freeblCtx, PR_FALSE);
++    if (ctx->adOverflow != NULL) {
++	PORT_Free(ctx->adOverflow);
++	ctx->adOverflow = NULL;
++    }
++    ctx->adLen = 0;
++    if (freeit) {
++	PORT_Free(ctx);
++    }
++}
++
++static SECStatus
++sftk_ChaCha20Poly1305_Encrypt(const SFTKChaCha20Poly1305Info *ctx,
++			      unsigned char *output, unsigned int *outputLen,
++			      unsigned int maxOutputLen,
++			      const unsigned char *input, unsigned int inputLen)
++{
++    const unsigned char *ad = ctx->adOverflow;
++
++    if (ad == NULL) {
++	ad = ctx->ad;
++    }
++
++    return ChaCha20Poly1305_Seal(&ctx->freeblCtx, output, outputLen,
++				 maxOutputLen, input, inputLen, ctx->nonce,
++				 sizeof(ctx->nonce), ad, ctx->adLen);
++}
++
++static SECStatus
++sftk_ChaCha20Poly1305_Decrypt(const SFTKChaCha20Poly1305Info *ctx,
++			      unsigned char *output, unsigned int *outputLen,
++			      unsigned int maxOutputLen,
++			      const unsigned char *input, unsigned int inputLen)
++{
++    const unsigned char *ad = ctx->adOverflow;
++
++    if (ad == NULL) {
++	ad = ctx->ad;
++    }
++
++    return ChaCha20Poly1305_Open(&ctx->freeblCtx, output, outputLen,
++				 maxOutputLen, input, inputLen, ctx->nonce,
++				 sizeof(ctx->nonce), ad, ctx->adLen);
++}
++
+ /** NSC_CryptInit initializes an encryption/Decryption operation.
+  *
+  * Always called by NSC_EncryptInit, NSC_DecryptInit, NSC_WrapKey,NSC_UnwrapKey.
+@@ -1027,6 +1118,35 @@
+ 	context->destroy = (SFTKDestroy) AES_DestroyContext;
+ 	break;
+ 
++    case CKM_NSS_CHACHA20_POLY1305:
++	if (pMechanism->ulParameterLen != sizeof(CK_NSS_AEAD_PARAMS)) {
++	    crv = CKR_MECHANISM_PARAM_INVALID;
++	    break;
++	}
++	context->multi = PR_FALSE;
++	if (key_type != CKK_NSS_CHACHA20) {
++	    crv = CKR_KEY_TYPE_INCONSISTENT;
++	    break;
++	}
++	att = sftk_FindAttribute(key,CKA_VALUE);
++	if (att == NULL) {
++	    crv = CKR_KEY_HANDLE_INVALID;
++	    break;
++	}
++	context->cipherInfo = sftk_ChaCha20Poly1305_CreateContext(
++		(unsigned char*) att->attrib.pValue, att->attrib.ulValueLen,
++		(CK_NSS_AEAD_PARAMS*) pMechanism->pParameter);
++	sftk_FreeAttribute(att);
++	if (context->cipherInfo == NULL) {
++	    crv = sftk_MapCryptError(PORT_GetError());
++	    break;
++	}
++	context->update = (SFTKCipher) (isEncrypt ?
++					sftk_ChaCha20Poly1305_Encrypt :
++					sftk_ChaCha20Poly1305_Decrypt);
++	context->destroy = (SFTKDestroy) sftk_ChaCha20Poly1305_DestroyContext;
++	break;
++
+     case CKM_NETSCAPE_AES_KEY_WRAP_PAD:
+     	context->doPad = PR_TRUE;
+ 	/* fall thru */
+@@ -3601,6 +3721,10 @@
+ 	*key_type = CKK_AES;
+ 	if (*key_length == 0) crv = CKR_TEMPLATE_INCOMPLETE;
+ 	break;
++    case CKM_NSS_CHACHA20_KEY_GEN:
++	*key_type = CKK_NSS_CHACHA20;
++	if (*key_length == 0) crv = CKR_TEMPLATE_INCOMPLETE;
++	break;
+     default:
+ 	PORT_Assert(0);
+ 	crv = CKR_MECHANISM_INVALID;
+@@ -3846,6 +3970,7 @@
+     case CKM_SEED_KEY_GEN:
+     case CKM_CAMELLIA_KEY_GEN:
+     case CKM_AES_KEY_GEN:
++    case CKM_NSS_CHACHA20_KEY_GEN:
+ #if NSS_SOFTOKEN_DOES_RC5
+     case CKM_RC5_KEY_GEN:
+ #endif
+diff -r c3565a90b8c4 lib/softoken/pkcs11i.h
+--- a/lib/softoken/pkcs11i.h	Fri Jan 03 20:59:10 2014 +0100
++++ b/lib/softoken/pkcs11i.h	Tue Jan 07 12:11:36 2014 -0800
+@@ -14,6 +14,7 @@
+ #include "pkcs11t.h"
+ 
+ #include "sftkdbt.h" 
++#include "chacha20poly1305.h"
+ #include "hasht.h"
+ 
+ /* 
+@@ -104,6 +105,7 @@
+ typedef struct SFTKOAEPEncryptInfoStr SFTKOAEPEncryptInfo;
+ typedef struct SFTKOAEPDecryptInfoStr SFTKOAEPDecryptInfo;
+ typedef struct SFTKSSLMACInfoStr SFTKSSLMACInfo;
++typedef struct SFTKChaCha20Poly1305InfoStr SFTKChaCha20Poly1305Info;
+ typedef struct SFTKItemTemplateStr SFTKItemTemplate;
+ 
+ /* define function pointer typdefs for pointer tables */
+@@ -399,6 +401,16 @@
+     unsigned int	keySize;
+ };
+ 
++/* SFTKChaCha20Poly1305Info saves the key, tag length, nonce, and additional
++ * data for a ChaCha20+Poly1305 AEAD operation. */
++struct SFTKChaCha20Poly1305InfoStr {
++    ChaCha20Poly1305Context freeblCtx;
++    unsigned char nonce[8];
++    unsigned char ad[16];
++    unsigned char *adOverflow;
++    unsigned int adLen;
++};
++
+ /*
+  * Template based on SECItems, suitable for passing as arrays
+  */
+diff -r c3565a90b8c4 lib/util/pkcs11n.h
+--- a/lib/util/pkcs11n.h	Fri Jan 03 20:59:10 2014 +0100
++++ b/lib/util/pkcs11n.h	Tue Jan 07 12:11:36 2014 -0800
+@@ -51,6 +51,8 @@
+ #define CKK_NSS_JPAKE_ROUND1       (CKK_NSS + 2)
+ #define CKK_NSS_JPAKE_ROUND2       (CKK_NSS + 3)
+ 
++#define CKK_NSS_CHACHA20           (CKK_NSS + 4)
++
+ /*
+  * NSS-defined certificate types
+  *
+@@ -214,6 +216,9 @@
+ #define CKM_NSS_TLS_KEY_AND_MAC_DERIVE_SHA256   (CKM_NSS + 23)
+ #define CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256 (CKM_NSS + 24)
+ 
++#define CKM_NSS_CHACHA20_KEY_GEN                (CKM_NSS + 25)
++#define CKM_NSS_CHACHA20_POLY1305               (CKM_NSS + 26)
++
+ /*
+  * HISTORICAL:
+  * Do not attempt to use these. They are only used by NETSCAPE's internal
+@@ -281,6 +286,14 @@
+     CK_ULONG ulHeaderLen;       /* in */
+ } CK_NSS_MAC_CONSTANT_TIME_PARAMS;
+ 
++typedef struct CK_NSS_AEAD_PARAMS {
++    CK_BYTE_PTR  pIv;  /* This is the nonce. */
++    CK_ULONG     ulIvLen;
++    CK_BYTE_PTR  pAAD;
++    CK_ULONG     ulAADLen;
++    CK_ULONG     ulTagLen;
++} CK_NSS_AEAD_PARAMS;
++
+ /*
+  * NSS-defined return values
+  *

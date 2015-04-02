@@ -17,6 +17,7 @@
 #ifndef js_TypeDecls_h
 #define js_TypeDecls_h
 
+#include "mozilla/Char16.h"
 #include <stddef.h>
 #include <stdint.h>
 

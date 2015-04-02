@@ -1,0 +1,61 @@
+diff -r c3565a90b8c4 lib/freebl/unix_rand.c
+--- a/lib/freebl/unix_rand.c	Fri Jan 03 20:59:10 2014 +0100
++++ b/lib/freebl/unix_rand.c	Tue Jan 07 11:28:59 2014 -0800
+@@ -916,8 +916,19 @@
+ #if defined(BSDI) || defined(FREEBSD) || defined(NETBSD) \
+     || defined(OPENBSD) || defined(DARWIN) || defined(LINUX) \
+     || defined(HPUX)
+-    if (bytes)
++    if (bytes == SYSTEM_RNG_SEED_COUNT)
+         return;
++
++    /*
++     * Modified to abort the process if it failed to read from /dev/urandom.
++     *
++     * See crbug.com/244661 for details.
++     */
++    fprintf(stderr, "[ERROR:%s(%d)] NSS read %zu bytes (expected %d bytes) "
++            "from /dev/urandom. Abort process.\n", __FILE__, __LINE__,
++            bytes, SYSTEM_RNG_SEED_COUNT);
++    fflush(stderr);
++    abort();
+ #endif
+ 
+ #ifdef SOLARIS
+@@ -1134,6 +1145,11 @@
+    }
+ }
+ 
++/*
++ * Modified to abort the process if it failed to read from /dev/urandom.
++ *
++ * See crbug.com/244661 for details.
++ */
+ size_t RNG_SystemRNG(void *dest, size_t maxLen)
+ {
+     FILE *file;
+@@ -1144,7 +1160,10 @@
+ 
+     file = fopen("/dev/urandom", "r");
+     if (file == NULL) {
+-	return rng_systemFromNoise(dest, maxLen);
++	fprintf(stderr, "[ERROR:%s(%d)] NSS failed to read from /dev/urandom. "
++		"Abort process.\n", __FILE__, __LINE__);
++	fflush(stderr);
++	abort();
+     }
+     /* Read from the underlying file descriptor directly to bypass stdio
+      * buffering and avoid reading more bytes than we need from /dev/urandom.
+@@ -1164,8 +1183,10 @@
+     }
+     fclose(file);
+     if (fileBytes != maxLen) {
+-	PORT_SetError(SEC_ERROR_NEED_RANDOM);  /* system RNG failed */
+-	fileBytes = 0;
++	fprintf(stderr, "[ERROR:%s(%d)] NSS failed to read from /dev/urandom. "
++		"Abort process.\n", __FILE__, __LINE__);
++	fflush(stderr);
++	abort();
+     }
+     return fileBytes;
+ }

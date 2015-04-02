@@ -8,7 +8,7 @@
 
 #ifndef jscntxt_h
 #define jscntxt_h
-
+#include "mozilla/Char16.h"
 #include "mozilla/MemoryReporting.h"
 
 #include "js/Vector.h"

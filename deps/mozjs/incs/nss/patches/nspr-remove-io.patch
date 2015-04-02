@@ -1,0 +1,32 @@
+Index: mozilla/nsprpub/pr/include/md/_win95.h
+===================================================================
+RCS file: /cvsroot/mozilla/nsprpub/pr/include/md/_win95.h,v
+retrieving revision 3.41
+diff -p -u -r3.41 _win95.h
+--- mozilla/nsprpub/pr/include/md/_win95.h	26 May 2012 00:15:23 -0000	3.41
++++ mozilla/nsprpub/pr/include/md/_win95.h	29 Jan 2013 01:19:17 -0000
+@@ -32,8 +32,6 @@
+ 
+ #define HAVE_DLL
+ #undef  HAVE_THREAD_AFFINITY
+-#define _PR_HAVE_GETADDRINFO
+-#define _PR_INET6_PROBE
+ #ifndef _PR_INET6
+ #define AF_INET6 23
+ /* newer ws2tcpip.h provides these */
+Index: mozilla/nsprpub/pr/src/io/prio.c
+===================================================================
+RCS file: /cvsroot/mozilla/nsprpub/pr/src/io/prio.c,v
+retrieving revision 3.24
+diff -p -u -r3.24 prio.c
+--- mozilla/nsprpub/pr/src/io/prio.c	6 Mar 2012 13:14:09 -0000	3.24
++++ mozilla/nsprpub/pr/src/io/prio.c	29 Jan 2013 01:19:17 -0000
+@@ -58,8 +58,6 @@ void _PR_InitIO(void)
+     _PR_MD_INIT_FD_INHERITABLE(_pr_stdin, PR_TRUE);
+     _PR_MD_INIT_FD_INHERITABLE(_pr_stdout, PR_TRUE);
+     _PR_MD_INIT_FD_INHERITABLE(_pr_stderr, PR_TRUE);
+-
+-    _PR_MD_INIT_IO();
+ }
+ 
+ void _PR_CleanupIO(void)

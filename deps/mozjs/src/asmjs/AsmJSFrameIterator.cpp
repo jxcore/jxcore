@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 
+#include "mozilla/Char16.h"
 #include "asmjs/AsmJSFrameIterator.h"
 
 #include "asmjs/AsmJSModule.h"

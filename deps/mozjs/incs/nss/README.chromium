@@ -1,0 +1,74 @@
+Name: Network Security Services (NSS)
+Short Name: nss
+URL: http://www.mozilla.org/projects/security/pki/nss/
+Version: 3.16.5
+License: MPL 2
+License File: nss/COPYING
+Security Critical: yes
+
+Description:
+NSS 3.16.5 with NSPR 4.10.7
+
+This copy of NSS has been customized for Chromium.  NSPR is also put here
+rather than in a separate directory to emphasize the fact that Chromium is
+using NSPR strictly as an NSS dependency.
+
+We took a subset of NSS, omitting the SSL and SMIME libraries and the
+built-in root CA certificates module.  This NSS subset satisfies the
+dependencies of the NSS SSL library in src/net/third_party/nss.  Do NOT use
+this copy of NSS on platforms that have NSS as system libraries, such as
+Linux.
+
+The source code was checked out from the mozilla.org CVS or hg repository using
+the nspr-checkout.sh and nss-checkout.sh scripts in the scripts directory.
+The current source code was checked out with the hg tag NSS_3_16_5_RTM
+and the hg tag NSPR_4_10_7_RTM.
+
+Local Modifications:
+
+We made the following local changes to NSPR.
+- patches/nspr-static.patch: to build NSPR as static libraries.  See NSPR
+  bug 533014 (https://bugzilla.mozilla.org/show_bug.cgi?id=533014).
+- patches/prcpucfg.h: added to the nspr/pr/include directory.
+- patches/nspr-attach-as-system-thread.patch: attach a "foreign" thread
+  (a thread not created by NSPR) to NSPR as a "system" thread rather than
+  a "user" thread, which needs to terminate before PR_Cleanup can return.
+  (The "system" vs. "user" thread distinction comes from Java, and
+  ultimately from Solaris threads.)  This is a workaround for
+  http://crbug.com/40663.
+- patches/nspr-no-pointers-in-longs.patch Don't store pointers in longs.
+  Pointers can be 64-bit, and longs are only 32-bit on Windows. See
+  https://bugzilla.mozilla.org/show_bug.cgi?id=1105144
+- patches/nspr-remove-io.patch: Remove IO operations in NSPR to allow NSS
+  to work in the sandbox.  Do not initialize IO when initializing NSPR.
+  Windows version of NSPR also tried to use getaddrinfo to resolve hostname
+  in a SSL connection.  By removing _PR_HAVE_GETADDRINFO this will force it
+  to use PR_GetHostByName.  Removing _PR_INET6_PROBE will prevent it from
+  creating an IPv6 socket to probe if IPv6 is there.
+  DO NOT upstream this patch.
+
+We made the following local changes to NSS.
+- patches/nss-static.patch: to build NSS as static libraries and omit
+  libpkix (the new certification path validation library) and
+  softoken/legacydb (support for the old Berkeley DB databases).  See NSS
+  bug 534471 (https://bugzilla.mozilla.org/show_bug.cgi?id=534471).
+- nss/exports_win.def: The list of exports to use when building nss as a
+  dynamic library (crnss.dll).
+- nss/lib/ckfw/builtins/certdata.c: a generated file. Do an upstream NSS
+  build and copy the generated certdata.c.
+- nss/lib/freebl/nss_build_config_mac.h: a header that defines the target
+  arch specific configuration macros for lib/freebl on iOS and Mac OS X.
+  This works around the lack of support for the xcode_settings
+  GCC_PREPROCESSOR_DEFINITIONS[arch=foo] by the ninja GYP generator
+  (http://crbug.com/122592).
+- nss/lib/freebl/mpi/mpi_arm_mac.c: a wrapper file for mpi_arm.c for iOS
+  and Mac OS X. This works around the inability to specify target arch
+  specific source files in Xcode.
+- patches/nss-remove-fortezza.patch: remove Fortezza certificate support
+  from PK11_ImportPublicKey.  See NSS bug 668397
+  (https://bugzilla.mozilla.org/show_bug.cgi?id=668397).
+- patches/nss-urandom-abort.patch: call abort() if NSS cannot read from
+  /dev/urandom.  See Chromium issue 244661 (http://crbug.com/244661).
+- patches/nss-chacha20-poly1305.patch: Support ChaCha20+Poly1305 cipher
+  suites.  See NSS bug 917571
+  (https://bugzilla.mozilla.org/show_bug.cgi?id=917571).

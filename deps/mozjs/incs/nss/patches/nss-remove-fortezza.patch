@@ -1,0 +1,35 @@
+diff -r 3f0105dfc733 lib/pk11wrap/pk11akey.c
+--- a/lib/pk11wrap/pk11akey.c	Mon Apr 22 14:22:48 2013 +0200
++++ b/lib/pk11wrap/pk11akey.c	Mon Apr 22 14:41:49 2013 -0700
+@@ -136,20 +136,6 @@
+ 	    PK11_SETATTRS(attrs, CKA_VALUE,    pubKey->u.dsa.publicValue.data, 
+ 					pubKey->u.dsa.publicValue.len); attrs++;
+ 	    break;
+-	case fortezzaKey:
+-	    keyType = CKK_DSA;
+-	    PK11_SETATTRS(attrs, CKA_VERIFY, &cktrue, sizeof(CK_BBOOL));attrs++;
+- 	    signedattr = attrs;
+-	    PK11_SETATTRS(attrs, CKA_PRIME,pubKey->u.fortezza.params.prime.data,
+-				pubKey->u.fortezza.params.prime.len); attrs++;
+-	    PK11_SETATTRS(attrs,CKA_SUBPRIME,
+-				pubKey->u.fortezza.params.subPrime.data,
+-				pubKey->u.fortezza.params.subPrime.len);attrs++;
+-	    PK11_SETATTRS(attrs, CKA_BASE,  pubKey->u.fortezza.params.base.data,
+-				pubKey->u.fortezza.params.base.len); attrs++;
+-	    PK11_SETATTRS(attrs, CKA_VALUE, pubKey->u.fortezza.DSSKey.data, 
+-				pubKey->u.fortezza.DSSKey.len); attrs++;
+-            break;
+         case dhKey:
+ 	    keyType = CKK_DH;
+ 	    PK11_SETATTRS(attrs, CKA_DERIVE, &cktrue, sizeof(CK_BBOOL));attrs++;
+@@ -210,6 +196,10 @@
+ 	    SECITEM_FreeItem(pubValue,PR_TRUE);
+ 	}
+ 	if ( rv != SECSuccess) {
++	    /* CKR_ATTRIBUTE_VALUE_INVALID is mapped to SEC_ERROR_BAD_DATA */
++	    if (PORT_GetError() == SEC_ERROR_BAD_DATA) {
++		PORT_SetError( SEC_ERROR_BAD_KEY );
++	    }
+ 	    return CK_INVALID_HANDLE;
+ 	}
+     }

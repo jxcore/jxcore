@@ -19,6 +19,7 @@
 #ifndef asmjs_AsmJSFrameIterator_h
 #define asmjs_AsmJSFrameIterator_h
 
+#include "mozilla/Char16.h"
 #include "mozilla/NullPtr.h"
 
 #include <stdint.h>

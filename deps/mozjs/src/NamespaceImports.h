@@ -12,6 +12,7 @@
 
 // These includes are needed these for some typedefs (e.g. HandleValue) and
 // functions (e.g. NullValue())...
+#include "mozilla/Char16.h"
 #include "js/CallNonGenericMethod.h"
 #include "js/TypeDecls.h"
 #include "js/Value.h"

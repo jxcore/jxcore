@@ -9,6 +9,7 @@
 #ifndef mozilla_Compiler_h
 #define mozilla_Compiler_h
 
+#include "mozilla/Char16.h"
 #define MOZ_IS_GCC 0
 #define MOS_IS_MSVC 0
 

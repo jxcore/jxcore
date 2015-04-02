@@ -25,7 +25,7 @@
 
 #ifndef jit_ExecutableAllocator_h
 #define jit_ExecutableAllocator_h
-
+#include "mozilla/Char16.h"
 #include <limits>
 #include <stddef.h> // for ptrdiff_t
 

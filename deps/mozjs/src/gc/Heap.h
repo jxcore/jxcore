@@ -7,6 +7,7 @@
 #ifndef gc_Heap_h
 #define gc_Heap_h
 
+#include "mozilla/Char16.h"
 #include "mozilla/Atomics.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/PodOperations.h"

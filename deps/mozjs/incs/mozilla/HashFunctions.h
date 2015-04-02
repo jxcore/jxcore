@@ -47,9 +47,9 @@
 #ifndef mozilla_HashFunctions_h
 #define mozilla_HashFunctions_h
 
+#include "mozilla/Char16.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/Attributes.h"
-#include "mozilla/Char16.h"
 #include "mozilla/Types.h"
 
 #include <stdint.h>

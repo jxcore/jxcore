@@ -7,6 +7,7 @@
 #ifndef gc_Barrier_h
 #define gc_Barrier_h
 
+#include "mozilla/Char16.h"
 #include "NamespaceImports.h"
 
 #include "gc/Heap.h"
