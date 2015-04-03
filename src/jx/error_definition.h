@@ -31,12 +31,10 @@ void OnFatalError(JSContext *JS_GET_STATE_MARKER(), const char *message,
 
 void DisplayExceptionLine(JS_TRY_CATCH_TYPE &try_catch);
 
-void ReportException(JS_TRY_CATCH_TYPE try_catch, bool show_line);
+void ReportException(JS_TRY_CATCH_TYPE &try_catch, bool show_line);
 
-void FatalException(ENGINE_NS::TryCatch try_catch);
+void FatalException(JS_TRY_CATCH_TYPE &try_catch);
 
-void FatalException_jx(ENGINE_NS::TryCatch try_catch,
-                       const char *location = "");
 }  // namespace node
 
 #endif  // SRC_JX_ERROR_DEFINITION_H_

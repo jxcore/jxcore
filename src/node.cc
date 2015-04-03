@@ -117,7 +117,7 @@ static void Spin(uv_idle_t* handle, int status) {
   JS_METHOD_CALL_NO_PARAM(com->process_tickFromSpinner, com->getProcess());
 
   if (try_catch.HasCaught()) {
-    FatalException_jx(try_catch, "SPIN");
+    FatalException(try_catch);
   }
 }
 
@@ -248,7 +248,7 @@ MakeDomainCallback(node::commons* com, const JS_HANDLE_OBJECT_REF object,
       JS_METHOD_CALL_NO_PARAM(enter, domain);
 
       if (try_catch.HasCaught()) {
-        FatalException_jx(try_catch, "MDCE1");
+        FatalException(try_catch);
         return JS_UNDEFINED();
       }
     }
@@ -257,7 +257,7 @@ MakeDomainCallback(node::commons* com, const JS_HANDLE_OBJECT_REF object,
   JS_LOCAL_VALUE ret = JS_METHOD_CALL(callback, object, argc, argv);
 
   if (try_catch.HasCaught()) {
-    FatalException_jx(try_catch, "MDCE2");
+    FatalException(try_catch);
     return JS_UNDEFINED();
   }
 
@@ -268,7 +268,7 @@ MakeDomainCallback(node::commons* com, const JS_HANDLE_OBJECT_REF object,
     JS_METHOD_CALL_NO_PARAM(exit, domain);
 
     if (try_catch.HasCaught()) {
-      FatalException_jx(try_catch, "MDCE3");
+      FatalException(try_catch);
       return JS_UNDEFINED();
     }
   }
@@ -282,7 +282,7 @@ MakeDomainCallback(node::commons* com, const JS_HANDLE_OBJECT_REF object,
   JS_METHOD_CALL_NO_PARAM(com->process_tickCallback, com->getProcess());
 
   if (try_catch.HasCaught()) {
-    FatalException_jx(try_catch, "MDCE4");
+    FatalException(try_catch);
     return JS_UNDEFINED();
   }
 
@@ -351,7 +351,7 @@ MakeCallback(node::commons* com, JS_HANDLE_OBJECT_REF host, const char* name,
 
   if (try_catch.HasCaught()) {
     if (!(com->expects_reset && com->threadId > 0)) {
-      FatalException_jx(try_catch, "MC7");
+      FatalException(try_catch);
     }
     return JS_UNDEFINED();
   }
@@ -373,7 +373,7 @@ MakeCallback(node::commons* com, JS_HANDLE_OBJECT_REF host, const char* name,
 
   if (try_catch.HasCaught()) {
     if (!(com->expects_reset && com->threadId > 0)) {
-      FatalException_jx(try_catch, "MC8");
+      FatalException(try_catch);
     }
     return JS_UNDEFINED();
   }
@@ -401,7 +401,7 @@ MakeCallback(node::commons* com, const JS_HANDLE_OBJECT_REF object,
   JS_LOCAL_VALUE ret = JS_METHOD_CALL(callback, object, argc, argv);
 
   if (try_catch.HasCaught()) {
-    FatalException_jx(try_catch, "MDCE/1");
+    FatalException(try_catch);
     return JS_UNDEFINED();
   }
 
@@ -415,7 +415,7 @@ MakeCallback(node::commons* com, const JS_HANDLE_OBJECT_REF object,
   JS_METHOD_CALL_NO_PARAM(com->process_tickCallback, process_obj);
 
   if (try_catch.HasCaught()) {
-    FatalException_jx(try_catch, "MDCE/2");
+    FatalException(try_catch);
     return JS_UNDEFINED();
   }
 
@@ -2177,7 +2177,7 @@ void Load(JS_HANDLE_OBJECT process_l) {
 
   JS_METHOD_CALL(f, global, 1, args);
   if (try_catch.HasCaught()) {
-    FatalException_jx(try_catch, "Load");
+    FatalException(try_catch);
   }
 }
 
@@ -2218,7 +2218,7 @@ void EmitExit(JS_HANDLE_OBJECT process_l) {
   JS_TRY_CATCH(try_catch);
   JS_METHOD_CALL(emit, process_l, 2, args);
   if (try_catch.HasCaught()) {
-    FatalException_jx(try_catch, "EME");
+    FatalException(try_catch);
   }
 }
 

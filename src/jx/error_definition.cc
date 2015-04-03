@@ -378,7 +378,7 @@ void DisplayExceptionLine(JS_TRY_CATCH_TYPE &try_catch) {
 #endif
 }
 
-void ReportException(JS_TRY_CATCH_TYPE try_catch, bool show_line) {
+void ReportException(JS_TRY_CATCH_TYPE &try_catch, bool show_line) {
 #ifdef JS_ENGINE_V8
   JS_ENTER_SCOPE_COM();
 
@@ -473,7 +473,7 @@ void ReportException(JS_TRY_CATCH_TYPE try_catch, bool show_line) {
 #endif
 }
 
-void FatalException(ENGINE_NS::TryCatch try_catch) {
+void FatalException(JS_TRY_CATCH_TYPE &try_catch) {
   JS_ENTER_SCOPE_COM();
   if (com == NULL || com->instance_status_ == node::JXCORE_INSTANCE_EXITED)
     return;
@@ -513,11 +513,6 @@ void FatalException(ENGINE_NS::TryCatch try_catch) {
     maybeExit(com, 8);
     return;
   }
-}
-
-void FatalException_jx(ENGINE_NS::TryCatch try_catch, const char *location) {
-  JS_ENTER_SCOPE();
-  FatalException(try_catch);
 }
 
 inline const char *errno_string(int errorno) {
