@@ -302,7 +302,7 @@ void OnFatalError(JSContext *JS_GET_STATE_MARKER(), const char *message,
     tt.SetHolder(current_exception);
   }
 
-  FatalException_jx(tt);
+  FatalException(tt);
 }
 #endif
 
