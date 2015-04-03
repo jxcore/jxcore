@@ -12,12 +12,16 @@ var http = require("http"),
 var port = 17777;
 var finished = false;
 
+var cmd = '"' + process.execPath + '" monitor ';
+
+// kill monitor if stays as dummy process
+jxcore.utils.cmdSync(cmd + "stop");
 
 process.on('exit', function (code) {
+  var _cmd = process.platform == 'win32' ? 'del /q ' : 'rm -f ';
+  jxcore.utils.cmdSync(_cmd + "*monitor*.log");
+  jxcore.utils.cmdSync(cmd + 'stop');
   assert.ok(finished, "Test unit did not finish.");
-
-  var cmd = process.platform == 'win32' ? 'del /q ' : 'rm -f ';
-  jxcore.utils.cmdSync(cmd + "*monitor*.log");
 });
 
 // this is for testing if http port is taken by monitor process or not
@@ -35,10 +39,6 @@ var createSrv = function (cb) {
   });
   srv.listen(port, "127.0.0.1");
 };
-
-
-var cmd = '"' + process.execPath + '" monitor ';
-
 
 // we use setTimeout() here, because we cannot be sure on Windows,
 // that cmdSync will not exit sooner that jx monitor cmd will complete

@@ -15,23 +15,32 @@ var port = 17777;
 var finished = false;
 var subscribed = false;
 
+// neutralize old tmp file
+var oldLog = path.join(__dirname, "test-monitor-run-app-tmp.js");
+if (fs.existsSync(oldLog))
+  fs.writeFileSync(oldLog, "");
 
 // monitored app will just create an http server
-var baseFileName = "test-monitor-run-app-tmp.js";
-var appFileName = __dirname + path.sep + baseFileName;
+var baseFileName = "__test-monitor-run-app-tmp.js";
+var appFileName = path.join(__dirname, baseFileName);
 
 var str = 'setTimeout(process.exit, 10000);';  // let it end after 10 secs
 fs.writeFileSync(appFileName, str);
 
 var cmd = '"' + process.execPath + '" monitor ';
 
-process.on('exit', function (code) {
-  assert.ok(finished, "Test unit did not finish.");
-  assert.ok(subscribed, "Application did not subscribe to a monitor with `jx monitor run` command.");
+// kill monitor if stays as dummy process
+jxcore.utils.cmdSync(cmd + "stop");
 
+process.on('exit', function (code) {
   var _cmd = process.platform == 'win32' ? 'del /q ' : 'rm -f ';
   jxcore.utils.cmdSync(_cmd + "*monitor*.log");
-  fs.unlinkSync(appFileName);
+  if (fs.existsSync(appFileName))
+    fs.unlinkSync(appFileName);
+
+  jxcore.utils.cmdSync(cmd + 'stop');
+  assert.ok(finished, "Test unit did not finish.");
+  assert.ok(subscribed, "Application did not subscribe to a monitor with `jx monitor run` command.");
 });
 
 // calls monitor and gets json: http://localhost:17777/json
@@ -75,7 +84,7 @@ var traceWin = function (cmd, res) {
 // ########################## jx monitor start
 var ret = jxcore.utils.cmdSync(cmd + "start");
 traceWin(cmd + "start", ret);
-assert.ok(ret.exitCode === 0, "Monitor did not start after `start` command. \n", JSON.stringify(ret));
+assert.ok(ret.exitCode <= 0, "Monitor did not start after `start` command. \n", JSON.stringify(ret));
 
 // ########################## jx monitor run test-monitor-run-app.js
 

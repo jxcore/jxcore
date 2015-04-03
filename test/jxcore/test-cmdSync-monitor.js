@@ -8,6 +8,13 @@ var assert = require('assert');
 
 var cmd = '"' + process.execPath + '" monitor ';
 
+// kill monitor if it stays as dummy process
+jxcore.utils.cmdSync(cmd + "stop");
+
+process.on('exit', function (code) {
+  jxcore.utils.cmdSync(cmd + 'stop');
+});
+
 var arr = [
   cmd + "start",
   cmd + "stop"

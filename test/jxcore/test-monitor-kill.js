@@ -15,8 +15,13 @@ var subscribed = false;
 var killed = false;
 
 
+// neutralize old tmp file
+var oldLog = path.join(__dirname, "test-monitor-run-app-tmp.js");
+if (fs.existsSync(oldLog))
+  fs.writeFileSync(oldLog, "");
+
 // monitored app will just create an http server
-var baseFileName = "test-monitor-run-app-tmp.js";
+var baseFileName = "__test-monitor-run-app-tmp.js";
 var appFileName = __dirname + path.sep + baseFileName;
 
 var str = 'require("http").createServer().listen(8587, "localhost");\n';
@@ -25,15 +30,19 @@ fs.writeFileSync(appFileName, str);
 
 var cmd = '"' + process.execPath + '" monitor ';
 
+// kill monitor if it stays as dummy process
+jxcore.utils.cmdSync(cmd + "stop");
+
 process.on('exit', function (code) {
+  var _cmd = process.platform == 'win32' ? 'del /q ' : 'rm -f ';
+  jxcore.utils.cmdSync(_cmd + "*monitor*.log");
+  if (fs.existsSync(appFileName))
+    fs.unlinkSync(appFileName);
+
   jxcore.utils.cmdSync(cmd + 'stop');
   assert.ok(finished, "Test unit did not finish.");
   assert.ok(subscribed, "Application did not subscribe to a monitor with `jx monitor run` command.");
   assert.ok(killed, "Application was not killed with `jx monitor kill` command.");
-
-  var _cmd = process.platform == 'win32' ? 'del /q ' : 'rm -f ';
-  jxcore.utils.cmdSync(_cmd + "*monitor*.log");
-  fs.unlinkSync(appFileName);
 });
 
 // calls monitor and gets json: http://localhost:17777/json
@@ -62,7 +71,7 @@ var getJSON = function (cb) {
 
 // ########################## jx monitor start
 var ret = jxcore.utils.cmdSync(cmd + "start");
-assert.ok(ret.exitCode === 0, "Monitor did not start after `start` command. \n", JSON.stringify(ret));
+assert.ok(ret.exitCode <= 0, "Monitor did not start after `start` command. \n", JSON.stringify(ret));
 
 // ########################## jx monitor run test-monitor-run-app.js
 
