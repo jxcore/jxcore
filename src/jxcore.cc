@@ -570,7 +570,7 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
       // uv_unref'd) then this function exits. As long as there are active
       // watchers, it blocks.
       uv_run_jx(main_node_->loop, UV_RUN_DEFAULT, node::commons::CleanPinger,
-                0);
+                main_node_->threadId);
 
       node::EmitExit(process_l);
 
@@ -1260,7 +1260,7 @@ int JXEngine::Loop() {
     EnterScope();
 
     ret_val = uv_run_jx(main_node_->loop, UV_RUN_DEFAULT,
-                        node::commons::CleanPinger, 0);
+                        node::commons::CleanPinger, main_node_->threadId);
   }
   _EXIT_ISOLATE_
   return ret_val;
@@ -1273,7 +1273,7 @@ int JXEngine::LoopOnce() {
     EnterScope();
 
     ret_val = uv_run_jx(main_node_->loop, UV_RUN_NOWAIT,
-                        node::commons::CleanPinger, 0);
+                        node::commons::CleanPinger, main_node_->threadId);
   }
   _EXIT_ISOLATE_
   return ret_val;
