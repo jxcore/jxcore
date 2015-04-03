@@ -330,6 +330,9 @@ int threadHasMessage(const int tid) {
   return threadMessages[tid];
 }
 
+#define THREAD_ID_NOT_DEFINED -1
+#define THREAD_ID_ALREADY_DEFINED -2
+
 int uv_run_jx(uv_loop_t* loop, uv_run_mode mode, void (*triggerSync)(const int),
               const int tid) {
   int r;
@@ -340,10 +343,12 @@ int uv_run_jx(uv_loop_t* loop, uv_run_mode mode, void (*triggerSync)(const int),
   else
     poll = &uv_poll;
 
-  if (tid != -1)
-    loop->loopId = tid;
-  else
-    loop->loopId = 63;
+  if (tid != THREAD_ID_ALREADY_DEFINED) {
+    if (tid != THREAD_ID_NOT_DEFINED)
+      loop->loopId = tid;
+    else
+      loop->loopId = 63;
+  }
 
   if (!uv__loop_alive(loop)) return 0;
 
@@ -387,10 +392,35 @@ int uv_run_jx(uv_loop_t* loop, uv_run_mode mode, void (*triggerSync)(const int),
     triggerSync(tid);
   }
 
-  /* The if statement lets the compiler compile it to a conditional store.
-   * Avoids dirtying a cache line.
-   */
-  if (loop->stop_flag != 0) loop->stop_flag = 0;
+  // if we force thread shutdown, there will be some remaining tasks etc.
+  // It is highly possible they might leak, below impl. tries to workaround
+  // this problem by looping the handles for 500 ms. at max.
+  // TODO(obastemur) make it configurable per thread / timer sensitive
+  if (loop->stop_flag != 0) {
+    loop->stop_flag = 0;
+    if (tid == THREAD_ID_ALREADY_DEFINED) return r;
+
+    int force_close = 0;
+    uv_mutex_lock(&loop->wq_mutex);
+    if (!QUEUE_EMPTY(&loop->wq) && loop->loopId > 0) {
+      force_close = 1;
+    }
+    uv_mutex_unlock(&loop->wq_mutex);
+
+    if (force_close) {
+      uint64_t start_time = uv_hrtime();
+
+      int ret_val = 1;
+      while (ret_val) {
+        ret_val = uv_run_jx(loop, UV_RUN_NOWAIT,
+                             triggerSync, THREAD_ID_ALREADY_DEFINED);
+        uint64_t end_time = uv_hrtime();
+        if(end_time - start_time > 500 * 1024 * 1024) {
+          break;
+        }
+      }
+	}
+  }
 
   return r;
 }

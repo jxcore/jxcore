@@ -41,7 +41,8 @@
 #define __JS_METHOD_BEGIN_COM()                   \
   JS_ENTER_SCOPE_COM();                           \
   JS_DEFINE_STATE_MARKER_(p___args.GetIsolate()); \
-  jxcore::PArguments args(p___args);
+  jxcore::PArguments args(p___args); \
+  if (com->expects_reset) RETURN();
 
 #define JS_METHOD(class_name, method_name)                                 \
   JS_HANDLE_VALUE class_name::method_name(const v8::Arguments& p___args) { \

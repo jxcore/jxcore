@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdio.h>
 
 int uv__loop_init(uv_loop_t* loop, int default_loop) {
   unsigned int i;
@@ -108,7 +109,9 @@ void uv__loop_delete(uv_loop_t* loop) {
   }
 
   uv_mutex_lock(&loop->wq_mutex);
-  assert(QUEUE_EMPTY(&loop->wq) && "thread pool work queue not empty!");
+  if (!QUEUE_EMPTY(&loop->wq) && loop->loopId > 0) {
+      error_console("Shutting down the thread %d leaked.\n", loop->loopId);
+  }
   uv_mutex_unlock(&loop->wq_mutex);
   uv_mutex_destroy(&loop->wq_mutex);
   uv_rwlock_destroy(&loop->cloexec_lock);

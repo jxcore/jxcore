@@ -242,6 +242,8 @@ void commons::CreateNewNonCallableInstance(MozJS::Value *obj,
 #define JS_CLEAR_STRING(str) JS_CLEAR_PERSISTENT(pstr_##str)
 
 void commons::Dispose() {
+  uv_loop_delete(this->loop);
+
   if (instance_status_ == JXCORE_INSTANCE_ALIVE)
     instance_status_ = JXCORE_INSTANCE_EXITED;
   JS_CLEAR_PERSISTENT(udp_constructor);
@@ -380,7 +382,6 @@ void commons::stringOPS(bool construct) {
 }
 
 commons::~commons() {
-  uv_loop_delete(this->loop);
   delete parser_settings;
   delete tick_spinner;
   delete signal_watcher;
