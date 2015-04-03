@@ -23,15 +23,9 @@
   type* wrap = static_cast<type*>(args.GetHolder()); \
   node::commons* com;                                \
   if (!wrap)                                         \
-    com = node::commons::getInstance();                       \
+    com = node::commons::getInstance();              \
   else                                               \
   node::commons* com = wrap->com
-
-#define __JS_METHOD_COM(x)                                     \
-  node::commons* com = node::commons::getInstanceIso(x, p___args.GetIsolate()); \
-  if (com == NULL) {                                           \
-    RETURN();                                                  \
-  }
 
 #define __JS_METHOD_BEGIN_NO_COM()                \
   JS_ENTER_SCOPE();                               \
@@ -41,7 +35,7 @@
 #define __JS_METHOD_BEGIN_COM()                   \
   JS_ENTER_SCOPE_COM();                           \
   JS_DEFINE_STATE_MARKER_(p___args.GetIsolate()); \
-  jxcore::PArguments args(p___args); \
+  jxcore::PArguments args(p___args);              \
   if (com->expects_reset) RETURN();
 
 #define JS_METHOD(class_name, method_name)                                 \

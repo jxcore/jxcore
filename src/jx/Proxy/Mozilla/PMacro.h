@@ -28,21 +28,14 @@
   else                                                \
   node::commons *com = wrap->com
 
-#define __JS_METHOD_COM(x)                                   \
-  node::commons *com = node::commons::getInstanceByThreadId( \
-      JS_GetThreadId(JS_GET_STATE_MARKER()));                \
-  if (com == NULL) {                                         \
-    RETURN();                                                \
-  }
-
 #define __JS_METHOD_BEGIN_NO_COM() \
-  JS_ENTER_SCOPE();                \
   jxcore::PArguments args(JS_GET_STATE_MARKER(), __argc, __jsval);
 
-#define __JS_METHOD_BEGIN_COM()                              \
-  node::commons *com = node::commons::getInstanceByThreadId( \
-      JS_GetThreadId(JS_GET_STATE_MARKER()));                \
-  jxcore::PArguments args(JS_GET_STATE_MARKER(), __argc, __jsval);
+#define __JS_METHOD_BEGIN_COM()                                    \
+  node::commons *com = node::commons::getInstanceByThreadId(       \
+      JS_GetThreadId(JS_GET_STATE_MARKER()));                      \
+  jxcore::PArguments args(JS_GET_STATE_MARKER(), __argc, __jsval); \
+  if (com->expects_reset) RETURN();
 
 #define JS_METHOD(class_name, method_name)                                     \
   bool class_name::method_name(JSContext *__contextORisolate, unsigned __argc, \
