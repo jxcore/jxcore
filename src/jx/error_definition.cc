@@ -205,7 +205,6 @@ void SetErrno(uv_err_t err) {
 }
 
 void maybeExit(node::commons *com, const int code) {
-  com->expects_reset = true;
   EmitReset(com->getProcess(), code);
 }
 
