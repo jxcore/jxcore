@@ -173,6 +173,8 @@ static void handleJob(node::commons *com, Job *j,
   JS_ENTER_SCOPE();
   JS_DEFINE_STATE_MARKER(com);
 
+  if (com->expects_reset) return;
+
   JS_HANDLE_ARRAY arr = JS_NEW_ARRAY_WITH_COUNT(3);
   JS_INDEX_SET(arr, 0, STD_TO_INTEGER(j->taskId));
   JS_INDEX_SET(arr, 1, STD_TO_INTEGER(j->cbId));
@@ -206,6 +208,8 @@ static void handleTasks(node::commons *com, const JS_HANDLE_FUNCTION &func,
                         const JS_HANDLE_FUNCTION &runner, const int threadId) {
   JS_ENTER_SCOPE();
   JS_DEFINE_STATE_MARKER(com);
+
+  if (com->expects_reset) return;
 
   std::queue<int> tasks;
   Job::getTasks(&tasks, threadId);
@@ -269,6 +273,7 @@ JS_METHOD(JXInstance, Compiler) {
 
   handleTasks(com, func, runner, threadId);
 start:
+  if (com->expects_reset) RETURN_PARAM(STD_TO_INTEGER(-1));
   Job *j = getJob(directions[mn]);
   if (j != NULL) {
     succ++;
