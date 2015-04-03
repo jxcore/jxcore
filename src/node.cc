@@ -88,7 +88,7 @@ int WRITE_UTF8_FLAGS
 
 static void Spin(uv_idle_t* handle, int status) {
   node::commons* com = node::commons::getInstanceByThreadId(handle->threadId);
-  if (com->instance_status_ == node::JXCORE_INSTANCE_EXITED) return;
+  if (com->instance_status_ == node::JXCORE_INSTANCE_EXITED || com->expects_reset) return;
 
   uv_idle_t* t = com->tick_spinner;
   assert((uv_idle_t*)handle == t);
@@ -122,7 +122,7 @@ static void Spin(uv_idle_t* handle, int status) {
 }
 
 static JS_LOCAL_METHOD(NeedTickCallback) {
-  if (com->instance_status_ == node::JXCORE_INSTANCE_EXITED) RETURN();
+  if (com->instance_status_ == node::JXCORE_INSTANCE_EXITED || com->expects_reset) RETURN();
 
   com->need_tick_cb = true;
   uv_idle_t* t = com->tick_spinner;
@@ -133,7 +133,7 @@ JS_METHOD_END
 
 static void CheckImmediate(uv_check_t* handle, int status) {
   node::commons* com = node::commons::getInstanceByThreadId(handle->threadId);
-  if (com->instance_status_ == node::JXCORE_INSTANCE_EXITED) return;
+  if (com->instance_status_ == node::JXCORE_INSTANCE_EXITED || com->expects_reset) return;
 
   assert(handle == com->check_immediate_watcher &&
          "CheckImmediate [1] assert failed at node.cc");
@@ -146,7 +146,7 @@ static void CheckImmediate(uv_check_t* handle, int status) {
 }
 
 static void IdleImmediateDummy(uv_idle_t* handle, int status) {
-  assert(status == 0);
+  assert(status == 0 && "This should not be called!");
 }
 
 #ifdef JS_ENGINE_V8
@@ -174,7 +174,7 @@ JS_HANDLE_VALUE FromConstructorTemplateX(JS_PERSISTENT_FUNCTION_TEMPLATE t,
 
 JS_LOCAL_METHOD(UsingDomains) {
   if (com->instance_status_ == node::JXCORE_INSTANCE_EXITED ||
-      com->using_domains)
+      com->using_domains || com->expects_reset)
     RETURN();
 
   com->using_domains = true;
@@ -220,7 +220,7 @@ MakeDomainCallback(node::commons* com, const JS_HANDLE_OBJECT_REF object,
                    const JS_HANDLE_FUNCTION_REF callback, int argc,
                    JS_HANDLE_VALUE argv[]) {
   JS_DEFINE_STATE_MARKER(com);
-  if (com == NULL) return JS_UNDEFINED();
+  if (com == NULL || com->expects_reset) return JS_UNDEFINED();
 
   JS_LOCAL_VALUE domain_v;
   JS_LOCAL_OBJECT domain;
@@ -324,7 +324,7 @@ JS_HANDLE_VALUE
 MakeCallback(node::commons* com, JS_HANDLE_OBJECT_REF host, const char* name,
              int argc, jsval argv[]) {
   JS_DEFINE_STATE_MARKER(com);
-  if (com == NULL) return JS_UNDEFINED();
+  if (com == NULL || com->expects_reset) return JS_UNDEFINED();
 
   if (com->using_domains) {
     if (argc > 0) {
@@ -387,7 +387,7 @@ MakeCallback(node::commons* com, const JS_HANDLE_OBJECT_REF object,
              const JS_HANDLE_FUNCTION_REF callback, int argc,
              JS_HANDLE_VALUE argv[]) {
   JS_DEFINE_STATE_MARKER(com);
-  if (com == NULL) return JS_UNDEFINED();
+  if (com == NULL || com->expects_reset) return JS_UNDEFINED();
 
   if (com->using_domains)
     return MakeDomainCallback(object, callback, argc, argv);
@@ -433,7 +433,7 @@ MakeCallback(node::commons* com, const JS_HANDLE_OBJECT_REF object,
              const JS_HANDLE_STRING symbol, int argc, JS_HANDLE_VALUE argv[]) {
   JS_ENTER_SCOPE();
   JS_DEFINE_STATE_MARKER(com);
-  if (com == NULL) return JS_UNDEFINED();
+  if (com == NULL || com->expects_reset) return JS_UNDEFINED();
 
   JS_LOCAL_FUNCTION callback = JS_TYPE_AS_FUNCTION(JS_GET_NAME(object, symbol));
 
