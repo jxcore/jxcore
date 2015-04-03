@@ -62,9 +62,6 @@ JS_METHOD(ThreadWrap, Kill) {
 }
 JS_METHOD_END
 
-JS_METHOD(ThreadWrap, ShutDown) { uv_stop(com->loop); }
-JS_METHOD_END
-
 JS_METHOD(ThreadWrap, ResetThread) {
   CHECK_EMBEDDED_THREADS()
 

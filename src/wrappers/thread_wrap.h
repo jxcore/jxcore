@@ -45,7 +45,6 @@ class ThreadWrap {
   INIT_CLASS_MEMBERS_NO_COM() {
     SET_CLASS_METHOD("addTask", AddTask, 6);
     SET_CLASS_METHOD("resetThread", ResetThread, 1);
-    SET_CLASS_METHOD("shutDown", ShutDown, 0);
     SET_CLASS_METHOD("sendToAll", SendToThreads, 3);
     SET_CLASS_METHOD("getResults", GetResults, 0);
     SET_CLASS_METHOD("jobsCount", JobsCount, 0);
