@@ -42,12 +42,12 @@ void ConvertResult(JXValue *result, std::string &to_result) {
       ss << JX_GetDouble(result);
       to_result = ss.str();
     } break;
-    case RT_Buffer: {
-      to_result = JX_GetString(result);
-    } break;
+    case RT_Buffer:
     case RT_JSON:
     case RT_String: {
-      to_result = JX_GetString(result);
+      char *_ = JX_GetString(result);
+      to_result = _;
+      free(_);
     } break;
     case RT_Error: {
       to_result = JX_GetString(result);

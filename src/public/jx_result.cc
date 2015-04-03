@@ -125,28 +125,28 @@ char *JX_GetString(JXValue *value) {
 
   char *ret;
   if (value->type_ != RT_JSON) {
-    ret = STRING_TO_STD(wrap->value_);
+    ret = strdup(STRING_TO_STD(wrap->value_));
   } else {
     ret = jxcore::JX_Stringify(com, JS_VALUE_TO_OBJECT(wrap->value_),
                                &value->size_);
+
+// SM allocates memory using JS_malloc
+// we need to free that memory
+// and allocate externally
+#ifdef JS_ENGINE_MOZJS
+    char *ret_ = strdup(ret);
+
+    if (ret_ == NULL) {
+      // out of memory ?
+      return ret;
+    }
+
+    JS_free(__contextORisolate, ret);
+    ret = ret_;
+#endif
   }
 
   LEAVE_ENGINE_SCOPE();
-
-  // SM allocates memory using JS_malloc
-  // we need to free that memory
-  // and allocate externally
-#ifdef JS_ENGINE_MOZJS
-  char *ret_ = strdup(ret);
-
-  if (ret_ == NULL) {
-	// out of memory ?
-	return ret;
-  }
-
-  JS_free(__contextORisolate, ret);
-  ret = ret_;
-#endif
 
   return ret;
 }
