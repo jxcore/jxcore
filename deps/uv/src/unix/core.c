@@ -382,7 +382,7 @@ int uv_run_jx(uv_loop_t* loop, uv_run_mode mode, void (*triggerSync)(const int),
     if ((mode & UV_RUN_NOWAIT) == 0) timeout = uv_backend_timeout(loop);
 
     if (mode != UV_RUN_PAUSE) {
-      uv__io_poll_jx(loop, timeout, tid);
+      uv__io_poll_jx(loop, timeout, loop->loopId);
     }
 
     uv__run_check(loop);

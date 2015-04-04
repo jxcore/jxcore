@@ -366,22 +366,21 @@ int uv_run_jx(uv_loop_t* loop, uv_run_mode mode, void (*triggerSync)(const int),
     uv_process_endgames(loop);
     uv_prepare_invoke(loop);
 
-    if (tid != -1) {
+    if (tid > 0) {
       if (threadMessages[tid] != 0) {
         triggerSync(tid - 1000);
       }
     }
 
     if (mode != UV_RUN_PAUSE) {
-      (*poll)(loop, loop->idle_handles == NULL && threadMessages[tid] == 0 &&
+      const int _tid = tid >= 0 ? tid : 63;
+      (*poll)(loop, loop->idle_handles == NULL && threadMessages[_tid] == 0 &&
                         loop->pending_reqs_tail == NULL &&
                         loop->endgame_handles == NULL && !loop->stop_flag &&
                         (loop->active_handles > loop->fakeHandle ||
                          !QUEUE_EMPTY(&loop->active_reqs)) &&
                         !(mode & UV_RUN_NOWAIT));
     }
-    // printf("mla -> %d -> %d %d \n", tid, loop->active_handles,
-    // loop->fakeHandle); fflush(stdout);
 
     uv_check_invoke(loop);
     r = uv__loop_alive(loop);
