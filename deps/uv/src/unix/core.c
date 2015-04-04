@@ -405,7 +405,7 @@ int uv_run_jx(uv_loop_t* loop, uv_run_mode mode, void (*triggerSync)(const int),
   // TODO(obastemur) make it configurable per thread / timer sensitive
   if (loop->stop_flag != 0) {
     loop->stop_flag = 0;
-    if (tid == THREAD_ID_ALREADY_DEFINED) return r;
+    if (mode != UV_RUN_DEFAULT) return r;
 
     int force_close = 0;
     uv_mutex_lock(&loop->wq_mutex);
