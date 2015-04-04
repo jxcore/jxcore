@@ -2,6 +2,10 @@
 
 #ifndef SRC_JX_PROXY_MOZILLA_MOZJS_ISOLATE_H_
 #define SRC_JX_PROXY_MOZILLA_MOZJS_ISOLATE_H_
+#ifndef __POSIX__
+#define EXPORT_JS_API
+#endif
+
 #include "jsapi.h"
 #include "jsfriendapi.h"
 

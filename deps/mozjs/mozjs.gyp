@@ -419,7 +419,7 @@
           'ldflags': ['dl'],
         }],
         ['OS=="win"', {
-           'defines': [ 'XP_WIN', '_CRT_RAND_S', 'WTF_COMPILER_MSVC' ],  
+           'defines': [ 'XP_WIN', '_CRT_RAND_S', 'WTF_COMPILER_MSVC', 'EXPORT_JS_API' ],  
            'sources': [
              'src/perf/pm_stub.cpp',
              'src/jit/ExecutableAllocatorWin.cpp',
@@ -435,7 +435,14 @@
 			 }, {
 			   'defines':['_X86_']
 			 }]
-		   ]
+		   ], 
+		   'msvs_settings': {
+              'VCLibrarianTool': {
+                'AdditionalDependencies': [
+                  'winmm.lib',
+                ],
+              }
+            }
          },
          { #no WIN
            'cflags': [
