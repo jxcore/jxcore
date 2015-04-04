@@ -14,7 +14,7 @@
 // Explicitly instantiate some template classes, so we're sure they will be
 // present in the binary / shared object. There isn't much doubt that they will
 // be, but MSVC tends to complain about these things.
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && defined(JS_ENGINE_V8)
 template class NODE_EXTERN JS_PERSISTENT_OBJECT;
 template class NODE_EXTERN JS_PERSISTENT_FUNCTION_TEMPLATE;
 #endif

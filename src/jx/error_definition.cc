@@ -142,7 +142,6 @@ const char *winapi_strerror(const int errorno) {
 
 JS_LOCAL_VALUE WinapiErrnoException(int errorno, const char *syscall,
                                     const char *msg, const char *path) {
-  JS_LOCAL_VALUE e;
   if (!msg || !msg[0]) {
     msg = winapi_strerror(errorno);
   }
@@ -156,7 +155,7 @@ JS_LOCAL_VALUE WinapiErrnoException(int errorno, const char *syscall,
   }
 
   JS_LOCAL_STRING err_str = STD_TO_STRING(str.c_str());
-  e = ENGINE_NS::Exception::Error(err_str);
+  JS_LOCAL_VALUE e = ENGINE_NS::Exception::Error(err_str);
 
   JS_LOCAL_OBJECT obj = e->ToObject();
 

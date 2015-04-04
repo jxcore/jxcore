@@ -6,7 +6,11 @@
 #include "jx_instance.h"
 #include "wrappers/thread_wrap.h"
 #if defined(JS_ENGINE_MOZJS)
+#if !defined(_MSC_VER)
 #include "vm/PosixNSPR.h"
+#else
+#include "../deps/mozjs/incs/nss/nspr/pr/include/prthread.h"
+#endif
 #endif
 
 namespace jxcore {

@@ -41,7 +41,7 @@ class Error {
     ctx_ = err_msg_.ctx_;
   }
 
-  MozJS::Value GetErrorObject() { return err_msg_; }
+  inline MozJS::Value GetErrorObject() { return err_msg_; }
 
   jsval GetRawValue() {
     assert(!err_msg_.IsEmpty());

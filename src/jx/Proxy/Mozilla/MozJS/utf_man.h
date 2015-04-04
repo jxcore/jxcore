@@ -8,6 +8,9 @@ Copyright (c) 2005 JSON.org
 #define UTF8_END -1
 #define UTF8_ERROR -2
 
+// force Char16_t
+#include "isolate.h"
+
 int utf8_to_utf16(char16_t w[], const char p[], unsigned length);
 
 #endif  // SRC_JX_PROXY_MOZILLA_MOZJS_UTF_MAN_H_
