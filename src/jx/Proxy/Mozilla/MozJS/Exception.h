@@ -7,16 +7,16 @@
 #include "../SpiderHelper.h"
 #include "../MozTypes.h"
 
-#define ERROR_CLASSES(type)                                          \
- public:                                                             \
-  type(MozJS::String err_msg) {                                      \
-    assert(!err_msg.IsEmpty());                                      \
-    ctx_ = err_msg.ctx_;                                             \
-    MozJS::Value ret_val;                                            \
-    EngineHelper::CreateObject(err_msg.ctx_, #type, &ret_val);       \
-    JS::RootedValue rt_err_msg(err_msg.ctx_, err_msg.GetRawValue()); \
-    ret_val.SetProperty("message", rt_err_msg);                      \
-    err_msg_ = ret_val;                                              \
+#define ERROR_CLASSES(type)                            \
+ public:                                               \
+  type(MozJS::String err_msg) {                        \
+    assert(!err_msg.IsEmpty());                        \
+    ctx_ = err_msg.ctx_;                               \
+    MozJS::Value ret_val;                              \
+    EngineHelper::CreateObject(ctx_, #type, &ret_val); \
+    JS::RootedValue rt_err_msg(ctx_, err_msg.GetRawValue());  \
+    ret_val.SetProperty("message", rt_err_msg);        \
+    value_ = ret_val;                                  \
   }
 
 namespace MozJS {
@@ -27,28 +27,29 @@ class RangeError;
 class Error {
   friend class TypeError;
   friend class RangeError;
+  friend class MozJS::Value;
 
  protected:
-  MozJS::Value err_msg_;
+  MozJS::Value value_;
+  JSContext* ctx_;
 
   Error() { ctx_ = NULL; }
 
  public:
-  JSContext* ctx_;
 
   explicit Error(MozJS::Value err_msg) {
-    err_msg_ = err_msg;
-    ctx_ = err_msg_.ctx_;
+    value_ = err_msg;
+    ctx_ = err_msg.ctx_;
   }
 
-  inline MozJS::Value GetErrorObject() { return err_msg_; }
+  inline MozJS::Value GetErrorObject() { return value_; }
 
   jsval GetRawValue() {
-    assert(!err_msg_.IsEmpty());
-    return err_msg_.GetRawValue();
+    assert(!value_.IsEmpty());
+    return value_.GetRawValue();
   }
 
-  JSContext* GetContext() { return err_msg_.ctx_; }
+  inline JSContext* GetContext() { return ctx_; }
   ERROR_CLASSES(Error)
 };
 

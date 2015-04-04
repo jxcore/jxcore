@@ -89,6 +89,10 @@ struct _ValueData {
 
 typedef struct _ValueData ValueData;
 
+namespace Exception {
+  class Error;
+}
+
 class Value {
   friend class StringTools;
   friend class Script;
@@ -112,6 +116,7 @@ class Value {
   Value(const Value &value);
   Value &operator=(const Value &value);
   Value &operator=(const ValueData &value);
+  Value &operator=(const Exception::Error &value);
 
   ~Value();
 
@@ -186,6 +191,10 @@ class Value {
     if (empty_) return nullptr;
     JS::RootedValue rv(ctx_, value_);
     return JS::ToString(ctx_, rv);
+  }
+
+  inline JSContext *GetContext() {
+	return ctx_;
   }
 
   void SetIndexedPropertiesToExternalArrayData(void *data, const int data_type,

@@ -5,7 +5,7 @@
 #include "../SpiderHelper.h"
 #include "../EngineHelper.h"
 #include "utf_man.h"
-
+#include "Exception.h"
 #include "../../EngineLogger.h"
 
 #define JXCORE_INDEXED_NAME "                .indexed"
@@ -452,14 +452,12 @@ String Value::ToString() { return String(*this); }
 #define DEFINE_OPERATOR(left, right)          \
   left &left::operator=(const right &value) { \
     value_ = value.value_;                    \
-    rooted_ = value.fake_rooting_;            \
     empty_ = value.empty_;                    \
     ctx_ = value.ctx_;                        \
     is_exception_ = value.is_exception_;      \
     if (empty_) {                             \
       rooted_ = false;                        \
-    } else if (rooted_) {                     \
-      rooted_ = false;                        \
+    } else if (value.fake_rooting_) {         \
       AddRoot();                              \
     }                                         \
     fake_rooting_ = false;                    \
@@ -470,6 +468,15 @@ DEFINE_OPERATOR(Value, Value)
 DEFINE_OPERATOR(String, String)
 DEFINE_OPERATOR(Value, ValueData)
 DEFINE_OPERATOR(String, ValueData)
+
+Value &Value::operator=(const Exception::Error &value) {
+  Value val = value.value_;
+
+  val.rooted_ = false;
+  val.fake_rooting_ = false;
+
+  return val;
+}
 
 ValueData Value::RootCopy() {
   ValueData val;

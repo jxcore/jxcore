@@ -4,8 +4,8 @@
 
 #define CAST_ERROR()                                 \
   is_exception_ = true;                              \
-  JS::RootedValue _exc(err.ctx_, err.GetRawValue()); \
-  JS_SetPendingException(err.ctx_, _exc);
+  JS::RootedValue _exc(err.GetContext(), err.GetRawValue()); \
+  JS_SetPendingException(err.GetContext(), _exc);
 
 namespace MozJS {
 ThrowException::ThrowException(Exception::Error err) { CAST_ERROR() }
