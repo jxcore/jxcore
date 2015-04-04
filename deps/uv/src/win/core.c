@@ -373,8 +373,7 @@ int uv_run_jx(uv_loop_t* loop, uv_run_mode mode, void (*triggerSync)(const int),
     }
 
     if (mode != UV_RUN_PAUSE) {
-      const int _tid = tid >= 0 ? tid : 63;
-      (*poll)(loop, loop->idle_handles == NULL && threadMessages[_tid] == 0 &&
+      (*poll)(loop, loop->idle_handles == NULL && threadMessages[loop->loopId] == 0 &&
                         loop->pending_reqs_tail == NULL &&
                         loop->endgame_handles == NULL && !loop->stop_flag &&
                         (loop->active_handles > loop->fakeHandle ||

@@ -474,7 +474,7 @@ void ReportException(JS_TRY_CATCH_TYPE &try_catch, bool show_line) {
 
 void FatalException(JS_TRY_CATCH_TYPE &try_catch) {
   JS_ENTER_SCOPE_COM();
-  if (com == NULL || com->instance_status_ == node::JXCORE_INSTANCE_EXITED)
+  if (com == NULL || com->instance_status_ == node::JXCORE_INSTANCE_EXITED || com->expects_reset)
     return;
   JS_DEFINE_STATE_MARKER(com);
 
