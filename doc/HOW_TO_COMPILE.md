@@ -34,6 +34,8 @@ On Windows:
 / $> vcbuild.bat
 ```
 
+To compile with SpiderMonkey, `--engine-mozilla` key also applies to Windows builds. i.e. `vcbuild.bat --engine-mozilla`
+
 After a successful compilation process, you should have jxcore installed into `/jxcoreSM/bin` or `/jxcoreV8/bin` folder (depending on the engine selection). 
 
 JXcore internal JavaScript files can be embedded in two ways (compressed, or as-is). If you are planning to use `jx` binary for a native package creation, 
