@@ -23,7 +23,7 @@ class PipeWrap : StreamWrap {
   static DEFINE_JS_METHOD(Open);
 
 #ifdef _WIN32
-  static JS_HANDLE_VALUE SetPendingInstances(const v8::Arguments& args);
+  static DEFINE_JS_METHOD(SetPendingInstances);
 #endif
 
   static void OnConnection(uv_stream_t* handle, int status);

@@ -155,9 +155,10 @@ JS_LOCAL_VALUE WinapiErrnoException(int errorno, const char *syscall,
   }
 
   JS_LOCAL_STRING err_str = STD_TO_STRING(str.c_str());
-  JS_LOCAL_VALUE e = ENGINE_NS::Exception::Error(err_str);
+  JS_LOCAL_VALUE e;
+  e = ENGINE_NS::Exception::Error(err_str);
 
-  JS_LOCAL_OBJECT obj = e->ToObject();
+  JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(e);
 
   JS_NAME_SET(obj, JS_STRING_ID("errno"), STD_TO_INTEGER(errorno));
   if (path) JS_NAME_SET(obj, JS_STRING_ID("path"), STD_TO_STRING(path));

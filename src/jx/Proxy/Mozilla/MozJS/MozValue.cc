@@ -240,6 +240,15 @@ Value::Value(const Value &value) {
   is_exception_ = false;
 }
 
+Value::Value(const Exception::Error &value) {
+  value_ = value.value_.value_;
+  rooted_ = false;
+  empty_ = false;
+  ctx_ = value.value_.ctx_;
+  fake_rooting_ = false;
+  is_exception_ = true;
+}
+
 Value::Value(const Value &value, bool rooted) {
   value_ = value.value_;
   empty_ = value.empty_;
@@ -930,7 +939,7 @@ String String::FromUTF8(JSContext *ctx, const char *str, const int len) {
   return String(JS_NewStringCopyN(ctx, str, slen), ctx);
 }
 
-String String::FromSTD(JSContext *ctx, const uint16_t *str, const int len) {
+String String::FromUTF8(JSContext *ctx, const uint16_t *str, const int len) {
   JSString *js_str = StringTools::FromUINT16(ctx, str, len);
 
   assert(js_str != NULL);

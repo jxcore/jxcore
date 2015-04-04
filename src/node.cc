@@ -1294,8 +1294,9 @@ static JS_GETTER_METHOD(EnvGetter) {
   // not found.
   if ((result > 0 || GetLastError() == ERROR_SUCCESS) &&
       result < ARRAY_SIZE(buffer)) {
-    RETURN_GETTER_PARAM(UTF8_TO_STRING_WITH_LENGTH(
-        reinterpret_cast<uint16_t*>(buffer), result));
+	JS_LOCAL_STRING str_result = UTF8_TO_STRING_WITH_LENGTH(
+        reinterpret_cast<uint16_t*>(buffer), result);
+    RETURN_GETTER_PARAM(str_result);
   }
 #endif
 // Not found.  Fetch from prototype.
@@ -1523,7 +1524,7 @@ static bool EnvEnumerator(JSContext* cx, JS::HandleObject obj) {
     if ((result > 0 || GetLastError() == ERROR_SUCCESS) &&
         result < ARRAY_SIZE(buffer)) {
       JS_NAME_SET(env, ps_str,
-                  STD_TO_STRING_WITH_LENGTH(reinterpret_cast<uint16_t*>(buffer),
+                  UTF8_TO_STRING_WITH_LENGTH(reinterpret_cast<uint16_t*>(buffer),
                                             result));
     }
     p = s + wcslen(s) + 1;

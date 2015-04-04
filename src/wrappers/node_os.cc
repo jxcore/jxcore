@@ -76,7 +76,7 @@ JS_METHOD(OS, GetOSRelease) {
   info.dwOSVersionInfoSize = sizeof(info);
 
   if (GetVersionEx(&info) == 0) {
-    return JS_UNDEFINED();
+    RETURN();
   }
 
   snprintf(release, sizeof(release), "%d.%d.%d",

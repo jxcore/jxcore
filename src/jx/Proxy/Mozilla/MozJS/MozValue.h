@@ -114,6 +114,7 @@ class Value {
   Value(const JS::Value &value, JSContext *ctx, bool rooted = false);
   Value(const Value &value, bool rooted);
   Value(const Value &value);
+  Value(const Exception::Error &value);
   Value &operator=(const Value &value);
   Value &operator=(const ValueData &value);
   Value &operator=(const Exception::Error &value);
@@ -293,7 +294,7 @@ class String : public Value {
 
   static String FromSTD(JSContext *ctx, const char *str, const int len);
   static String FromUTF8(JSContext *ctx, const char *str, const int len);
-  static String FromSTD(JSContext *ctx, const uint16_t *str, const int len);
+  static String FromUTF8(JSContext *ctx, const uint16_t *str, const int len);
 
   String &operator=(const String &value);
   String &operator=(const ValueData &value);

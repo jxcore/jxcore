@@ -582,7 +582,7 @@ JS_LOCAL_VALUE StringBytes::Encode(const char* buf, size_t buflen,
         // XXX is the following line platform independent?
         twobytebuf[i] = cbuf[i];
       }
-      val = STD_TO_STRING_WITH_LENGTH(twobytebuf, buflen);
+      val = UTF8_TO_STRING_WITH_LENGTH(twobytebuf, buflen);
       delete[] twobytebuf;
       break;
     }
@@ -601,7 +601,7 @@ JS_LOCAL_VALUE StringBytes::Encode(const char* buf, size_t buflen,
 
     case UCS2: {
       const uint16_t* data = reinterpret_cast<const uint16_t*>(buf);
-      val = STD_TO_STRING_WITH_LENGTH(data, buflen / 2);
+      val = UTF8_TO_STRING_WITH_LENGTH(data, buflen / 2);
       break;
     }
 
