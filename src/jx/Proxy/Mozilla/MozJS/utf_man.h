@@ -9,7 +9,7 @@ Copyright (c) 2005 JSON.org
 #define UTF8_ERROR -2
 
 // force Char16_t
-#include "isolate.h"
+#include "Isolate.h"
 
 int utf8_to_utf16(char16_t w[], const char p[], unsigned length);
 
