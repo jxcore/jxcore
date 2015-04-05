@@ -561,6 +561,8 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
       v8_typed_array::AttachBindings(context->Global());
 #endif
 
+      main_node_->loop->loopId = main_node_->threadId;
+
       node::Load(process_l);
 
       // All our arguments are loaded. We've evaluated all of the scripts. We

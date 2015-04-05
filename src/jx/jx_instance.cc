@@ -111,6 +111,8 @@ void JXInstance::runScript(void *x) {
 
       JXEngine::InitializeProxyMethods(com);
 
+      com->loop->loopId = threadId + 1;
+
       node::Load(process_l);
 
       uv_run_jx(com->loop, UV_RUN_DEFAULT, node::commons::CleanPinger,
