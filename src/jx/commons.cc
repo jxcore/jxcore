@@ -162,6 +162,7 @@ void removeCommons() {
       if (com->threadId == it->second) {
         isolates[it->second] = NULL;
       }
+      delete com;
     }
 
     coms.erase(it);

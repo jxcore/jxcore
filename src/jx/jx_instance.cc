@@ -131,7 +131,6 @@ void JXInstance::runScript(void *x) {
     reset = com->expects_reset;
 #ifdef JS_ENGINE_V8
     com->node_isolate->Dispose();
-    delete com;
 #elif defined(JS_ENGINE_MOZJS)
     JS_DestroyContext(ctx);
 
@@ -147,9 +146,8 @@ void JXInstance::runScript(void *x) {
     com->free_context_list_.clear();
 
     com->node_isolate->Dispose();
-    delete com;
 #endif
-
+    node::removeCommons();
   } while (0);
 
 #ifdef JS_ENGINE_MOZJS
@@ -157,7 +155,6 @@ void JXInstance::runScript(void *x) {
 #endif
 
   reduceThreadCount();
-  node::removeCommons();
   Job::removeTasker(threadId);
 
   if (reset) {

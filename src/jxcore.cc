@@ -607,7 +607,7 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
     }
 
     main_node_->Dispose();
-    delete main_node_;
+    node::removeCommons();
   } while (0);
 
 #ifdef JS_ENGINE_V8
@@ -826,7 +826,7 @@ void JXEngine::Destroy() {
     }
     main_node_->free_context_list_.clear();
 
-    delete main_node_;
+    node::removeCommons();
   }
 
   if (node::commons::process_status_ != node::JXCORE_INSTANCE_EXITED)
@@ -979,7 +979,7 @@ void JXEngine::Destroy() {
   jx_engine_map::iterator it = jx_engine_instances.find(main_node_->threadId);
   if (it != jx_engine_instances.end()) jx_engine_instances.erase(it);
 
-  delete main_node_;
+  node::removeCommons();
 
   _EXIT_ISOLATE_
 }

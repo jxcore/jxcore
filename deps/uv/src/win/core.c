@@ -366,7 +366,7 @@ int uv_run_jx(uv_loop_t* loop, uv_run_mode mode, void (*triggerSync)(const int),
     uv_process_endgames(loop);
     uv_prepare_invoke(loop);
 
-    if (tid > 0) {
+    if (loop->loopId >= 0 && mode == UV_RUN_DEFAULT) {
       if (threadMessages[tid] != 0) {
         triggerSync(tid - 1000);
       }
