@@ -88,7 +88,9 @@ int WRITE_UTF8_FLAGS
 
 static void Spin(uv_idle_t* handle, int status) {
   node::commons* com = node::commons::getInstanceByThreadId(handle->threadId);
-  if (com->instance_status_ == node::JXCORE_INSTANCE_EXITED || com->expects_reset) return;
+  if (com->instance_status_ == node::JXCORE_INSTANCE_EXITED ||
+      com->expects_reset)
+    return;
 
   uv_idle_t* t = com->tick_spinner;
   assert((uv_idle_t*)handle == t);
@@ -122,7 +124,9 @@ static void Spin(uv_idle_t* handle, int status) {
 }
 
 static JS_LOCAL_METHOD(NeedTickCallback) {
-  if (com->instance_status_ == node::JXCORE_INSTANCE_EXITED || com->expects_reset) RETURN();
+  if (com->instance_status_ == node::JXCORE_INSTANCE_EXITED ||
+      com->expects_reset)
+    RETURN();
 
   com->need_tick_cb = true;
   uv_idle_t* t = com->tick_spinner;
@@ -133,7 +137,9 @@ JS_METHOD_END
 
 static void CheckImmediate(uv_check_t* handle, int status) {
   node::commons* com = node::commons::getInstanceByThreadId(handle->threadId);
-  if (com->instance_status_ == node::JXCORE_INSTANCE_EXITED || com->expects_reset) return;
+  if (com->instance_status_ == node::JXCORE_INSTANCE_EXITED ||
+      com->expects_reset)
+    return;
 
   assert(handle == com->check_immediate_watcher &&
          "CheckImmediate [1] assert failed at node.cc");
@@ -1294,8 +1300,8 @@ static JS_GETTER_METHOD(EnvGetter) {
   // not found.
   if ((result > 0 || GetLastError() == ERROR_SUCCESS) &&
       result < ARRAY_SIZE(buffer)) {
-	JS_LOCAL_STRING str_result = UTF8_TO_STRING_WITH_LENGTH(
-        reinterpret_cast<uint16_t*>(buffer), result);
+    JS_LOCAL_STRING str_result =
+        UTF8_TO_STRING_WITH_LENGTH(reinterpret_cast<uint16_t*>(buffer), result);
     RETURN_GETTER_PARAM(str_result);
   }
 #endif
@@ -1524,8 +1530,8 @@ static bool EnvEnumerator(JSContext* cx, JS::HandleObject obj) {
     if ((result > 0 || GetLastError() == ERROR_SUCCESS) &&
         result < ARRAY_SIZE(buffer)) {
       JS_NAME_SET(env, ps_str,
-                  UTF8_TO_STRING_WITH_LENGTH(reinterpret_cast<uint16_t*>(buffer),
-                                            result));
+                  UTF8_TO_STRING_WITH_LENGTH(
+                      reinterpret_cast<uint16_t*>(buffer), result));
     }
     p = s + wcslen(s) + 1;
   }
@@ -2184,26 +2190,30 @@ void Load(JS_HANDLE_OBJECT process_l) {
 
 void RunAtExit() {
   node::commons* com = node::commons::getInstance();
-  AtExitCallback* p = com->at_exit_functions_;
-  com->at_exit_functions_ = NULL;
+  if (com != NULL) {
+    AtExitCallback* p = com->at_exit_functions_;
+    com->at_exit_functions_ = NULL;
 
-  if (p == NULL) return;
+    if (p == NULL) return;
 
-  while (p) {
-    AtExitCallback* q = p->next_;
-    p->cb_(p->arg_);
-    delete p;
-    p = q;
+    while (p) {
+      AtExitCallback* q = p->next_;
+      p->cb_(p->arg_);
+      delete p;
+      p = q;
+    }
   }
 }
 
 void AtExit(void (*cb)(void* arg), void* arg) {
   node::commons* com = node::commons::getInstance();
-  AtExitCallback* p = new AtExitCallback;
-  p->cb_ = cb;
-  p->arg_ = arg;
-  p->next_ = com->at_exit_functions_;
-  com->at_exit_functions_ = p;
+  if (com != NULL) {
+    AtExitCallback* p = new AtExitCallback;
+    p->cb_ = cb;
+    p->arg_ = arg;
+    p->next_ = com->at_exit_functions_;
+    com->at_exit_functions_ = p;
+  }
 }
 
 void EmitExit(JS_HANDLE_OBJECT process_l) {

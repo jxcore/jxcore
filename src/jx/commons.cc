@@ -514,21 +514,19 @@ void commons::PingThread() {
 }
 
 void commons::CleanPinger(int threadId) {
+  if (threadId >= 0) {
 #ifdef _MSC_VER
-  if (threadId < -100) {
-    threadId += 1000;
     TriggerDummy(NULL, threadId);
-    return;
+#else
+    commons *com = commons::getInstanceByThreadId(threadId);
+    if (com == NULL) return;
+    if (com->threadPing == NULL) return;
+
+    uv_async_t *t = com->threadPing;
+    uv_close((uv_handle_t *)t, NULL);
+    com->loop->fakeHandle = 0;
+#endif
   }
-#endif
-  commons *com = commons::getInstanceByThreadId(threadId);
-  if (com == NULL) return;
-  if (com->threadPing == NULL) return;
-#ifndef _MSC_VER
-  uv_async_t *t = com->threadPing;
-  uv_close((uv_handle_t *)t, NULL);
-  com->loop->fakeHandle = 0;
-#endif
 }
 
 void commons::setMainIsolate() { setCommons(this); }

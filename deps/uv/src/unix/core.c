@@ -395,8 +395,8 @@ int uv_run_jx(uv_loop_t* loop, uv_run_mode mode, void (*triggerSync)(const int),
     if (mode & (UV_RUN_ONCE | UV_RUN_NOWAIT | UV_RUN_PAUSE)) break;
   }
 
-  if (loop->loopId >= 0 && mode == UV_RUN_DEFAULT) {
-    triggerSync(tid);
+  if (loop->loopId >= 0 && mode == UV_RUN_DEFAULT && triggerSync != NULL) {
+    triggerSync(loop->loopId);
   }
 
   // if we force thread shutdown, there will be some remaining tasks etc.
