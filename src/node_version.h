@@ -32,6 +32,10 @@
 #define NODE_VERSION "v" NODE_VERSION_STRING
 #define JXCORE_VERSION "v Beta-0.3.0.0"
 
+#ifdef JS_ENGINE_MOZJS
+#define MOZJS_VERSION 34
+#endif
+
 #define NODE_VERSION_AT_LEAST(major, minor, patch)                  \
   (((major) < NODE_MAJOR_VERSION) ||                                \
    ((major) == NODE_MAJOR_VERSION&&(minor) < NODE_MINOR_VERSION) || \

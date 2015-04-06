@@ -112,12 +112,13 @@ bool JSEngineInterrupt(JSContext *ctx) {
     return false;
   }
 
-  // TODO(obasetmur) This also triggers when CPU hits 100%. do anything ?
+  // TODO(obastemur) This also triggers when CPU hits 100%. do anything ?
   return true;
 }
 #endif
 
 void JXEngine::ParseDebugOpt(const char *arg) {
+#ifdef JS_ENGINE_V8
   const char *p = 0;
 
   main_node_->use_debug_agent = true;
@@ -141,6 +142,9 @@ void JXEngine::ParseDebugOpt(const char *arg) {
   if (p) fprintf(stderr, "Debug port must be in range 1025 to 65535.\n");
 
   PrintHelp();
+#elif defined(JS_ENGINE_MOZJS)
+  error_console("This JXcore build uses SpiderMonkey engine. For now SM build doesn't support debugging.\n");
+#endif
   exit(12);
 }
 
@@ -160,6 +164,7 @@ void JXEngine::PrintHelp() {
       "  mt-keep              multithread the given application (keep "
       "alive)\n\n"
       "  -jxv, --jxversion    print jxcore's version\n"
+      "  -jsv, --jsversion    print underlying JS engine's name and version\n"
       "  -v, --version        print corresponding node's version\n"
       "  -e, --eval script    evaluate script\n"
       "  -p, --print          evaluate script and print result\n"
@@ -206,12 +211,21 @@ void JXEngine::ParseArgs(int argc, char **argv) {
         ParseDebugOpt(arg);
         argv[i] = const_cast<char *>("");
       } else if (strcmp(arg, "--version") == 0 || strcmp(arg, "-v") == 0) {
-        printf("%s\n", NODE_VERSION);
+    	log_console("%s\n", NODE_VERSION);
+#ifndef JXCORE_EMBEDDED
+        exit(0);
+#endif
+      } else if (strcmp(arg, "--jsversion") == 0 || strcmp(arg, "-jsv") == 0) {
+#ifdef JS_ENGINE_V8
+        flush_console("Google V8 v%s\n", v8::V8::GetVersion());
+#elif defined(JS_ENGINE_MOZJS)
+        flush_console("Mozilla SpiderMonkey v%d\n", MOZJS_VERSION);
+#endif
 #ifndef JXCORE_EMBEDDED
         exit(0);
 #endif
       } else if (strcmp(arg, "--jxversion") == 0 || strcmp(arg, "-jxv") == 0) {
-        printf("%s\n", JXCORE_VERSION);
+        log_console("%s\n", JXCORE_VERSION);
 #ifndef JXCORE_EMBEDDED
         exit(0);
 #endif

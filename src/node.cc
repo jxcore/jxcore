@@ -1890,7 +1890,7 @@ void SetupProcessObject(const int threadId) {
   JS_NAME_SET(versions, JS_STRING_ID("sm"), STD_TO_INTEGER(0));
 #elif defined(JS_ENGINE_MOZJS)
   JS_NAME_SET(versions, JS_STRING_ID("v8"), STD_TO_INTEGER(0));
-  JS_NAME_SET(versions, JS_STRING_ID("sm"), STD_TO_INTEGER(340));  // MZ 34
+  JS_NAME_SET(versions, JS_STRING_ID("sm"), STD_TO_INTEGER(MOZJS_VERSION));
 #endif
   JS_NAME_SET(versions, JS_STRING_ID("ares"), STD_TO_STRING(ARES_VERSION_STR));
   JS_NAME_SET(versions, JS_STRING_ID("uv"), STD_TO_STRING(uv_version_string()));
