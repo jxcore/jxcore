@@ -18,50 +18,59 @@ The sample below demonstrates a basic usage of the interface
 #include <stdlib.h>
 #include <string.h>
 #include <sstream>
-#include <unistd.h>
 
-#include "jx.h"
+#if defined(_MSC_VER)
+// Sleep time for Windows is 1 ms while it's 1 ns for POSIX
+// Beware using this for your app. This is just to give a
+// basic idea on usage
+#include <windows.h>
+#else
+#include <unistd.h>
+#define Sleep(x) usleep(x)
+#endif
+
+#include "public/jx.h"
 
 #define flush_console(...)        \
   do {                            \
     fprintf(stdout, __VA_ARGS__); \
     fflush(stdout);               \
-  } while (0)
+    } while (0)
 
 void ConvertResult(JXValue *result, std::string &to_result) {
   switch (result->type_) {
-    case RT_Null:
-      to_result = "null";
-      break;
-    case RT_Undefined:
-      to_result = "undefined";
-      break;
-    case RT_Boolean:
-      to_result = JX_GetBoolean(result) ? "true" : "false";
-      break;
-    case RT_Int32: {
-      std::stringstream ss;
-      ss << JX_GetInt32(result);
-      to_result = ss.str();
-    } break;
-    case RT_Double: {
-      std::stringstream ss;
-      ss << JX_GetDouble(result);
-      to_result = ss.str();
-    } break;
-    case RT_Buffer: {
-      to_result = JX_GetString(result);
-    } break;
-    case RT_JSON:
-    case RT_String: {
-      to_result = JX_GetString(result);
-    } break;
-    case RT_Error: {
-      to_result = JX_GetString(result);
-    } break;
-    default:
-      to_result = "null";
-      return;
+  case RT_Null:
+    to_result = "null";
+    break;
+  case RT_Undefined:
+    to_result = "undefined";
+    break;
+  case RT_Boolean:
+    to_result = JX_GetBoolean(result) ? "true" : "false";
+    break;
+  case RT_Int32: {
+    std::stringstream ss;
+    ss << JX_GetInt32(result);
+    to_result = ss.str();
+  } break;
+  case RT_Double: {
+    std::stringstream ss;
+    ss << JX_GetDouble(result);
+    to_result = ss.str();
+  } break;
+  case RT_Buffer: {
+    to_result = JX_GetString(result);
+  } break;
+  case RT_JSON:
+  case RT_String: {
+    to_result = JX_GetString(result);
+  } break;
+  case RT_Error: {
+    to_result = JX_GetString(result);
+  } break;
+  default:
+    to_result = "null";
+    return;
   }
 }
 
@@ -92,7 +101,7 @@ void sampleMethod(JXResult *results, int argc) {
 int main(int argc, char **args) {
   char *path = args[0];
   // Call JX_Initialize only once per app
-  
+
   JX_Initialize(args[0], callback);
   // Creates a new engine for the current thread
   // It's our first engine instance hence it will be the
@@ -104,10 +113,10 @@ int main(int argc, char **args) {
   JX_InitializeNewEngine();
 
   char *contents = "console.log('hello world');";
-  
+
   // define the entry file contents
   JX_DefineMainFile(contents);
-  
+
   // define native -named- method
   // we will be reaching to this method from the javascript side like this;
   // process.natives.sampleMethod( ... )
@@ -117,21 +126,21 @@ int main(int argc, char **args) {
 
   // loop for possible IO
   // or JX_Loop() without usleep / while
-  while (JX_LoopOnce() != 0) usleep(1);
+  while (JX_LoopOnce() != 0) Sleep(1);
 
   JXValue result;
   JX_Evaluate(
-      "var arr = process.natives.sampleMethod('String Parameter', {foo:1}); \n"
-      "console.log('result: ', arr, 'length:', arr.length ); \n"
-      "setTimeout(function() { \n"
-      "  console.log('end!'); \n"
-      "}, 100);",
-      "myscript", &result);
+    "var arr = process.natives.sampleMethod('String Parameter', {foo:1}); \n"
+    "console.log('result: ', arr, 'length:', arr.length ); \n"
+    "setTimeout(function() { \n"
+    "  console.log('end!'); \n"
+    "}, 100);",
+    "myscript", &result);
 
   JX_Free(&result);
   // loop for possible IO
   // or JX_Loop() without usleep / while
-  while (JX_LoopOnce() != 0) usleep(1);
+  while (JX_LoopOnce() != 0) Sleep(1);
 
   JX_StopEngine();
 }
