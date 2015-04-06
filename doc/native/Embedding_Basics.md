@@ -29,7 +29,7 @@ The sample below demonstrates a basic usage of the interface
 #define Sleep(x) usleep(x)
 #endif
 
-#include "public/jx.h"
+#include "jx.h"
 
 #define flush_console(...)        \
   do {                            \
