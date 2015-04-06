@@ -101,7 +101,17 @@ static void WaitThreadExit(uv_loop_t *ev_loop) {
 
 #ifdef JS_ENGINE_MOZJS
 void GCOnMozJS(JSRuntime *rt, JSGCStatus status, void *data) {
-  // flush_console("GC called -  %s\n", status == JSGC_BEGIN ? "BEGIN" : "END");
+#ifdef JXCORE_PRINT_NATIVE_CALLS
+  // TODO(obastemur) GC is happening so?
+  if (status == JSGC_BEGIN) {
+    ENGINE_LOG_THIS("MozJS", "GC_BEGIN");
+  } else if (status == JSGC_END) {
+    ENGINE_LOG_THIS("MozJS", "GC_END");
+  } else {
+	error_console("Unknown GC flag. Did you forget updating _GCOnMozJS ?\n");
+	abort();
+  }
+#endif
 }
 
 bool JSEngineInterrupt(JSContext *ctx) {

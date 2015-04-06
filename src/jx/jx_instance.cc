@@ -17,7 +17,17 @@ namespace jxcore {
 
 #ifdef JS_ENGINE_MOZJS
 void _GCOnMozJS(JSRuntime *rt, JSGCStatus status, void *data) {
+#ifdef JXCORE_PRINT_NATIVE_CALLS
   // TODO(obastemur) GC is happening so?
+  if (status == JSGC_BEGIN) {
+    ENGINE_LOG_THIS("MozJS", "GC_BEGIN");
+  } else if (status == JSGC_END) {
+    ENGINE_LOG_THIS("MozJS", "GC_END");
+  } else {
+	error_console("Unknown GC flag. Did you forget updating _GCOnMozJS ?\n");
+	abort();
+  }
+#endif
 }
 
 bool _JSEngineInterrupt(JSContext *ctx) {
@@ -84,7 +94,6 @@ void JXInstance::runScript(void *x) {
       JS_DEFINE_STATE_MARKER(com);
       JS_SetErrorReporter(ctx, node::OnFatalError);
 #endif
-
       uv_idle_t *t = com->tick_spinner;
       uv_idle_init(com->loop, t);
 
