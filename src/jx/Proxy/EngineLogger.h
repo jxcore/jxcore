@@ -17,8 +17,7 @@
 #define SRC_JX_PROXY_ENGINELOGGER_H_
 
 // Enabling PRINT_NATIVE_CALLS prints out all the native method calls and time
-// consumed
-// Works on single thread!
+// consumed. Works on single thread!
 // #define JXCORE_PRINT_NATIVE_CALLS 1
 
 // Enabling JXCORE_PRINT_NATIVE_CALLS_FILE_LINE adds the source file and line
@@ -38,11 +37,9 @@
 #endif
 
 #ifdef DEBUG
-void SOFT_BREAK_POINT();
+#include "debugbreak.h"
 #else
-#ifndef SOFT_BREAK_POINT()
-#define SOFT_BREAK_POINT()
-#endif
+#define debug_break()
 #endif
 
 #ifdef JXCORE_PRINT_NATIVE_CALLS
