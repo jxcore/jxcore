@@ -49,7 +49,7 @@ JXString::JXString() {
 JXString::JXString(const JS_HANDLE_VALUE_REF str, void *ctx) {
   str_ = NULL;
   autogc_ = true;
-  ctx_ = str.ctx_;
+  ctx_ = str.GetContext();
   length_ = 0;
   value_ = str.GetRawStringPointer();
   ascii_char_set_ = false;
@@ -200,7 +200,7 @@ void JXString::GetASCII() {
 
 void JXString::SetFromHandle(const JS_HANDLE_VALUE_REF str, bool get_ascii) {
   value_ = str.GetRawStringPointer();
-  ctx_ = str.ctx_;
+  ctx_ = str.GetContext();
   if (!get_ascii)
     SetFromHandle();
   else

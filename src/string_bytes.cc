@@ -175,7 +175,7 @@ size_t StringBytes::JXWrite(char* buf, size_t buflen, JS_HANDLE_VALUE_REF val,
       len = str->Write(reinterpret_cast<uint16_t*>(buf), 0, buflen, flags);
 #else
       MozJS::auto_jschar outto;
-      MozJS::StringTools::JS_ConvertToJSChar(str.ctx_,
+      MozJS::StringTools::JS_ConvertToJSChar(str.GetContext(),
                                              str.GetRawStringPointer(), &outto);
       len = outto.length_;
       if (len * sizeof(uint16_t) > buflen) {

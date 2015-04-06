@@ -32,7 +32,7 @@ class NODE_EXTERN ObjectWrap {
       handle_.ClearWeak();
       handle_->SetPointerInInternalField(0, 0);
 #elif defined(JS_ENGINE_MOZJS)
-      if (!MozJS::EngineHelper::IsInstanceAlive(handle_->ctx_)) return;
+      if (!MozJS::EngineHelper::IsInstanceAlive(handle_->GetContext())) return;
 #endif
       JS_CLEAR_PERSISTENT(handle_);
     }

@@ -12,6 +12,9 @@
 
 namespace MozJS {
 
+MozRoot::MozRoot() {}
+MozRoot::~MozRoot() {}
+
 JSString *StringTools::FromUINT16(JSContext *ctx, const uint16_t *str,
                                   const int len) {
   char16_t *temp = (char16_t *)JS_malloc(ctx, sizeof(uint16_t) * (1 + len));
@@ -181,8 +184,9 @@ Script Script::Compile(JSContext *ctx, const String &source,
 
 Value Script::Run(const Value &host_object_) {
   JSObject *hst = host_object_.GetRawObjectPointer();
-  JSCompartment *jsco = JS_EnterCompartment(ctx_, hst);
   JS::RootedObject host(ctx_, hst);
+
+  JSCompartment *jsco = JS_EnterCompartment(ctx_, hst);
 
   Value result;
   result.ctx_ = ctx_;
@@ -558,41 +562,33 @@ void *Value::GetPointerFromInternalField(const int index) {
 }
 
 void *Value::GetSelfPrivate() {
-  if (!value_.isObject()) return nullptr;
+  if (!value_.isObject() || value_.isNullOrUndefined()) return nullptr;
 
-  JSObject *object_ = value_.toObjectOrNull();
-  if (JS_HasPrivate(object_))
-    return JS_GetPrivate(object_);
+  JS::RootedObject rt_obj(ctx_, value_.toObjectOrNull());
+  if (JS_HasPrivate(rt_obj))
+    return JS_GetPrivate(rt_obj);
   else
     return nullptr;
 }
 
 int Value::InternalFieldCount() const {
-  if (!value_.isObject()) return 0;
+  if (!value_.isObject() || value_.isNullOrUndefined()) return 0;
 
-  JSObject *object_ = value_.toObjectOrNull();
-  if (object_ != nullptr) {
-    if (JS_HasReservedSlot(object_, 1)) {
-      return 1;
-    }
-  }
-
-  return 0;
+  JS::RootedObject object_(ctx_, value_.toObjectOrNull());
+  return JS_HasReservedSlot(object_, 1);
 }
 
 void Value::SetInternalFieldCount(int count) {
-  if (!value_.isObject()) return;
+  if (!value_.isObject() || value_.isNullOrUndefined()) {
+    assert("Object expected");
+  }
 
-  JSObject *object_ = value_.toObjectOrNull();
-
-  if (object_ != nullptr) {
-    if (!JS_HasReservedSlot(object_, 1)) {
-      // perhaps this object was created on JS land
-      // add a property that can trigger the event when the base
-      // object is GC'ed
-      JS::RootedObject object_rt(ctx_, object_);
-      object_ = Natify(object_rt);
-    }
+  JS::RootedObject object_(ctx_, value_.toObjectOrNull());
+  if (!JS_HasReservedSlot(object_, 1)) {
+    // perhaps this object was created on JS land
+    // add a property that can trigger the event when the base
+    // object is GC'ed
+    Natify(object_);
   }
 }
 
@@ -639,6 +635,8 @@ struct ObjectStore {
 };
 
 void indexed_finalize(JSFreeOp *fop, JSObject *obj) {
+  if (obj == nullptr) return;
+
   if (JS_HasPrivate(obj)) {
     void *ptr = JS_GetPrivate(obj);
     if (ptr != nullptr) {
@@ -723,7 +721,7 @@ void Value::SetIndexedPropertiesToExternalArrayData(void *data,
 }
 
 void *Value::GetIndexedPropertiesExternalArrayData() {
-  if (!value_.isObject()) return 0;
+  if (!value_.isObject() || value_.isNullOrUndefined()) return 0;
 
   ObjectStore *store = nullptr;
   if (this->Has(JXCORE_INDEXED_NAME)) {
@@ -739,7 +737,7 @@ void *Value::GetIndexedPropertiesExternalArrayData() {
 }
 
 int32_t Value::GetIndexedPropertiesExternalArrayDataLength() {
-  if (!value_.isObject()) return 0;
+  if (!value_.isObject() || value_.isNullOrUndefined()) return 0;
 
   ObjectStore *store = nullptr;
   if (this->Has(JXCORE_INDEXED_NAME)) {
@@ -755,7 +753,7 @@ int32_t Value::GetIndexedPropertiesExternalArrayDataLength() {
 }
 
 int Value::GetIndexedPropertiesExternalArrayDataType() {
-  if (!value_.isObject()) return 0;
+  if (!value_.isObject() || value_.isNullOrUndefined()) return 0;
 
   ObjectStore *store = nullptr;
   if (this->Has(JXCORE_INDEXED_NAME)) {
@@ -771,7 +769,7 @@ int Value::GetIndexedPropertiesExternalArrayDataType() {
 }
 
 bool Value::HasBufferSignature() const {
-  if (!value_.isObject()) return 0;
+  if (!value_.isObject() || value_.isNullOrUndefined()) return 0;
 
   JSObject *obj = value_.toObjectOrNull();
   if (obj == nullptr) return false;
@@ -795,7 +793,7 @@ bool Value::HasBufferSignature() const {
 }
 
 bool Value::HasInstance(const Value &val) {
-  if (!val.IsObject()) return false;
+  if (!val.IsObject() || value_.isNullOrUndefined()) return false;
   INNER_VALUE_TO_OBJECT(object_, false);
 
   JS::RootedValue rv_val(ctx_, val.value_);
@@ -970,6 +968,8 @@ struct ObjectFinalizer {
 };
 
 void Value::empty_finalize(JSFreeOp *fop, JSObject *obj) {
+  if(obj == nullptr) return;
+
   if (JS_HasReservedSlot(obj, GC_SLOT_JS_CLASS)) {  // jsclass info
     jsval __ = JS_GetReservedSlot(obj, GC_SLOT_JS_CLASS);
     if (__.isObjectOrNull()) {

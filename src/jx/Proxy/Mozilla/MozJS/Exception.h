@@ -7,16 +7,16 @@
 #include "../SpiderHelper.h"
 #include "../MozTypes.h"
 
-#define ERROR_CLASSES(type)                            \
- public:                                               \
-  type(MozJS::String err_msg) {                        \
-    assert(!err_msg.IsEmpty());                        \
-    ctx_ = err_msg.ctx_;                               \
-    MozJS::Value ret_val;                              \
-    EngineHelper::CreateObject(ctx_, #type, &ret_val); \
-    JS::RootedValue rt_err_msg(ctx_, err_msg.GetRawValue());  \
-    ret_val.SetProperty("message", rt_err_msg);        \
-    value_ = ret_val;                                  \
+#define ERROR_CLASSES(type)                                  \
+ public:                                                     \
+  type(MozJS::String err_msg) {                              \
+    assert(!err_msg.IsEmpty());                              \
+    ctx_ = err_msg.GetContext();                             \
+    MozJS::Value ret_val;                                    \
+    EngineHelper::CreateObject(ctx_, #type, &ret_val);       \
+    JS::RootedValue rt_err_msg(ctx_, err_msg.GetRawValue()); \
+    ret_val.SetProperty("message", rt_err_msg);              \
+    value_ = ret_val;                                        \
   }
 
 namespace MozJS {
@@ -36,10 +36,9 @@ class Error {
   Error() { ctx_ = NULL; }
 
  public:
-
   explicit Error(MozJS::Value err_msg) {
     value_ = err_msg;
-    ctx_ = err_msg.ctx_;
+    ctx_ = err_msg.GetContext();
   }
 
   inline MozJS::Value GetErrorObject() { return value_; }

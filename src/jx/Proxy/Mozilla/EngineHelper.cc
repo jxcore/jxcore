@@ -40,18 +40,18 @@ int EngineHelper::GetThreadId() {
 
 void EngineHelper::FromJSString(const String &str, auto_str *out,
                                 bool get_ascii) {
-  jxcore::JXString jxs(str.GetRawStringPointer(), str.ctx_, false, get_ascii);
+  jxcore::JXString jxs(str.GetRawStringPointer(), str.GetContext(), false, get_ascii);
   out->str_ = *jxs;
   out->length_ = jxs.length();
-  out->ctx_ = str.ctx_;
+  out->ctx_ = str.GetContext();
 }
 
 void EngineHelper::FromJSString(const Value &str, auto_str *out,
                                 bool get_ascii) {
-  jxcore::JXString jxs(str.GetRawStringPointer(), str.ctx_, false, get_ascii);
+  jxcore::JXString jxs(str.GetRawStringPointer(), str.GetContext(), false, get_ascii);
   out->str_ = *jxs;
   out->length_ = jxs.length();
-  out->ctx_ = str.ctx_;
+  out->ctx_ = str.GetContext();
 }
 
 void EngineHelper::FromJSString(JSString *str, JSContext *ctx, auto_str *out,

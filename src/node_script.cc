@@ -422,7 +422,7 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(jxcore::PArguments &args,
 #elif defined(JS_ENGINE_MOZJS)
 static void CrossCompartmentClone(MozJS::Value &orig_obj, JSContext *newc,
                                   JS::MutableHandleObject retval) {
-  JSContext *context = orig_obj.ctx_;
+  JSContext *context = orig_obj.GetContext();
   MozJS::Value target_sandbox(jxcore::NewTransplantObject(context), context);
 
   jxcore::CrossCompartmentCopy(context, newc, target_sandbox, false, retval);

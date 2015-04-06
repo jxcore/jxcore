@@ -90,10 +90,19 @@ struct _ValueData {
 typedef struct _ValueData ValueData;
 
 namespace Exception {
-  class Error;
+class Error;
 }
 
-class Value {
+class MozRoot {
+ public:
+  JS::Heap<JS::Value> value_;
+  JSContext *ctx_;
+
+  MozRoot();
+  ~MozRoot();
+};
+
+class Value : protected MozRoot {
   friend class StringTools;
   friend class Script;
   friend class String;
@@ -104,10 +113,8 @@ class Value {
   bool rooted_;
   bool empty_;
   bool fake_rooting_;
-  JS::Heap<JS::Value> value_;
 
  public:
-  JSContext *ctx_;
   bool is_exception_;
 
   Value();
@@ -194,9 +201,7 @@ class Value {
     return JS::ToString(ctx_, rv);
   }
 
-  inline JSContext *GetContext() {
-	return ctx_;
-  }
+  inline JSContext *GetContext() const { return ctx_; }
 
   void SetIndexedPropertiesToExternalArrayData(void *data, const int data_type,
                                                const int32_t length);
@@ -239,7 +244,8 @@ class Value {
   bool SetIndex(const int index, const Value &val);
   bool SetIndex(const int index, JS::HandleValue val);
 
-  bool DefineGetterSetter(const String &_name, JSPropertyOp getter, JSStrictPropertyOp setter,
+  bool DefineGetterSetter(const String &_name, JSPropertyOp getter,
+                          JSStrictPropertyOp setter,
                           const Value &initial_value);
 
   bool DeleteProperty(const String &_name);
