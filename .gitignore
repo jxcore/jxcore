@@ -13,7 +13,7 @@ android-toolchain-arm/
 android-toolchain-arm64/
 android-toolchain-intel/
 android-toolchain-intelx64/
-jx
+/jx
 jx_g
 /enco.js
 /test.js
