@@ -71,6 +71,7 @@ if (help) {
   console.log("\t-s     silent: hides extra messages");
   console.log("\t-f     packages are created once per jx version. Use -f to force refresh them");
   console.log("\t-r     repeats given test/tests X times. This value overrides a value given in test's .json file");
+  console.log("\t-nc    no cleanup - do not remove temporary folders (useful for further inspection)");
   console.log("\t-file  allows to execute test just for one js file");
   console.log("");
   console.log("\texamples:");
@@ -129,8 +130,6 @@ var checkFile = function () {
   prepare_packages.renderTestCfg(testDir);
   // console.log("single_test_dir", single_test_dir);
 }();
-
-var folders = [];
 
 // stripping everything except args like "jxcore" "simple" etc - test folder names
 var _arr = process.argv.slice(1).join("|").replace(__filename, "").replace(
@@ -205,3 +204,28 @@ if (test_packages) arr.push("-p");
 if (test_natives) arr.push("-n");
 
 runNext();
+
+
+process.on('exit', function() {
+
+  if (!no_cleanup) {
+    var files = fs.readdirSync(__dirname);
+    for(var o in files) {
+      var _path = path.join(__dirname, files[o]);
+      var stat = fs.statSync(_path);
+      if (stat.isDirectory()) {
+        if (files[o].slice(0, 6) === "_auto_")
+          jx.rmdirSync(_path);
+
+        if (!prepare_packages.jx_json_enabled) {
+          var jx_json = path.join(_path, "jx.json");
+          if (fs.existsSync(jx_json))
+            fs.unlinkSync(jx_json);
+        }
+      }
+    }
+
+    jx.rmdirSync(path.join(__dirname, "tmp_jx"));
+  }
+
+});

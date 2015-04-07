@@ -94,6 +94,7 @@ Usage:
 	-s     silent: hides extra messages
 	-f     packages are created once per jx version. Use -f to force refresh them
 	-r     repeats give test/tests X times. This value overrides a value given in test.json file
+	-nc    no cleanup - do not remove temporary folders (useful for further inspection)
 	-file  allows to execute test just for one js file
 
 	examples:
