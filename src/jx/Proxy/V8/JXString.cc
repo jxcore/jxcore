@@ -38,7 +38,6 @@ namespace jxcore {
     return;                                              \
   }                                                      \
                                                          \
-  JS_ENTER_SCOPE_COM();                                  \
   JS_LOCAL_STRING val_ = _value->ToString();             \
                                                          \
   size_t len;                                            \
