@@ -30,43 +30,58 @@
 #define LEAVE_ENGINE_SCOPE()
 #endif
 
+#define NULL_CHECK \
+  if (value == NULL) return false;
+
 bool JX_IsFunction(JXValue *value) {
+  NULL_CHECK
   return value->size_ > 0 && value->type_ == RT_Function;
 }
 
 bool JX_IsError(JXValue *value) {
+  NULL_CHECK
   return value->size_ > 0 && value->type_ == RT_Error;
 }
 
 bool JX_IsInt32(JXValue *value) {
+  NULL_CHECK
   return value->size_ > 0 && value->type_ == RT_Int32;
 }
 
 bool JX_IsDouble(JXValue *value) {
+  NULL_CHECK
   return value->size_ > 0 && value->type_ == RT_Double;
 }
 
 bool JX_IsBoolean(JXValue *value) {
+  NULL_CHECK
   return value->size_ > 0 && value->type_ == RT_Boolean;
 }
 
 bool JX_IsString(JXValue *value) {
+  NULL_CHECK
   return value->size_ > 0 && value->type_ == RT_String;
 }
 
 bool JX_IsJSON(JXValue *value) {
+  NULL_CHECK
   return value->size_ > 0 && value->type_ == RT_JSON;
 }
 
 bool JX_IsBuffer(JXValue *value) {
+  NULL_CHECK
   return value->size_ > 0 && value->type_ == RT_Buffer;
 }
 
 bool JX_IsUndefined(JXValue *value) {
+  NULL_CHECK
   return value->size_ == 0 || value->type_ == RT_Undefined;
 }
 
-bool JX_IsNull(JXValue *value) { return value->type_ == RT_Null; }
+bool JX_IsNull(JXValue *value) {
+  NULL_CHECK
+  return value->type_ == RT_Null;
+}
 
 #define EMPTY_CHECK(x)                                \
   if (value == NULL) return x;                        \
