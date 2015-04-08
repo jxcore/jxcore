@@ -27,6 +27,12 @@ exports.silent = false;
 exports.force_refresh = false;
 
 /**
+ * Enables/disables testing feature for preventing repacking jx/native packages with every consequent test run
+ * @type {boolean}
+ */
+exports.jx_json_enabled = false;
+
+/**
  * Compiles single js file into jx or native package and puts into output folder
  *
  * @param src -
@@ -41,7 +47,10 @@ exports.createSinglePackage = function (src, native) {
   var json = {};
   if (fs.existsSync(json_file)) {
     try {
-      json = JSON.parse(fs.readFileSync(json_file).toString());
+      if (exports.jx_json_enabled)
+        json = JSON.parse(fs.readFileSync(json_file).toString());
+      else
+        fs.unlinkSync(json_file);
     } catch (ex) {
     }
   }
@@ -135,11 +144,13 @@ exports.createSinglePackage = function (src, native) {
 
     if (!exports.silent) jxcore.utils.console.log(" OK");
 
-    if (!json[fname]) {
-      json[fname] = {};
+    if (exports.jx_json_enabled) {
+      if (!json[fname]) {
+        json[fname] = {};
+      }
+      json[fname][suffix] = versions;
+      fs.writeFileSync(json_file, JSON.stringify(json, null, 4));
     }
-    json[fname][suffix] = versions;
-    fs.writeFileSync(json_file, JSON.stringify(json, null, 4));
 
     return outputFile;
   }
