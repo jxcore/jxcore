@@ -33,12 +33,12 @@ var cmd = '"' + process.execPath + '" monitor ';
 jxcore.utils.cmdSync(cmd + "stop");
 
 process.on('exit', function (code) {
+  jxcore.utils.cmdSync(cmd + 'stop');
   var _cmd = process.platform == 'win32' ? 'del /q ' : 'rm -f ';
   jxcore.utils.cmdSync(_cmd + "*monitor*.log");
   if (fs.existsSync(appFileName))
     fs.unlinkSync(appFileName);
 
-  jxcore.utils.cmdSync(cmd + 'stop');
   assert.ok(finished, "Test unit did not finish.");
   assert.ok(subscribed, "Application did not subscribe to a monitor with `jx monitor run` command.");
 });
