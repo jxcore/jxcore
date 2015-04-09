@@ -1,0 +1,1 @@
+exports.value = "src2.js";
