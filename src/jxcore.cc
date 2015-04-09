@@ -108,8 +108,8 @@ void GCOnMozJS(JSRuntime *rt, JSGCStatus status, void *data) {
   } else if (status == JSGC_END) {
     ENGINE_LOG_THIS("MozJS", "GC_END");
   } else {
-	error_console("Unknown GC flag. Did you forget updating _GCOnMozJS ?\n");
-	abort();
+    error_console("Unknown GC flag. Did you forget updating _GCOnMozJS ?\n");
+    abort();
   }
 #endif
 }
@@ -153,7 +153,9 @@ void JXEngine::ParseDebugOpt(const char *arg) {
 
   PrintHelp();
 #elif defined(JS_ENGINE_MOZJS)
-  error_console("This JXcore build uses SpiderMonkey engine. For now SM build doesn't support debugging.\n");
+  error_console(
+      "This JXcore build uses SpiderMonkey engine. For now SM build doesn't "
+      "support debugging.\n");
 #endif
   exit(12);
 }
@@ -221,7 +223,7 @@ void JXEngine::ParseArgs(int argc, char **argv) {
         ParseDebugOpt(arg);
         argv[i] = const_cast<char *>("");
       } else if (strcmp(arg, "--version") == 0 || strcmp(arg, "-v") == 0) {
-    	log_console("%s\n", NODE_VERSION);
+        log_console("%s\n", NODE_VERSION);
 #ifndef JXCORE_EMBEDDED
         exit(0);
 #endif
@@ -386,8 +388,7 @@ char **JXEngine::Init(int argc, char *argv[], bool engine_inited_already) {
 #if defined(JS_ENGINE_V8)
   if (!engine_inited_already) v8::V8::SetFatalErrorHandler(node::OnFatalError);
 #elif defined(JS_ENGINE_MOZJS)
-  JS_SetErrorReporter(main_node_->node_isolate->ctx_,
-                      node::OnFatalError);
+  JS_SetErrorReporter(main_node_->node_isolate->ctx_, node::OnFatalError);
 #endif
 
   if (!engine_inited_already) {
@@ -636,8 +637,8 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
 
 #ifdef JS_ENGINE_V8
 #ifndef NDEBUG
-    // Clean up. Not strictly necessary.
-    V8::Dispose();
+  // Clean up. Not strictly necessary.
+  V8::Dispose();
 #endif  // NDEBUG
 #endif
 
@@ -968,7 +969,7 @@ void JXEngine::Destroy() {
       node::commons::process_status_ = node::JXCORE_INSTANCE_EXITING;
     else
       main_node_->instance_status_ = node::JXCORE_INSTANCE_EXITING;
-    JS_ENGINE_SCOPE();
+    JS_ENGINE_SCOPE(main_node_, threadId_ != 0);
     EnterScope();
 
     JS_HANDLE_OBJECT process_l = main_node_->getProcess();
@@ -1070,7 +1071,13 @@ JS_HANDLE_VALUE JX_Parse(node::commons *com, const char *str,
   JS_ENTER_SCOPE();
   JS_DEFINE_STATE_MARKER(com);
 
-  JS_LOCAL_STRING str_value = UTF8_TO_STRING_WITH_LENGTH(str, length);
+  JS_LOCAL_STRING str_value;
+
+  if (length != 0) {
+    str_value = UTF8_TO_STRING_WITH_LENGTH(str, length);
+  } else {
+    str_value = UTF8_TO_STRING(str);
+  }
   // Init
   if (JS_IS_EMPTY((com->JSONparse))) {
     JS_LOCAL_FUNCTION _JSONparse =
@@ -1187,7 +1194,7 @@ bool JXEngine::Evaluate(const char *source, const char *filename,
                         JXResult *result) {
   bool ret_val = false;
   {
-    JS_ENGINE_SCOPE();
+    JS_ENGINE_SCOPE(main_node_, threadId_ != 0);
     EnterScope();
 
     node::commons *com = main_node_;
@@ -1227,7 +1234,7 @@ bool JXEngine::DefineProxyMethod(const char *name, const int interface_id,
     methods_to_initialize_[name].interface_id_ = interface_id;
   } else {
     {
-      JS_ENGINE_SCOPE();
+      JS_ENGINE_SCOPE(main_node_, threadId_ != 0);
       EnterScope();
 
       JS_HANDLE_OBJECT process = main_node_->getProcess();
@@ -1256,7 +1263,7 @@ bool JXEngine::DefineNativeMethod(const char *name, JS_NATIVE_METHOD method) {
     methods_to_initialize_[name].is_native_method_ = true;
   } else {
     {
-      JS_ENGINE_SCOPE();
+      JS_ENGINE_SCOPE(main_node_, threadId_ != 0);
       EnterScope();
 
       JS_HANDLE_OBJECT process = main_node_->getProcess();
@@ -1282,7 +1289,7 @@ bool JXEngine::DefineNativeMethod(const char *name, JS_NATIVE_METHOD method) {
 int JXEngine::Loop() {
   int ret_val = 0;
   {
-    JS_ENGINE_SCOPE();
+    JS_ENGINE_SCOPE(main_node_, threadId_ != 0);
     EnterScope();
 
     ret_val = uv_run_jx(main_node_->loop, UV_RUN_DEFAULT,
@@ -1295,7 +1302,7 @@ int JXEngine::Loop() {
 int JXEngine::LoopOnce() {
   int ret_val = 0;
   {
-    JS_ENGINE_SCOPE();
+    JS_ENGINE_SCOPE(main_node_, threadId_ != 0);
     EnterScope();
 
     ret_val = uv_run_jx(main_node_->loop, UV_RUN_NOWAIT,

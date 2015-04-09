@@ -112,16 +112,16 @@ JXCORE_EXTERN(void)
 JX_SetBoolean(JXValue *value, const bool val);
 
 JXCORE_EXTERN(void) 
-JX_SetString(JXValue *value, const char *val, const int32_t length);
+JX_SetString(JXValue *value, const char *val, const int32_t length = 0);
 
 JXCORE_EXTERN(void) 
-JX_SetJSON(JXValue *value, const char *val, const int32_t length);
+JX_SetJSON(JXValue *value, const char *val, const int32_t length = 0);
 
 JXCORE_EXTERN(void) 
-JX_SetError(JXValue *value, const char *val, const int32_t length);
+JX_SetError(JXValue *value, const char *val, const int32_t length = 0);
 
 JXCORE_EXTERN(void) 
-JX_SetBuffer(JXValue *value, const char *val, const int32_t length);
+JX_SetBuffer(JXValue *value, const char *val, const int32_t length = 0);
 
 JXCORE_EXTERN(void) 
 JX_SetUndefined(JXValue *value);
