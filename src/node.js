@@ -1398,6 +1398,19 @@
       parms = parms.split(',');
       for (var o in parms) {
         checkOff[parms[o]] = 1;
+        var _path;
+        if (parms[o].indexOf(process.cwd()) === -1) {
+          // relative path was given
+          _path = path.join(process.cwd(), parms[o]);
+        } else {
+          // absolute path was given
+          _path = parms[o];
+        }
+
+        if (_path.slice(-1) === path.sep)
+          _path = _path.slice(0, _path.length - 1);
+        if (fs.existsSync(_path))
+          checkOff[_path] = 2;
       }
     }
 
@@ -1405,7 +1418,8 @@
     for (var o in files) {
       var file = files[o];
 
-      if (parms && checkOff[file]) continue;
+      if (parms && (checkOff[file] === 1 || checkOff[path.join(folder, file)] === 2))
+        continue;
 
       var stat = fs.statSync(folder + file);
 
