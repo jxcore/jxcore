@@ -161,6 +161,22 @@ bool JX_GetBoolean(JXValue *value) {
   return ret;
 }
 
+// SM allocates memory using JS_malloc
+// we need to free that memory
+// and allocate externally
+#ifdef JS_ENGINE_MOZJS
+#define MOZ_CLEAR_                  \
+  char *ret_ = strdup(ret);         \
+  if (ret_ == NULL) {               \
+    return ret;                     \
+  }                                 \
+                                    \
+  JS_free(__contextORisolate, ret); \
+  ret = ret_;
+#else
+#define MOZ_CLEAR_
+#endif
+
 char *JX_GetString(JXValue *value) {
   EMPTY_CHECK(0);
 
@@ -174,20 +190,7 @@ char *JX_GetString(JXValue *value) {
     } else {
       ret = jxcore::JX_Stringify(com, JS_VALUE_TO_OBJECT(wrap->value_),
                                  &value->size_);
-// SM allocates memory using JS_malloc
-// we need to free that memory
-// and allocate externally
-#ifdef JS_ENGINE_MOZJS
-      char *ret_ = strdup(ret);
-
-      if (ret_ == NULL) {
-        // out of memory ?
-        return ret;
-      }
-
-      JS_free(__contextORisolate, ret);
-      ret = ret_;
-#endif
+      MOZ_CLEAR_
     }
   });
 
