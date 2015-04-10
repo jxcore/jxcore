@@ -118,23 +118,14 @@ NODE_EXTERN JS_LOCAL_VALUE
 
 const char *signo_string(int errorno);
 
-NODE_EXTERN typedef void (*addon_register_func)(JS_HANDLE_OBJECT exports,
+NODE_EXTERN typedef void (*addon_register_func)(JS_HANDLE_OBJECT_REF exports,
                                                 JS_HANDLE_VALUE module);
-
-#ifdef JS_ENGINE_V8
-NODE_EXTERN typedef void (*addon_register_func_internal)(
-    JS_HANDLE_OBJECT exports);
-#elif defined(JS_ENGINE_MOZJS)
-NODE_EXTERN typedef void (*addon_register_func_internal)(
-    const JS_HANDLE_OBJECT &exports);
-#endif
 
 struct node_module_struct {
   int version;
   void *dso_handle;
   const char *filename;
   node::addon_register_func register_func;
-  node::addon_register_func_internal register_func_internal;
   const char *modname;
 };
 
@@ -156,11 +147,11 @@ node_module_struct *get_builtin_module(const char *name);
 #define NODE_MODULE_EXPORT __attribute__((visibility("default")))
 #endif
 
-#define NODE_MODULE(modname, regfunc)                                        \
-  extern "C" {                                                               \
-  NODE_MODULE_EXPORT node::node_module_struct modname##_module = {           \
-      NODE_STANDARD_MODULE_STUFF,                  NULL,                     \
-      (node::addon_register_func_internal)regfunc, NODE_STRINGIFY(modname)}; \
+#define NODE_MODULE(modname, regfunc)                                 \
+  extern "C" {                                                        \
+  NODE_MODULE_EXPORT node::node_module_struct modname##_module = {    \
+      NODE_STANDARD_MODULE_STUFF, (node::addon_register_func)regfunc, \
+      NODE_STRINGIFY(modname)};                                       \
   }
 
 #define NODE_MODULE_DECL(modname) \

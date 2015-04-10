@@ -1230,7 +1230,7 @@ static JS_LOCAL_METHOD(JXBinding) {
 
   if ((modp = get_builtin_module(*module_v)) != NULL) {
     exports = JS_NEW_EMPTY_OBJECT();
-    modp->register_func_internal(exports);
+    modp->register_func(exports, JS_UNDEFINED());
     JS_NAME_SET(com->binding_cache, module, exports);
 
   } else if (!strcmp(*module_v, "constants")) {
