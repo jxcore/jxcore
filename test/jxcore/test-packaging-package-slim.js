@@ -1,10 +1,12 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
 /*
- This unit is creating a package with -slim parameter.
- Then we check if slimmed folder is present in package, or not.
+ This unit is creating a jx package with -slim parameter.
+ Then we check if slimmed folder is present in package, or not (by calling require())
  */
 
+if (process.IsEmbedded || exports.$JXP)
+  return;
 
 // -------------   init part
 
@@ -64,11 +66,11 @@ var child = cp.exec('"' + process.execPath + '" package ' + path.basename(js_fil
 
   assert.ok(fs.existsSync(jx_file), "Cannot find compiled package " + jx_file);
 
+  jx.rmdirSync(subFolder);
+  jx.rmdirSync(subFolder_slimed);
   for (var a = 0, len = assets.length; a < len; a++) {
     fs.unlinkSync(dir + assets[a], wrap(dir + assets[a]));
-    fs.unlinkSync(subFolder + assets[a], wrap(subFolder + assets[a]));
-    fs.unlinkSync(subFolder_slimed + assets[a], wrap(subFolder_slimed + assets[a]));
-  }
+   }
 
   var lib = require(jx_file);
 

@@ -1,3 +1,4 @@
 {
-  "native": false
+  "native": false,
+  "package": false
 }
