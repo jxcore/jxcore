@@ -56,7 +56,7 @@ var test_slim = function (definition, native) {
   fs.writeFileSync(path.join(dir, "config.json"), JSON.stringify(definition, null, 4));
 
   // creating a package
-  var cmd = 'cd "' + dir + '"; "' + process.execPath + '" package test-packaging-slim.js my_package -slim ' + slim + (native ? " -native" : "");
+  var cmd = 'cd "' + dir + '" && "' + process.execPath + '" package test-packaging-slim.js my_package -slim ' + slim + (native ? " -native" : "");
   cp.exec(cmd, {timeout: 30000}, function (error, stdout, stderr) {
 
     finished++;
@@ -77,7 +77,7 @@ var test_slim = function (definition, native) {
         fs.unlinkSync(f);
     }
 
-    var cmd = 'cd "' + dir + '"; "' + (native ? jx_file : '"' + process.execPath + '" ' + jx_file);
+    var cmd = 'cd "' + dir + '" && "' + (native ? jx_file : '"' + process.execPath + '" ' + jx_file);
     var ret = jxcore.utils.cmdSync(cmd);
     if (ret.out.toString().length)
       errors.push(
