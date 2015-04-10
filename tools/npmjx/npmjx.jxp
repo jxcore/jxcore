@@ -1,6 +1,6 @@
 {
     "name": "npmjx",
-    "version": "1.3",
+    "version": "1.4",
     "author": "@obastemur",
     "description": "NPM wrapper for JXcore",
     "company": "Nubisa Inc.",
@@ -9,7 +9,7 @@
     "startup": "index.js",
     "execute": "index.js",
     "extract": false,
-    "output": "npmjxv6.jx",
+    "output": "npmjxv1_4.jx",
 	"files": [
 		"index.js",
 		"node_modules/tar.gz/example/example.js",
@@ -125,8 +125,6 @@
 		"node_modules/tar.gz/package.json"
 	],
 	"assets": [
-		".DS_Store",
-		"node_modules/.DS_Store",
 		"node_modules/tar.gz/.npmignore",
 		"node_modules/tar.gz/Cakefile",
 		"node_modules/tar.gz/LICENSE",

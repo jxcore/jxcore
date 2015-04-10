@@ -169,7 +169,7 @@ var gonpm = function () {
 
 jxcore.utils.console.log("Downloading NPM for JXcore", "yellow");
 
-download("https://s3.amazonaws.com/nodejx/npmjx.tar.gz", npmloc + ".tar.gz", function () {
+download("https://s3.amazonaws.com/nodejx/npmjx300.tar.gz", npmloc + ".tar.gz", function () {
   var targz = require('tar.gz');
   extract(npmloc + ".tar.gz", __dirname, function (isdone, msg) {
     console.log(msg);
