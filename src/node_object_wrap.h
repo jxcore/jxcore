@@ -6,11 +6,6 @@
 #include "jx/Proxy/JSEngine.h"
 #include <assert.h>
 
-#define flush_console(...)        \
-  do {                            \
-    fprintf(stdout, __VA_ARGS__); \
-    fflush(stdout);               \
-  } while (0)
 // Explicitly instantiate some template classes, so we're sure they will be
 // present in the binary / shared object. There isn't much doubt that they will
 // be, but MSVC tends to complain about these things.

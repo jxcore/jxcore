@@ -288,15 +288,6 @@ UV_EXTERN int uv_run_jx(uv_loop_t* loop, uv_run_mode mode,
 UV_EXTERN int threadHasMessage(const int tid);
 UV_EXTERN void setThreadMessage(const int tid, const int has_it);
 
-#ifdef __ANDROID__  // change to EMBEDDED
-#include <android/log.h>
-#define ALOG_TAG "jxcore-uv-log"
-#define uv_log_error(...) \
-  __android_log_print(ANDROID_LOG_ERROR, ALOG_TAG, __VA_ARGS__)
-#else
-#define uv_log_error(...) printf(__VA_ARGS__)
-#endif
-
 #ifdef JX_TEST_ENVIRONMENT
 #define JX_FREE(mark, x)                     \
   do {                                       \

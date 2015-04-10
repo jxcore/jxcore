@@ -71,18 +71,18 @@ int uv__loop_init(uv_loop_t* loop, int default_loop) {
     QUEUE_INIT(loop->process_handles + i);
 
   if (uv_rwlock_init(&loop->cloexec_lock)) {
-	uv_log_error("LOOP INIT - %s", "libuv loop.c");
+	error_console("LOOP INIT - %s", "libuv loop.c");
     abort();
   }
 
   if (uv_mutex_init(&loop->wq_mutex)) {
-	uv_log_error("MUTEX INIT - %s", "libuv loop.c");
+	error_console("MUTEX INIT - %s", "libuv loop.c");
     abort();
   }
 
   int q_result = uv_async_init(loop, &loop->wq_async, uv__work_done);
   if (q_result) {
-	uv_log_error("ASYNC INIT - loop.c (libuv) err: %s",
+	error_console("ASYNC INIT - loop.c (libuv) err: %s",
               "\nPlease try with less amount of threads.\n");
     abort();
   }

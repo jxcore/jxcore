@@ -405,11 +405,13 @@ js_ReportOutOfMemory(ThreadSafeContext *cxArg)
     JS_ASSERT(!cx->isExceptionPending());
 }
 
-#ifdef __ANDROID__  // change to EMBEDDED
+#if defined(__ANDROID__) // change to EMBEDDED ?
 #include <android/log.h>
-#define ALOG_TAG "jxcore-log"
+#if !defined(JXCORE_ALOG_TAG)
+#define JXCORE_ALOG_TAG "jxcore-log"
+#endif
 #define warn_console(...) \
-  __android_log_print(ANDROID_LOG_WARN, ALOG_TAG, __VA_ARGS__)
+  __android_log_print(ANDROID_LOG_WARN, JXCORE_ALOG_TAG, __VA_ARGS__)
 #elif defined(__IOS__)
 #define warn_console(...) fprintf(stderr, __VA_ARGS__)
 #endif
