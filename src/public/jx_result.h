@@ -115,6 +115,9 @@ JXCORE_EXTERN(void)
 JX_SetString(JXValue *value, const char *val, const int32_t length = 0);
 
 JXCORE_EXTERN(void) 
+JX_SetUCString(JXValue *value, const uint16_t *val, const int32_t length = 0);
+
+JXCORE_EXTERN(void)
 JX_SetJSON(JXValue *value, const char *val, const int32_t length = 0);
 
 JXCORE_EXTERN(void) 

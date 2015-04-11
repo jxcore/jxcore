@@ -7,7 +7,7 @@
 #include "utf_man.h"
 #include "Exception.h"
 #include "../../EngineLogger.h"
-
+#include <limits>  // INT_MAX
 #define JXCORE_INDEXED_NAME "                .indexed"
 
 namespace MozJS {
@@ -16,7 +16,15 @@ MozRoot::MozRoot() {}
 MozRoot::~MozRoot() {}
 
 JSString *StringTools::FromUINT16(JSContext *ctx, const uint16_t *str,
-                                  const int len) {
+                                  const int len_) {
+  int len = len_;
+  if (len == 0) {
+    for (len = 0; *(str + len) != uint16_t(0); len++) {
+      if (len + 2 == INT_MAX) {
+        assert(0 && "Memory corruption!");
+      }
+    }
+  }
   char16_t *temp = (char16_t *)JS_malloc(ctx, sizeof(uint16_t) * (1 + len));
   memcpy(temp, str, sizeof(uint16_t) * len);
   temp[len] = char16_t(0);
@@ -968,7 +976,7 @@ struct ObjectFinalizer {
 };
 
 void Value::empty_finalize(JSFreeOp *fop, JSObject *obj) {
-  if(obj == nullptr) return;
+  if (obj == nullptr) return;
 
   if (JS_HasReservedSlot(obj, GC_SLOT_JS_CLASS)) {  // jsclass info
     jsval __ = JS_GetReservedSlot(obj, GC_SLOT_JS_CLASS);

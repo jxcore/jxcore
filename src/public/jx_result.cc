@@ -327,29 +327,30 @@ void JX_SetBoolean(JXValue *value, const bool val) {
   { wrap->value_ = JS_NEW_PERSISTENT_VALUE(STD_TO_BOOLEAN(val)); });
 }
 
-#define SET_STRING(type)                                                        \
-  UNWRAP_COM(value);                                                            \
-  UNWRAP_RESULT(value->data_);                                                  \
-                                                                                \
-  if (wrap == 0) {                                                              \
-    wrap = new jxcore::JXValueWrapper();                                        \
-    value->data_ = (void *)wrap;                                                \
-  } else if (!(wrap->value_).IsEmpty()) {                                       \
-    if (!wrap->value_.IsEmpty()) {                                              \
-      wrap->value_.Dispose();                                                   \
-      wrap->value_.Clear();                                                     \
-    };                                                                          \
-  }                                                                             \
-                                                                                \
-  value->type_ = type;                                                          \
-  value->size_ = length;                                                        \
-                                                                                \
-  RUN_IN_SCOPE({                                                                \
-    wrap->value_ = JS_NEW_PERSISTENT_VALUE(NewString(com, val, &value->size_)); \
+#define SET_STRING(type, ct)                                             \
+  UNWRAP_COM(value);                                                     \
+  UNWRAP_RESULT(value->data_);                                           \
+                                                                         \
+  if (wrap == 0) {                                                       \
+    wrap = new jxcore::JXValueWrapper();                                 \
+    value->data_ = (void *)wrap;                                         \
+  } else if (!(wrap->value_).IsEmpty()) {                                \
+    if (!wrap->value_.IsEmpty()) {                                       \
+      wrap->value_.Dispose();                                            \
+      wrap->value_.Clear();                                              \
+    };                                                                   \
+  }                                                                      \
+                                                                         \
+  value->type_ = type;                                                   \
+  value->size_ = length;                                                 \
+                                                                         \
+  RUN_IN_SCOPE({                                                         \
+    wrap->value_ =                                                       \
+        JS_NEW_PERSISTENT_VALUE(NewString<ct>(com, val, &value->size_)); \
   })
 
-JS_HANDLE_VALUE NewString_(node::commons *com, const char *val,
-                           size_t *str_len) {
+template <class t>
+JS_HANDLE_VALUE NewString_(node::commons *com, const t *val, size_t *str_len) {
   JS_ENTER_SCOPE();
   JS_DEFINE_STATE_MARKER(com);
 
@@ -359,7 +360,8 @@ JS_HANDLE_VALUE NewString_(node::commons *com, const char *val,
   return JS_LEAVE_SCOPE(str_val);
 }
 
-JS_HANDLE_VALUE NewString(node::commons *com, const char *val, size_t *length) {
+template <class t>
+JS_HANDLE_VALUE NewString(node::commons *com, const t *val, size_t *length) {
 
   JS_ENTER_SCOPE();
   JS_DEFINE_STATE_MARKER(com);
@@ -373,7 +375,11 @@ JS_HANDLE_VALUE NewString(node::commons *com, const char *val, size_t *length) {
 }
 
 void JX_SetString(JXValue *value, const char *val, const int32_t length) {
-  SET_STRING(RT_String);
+  SET_STRING(RT_String, char);
+}
+
+void JX_SetUCString(JXValue *value, const uint16_t *val, const int32_t length) {
+  SET_STRING(RT_String, uint16_t);
 }
 
 void JX_SetJSON(JXValue *value, const char *val, const int32_t length) {
@@ -397,11 +403,11 @@ void JX_SetJSON(JXValue *value, const char *val, const int32_t length) {
 }
 
 void JX_SetError(JXValue *value, const char *val, const int32_t length) {
-  SET_STRING(RT_Error);
+  SET_STRING(RT_Error, char);
 }
 
 void JX_SetBuffer(JXValue *value, const char *val, const int32_t length) {
-  SET_STRING(RT_Buffer);
+  SET_STRING(RT_Buffer, char);
 }
 
 void JX_SetUndefined(JXValue *value) { value->type_ = RT_Undefined; }
