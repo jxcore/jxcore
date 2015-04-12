@@ -14,7 +14,7 @@ git clone https://github.com/jxcore/jxcore.git
 
 You may want to jump into [Android](Android_Compile.md), or [iOS](iOS_Compile.md) compilation details.
 
-To compile for desktop/server environments; 
+To compile for desktop/server environments:
 
 **SpiderMonkey**
 ```bash
@@ -82,3 +82,15 @@ non-standard name, run the following instead:
 You can download (latest stable) binaries for various operating systems from  
 [http://jxcore.com/downloads/](http://jxcore.com/downloads/)  
 (Future `jxcore.io` releases will be shared from `http://jxcore.io`)
+
+**For Windows**
+
+If you run `vcbuild.bat` without specifying the target architecture, it will be determined by a current Python version you have installed (not the operating system architecture).
+Thus, if you have Python x86 installed on Windows x64, then `vcbuild.bat` will build x86 JXcore binaries (instead of probably expected JXcore x64).
+To build JXcore x64 on Windows x64, you need to make sure, that you use Python installer for x64 platforms, e.g. `python-2.7.9.amd64.msi`.
+
+Then you can still build JXcore x32 on Windows x64:
+
+```
+/ $> vcbuild.bat ia32
+```
