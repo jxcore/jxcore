@@ -15,10 +15,10 @@ char *app_args[2];
 // allocates one extra JXResult memory at the end of the array
 // Uses that one for a return value
 #define CONVERT_ARG_TO_RESULT(results, context)                   \
-  JXValue *results = NULL;                                       \
+  JXValue *results = NULL;                                        \
   const int len = args.Length() - start_arg;                      \
   {                                                               \
-    results = (JXValue *)malloc(sizeof(JXValue) * (len + 1));   \
+    results = (JXValue *)malloc(sizeof(JXValue) * (len + 1));     \
     for (int i = 0; i < len; i++) {                               \
       JS_HANDLE_VALUE val = args.GetItem(i + start_arg);          \
       results[i].com_ = context;                                  \
@@ -153,8 +153,7 @@ void JX_Initialize(const char *home_folder, JX_CALLBACK callback) {
 #endif
 }
 
-bool JX_Evaluate(const char *data, const char *script_name,
-                 JXValue *jxresult) {
+bool JX_Evaluate(const char *data, const char *script_name, JXValue *jxresult) {
   JXEngine *engine = JXEngine::ActiveInstance();
   if (engine == NULL) {
     warn_console(

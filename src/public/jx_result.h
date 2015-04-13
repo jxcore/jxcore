@@ -16,7 +16,7 @@
 extern "C" {
 #endif
 
-enum _JXType{
+enum _JXType {
   RT_Int32 = 1,
   RT_Double = 2,
   RT_Boolean = 3,
@@ -27,6 +27,7 @@ enum _JXType{
   RT_Null = 8,
   RT_Error = 9,
   RT_Function = 10,
+  RT_Object = 11
 };
 
 typedef enum _JXType JXResultType;
@@ -45,53 +46,55 @@ struct _JXValue {
 typedef struct _JXValue JXResult;
 typedef struct _JXValue JXValue;
 
-JXCORE_EXTERN(bool) 
-JX_CallFunction(JXValue *fnc, JXValue *params, const int argc,
-                     JXValue *out);
+JXCORE_EXTERN(bool)
+JX_CallFunction(JXValue *fnc, JXValue *params, const int argc, JXValue *out);
 
-JXCORE_EXTERN(bool) 
+JXCORE_EXTERN(bool)
 JX_MakePersistent(JXValue *value);
 
-JXCORE_EXTERN(bool) 
+JXCORE_EXTERN(bool)
 JX_ClearPersistent(JXValue *value);
 
-JXCORE_EXTERN(bool) 
+JXCORE_EXTERN(bool)
 JX_IsFunction(JXValue *value);
 
-JXCORE_EXTERN(bool) 
+JXCORE_EXTERN(bool)
 JX_IsError(JXValue *value);
 
-JXCORE_EXTERN(bool) 
+JXCORE_EXTERN(bool)
 JX_IsInt32(JXValue *value);
 
-JXCORE_EXTERN(bool) 
+JXCORE_EXTERN(bool)
 JX_IsDouble(JXValue *value);
 
-JXCORE_EXTERN(bool) 
+JXCORE_EXTERN(bool)
 JX_IsBoolean(JXValue *value);
 
-JXCORE_EXTERN(bool) 
+JXCORE_EXTERN(bool)
 JX_IsString(JXValue *value);
 
-JXCORE_EXTERN(bool) 
+JXCORE_EXTERN(bool)
 JX_IsJSON(JXValue *value);
 
-JXCORE_EXTERN(bool) 
+JXCORE_EXTERN(bool)
 JX_IsBuffer(JXValue *value);
 
-JXCORE_EXTERN(bool) 
+JXCORE_EXTERN(bool)
 JX_IsUndefined(JXValue *value);
 
-JXCORE_EXTERN(bool) 
+JXCORE_EXTERN(bool)
 JX_IsNull(JXValue *value);
 
-JXCORE_EXTERN(int32_t) 
+JXCORE_EXTERN(bool)
+JX_IsObject(JXValue *value);
+
+JXCORE_EXTERN(int32_t)
 JX_GetInt32(JXValue *value);
 
-JXCORE_EXTERN(double) 
+JXCORE_EXTERN(double)
 JX_GetDouble(JXValue *value);
 
-JXCORE_EXTERN(bool) 
+JXCORE_EXTERN(bool)
 JX_GetBoolean(JXValue *value);
 
 // for String, JSON, Error and Buffer
@@ -99,46 +102,61 @@ JX_GetBoolean(JXValue *value);
 JXCORE_EXTERN(char *)
 JX_GetString(JXValue *value);
 
-JXCORE_EXTERN(int32_t) 
+JXCORE_EXTERN(int32_t)
 JX_GetDataLength(JXValue *value);
 
-JXCORE_EXTERN(void) 
+JXCORE_EXTERN(void)
 JX_SetInt32(JXValue *value, const int32_t val);
 
-JXCORE_EXTERN(void) 
+JXCORE_EXTERN(void)
 JX_SetDouble(JXValue *value, const double val);
 
-JXCORE_EXTERN(void) 
+JXCORE_EXTERN(void)
 JX_SetBoolean(JXValue *value, const bool val);
 
-JXCORE_EXTERN(void) 
+JXCORE_EXTERN(void)
 JX_SetString(JXValue *value, const char *val, const int32_t length = 0);
 
-JXCORE_EXTERN(void) 
+JXCORE_EXTERN(void)
 JX_SetUCString(JXValue *value, const uint16_t *val, const int32_t length = 0);
 
 JXCORE_EXTERN(void)
 JX_SetJSON(JXValue *value, const char *val, const int32_t length = 0);
 
-JXCORE_EXTERN(void) 
+JXCORE_EXTERN(void)
 JX_SetError(JXValue *value, const char *val, const int32_t length = 0);
 
-JXCORE_EXTERN(void) 
+JXCORE_EXTERN(void)
 JX_SetBuffer(JXValue *value, const char *val, const int32_t length = 0);
 
-JXCORE_EXTERN(void) 
+JXCORE_EXTERN(void)
 JX_SetUndefined(JXValue *value);
 
-JXCORE_EXTERN(void) 
+JXCORE_EXTERN(void)
 JX_SetNull(JXValue *value);
+
+JXCORE_EXTERN(void)
+JX_SetObject(JXValue *host, JXValue *val);
 
 // do not use this for method parameters, jxcore cleanups them
 // Beware JX_Evaluate, this methods needs to be called to cleanup JXResult
-JXCORE_EXTERN(void) 
+JXCORE_EXTERN(void)
 JX_Free(JXValue *value);
 
-JXCORE_EXTERN(bool) 
+JXCORE_EXTERN(bool)
 JX_New(JXValue *value);
+
+JXCORE_EXTERN(bool)
+JX_CreateEmptyObject(JXValue *value);
+
+JXCORE_EXTERN(bool)
+JX_CreateArrayObject(JXValue *value);
+
+JXCORE_EXTERN(void)
+JX_SetNamedProperty(JXValue *object, const char *name, JXValue *prop);
+
+JXCORE_EXTERN(void)
+JX_SetIndexedProperty(JXValue *object, const unsigned index, JXValue *prop);
 
 #ifdef __cplusplus
 }

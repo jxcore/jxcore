@@ -63,54 +63,70 @@ class auto_state {
 #define NULL_CHECK \
   if (value == NULL) return false;
 
-bool JX_IsFunction(JXValue *value) {
+JXCORE_EXTERN(bool)
+JX_IsFunction(JXValue *value) {
   NULL_CHECK
   return value->size_ > 0 && value->type_ == RT_Function;
 }
 
-bool JX_IsError(JXValue *value) {
+JXCORE_EXTERN(bool)
+JX_IsError(JXValue *value) {
   NULL_CHECK
   return value->size_ > 0 && value->type_ == RT_Error;
 }
 
-bool JX_IsInt32(JXValue *value) {
+JXCORE_EXTERN(bool)
+JX_IsInt32(JXValue *value) {
   NULL_CHECK
   return value->size_ > 0 && value->type_ == RT_Int32;
 }
 
-bool JX_IsDouble(JXValue *value) {
+JXCORE_EXTERN(bool)
+JX_IsDouble(JXValue *value) {
   NULL_CHECK
   return value->size_ > 0 && value->type_ == RT_Double;
 }
 
-bool JX_IsBoolean(JXValue *value) {
+JXCORE_EXTERN(bool)
+JX_IsBoolean(JXValue *value) {
   NULL_CHECK
   return value->size_ > 0 && value->type_ == RT_Boolean;
 }
 
-bool JX_IsString(JXValue *value) {
+JXCORE_EXTERN(bool)
+JX_IsString(JXValue *value) {
   NULL_CHECK
   return value->size_ > 0 && value->type_ == RT_String;
 }
 
-bool JX_IsJSON(JXValue *value) {
+JXCORE_EXTERN(bool)
+JX_IsJSON(JXValue *value) {
   NULL_CHECK
   return value->size_ > 0 && value->type_ == RT_JSON;
 }
 
-bool JX_IsBuffer(JXValue *value) {
+JXCORE_EXTERN(bool)
+JX_IsBuffer(JXValue *value) {
   NULL_CHECK
   return value->size_ > 0 && value->type_ == RT_Buffer;
 }
 
-bool JX_IsUndefined(JXValue *value) {
+JXCORE_EXTERN(bool)
+JX_IsUndefined(JXValue *value) {
   NULL_CHECK
   return value->size_ == 0 || value->type_ == RT_Undefined;
 }
 
-bool JX_IsNull(JXValue *value) {
+JXCORE_EXTERN(bool)
+JX_IsNull(JXValue *value) {
   NULL_CHECK
   return value->type_ == RT_Null;
+}
+
+JXCORE_EXTERN(bool)
+JX_IsObject(JXValue *value) {
+  NULL_CHECK
+  return value->type_ == RT_Object;
 }
 
 #define EMPTY_CHECK(x)                                \
@@ -122,7 +138,8 @@ bool JX_IsNull(JXValue *value) {
 #define UNWRAP_RESULT(x) \
   jxcore::JXValueWrapper *wrap = (jxcore::JXValueWrapper *)x
 
-int32_t JX_GetInt32(JXValue *value) {
+JXCORE_EXTERN(int32_t)
+JX_GetInt32(JXValue *value) {
   EMPTY_CHECK(0);
 
   UNWRAP_RESULT(value->data_);
@@ -135,7 +152,8 @@ int32_t JX_GetInt32(JXValue *value) {
   return ret;
 }
 
-double JX_GetDouble(JXValue *value) {
+JXCORE_EXTERN(double)
+JX_GetDouble(JXValue *value) {
   EMPTY_CHECK(0);
 
   UNWRAP_RESULT(value->data_);
@@ -148,7 +166,8 @@ double JX_GetDouble(JXValue *value) {
   return ret;
 }
 
-bool JX_GetBoolean(JXValue *value) {
+JXCORE_EXTERN(bool)
+JX_GetBoolean(JXValue *value) {
   EMPTY_CHECK(false);
 
   UNWRAP_RESULT(value->data_);
@@ -177,7 +196,8 @@ bool JX_GetBoolean(JXValue *value) {
 #define MOZ_CLEAR_
 #endif
 
-char *JX_GetString(JXValue *value) {
+JXCORE_EXTERN(char *)
+JX_GetString(JXValue *value) {
   EMPTY_CHECK(0);
 
   UNWRAP_COM(value);
@@ -197,13 +217,15 @@ char *JX_GetString(JXValue *value) {
   return ret;
 }
 
-int32_t JX_GetDataLength(JXValue *value) {
+JXCORE_EXTERN(int32_t)
+JX_GetDataLength(JXValue *value) {
   EMPTY_CHECK(0);
 
   return value->size_;
 }
 
-void JX_Free(JXValue *value) {
+JXCORE_EXTERN(void)
+JX_Free(JXValue *value) {
   assert(value != NULL && "JXResult object wasn't initialized");
 
   if (value->persistent_) return;
@@ -230,8 +252,8 @@ void JX_Free(JXValue *value) {
   value->size_ = 0;
 }
 
-bool JX_CallFunction(JXValue *fnc, JXValue *params, const int argc,
-                     JXValue *out) {
+JXCORE_EXTERN(bool)
+JX_CallFunction(JXValue *fnc, JXValue *params, const int argc, JXValue *out) {
   UNWRAP_COM(fnc);
 
   out->com_ = fnc->com_;
@@ -274,7 +296,8 @@ bool JX_CallFunction(JXValue *fnc, JXValue *params, const int argc,
   return ret;
 }
 
-void JX_SetInt32(JXValue *value, const int32_t val) {
+JXCORE_EXTERN(void)
+JX_SetInt32(JXValue *value, const int32_t val) {
   UNWRAP_COM(value);
   UNWRAP_RESULT(value->data_);
 
@@ -292,7 +315,8 @@ void JX_SetInt32(JXValue *value, const int32_t val) {
   { wrap->value_ = JS_NEW_PERSISTENT_VALUE(STD_TO_INTEGER(val)); });
 }
 
-void JX_SetDouble(JXValue *value, const double val) {
+JXCORE_EXTERN(void)
+JX_SetDouble(JXValue *value, const double val) {
   UNWRAP_COM(value);
   UNWRAP_RESULT(value->data_);
 
@@ -309,7 +333,8 @@ void JX_SetDouble(JXValue *value, const double val) {
   RUN_IN_SCOPE({ wrap->value_ = JS_NEW_PERSISTENT_VALUE(STD_TO_NUMBER(val)); });
 }
 
-void JX_SetBoolean(JXValue *value, const bool val) {
+JXCORE_EXTERN(void)
+JX_SetBoolean(JXValue *value, const bool val) {
   UNWRAP_COM(value);
   UNWRAP_RESULT(value->data_);
 
@@ -374,15 +399,18 @@ JS_HANDLE_VALUE NewString(node::commons *com, const t *val, size_t *length) {
   }
 }
 
-void JX_SetString(JXValue *value, const char *val, const int32_t length) {
+JXCORE_EXTERN(void)
+JX_SetString(JXValue *value, const char *val, const int32_t length) {
   SET_STRING(RT_String, char);
 }
 
-void JX_SetUCString(JXValue *value, const uint16_t *val, const int32_t length) {
+JXCORE_EXTERN(void)
+JX_SetUCString(JXValue *value, const uint16_t *val, const int32_t length) {
   SET_STRING(RT_String, uint16_t);
 }
 
-void JX_SetJSON(JXValue *value, const char *val, const int32_t length) {
+JXCORE_EXTERN(void)
+JX_SetJSON(JXValue *value, const char *val, const int32_t length) {
   UNWRAP_COM(value);
   UNWRAP_RESULT(value->data_);
 
@@ -402,19 +430,48 @@ void JX_SetJSON(JXValue *value, const char *val, const int32_t length) {
   });
 }
 
-void JX_SetError(JXValue *value, const char *val, const int32_t length) {
+JXCORE_EXTERN(void)
+JX_SetError(JXValue *value, const char *val, const int32_t length) {
   SET_STRING(RT_Error, char);
 }
 
-void JX_SetBuffer(JXValue *value, const char *val, const int32_t length) {
+JXCORE_EXTERN(void)
+JX_SetBuffer(JXValue *value, const char *val, const int32_t length) {
   SET_STRING(RT_Buffer, char);
 }
 
-void JX_SetUndefined(JXValue *value) { value->type_ = RT_Undefined; }
+JXCORE_EXTERN(void)
+JX_SetUndefined(JXValue *value) { value->type_ = RT_Undefined; }
 
-void JX_SetNull(JXValue *value) { value->type_ = RT_Null; }
+JXCORE_EXTERN(void)
+JX_SetNull(JXValue *value) { value->type_ = RT_Null; }
 
-bool JX_MakePersistent(JXValue *value) {
+JXCORE_EXTERN(void)
+JX_SetObject(JXValue *value_to, JXValue *value_from) {
+  UNWRAP_COM(value_to);
+  UNWRAP_RESULT(value_to->data_);
+
+  assert(value_from->type_ == RT_Object && "value_from must be an Object");
+
+  if (wrap == NULL) {
+    wrap = new jxcore::JXValueWrapper();
+    value_to->data_ = (void *)wrap;
+  } else if (!JS_IS_EMPTY(wrap->value_)) {
+    JS_CLEAR_PERSISTENT(wrap->value_);
+  }
+
+  value_to->type_ = RT_Object;
+  value_to->size_ = 1;
+
+  jxcore::JXValueWrapper *wrap_from =
+      (jxcore::JXValueWrapper *)value_from->data_;
+  RUN_IN_SCOPE(
+  { wrap->value_ = JS_NEW_PERSISTENT_VALUE(wrap_from->value_); });
+  value_to->persistent_ = false;
+}
+
+JXCORE_EXTERN(bool)
+JX_MakePersistent(JXValue *value) {
   assert(value->com_ != NULL && value->size_ != 0 &&
          "Empty, Null or Undefined JS Value can not be persistent");
 
@@ -424,7 +481,8 @@ bool JX_MakePersistent(JXValue *value) {
   return !pre;
 }
 
-bool JX_ClearPersistent(JXValue *value) {
+JXCORE_EXTERN(bool)
+JX_ClearPersistent(JXValue *value) {
   assert(value->com_ != NULL && value->size_ != 0 &&
          "Empty, Null or Undefined JS Value can not be persistent");
 
@@ -434,7 +492,8 @@ bool JX_ClearPersistent(JXValue *value) {
   return pre;
 }
 
-bool JX_New(JXValue *value) {
+JXCORE_EXTERN(bool)
+JX_New(JXValue *value) {
   node::commons *com = node::commons::getInstance();
 
   // if returns false, that means the JXcore instance
@@ -448,4 +507,79 @@ bool JX_New(JXValue *value) {
   value->type_ = RT_Undefined;
 
   return true;
+}
+
+JXCORE_EXTERN(bool)
+JX_CreateEmptyObject(JXValue *value) {
+  node::commons *com = node::commons::getInstance();
+
+  if (com == NULL) return false;
+  jxcore::JXEngine *engine =
+      jxcore::JXEngine::GetInstanceByThreadId(com->threadId);
+  JS_DEFINE_STATE_MARKER(com);
+
+  value->com_ = com;
+
+  jxcore::JXValueWrapper *wrap = new jxcore::JXValueWrapper();
+  RUN_IN_SCOPE(
+  { wrap->value_ = JS_NEW_PERSISTENT_OBJECT(JS_NEW_EMPTY_OBJECT()); });
+  value->data_ = wrap;
+
+  value->size_ = 1;
+  value->persistent_ = false;
+  value->type_ = RT_Object;
+
+  return true;
+}
+
+JXCORE_EXTERN(bool)
+JX_CreateArrayObject(JXValue *value) {
+  node::commons *com = node::commons::getInstance();
+
+  if (com == NULL) return false;
+  jxcore::JXEngine *engine =
+      jxcore::JXEngine::GetInstanceByThreadId(com->threadId);
+  JS_DEFINE_STATE_MARKER(com);
+
+  value->com_ = com;
+
+  jxcore::JXValueWrapper *wrap = new jxcore::JXValueWrapper();
+  RUN_IN_SCOPE({ wrap->value_ = JS_NEW_PERSISTENT_OBJECT(JS_NEW_ARRAY()); });
+  value->data_ = wrap;
+
+  value->size_ = 1;
+  value->persistent_ = false;
+  value->type_ = RT_Object;
+
+  return true;
+}
+
+JXCORE_EXTERN(void)
+JX_SetNamedProperty(JXValue *object, const char *name, JXValue *prop) {
+  UNWRAP_COM(object);
+  UNWRAP_RESULT(object->data_);
+
+  assert(object->type_ == RT_Object && "object must be an Object");
+
+  jxcore::JXValueWrapper *wrap_prop = (jxcore::JXValueWrapper *)prop->data_;
+  RUN_IN_SCOPE({
+    JS_LOCAL_VALUE val = JS_TYPE_TO_LOCAL_VALUE(wrap_prop->value_);
+    JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(wrap->value_);
+    JS_NAME_SET(obj, JS_STRING_ID(name), val);
+  });
+}
+
+JXCORE_EXTERN(void)
+JX_SetIndexedProperty(JXValue *object, const unsigned index, JXValue *prop) {
+  UNWRAP_COM(object);
+  UNWRAP_RESULT(object->data_);
+
+  assert(object->type_ == RT_Object && "object must be an Object");
+
+  jxcore::JXValueWrapper *wrap_prop = (jxcore::JXValueWrapper *)prop->data_;
+  RUN_IN_SCOPE({
+    JS_LOCAL_VALUE val = JS_TYPE_TO_LOCAL_VALUE(wrap_prop->value_);
+    JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(wrap->value_);
+    JS_INDEX_SET(obj, index, val);
+  });
 }
