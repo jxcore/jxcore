@@ -16,7 +16,7 @@ instead of:
 
 ### package
 
-    > jx package javascript_file name_of_the_package [-slim folder, folder2, ...] [-native]
+    > jx package javascript_file name_of_the_package [-slim file||folder, file||folder2, ...] [-add file||folder, file||folder2, ...] [-native]
 
 This command recursively scans the current folder and generates a `JXP` package information file based on all files in that directory.
 After that compiles the `JXP` file (by invoking `compile` command).
@@ -35,7 +35,23 @@ Description of the switches:
 
 #### -slim
 
-This optional parameters followed by folder names separated with comma - prevents adding those folders into the final JX package.
+This optional parameter followed by file and/or folder names separated with comma - **prevents adding** those files/folders into the final JX package.
+
+#### -add
+
+This optional parameter followed by file and/or folder names separated with comma - **explicitly adds** those files/folders into the final JX package.
+For example, you may want to package only certain files/folders located at current directory - not the whole its contents.
+
+If you want to pack just one file (e.g. *helloworld.js*) you can provide an `-add` option without a file name.
+Thus the following two commands are equivalent:
+
+     > jx package helloworld.js "Hello World" -add
+
+     > jx package helloworld.js "Hello World" -add helloworld.js
+
+Yu can still combine `-add` and `-slim` together, e.g. to add a folder, but exclude its sub-directory, like:
+
+     > jx package helloworld.js "Hello World" -add node_modules -slim node_modules/express
 
 #### -native
 

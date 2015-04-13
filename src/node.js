@@ -1374,9 +1374,44 @@
       }
     }
     return false;
-  }
+  };
 
-  var getFiles = function (folder) {
+  var parseValues = function(name) {
+    var parms = getOptions(name);
+
+    if (!parms)
+      return null;
+
+    if (typeof parms !== "string")
+      return {};
+
+    var path = NativeModule.require('path');
+    var fs = NativeModule.require('fs');
+    var ret = {};
+
+    parms = parms.split(',');
+    for (var o in parms) {
+      ret[parms[o]] = 1;
+      var _path;
+      if (parms[o].indexOf(process.cwd()) === -1) {
+        // relative path was given
+        _path = path.join(process.cwd(), parms[o]);
+      } else {
+        // absolute path was given
+        _path = parms[o];
+      }
+
+      if (_path.slice(-1) === path.sep)
+        _path = _path.slice(0, _path.length - 1);
+      if (fs.existsSync(_path))
+        ret[_path] = 2;
+    }
+    return ret;
+  };
+
+  var checkOff, add;
+
+  var getFiles = function (folder, startup_path) {
     var fz = {
       f: [],
       a: []
@@ -1391,41 +1426,50 @@
       folder = process.cwd() + path.sep;
     }
 
-    var parms = getOptions('-slim');
+    // if startup_path is relative:
+    if (startup_path && startup_path.indexOf(mainPath) === -1)
+      startup_path = path.join(mainPath, startup_path);
 
-    var checkOff = {};
-    if (parms) {
-      parms = parms.split(',');
-      for (var o in parms) {
-        checkOff[parms[o]] = 1;
-        var _path;
-        if (parms[o].indexOf(process.cwd()) === -1) {
-          // relative path was given
-          _path = path.join(process.cwd(), parms[o]);
-        } else {
-          // absolute path was given
-          _path = parms[o];
-        }
+    if (checkOff === undefined)
+      checkOff = parseValues("-slim");
 
-        if (_path.slice(-1) === path.sep)
-          _path = _path.slice(0, _path.length - 1);
-        if (fs.existsSync(_path))
-          checkOff[_path] = 2;
-      }
-    }
+    if (add === undefined)
+      add = parseValues("-add");
 
     var files = fs.readdirSync(folder);
     for (var o in files) {
       var file = files[o];
+      var file_path = path.join(folder, file);
 
-      if (parms && (checkOff[file] === 1 || checkOff[path.join(folder, file)] === 2))
+      if (checkOff && (checkOff[file] === 1 || checkOff[file_path] === 2))
         continue;
 
-      var stat = fs.statSync(folder + file);
+      var stat = fs.statSync(file_path);
+
+      if (add && startup_path !== file_path && stat.isFile()) {
+
+        var tmp = file_path;
+        var canAdd = false;
+        do {
+          if (add[tmp] === 2) {
+            canAdd = true;
+            break;
+          }
+
+          var dirname = path.dirname(tmp);
+          // will loop only until the root dir
+          if (dirname === tmp) break;
+          tmp = dirname;
+        }
+        while (true);
+
+        if (!canAdd)
+          continue;
+      }
 
       if (stat.isDirectory()) {
         if (file.indexOf('.') != 0) {
-          var az = getFiles(folder + file + path.sep);
+          var az = getFiles(file_path, startup_path);
           fz.f = fz.f.concat(az.f);
           fz.a = fz.a.concat(az.a);
         }
@@ -1436,15 +1480,15 @@
       var ufile = file.toUpperCase();
       {
         if (ext == ".js" || ext == ".json") {
-          fz.f.push(path.relative(mainPath, folder + file));
+          fz.f.push(path.relative(mainPath, file_path));
         } else if (onFirst && (ufile == "LICENSE-MIT" || ufile == "LICENSE")) {
-          fz.license = path.relative(mainPath, folder + file);
-          fz.a.push(path.relative(mainPath, folder + file));
+          fz.license = path.relative(mainPath, file_path);
+          fz.a.push(path.relative(mainPath, file_path));
         } else if (onFirst && (ufile == "README" || ufile == "README.MD")) {
-          fz.readme = path.relative(mainPath, folder + file);
-          fz.a.push(path.relative(mainPath, folder + file));
+          fz.readme = path.relative(mainPath, file_path);
+          fz.a.push(path.relative(mainPath, file_path));
         } else {
-          fz.a.push(path.relative(mainPath, folder + file));
+          fz.a.push(path.relative(mainPath, file_path));
         }
       }
     }
@@ -1494,7 +1538,7 @@
 
     try {
       var fs = NativeModule.require('fs');
-      var fz = getFiles();
+      var fz = getFiles(null, fol);
       jxp.files = fz.f;
       jxp.assets = fz.a;
       jxp.license_file = fz.license;
