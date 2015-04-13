@@ -1289,12 +1289,19 @@ static JS_GETTER_METHOD(EnvGetter) {
 #else  // _WIN32
 #ifdef JS_ENGINE_V8
   v8::String::Value key(property);
+  const WCHAR *key_ptr = reinterpret_cast<const WCHAR*>(*key);
 #elif defined(JS_ENGINE_MOZJS)
   jxcore::JXString key(property);
+  WCHAR *key_ptr = (WCHAR*)malloc(sizeof(WCHAR) * (key.length() + 1));
+  MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, *key, -1, key_ptr, key.length() + 1);
 #endif
   WCHAR buffer[32767];  // The maximum size allowed for environment variables.
-  DWORD result = GetEnvironmentVariableW(reinterpret_cast<WCHAR*>(*key), buffer,
+
+  DWORD result = GetEnvironmentVariableW(key_ptr, buffer,
                                          ARRAY_SIZE(buffer));
+#ifdef JS_ENGINE_MOZJS
+  free(key_ptr);
+#endif
   // If result >= sizeof buffer the buffer was too small. That should never
   // happen. If result == 0 and result != ERROR_SUCCESS the variable was not
   // not found.
@@ -1321,17 +1328,28 @@ static JS_SETADD_METHOD(EnvSetter) {
 #ifdef JS_ENGINE_V8
   v8::String::Value key(property);
   v8::String::Value val(value);
+  const WCHAR *key_ptr = reinterpret_cast<const WCHAR*>(*key);
+  const WCHAR *val_ptr = reinterpret_cast<const WCHAR*>(*val);
 #elif defined(JS_ENGINE_MOZJS)
   jxcore::JXString key;
   key.SetFromHandle(property, true);
   jxcore::JXString val;
   val.SetFromHandle(value, true);
+
+  WCHAR *key_ptr = (WCHAR*)malloc(sizeof(WCHAR) * (key.length() + 1));
+  MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, *key, -1, key_ptr, key.length() + 1);
+
+  WCHAR *val_ptr = (WCHAR*)malloc(sizeof(WCHAR) * (val.length() + 1));
+  MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, *val, -1, val_ptr, val.length() + 1);
 #endif
-  WCHAR* key_ptr = reinterpret_cast<WCHAR*>(*key);
   // Environment variables that start with '=' are read-only.
   if (key_ptr[0] != L'=') {
-    SetEnvironmentVariableW(key_ptr, reinterpret_cast<WCHAR*>(*val));
+    SetEnvironmentVariableW(key_ptr, val_ptr);
   }
+#ifdef JS_ENGINE_MOZJS
+  free(key_ptr);
+  free(val_ptr);
+#endif
 #endif
 }
 JS_SETADD_METHOD_END
@@ -1344,20 +1362,32 @@ JS_DELETER_METHOD(EnvDeleter) {
 #else
 #ifdef JS_ENGINE_V8
   v8::String::Value key(property);
+  const WCHAR *key_ptr = reinterpret_cast<const WCHAR*>(*key);
 #elif defined(JS_ENGINE_MOZJS)
   jxcore::JXString key(property);
+  WCHAR *key_ptr = (WCHAR*)malloc(sizeof(WCHAR) * (key.length() + 1));
+  MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, *key, -1, key_ptr, key.length() + 1);
 #endif
-  WCHAR* key_ptr = reinterpret_cast<WCHAR*>(*key);
+
   if (key_ptr[0] == L'=' || !SetEnvironmentVariableW(key_ptr, NULL)) {
     // Deletion failed. Return true if the key wasn't there in the first place,
     // false if it is still there.
     bool rv = GetEnvironmentVariableW(key_ptr, NULL, NULL) == 0 &&
               GetLastError() != ERROR_SUCCESS;
+
+#ifdef JS_ENGINE_MOZJS
+    free(key_ptr);
+#endif
     if (rv)
       RETURN_DELETER_TRUE();
     else
       RETURN_DELETER_FALSE();
   }
+#ifdef JS_ENGINE_MOZJS
+  else {
+    free(key_ptr);
+  }
+#endif
 #endif
 
   RETURN_DELETER_TRUE();
@@ -1463,8 +1493,13 @@ static bool EnvQuery(JSContext* __contextORisolate, JS::HandleObject ___obj,
   }
 #else  // _WIN32
   WCHAR buffer[32767];  // The maximum size allowed for environment variables.
-  DWORD result = GetEnvironmentVariableW(reinterpret_cast<WCHAR*>(*key), buffer,
+  WCHAR *temp_name = (WCHAR*)malloc(sizeof(WCHAR) * (key.length()+1));
+  MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, *key, -1, temp_name, key.length() + 1);
+
+  DWORD result = GetEnvironmentVariableW(temp_name, buffer,
                                          ARRAY_SIZE(buffer));
+
+  free(temp_name);
   // If result >= sizeof buffer the buffer was too small. That should never
   // happen. If result == 0 and result != ERROR_SUCCESS the variable was not
   // not found.
@@ -1519,11 +1554,17 @@ static bool EnvEnumerator(JSContext* cx, JS::HandleObject obj) {
     }
     JS_LOCAL_STRING ps_str =
         UTF8_TO_STRING_WITH_LENGTH(reinterpret_cast<uint16_t*>(p), s - p);
-    jxcore::JXString jkey(ps_str);
+
+    const int tmp_len = 1 + (s - p);
+    WCHAR *temp_name = (WCHAR *)malloc(tmp_len * sizeof(WCHAR));
+    memcpy(temp_name, p, (tmp_len-1) * sizeof(WCHAR));
+    temp_name[tmp_len-1] = WCHAR(0);
 
     WCHAR buffer[32767];  // The maximum size allowed for environment variables.
-    DWORD result = GetEnvironmentVariableW(reinterpret_cast<WCHAR*>(*jkey),
+    DWORD result = GetEnvironmentVariableW(temp_name,
                                            buffer, ARRAY_SIZE(buffer));
+
+    free(temp_name);
     // If result >= sizeof buffer the buffer was too small. That should never
     // happen. If result == 0 and result != ERROR_SUCCESS the variable was not
     // not found.
