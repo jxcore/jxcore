@@ -69,11 +69,16 @@ Isolate* Isolate::New(int threadId) {  // for_thread is true only for initial
 //#endif
 
 #ifndef __IOS__
+#if defined(DEBUG) && !defined(__POSIX__)
+  // _WIN32
+  // TODO(obastemur) investigate how to debug JIT SM on Win
+#else
     JS::RuntimeOptionsRef(rt)
         .setBaseline(true)
         .setIon(true)
         .setAsmJS(true)
         .setNativeRegExp(true);
+#endif
 #endif
   } else {
     threadId = GetThreadId();
