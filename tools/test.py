@@ -1259,7 +1259,10 @@ def ProcessOptions(options):
     # If options.arch is not set by the command line and no simulator setting
     # was found, set the arch to the guess.
     if options.arch == 'none':
-      options.arch = ARCH_GUESS
+      if ARCH_GUESS == None:
+        options.arch = ""
+      else:
+        options.arch = ARCH_GUESS
     options.scons_flags.append("arch=" + options.arch)
   if options.snapshot:
     options.scons_flags.append("snapshot=on")
