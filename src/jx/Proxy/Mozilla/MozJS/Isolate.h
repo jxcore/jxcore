@@ -67,5 +67,7 @@ class Isolate {
 
   void Dispose();
 };
+
+int* getThreadIdsMemRef();
 }  // namespace MozJS
 #endif  // SRC_JX_PROXY_MOZILLA_MOZJS_ISOLATE_H_

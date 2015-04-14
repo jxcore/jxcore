@@ -20,8 +20,16 @@ bool EngineHelper::IsInstanceAlive(JSContext *ctx) {
   if (ctx == nullptr) return false;
 
 #ifndef JX_TEST_ENVIRONMENT
-  node::commons *com =
-      node::commons::getInstanceByThreadId(JS_GetThreadId(ctx));
+  JSRuntime *rt = JS_GetRuntime(ctx);
+  if (!rt) return false;
+
+  int *tid_ptr = (int *)JS_GetRuntimePrivate(rt);
+  int *memref = getThreadIdsMemRef();
+
+  if (tid_ptr < memref || tid_ptr > (memref + (sizeof(int) * 64))) return false;
+
+  const int tid_rt = *(tid_ptr);
+  node::commons *com = node::commons::getInstanceByThreadId(tid_rt);
   if (com == NULL) return false;
   if (com->instance_status_ == node::JXCORE_INSTANCE_EXITED) return false;
 #endif
@@ -40,7 +48,8 @@ int EngineHelper::GetThreadId() {
 
 void EngineHelper::FromJSString(const String &str, auto_str *out,
                                 bool get_ascii) {
-  jxcore::JXString jxs(str.GetRawStringPointer(), str.GetContext(), false, get_ascii);
+  jxcore::JXString jxs(str.GetRawStringPointer(), str.GetContext(), false,
+                       get_ascii);
   out->str_ = *jxs;
   out->length_ = jxs.length();
   out->ctx_ = str.GetContext();
@@ -48,7 +57,8 @@ void EngineHelper::FromJSString(const String &str, auto_str *out,
 
 void EngineHelper::FromJSString(const Value &str, auto_str *out,
                                 bool get_ascii) {
-  jxcore::JXString jxs(str.GetRawStringPointer(), str.GetContext(), false, get_ascii);
+  jxcore::JXString jxs(str.GetRawStringPointer(), str.GetContext(), false,
+                       get_ascii);
   out->str_ = *jxs;
   out->length_ = jxs.length();
   out->ctx_ = str.GetContext();

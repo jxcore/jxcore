@@ -10,10 +10,12 @@ Isolate* Isolates[JXCORE_MAX_THREAD_COUNT] = {NULL};
 JSRuntime* runtimes[JXCORE_MAX_THREAD_COUNT] = {NULL};
 
 static int threadIds[65] = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12,
-                     13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
-                     26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
-                     39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
-                     52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64};
+                            13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
+                            26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
+                            39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
+                            52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64};
+
+int* getThreadIdsMemRef() { return threadIds; }
 
 Isolate::Isolate() {
   ctx_ = NULL;
@@ -34,7 +36,7 @@ Isolate* Isolate::GetCurrent() { return Isolates[GetThreadId()]; }
 Isolate* Isolate::New(int threadId) {  // for_thread is true only for initial
                                        // context
   const bool for_thread = threadId != -1;
-  JSRuntime *rt;
+  JSRuntime* rt;
 
   if (for_thread) {
     if (runtimes[threadId] != NULL) {
@@ -61,8 +63,8 @@ Isolate* Isolate::New(int threadId) {  // for_thread is true only for initial
 
     // use incremental GC in case of low resources.
     JS_SetGCParameter(rt, JSGC_DYNAMIC_HEAP_GROWTH, 1);
-	JS_SetGCParameter(rt, JSGC_DYNAMIC_MARK_SLICE, 1);
-	JS_SetGCParameter(rt, JSGC_SLICE_TIME_BUDGET, 10);
+    JS_SetGCParameter(rt, JSGC_DYNAMIC_MARK_SLICE, 1);
+    JS_SetGCParameter(rt, JSGC_SLICE_TIME_BUDGET, 10);
 
 //#if !defined(__ANDROID__) && !defined(__IOS__)
 //    JS_SetGCParametersBasedOnAvailableMemory(rt, 513);
@@ -70,8 +72,8 @@ Isolate* Isolate::New(int threadId) {  // for_thread is true only for initial
 
 #ifndef __IOS__
 #if defined(DEBUG) && !defined(__POSIX__)
-  // _WIN32
-  // TODO(obastemur) investigate how to debug JIT SM on Win
+// _WIN32
+// TODO(obastemur) investigate how to debug JIT SM on Win
 #else
     JS::RuntimeOptionsRef(rt)
         .setBaseline(true)
