@@ -43,6 +43,7 @@
 
 #include "uv.h"
 #include "jx/Proxy/JSEngine.h"
+#include "jx/error_definition.h"
 #include <sys/types.h> /* struct stat */
 #include <sys/stat.h>
 #include <assert.h>

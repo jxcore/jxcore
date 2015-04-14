@@ -7,8 +7,6 @@
 #include "jx/Proxy/JSEngine.h"
 #include "jx/commons.h"
 
-#include "jx/error_definition.h"
-
 namespace node {
 
 class commons;

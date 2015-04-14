@@ -1,5 +1,6 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
+#include "node.h"
 #include "error_definition.h"
 #include "jx/extend.h"
 #include "jx/memory_store.h"

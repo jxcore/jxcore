@@ -2,7 +2,11 @@
 
 #ifndef SRC_JX_ERROR_DEFINITION_H_
 #define SRC_JX_ERROR_DEFINITION_H_
-#include "node.h"
+
+#include "Proxy/JSEngine.h"
+#if NODE_WANT_INTERNALS
+#include "node_internals.h"
+#endif
 
 namespace node {
 
@@ -10,9 +14,9 @@ class commons;
 
 inline const char *errno_string(int errorno);
 
-const char *get_uv_errno_string(int errorno);
+NODE_EXTERN const char *get_uv_errno_string(int errorno);
 
-const char *get_uv_errno_message(int errorno);
+NODE_EXTERN const char *get_uv_errno_message(int errorno);
 
 #ifdef _WIN32
 const char *winapi_strerror(const int errorno);
@@ -29,11 +33,11 @@ void OnFatalError(JSContext *JS_GET_STATE_MARKER(), const char *message,
                   JSErrorReport *report);
 #endif
 
-void DisplayExceptionLine(JS_TRY_CATCH_TYPE &try_catch);
+NODE_EXTERN void DisplayExceptionLine(JS_TRY_CATCH_TYPE &try_catch);
 
-void ReportException(JS_TRY_CATCH_TYPE &try_catch, bool show_line);
+NODE_EXTERN void ReportException(JS_TRY_CATCH_TYPE &try_catch, bool show_line);
 
-void FatalException(JS_TRY_CATCH_TYPE &try_catch);
+NODE_EXTERN void FatalException(JS_TRY_CATCH_TYPE &try_catch);
 
 }  // namespace node
 
