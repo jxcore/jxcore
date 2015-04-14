@@ -679,9 +679,9 @@ assert.equal(0xbe, b[2]);
 assert.equal(0xef, b[3]);
 
 // force GC on next
-var qb = new Buffer(512 * 1024 * 1024);
+var qb = new Buffer(64 * 1024 * 1024);
 qb.fill(65);
-assert(qb.length == 512 * 1024 * 1024);
+assert(qb.length == 64 * 1024 * 1024);
 qb = null;
 jxcore.tasks.forceGC();
 
