@@ -29,7 +29,7 @@ process.on('exit', function () {
   }
 });
 
-var filename = path.join(__dirname, "testcfg.py");
+var filename = path.join(__dirname, "_asset_file.txt");
 
 // stat
 fs.stat(filename, function (err, stat) {
