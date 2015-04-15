@@ -97,6 +97,8 @@ if defined NIGHTLY set TAG=nightly-%NIGHTLY%
 @rem Generate the VS project.
 SETLOCAL
   if defined VS100COMNTOOLS call "%VS100COMNTOOLS%\VCVarsQueryRegistry.bat"
+  call :getpythonversion
+  if errorlevel 1 goto exit
   python configure %debug_arg% %nosnapshot_arg% %noetw_arg% %noperfctr_arg% --dest-cpu=%target_arch% --tag=%TAG% %static_library% %engine_mozilla% %compress_internals%
   if errorlevel 1 goto create-msvs-files-failed
   if not exist jx.sln goto create-msvs-files-failed
@@ -235,3 +237,14 @@ set NODE_VERSION=
 for /F "usebackq tokens=*" %%i in (`python "%~dp0tools\getnodeversion.py"`) do set NODE_VERSION=%%i
 if not defined NODE_VERSION echo Cannot determine current version of node.js & exit /b 1
 goto :EOF
+
+:getpythonversion
+set PYTHON_VERSION=
+for /F "usebackq tokens=*" %%i in (`python "%~dp0tools\getpythonversion.py"`) do set PYTHON_VERSION=%%i
+if not defined PYTHON_VERSION echo Cannot determine current version of Python & exit /b 1
+set version_ok=0
+if "%PYTHON_VERSION:~0,3%"=="2.6" set version_ok=1
+if "%PYTHON_VERSION:~0,3%"=="2.7" set version_ok=1
+if "%version_ok%"=="0" echo You need Python 2.6 or 2.7 for the script to run. Currently installed version: %python_version% & exit /b 1
+goto :EOF
+
