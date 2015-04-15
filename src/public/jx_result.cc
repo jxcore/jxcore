@@ -1,7 +1,9 @@
 #include "../jx/commons.h"
 #include "../jxcore.h"
 #include "jx_result.h"
+#ifdef JS_ENGINE_MOZJS
 #include <limits>  // INT_MAX
+#endif
 
 class auto_state {
   jxcore::JXEngine *engine_;
@@ -408,6 +410,7 @@ JX_SetString(JXValue *value, const char *val, const int32_t length) {
 JXCORE_EXTERN(void)
 JX_SetUCString(JXValue *value, const uint16_t *val, const int32_t _length) {
   int32_t length = _length;
+#ifdef JS_ENGINE_MOZJS
   if (length == 0) {
 	for (length = 0; *(val + length) != uint16_t(0); length++) {
 	  if (length + 2 == INT_MAX) {
@@ -415,6 +418,7 @@ JX_SetUCString(JXValue *value, const uint16_t *val, const int32_t _length) {
 	  }
 	}
   }
+#endif
 
   SET_STRING(RT_String, uint16_t);
 }
