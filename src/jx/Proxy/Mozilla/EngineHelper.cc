@@ -20,6 +20,16 @@ bool EngineHelper::IsInstanceAlive(JSContext *ctx) {
   if (ctx == nullptr) return false;
 
 #ifndef JX_TEST_ENVIRONMENT
+  const int tid_ctx = JS_GetThreadId(ctx);
+  node::commons *com;
+  if (tid_ctx < 0 || tid_ctx > 64) {
+	return false;
+  } else {
+	com = node::commons::getInstanceByThreadId(tid_ctx);
+	if (!com) return false;
+	if (com->instance_status_ == node::JXCORE_INSTANCE_EXITED) return false;
+  }
+
   JSRuntime *rt = JS_GetRuntime(ctx);
   if (!rt) return false;
 
@@ -29,12 +39,10 @@ bool EngineHelper::IsInstanceAlive(JSContext *ctx) {
   if (tid_ptr < memref || tid_ptr > (memref + (sizeof(int) * 64))) return false;
 
   const int tid_rt = *(tid_ptr);
-  node::commons *com = node::commons::getInstanceByThreadId(tid_rt);
-  if (com == NULL) return false;
-  if (com->instance_status_ == node::JXCORE_INSTANCE_EXITED) return false;
-#endif
-
+  return tid_rt == tid_ctx;
+#else
   return true;
+#endif
 }
 
 int EngineHelper::GetThreadId() {
