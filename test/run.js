@@ -57,6 +57,9 @@ var getArg = function(argNames, type) {
 };
 
 var repeat = getArg(['-r', '--repeat'], "int");
+var timeout = getArg(['-t', '--timeout'], "int");
+if (!timeout && require('os').cpus().length === 1)
+  timeout = 120;  // default is 60 defined in tools/test.py
 
 prepare_packages.silent = silent;
 prepare_packages.force_refresh = process.argv.indexOf("-f") !== -1;
@@ -148,6 +151,8 @@ var run = function (what, cb) {
   var args = ["tools/test.py", "-p", "color"];
   if (repeat)
     args.push("--repeat", repeat);
+  if (timeout)
+    args.push("--timeout", timeout);
 
   for (var o in dirs) {
     if (what === "-j")
