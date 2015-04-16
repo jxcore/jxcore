@@ -16,7 +16,14 @@ if (fs.existsSync(dbfile)) {
 var db = new sqlite3.Database(dbfile);
 var z = 0;
 
-var done = false;
+var done = function() {
+  if (fs.existsSync(dbfile))
+    fs.unlinkSync(dbfile);
+  assert.strictEqual(z, 500);
+  if (process.subThread)
+    process.release();
+};
+
 db.serialize(function () {
   db.run("CREATE TABLE lorem (info TEXT)");
 
@@ -30,27 +37,13 @@ db.serialize(function () {
     //console.log(row.id + ": " + row.info);
     if (z++ > 490) {
       db.close(function () {
-        done = true;
+        done();
       });
     }
   });
 });
 
 db.close();
-var inter = setInterval(function () {
-  if (done) {
-    //console.log("Data File is deleted", process.threadId);
-    clearInterval(inter);
-    if (process.threadId !== -1)
-      process.release();
-  }
-}, 1000);
 
-
-process.on('exit', function (code) {
-  assert.strictEqual(z, 500);
-
-  if (fs.existsSync(dbfile)) {
-    fs.unlinkSync(dbfile);
-  }
-});
+// if done() was not called already...
+setTimeout(done, 10000).unref();

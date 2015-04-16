@@ -25,8 +25,17 @@ var srv_to_client = 2;
 
 var received = 0;
 
+var done = function() {
+  var sid = "Thread id: " + process.threadId + ". ";
+  assert.ok(clientConnected, sid + "Client did not connect to the server.");
+  assert.strictEqual(clientReceived, strings[srv_to_client] + "\r\n", sid + "Client received : " + clientReceived + " but should receive: " + strings[srv_to_client]);
 
-//consol e.logOrg("threads", jxcore.tasks.getThreadCount(),"threadId", process.threadId);
+  if (process.subThread)
+    process.release();
+
+  if (process.threadId === -1)
+    server.close();
+};
 
 var server = net.createServer(function (client) {
 
@@ -53,17 +62,9 @@ server.listen(port, function () {
   client.on('data', function (data) {
     clientReceived = data.toString();
     clientConnected = true;
-    if (process.threadId !== -1)
-      process.release();
-    if (process.threadId === -1)
-      server.close();
+    done();
   });
 });
 
-
-process.on('exit', function (code) {
-//    consol e.log("exit on " + process.threadId);
-  var sid = "Thread id: " + process.threadId + ". ";
-  assert.ok(clientConnected, sid + "Client did not connect to the server.");
-  assert.strictEqual(clientReceived, strings[srv_to_client] + "\r\n", sid + "Client received : " + clientReceived + " but should receive: " + strings[srv_to_client]);
-});
+// if done() was not called already...
+setTimeout(done, 10000).unref();

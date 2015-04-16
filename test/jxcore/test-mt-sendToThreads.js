@@ -15,28 +15,37 @@ if (isNaN(threads)) {
 }
 
 var count = 50;
+var counter = 0;
 var cnts = {};
 
+var done = function() {
+  for (var a = 0; a < threads; a++) {
+    assert.strictEqual(cnts[a], count, "Thread " + process.threadId + " received from thread " + a + " " + cnts[a] + " messages instead of " + count);
+  }
+  if (process.subThread)
+    process.release();
+};
+
 jxcore.tasks.on('message', function (threadId, msg) {
+  counter++;
   if (!cnts[msg.x]) {
     cnts[msg.x] = 1;
   } else {
     cnts[msg.x]++;
   }
+
+  if (counter === count * threads)
+    done();
 });
 
-process.on('exit', function (code) {
-  for (var a = 0; a < threads; a++) {
-    assert.strictEqual(cnts[a], count, "Thread " + process.threadId + " received from thread " + a + " " + cnts[a] + " messages instead of " + count);
-  }
-});
 
 setTimeout(function () {
   var tm = count;
   while (tm--) {
     process.sendToThreads({x: process.threadId});
   }
-  setTimeout(process.release, 700);
+  // if done() was not called already...
+  setTimeout(done, 10000).unref();
 }, 700);
 
 

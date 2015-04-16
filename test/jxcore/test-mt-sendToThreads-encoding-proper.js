@@ -25,27 +25,31 @@ var received = [];
 var cnt = 0;
 var color = jxcore.utils.console.setColor;
 
+var done = function() {
+  for (var a = 0, len = strings.length; a < len; a++) {
+    assert.ok(received[a], "Task did not receive this string:\n" + color("id = " + a + ": " + strings[a].slice(0, 255), "red"));
+  }
+  if (process.subThread)
+    process.release();
+};
+
+
 // checking messages from other threads
 jxcore.tasks.on('message', function (threadId, params) {
   cnt++;
   received[params.id] = params.str;
-  if (cnt == strings.length) {
-    if (process.threadId !== -1)
-      process.release();
-    console.log("releasing", process.threadId)
-  }
   assert.strictEqual(strings[params.id], params.str, "sentToThreads(): strings not equal: id = " + params.id + ": " + color(strings[params.id].slice(0, 255), "green") + " !== " + color(params.str.slice(0, 255), "red"));
   console.log("received", process.threadId, "from", process.threadId);
-});
 
+  if (cnt == strings.length * jxcore.tasks.getThreadCount()) {
+    console.log("releasing", process.threadId);
+    done();
+  }
+});
 
 for (var a = 0, len = strings.length; a < len; a++) {
   process.sendToThreads({id: a, str: strings[a]});
 }
 
-
-process.on('exit', function (code) {
-  for (var a = 0, len = strings.length; a < len; a++) {
-    assert.ok(received[a], "Task did not receive this string:\n" + color("id = " + a + ": " + strings[a].slice(0, 255), "red"));
-  }
-});
+// if done() was not called already...
+setTimeout(done, 10000).unref();

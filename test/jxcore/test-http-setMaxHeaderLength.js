@@ -57,6 +57,12 @@ srv.on("listening", function () {
 });
 srv.listen(port, "localhost");
 
+var done = function() {
+  assert.ok(finished, "Test unit did not finish.");
+  assert.ok(shouldBeNoError === !error, "Condition failed.");
+  if (process.subThread)
+    process.release();
+};
 
 var finish = function (req) {
   if (req) {
@@ -65,9 +71,8 @@ var finish = function (req) {
   setTimeout(function () {
     srv.unref();
   }, 700);
-  if (process.threadId !== -1)
-    process.release();
   finished = true;
+  done();
 };
 
 // ########   client
@@ -103,8 +108,5 @@ var client = function () {
   req.end();
 };
 
-
-process.on("exit", function (code) {
-  assert.ok(finished, "Test unit did not finish.");
-  assert.ok(shouldBeNoError === !error, "Condition failed.");
-});
+// if done() was not called already...
+setTimeout(done, 10000).unref();
