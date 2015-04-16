@@ -44,16 +44,18 @@ db.serialize(function () {
   });
 });
 
-
-db.close(function (err) {
-  assert.strictEqual(err, null, "Cannot close db. " + err);
-  finished = true;
-  if (process.threadId !== -1)
-    process.release();
-});
-
-
-process.on('exit', function (code) {
+var done = function() {
   assert.ok(finished, "Test did not finish");
   assert.strictEqual(cnt, 20, "Count should be 20.");
+  if (process.subThread)
+    process.release();
+};
+
+db.close(function (err) {
+  finished = true;
+  assert.strictEqual(err, null, "Cannot close db. " + err);
+  done();
 });
+
+// if done() was not called already...
+setTimeout(done, 10000).unref();
