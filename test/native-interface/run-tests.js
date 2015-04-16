@@ -23,10 +23,10 @@ if (args[2] != "v8" && args[2] != "sm") {
 
 var runs = 1;
 
-try{
+try {
   if (args[3])
     runs = parseInt(args[3]);
-}catch(e){}
+} catch(e){}
 
 if (isNaN(runs)) {
   color_log("third argument needs to be a number", "red");
@@ -36,21 +36,21 @@ if (isNaN(runs)) {
 var home = process.cwd();
 var dirs = fs.readdirSync(home);
 
-for(var o in dirs) {
+for (var o in dirs) {
   if (dirs[o] == 'commons') continue;
   var stat = fs.statSync(path.join(home, dirs[o]));
   if (!stat.isDirectory())
     continue;
   jxcore.utils.console.write(dirs[o] + ": ", "green");
   var ret = jxcore.utils.cmdSync("./test-single.sh " + args[1] + " " + dirs[o] + " " + args[2] + " 1");
-  if(ret.exitCode != 0 || ret.out.length>200) {
+  if (ret.exitCode != 0 || ret.out.length>200) {
     jxcore.utils.console.log("\nexit code: ", ret.exitCode, "red");
     console.error(ret.out);
     process.exit(1);
   }
   
-  for(var i=0; i<runs; i++) {
-    ret = jxcore.utils.cmdSync("./" + dirs[o] + "/test");
+  for (var i=0; i<runs; i++) {
+    ret = jxcore.utils.cmdSync("cd " + dirs[o] + ";./" + dirs[o] + "/test;cd ..");
     if(ret.exitCode != 0) {
       color_log("\nFailed at ", (i+1) + ".", " run:", "red");
       color_log(ret.out);
