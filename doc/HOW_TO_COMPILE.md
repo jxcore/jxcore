@@ -94,3 +94,7 @@ Then you can still build JXcore x32 on Windows x64:
 ```
 / $> vcbuild.bat ia32
 ```
+
+**For CentOS/Red Hat**
+
+If you'll ever have problem with GCC 4.7+ installation on Red Hat, please see [#297](https://github.com/jxcore/jxcore/issues/297).
