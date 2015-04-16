@@ -32,6 +32,10 @@ class JXEngine {
 #elif defined(JS_ENGINE_V8)
  public:
   JS_PERSISTENT_CONTEXT context_;
+
+  inline void ExitIsolate() {
+	main_node_->node_isolate->Exit();
+  }
 #endif
 
  public:

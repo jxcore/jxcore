@@ -419,6 +419,26 @@ static std::map<std::string, JXMethod> methods_archive;
 #define jx_engine_map std::map<int, JXEngine *>
 jx_engine_map jx_engine_instances;
 
+class AutoScope {
+  JXEngine *engine_;
+  const bool leave_isolate_;
+
+ public:
+  AutoScope(JXEngine *_, const bool li) : leave_isolate_(li) {
+    engine_ = _;
+    _->EnterScope();
+  }
+
+  ~AutoScope() {
+    engine_->LeaveScope();
+#ifdef JS_ENGINE_V8
+    if (leave_isolate_ && engine_->threadId_ != 0) {
+      engine_->ExitIsolate();
+    }
+#endif
+  }
+};
+
 JXEngine::JXEngine(int argc, char **argv, bool self_hosted) {
   if (jxcore_first_instance) {
     jxcore_first_instance = false;
@@ -507,7 +527,7 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
 
   const int actual_thread_id = threadId_;
 
-  EnterScope();
+  AutoScope _scope_(this, false);
 
 #ifdef JS_ENGINE_V8
 #if HAVE_OPENSSL
@@ -642,8 +662,6 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
 #endif  // NDEBUG
 #endif
 
-  LeaveScope();
-
   // Clean up the copy:
   if (argc > 0) free(argv_copy);
 
@@ -733,7 +751,7 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
     }
   }
 
-  EnterScope();
+  AutoScope _scope_(this, false);
 
   if (actual_thread_id == 0) {
     main_node_ = new node::commons(0);
@@ -780,8 +798,6 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
   node::Load(process_l);
 
   if (argc > 0) free(argv_copy);
-
-  LeaveScope();
 }
 
 void JXEngine::Destroy() {
@@ -798,7 +814,8 @@ void JXEngine::Destroy() {
              "First instance can not be destroyed before others");
       main_node_->instance_status_ = node::JXCORE_INSTANCE_EXITING;
     }
-    EnterScope();
+
+    AutoScope _scope_(this, false);
 
     JS_HANDLE_OBJECT process_l = main_node_->getProcess();
 
@@ -859,20 +876,12 @@ void JXEngine::Destroy() {
 
   main_iso_.Dispose();
 
-  LeaveScope();
-
   jx_engine_map::iterator it = jx_engine_instances.find(main_node_->threadId);
   if (it != jx_engine_instances.end()) jx_engine_instances.erase(it);
 }
 #endif
 
 #if defined(JS_ENGINE_V8)
-#define _EXIT_ISOLATE_                \
-  if (threadId_ != 0) {               \
-    main_node_->node_isolate->Exit(); \
-  }                                   \
-  LeaveScope();
-
 void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
   if (!JS_engine_inited_) {
     const char *replaceInvalid = getenv("NODE_INVALID_UTF8");
@@ -902,7 +911,7 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
     main_node_ = node::commons::newInstance(actual_thread_id);
   }
 
-  EnterScope();
+  AutoScope _scope_(this, true);
 
   // This needs to run *before* V8::Initialize()
   // Use copy here as to not modify the original argv:
@@ -958,19 +967,16 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
 
     if (argc > 0) free(argv_copy);
   }
-
-  _EXIT_ISOLATE_
 }
 
 void JXEngine::Destroy() {
-  // need it for scope leave
+  AutoScope _scope_(this, true);
   {
     if (jx_engine_instances.size() == 1)
       node::commons::process_status_ = node::JXCORE_INSTANCE_EXITING;
     else
       main_node_->instance_status_ = node::JXCORE_INSTANCE_EXITING;
     JS_ENGINE_SCOPE(main_node_, threadId_ != 0);
-    EnterScope();
 
     JS_HANDLE_OBJECT process_l = main_node_->getProcess();
     node::EmitExit(process_l);
@@ -1005,11 +1011,7 @@ void JXEngine::Destroy() {
   if (it != jx_engine_instances.end()) jx_engine_instances.erase(it);
 
   node::removeCommons();
-
-  _EXIT_ISOLATE_
 }
-#elif defined(JS_ENGINE_MOZJS)
-#define _EXIT_ISOLATE_ LeaveScope();
 #endif
 
 char *JX_Stringify(node::commons *com, JS_HANDLE_OBJECT obj,
@@ -1193,9 +1195,9 @@ bool JXEngine::ConvertToJXResult(node::commons *com,
 bool JXEngine::Evaluate(const char *source, const char *filename,
                         JXResult *result) {
   bool ret_val = false;
+  AutoScope _scope_(this, true);
   {
     JS_ENGINE_SCOPE(main_node_, threadId_ != 0);
-    EnterScope();
 
     node::commons *com = main_node_;
     SET_UNDEFINED(result);
@@ -1221,7 +1223,6 @@ bool JXEngine::Evaluate(const char *source, const char *filename,
     ret_val = JXEngine::ConvertToJXResult(com, scr_return, result);
   }
 
-  _EXIT_ISOLATE_
   return ret_val;
 }
 
@@ -1233,26 +1234,23 @@ bool JXEngine::DefineProxyMethod(const char *name, const int interface_id,
     methods_to_initialize_[name].is_native_method_ = false;
     methods_to_initialize_[name].interface_id_ = interface_id;
   } else {
-    {
-      JS_ENGINE_SCOPE(main_node_, threadId_ != 0);
-      EnterScope();
+    AutoScope _scope_(this, true);
+    JS_ENGINE_SCOPE(main_node_, threadId_ != 0);
 
-      JS_HANDLE_OBJECT process = main_node_->getProcess();
-      JS_LOCAL_OBJECT natives =
-          JS_VALUE_TO_OBJECT(JS_GET_NAME(process, JS_STRING_ID("natives")));
-      if (JS_IS_EMPTY(natives) || JS_IS_NULL_OR_UNDEFINED(natives)) {
-        error_console(
-            "JXEngine::DefineProxyMethod, could not find 'natives' object "
-            "under "
-            "process\n");
-        ret_val = false;
-        goto exit_;
-      }
+    JS_HANDLE_OBJECT process = main_node_->getProcess();
+    JS_LOCAL_OBJECT natives =
+        JS_VALUE_TO_OBJECT(JS_GET_NAME(process, JS_STRING_ID("natives")));
+    if (JS_IS_EMPTY(natives) || JS_IS_NULL_OR_UNDEFINED(natives)) {
+      error_console(
+          "JXEngine::DefineProxyMethod, could not find 'natives' object "
+          "under "
+          "process\n");
+      ret_val = false;
+    } else {
       DeclareProxy(main_node_, natives, name, interface_id, method);
     }
-  exit_:
-    _EXIT_ISOLATE_
   }
+exit_:
   return ret_val;
 }
 
@@ -1262,25 +1260,21 @@ bool JXEngine::DefineNativeMethod(const char *name, JS_NATIVE_METHOD method) {
     methods_to_initialize_[name].native_method_ = method;
     methods_to_initialize_[name].is_native_method_ = true;
   } else {
-    {
-      JS_ENGINE_SCOPE(main_node_, threadId_ != 0);
-      EnterScope();
+    AutoScope _scope_(this, true);
+    JS_ENGINE_SCOPE(main_node_, threadId_ != 0);
 
-      JS_HANDLE_OBJECT process = main_node_->getProcess();
-      JS_LOCAL_OBJECT natives =
-          JS_VALUE_TO_OBJECT(JS_GET_NAME(process, JS_STRING_ID("natives")));
-      if (JS_IS_EMPTY(natives) || JS_IS_NULL_OR_UNDEFINED(natives)) {
-        error_console(
-            "JXEngine::DefineNativeMethod, could not find 'natives' object "
-            "under "
-            "process\n");
-        ret_val = false;
-        goto exit_;
-      }
+    JS_HANDLE_OBJECT process = main_node_->getProcess();
+    JS_LOCAL_OBJECT natives =
+        JS_VALUE_TO_OBJECT(JS_GET_NAME(process, JS_STRING_ID("natives")));
+    if (JS_IS_EMPTY(natives) || JS_IS_NULL_OR_UNDEFINED(natives)) {
+      error_console(
+          "JXEngine::DefineNativeMethod, could not find 'natives' object "
+          "under "
+          "process\n");
+      ret_val = false;
+    } else {
       NODE_SET_METHOD(natives, name, method);
     }
-  exit_:
-    _EXIT_ISOLATE_
   }
 
   return ret_val;
@@ -1289,26 +1283,26 @@ bool JXEngine::DefineNativeMethod(const char *name, JS_NATIVE_METHOD method) {
 int JXEngine::Loop() {
   int ret_val = 0;
   {
+    AutoScope _scope_(this, true);
     JS_ENGINE_SCOPE(main_node_, threadId_ != 0);
-    EnterScope();
 
     ret_val = uv_run_jx(main_node_->loop, UV_RUN_DEFAULT,
                         node::commons::CleanPinger, main_node_->threadId);
   }
-  _EXIT_ISOLATE_
+
   return ret_val;
 }
 
 int JXEngine::LoopOnce() {
   int ret_val = 0;
   {
+    AutoScope _scope_(this, true);
     JS_ENGINE_SCOPE(main_node_, threadId_ != 0);
-    EnterScope();
 
     ret_val = uv_run_jx(main_node_->loop, UV_RUN_NOWAIT,
                         node::commons::CleanPinger, main_node_->threadId);
   }
-  _EXIT_ISOLATE_
+
   return ret_val;
 }
 
