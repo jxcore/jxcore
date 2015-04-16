@@ -18,6 +18,7 @@ var native = process.argv[process.argv.length - 1] == "native";
 var cwd = process.cwd();
 var file_js = path.join(__dirname, "assets/node_path/file.js");
 var file_jx = path.join(__dirname, "assets/node_path/file");
+var file_jxp = path.join(__dirname, "assets/node_path/file.jxp");
 file_jx += (native ? ".exe" : ".jx");
 
 if (fs.existsSync(file_jx))
@@ -38,6 +39,12 @@ if (!fs.existsSync(file_jx))
   throw "Package is not ready:\n" + file_jx;
 
 var dir = path.dirname(file_jx);
+
+
+process.on('exit', function() {
+  if (fs.existsSync(file_jx)) fs.unlinkSync(file_jx);
+  if (fs.existsSync(file_jxp)) fs.unlinkSync(file_jxp);
+});
 
 // -------------   exec part
 
