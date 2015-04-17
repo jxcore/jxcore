@@ -9,12 +9,30 @@ body {
   line-height: 180%;
   color: black;
   background-color: white;
-  margin: 0; padding: 49px 0 0 0;
-  border-top: 6px #8CC84B solid;
+  margin: 0; padding: 0 0 0 0;
 }
 
+#header_bar {
+    height: 72px;
+    background: #214263;
+    margin-bottom: 40px;
+}
+
+#logo_bar {
+    width: 953px;
+    height: 72px;
+    margin: 0 auto;
+    display: block;
+    vertical-align: middle;
+}
+
+#logo {
+    margin-top: 20px;
+}
+
+
 a {
-  color: #480;
+  color: #6699bb;
   text-decoration: underline;
 }
 
@@ -39,7 +57,7 @@ code a:hover {
 
 #gtoc p {
   margin: 0;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 30px;
 }
 
@@ -50,7 +68,7 @@ code a:hover {
 }
 
 #gtoc a:hover {
-  color: #669900;
+  color: #2A6469;
   text-decoration: underline;
 }
 
@@ -174,17 +192,17 @@ h1, h2, h3, h4, h5, h6 {
 
 header h1 {
   font-family: Georgia, FreeSerif, Times, serif;
-  font-size: 30px;
+  font-size: 24px;
   font-weight: normal;
   line-height: 36px;
-  color: #480;
-  margin: 15px 0 11px;
+  color: #214263;
+  margin: 35px 0 11px;
 }
 
 h1 {
   font-size: 29px;
   line-height: 33px;
-  margin: 2em 0 15px;
+  margin: 1em 0 15px;
 }
 
 #toc + h1 {
@@ -239,11 +257,6 @@ h1 span a, h2 span a, h3 span a, h4 span a {
 }
 
 h1 span a.top, h2 span a.top, h3 span a.top, h4 span a.top {
-  /* XXX Get an image and clean up these two links
-  * so that they look nice next to one another.
-  * http://www.chrisglass.com/work/nodejs/website/v05/docs.html
-  * -isaacs
-  */
   display: none;
 }
 
@@ -289,18 +302,20 @@ code.pre {
 }
 
 #intro {
-  width: 775px;
+
   margin: 0 auto;
-  text-align: center;
   color: #d2d8ba;
   /* preload platform-icons.png */
-  background-image: url(http://nodejs.org/images/platform-icons.png);
+  background-image: url(platform-icons.png);
   background-repeat: no-repeat;
   background-position: -999em -999em;
 }
 
 #intro.interior #logo {
-  margin-left: -298px;
+  width: 200px;
+  margin-left: -10px;
+  margin-top: -10px;
+  margin-bottom: 15px;
   border: 0;
 }
 
@@ -341,13 +356,17 @@ hr {
 
 #toc ul a {
   text-decoration: none;
-  border-bottom: 1px dotted #480;
+  border-bottom: 1px dotted #6699bb;
 }
 
 #toc ul a:hover,
 #toc ul a:focus {
   border-bottom: 1px dotted #fff;
   color: #000;
+}
+
+#toc ul a:hover #toc ul a:visited{
+    color: #2A6469;
 }
 
 p tt,
@@ -376,7 +395,7 @@ p code, span.type {
 #column2.interior {
   width: 140px;
   float: left;
-  margin-top: -55px;
+
   overflow: visible;
 }
 
@@ -398,15 +417,15 @@ p code, span.type {
   line-height: 23px;
 }
 
-#column2.interior li a.home { background: url(http://nodejs.org/images/icons-interior.png) no-repeat -156px 3px; }
-#column2.interior li a.download { background: url(http://nodejs.org/images/icons-interior.png) no-repeat -156px -21px; }
-#column2.interior li a.about { background: url(http://nodejs.org/images/icons-interior.png) no-repeat -156px -45px; }
-#column2.interior li a.npm { background: url(http://nodejs.org/images/icons-interior.png) no-repeat -156px -69px; }
-#column2.interior li a.docs { background: url(http://nodejs.org/images/icons-interior.png) no-repeat -156px -93px; }
-#column2.interior li a.blog { background: url(http://nodejs.org/images/icons-interior.png) no-repeat -156px -117px; }
-#column2.interior li a.community { background: url(http://nodejs.org/images/icons-interior.png) no-repeat -156px -141px; }
-#column2.interior li a.logos { background: url(http://nodejs.org/images/icons-interior.png) no-repeat -156px -165px; }
-#column2.interior li a.jobs { background: url(http://nodejs.org/images/icons-interior.png) no-repeat -156px -189px; }
+#column2.interior li a.home { background: url(icons-interior.png) no-repeat -156px 3px; }
+#column2.interior li a.download { background: url(icons-interior.png) no-repeat -156px -21px; }
+#column2.interior li a.about { background: url(icons-interior.png) no-repeat -156px -45px; }
+#column2.interior li a.npm { background: url(icons-interior.png) no-repeat -156px -69px; }
+#column2.interior li a.docs { background: url(icons-interior.png) no-repeat -156px -93px; }
+#column2.interior li a.blog { background: url(icons-interior.png) no-repeat -156px -117px; }
+#column2.interior li a.community { background: url(icons-interior.png) no-repeat -156px -141px; }
+#column2.interior li a.logos { background: url(icons-interior.png) no-repeat -156px -165px; }
+#column2.interior li a.jobs { background: url(icons-interior.png) no-repeat -156px -189px; }
 
 #column2.interior li a.home.current { background-position: 2px 3px; }
 #column2.interior li a.download.current { background-position: 2px -21px; }
@@ -429,7 +448,7 @@ p code, span.type {
 #column2.interior li a.jobs:hover { background-position: -331px -189px; }
 
 #column2.interior li a.current {
-  color: #8cc84b;
+  color: #214263;
   font-weight: bold;
 }
 
@@ -447,7 +466,7 @@ p code, span.type {
 }
 
 #column2.interior p.twitter a {
-  background: url(http://nodejs.org/images/twitter-bird.png) no-repeat 0 4px;
+  background: url(twitter-bird.png) no-repeat 0 4px;
   padding-left: 37px;
   text-decoration: none;
 }
@@ -460,7 +479,7 @@ a.totop {
   font-family: "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Verdana, Tahoma, sans-serif;
   font-weight: bold;
   text-indent: -9999999px;
-  background: url(http://nodejs.org/images/anchor.png) no-repeat top left;
+  background: url(anchor.png) no-repeat top left;
   margin-right: 7px;
   display: block;
   width: 13px;
@@ -471,19 +490,20 @@ a.anchor {
   font-family: "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Verdana, Tahoma, sans-serif;
   font-weight: bold;
   text-indent: -9999999px;
-  background: url(http://nodejs.org/images/anchor.png) no-repeat top right;
+  background: url(anchor.png) no-repeat top right;
   display: block;
   width: 13px;
   border-bottom: 1px solid #cccccc;
 }
 
 #footer {
+  background: url(nubisa.png) top 30px left -1px no-repeat;
   width: 942px;
   margin: 150px auto 55px auto;
   padding: 0;
 }
 
-#footer .joyent-logo {
+#footer .nubisa-logo {
   display:block;
   position:absolute;
   overflow:hidden;
@@ -508,20 +528,20 @@ a.anchor {
 #footer a {
   text-decoration: none;
   border: none;
-  color: #480;
+  color: #6699bb;
 }
 
 #footer a:hover {
-  color: #000;
+  color: #2A6469;
 }
 
 #footer p a {
-  border-bottom: 1px dotted #480;
+  border-bottom: 1px dotted #6699bb;
   color: #878b78;
 }
 
 #footer ul {
-  background: url(http://nodejs.org/images/footer-logo-alt.png) left 17px no-repeat;
+
   padding: 23px 0 0 195px;
   height: 26px;
   margin-left: -1px;
@@ -555,7 +575,7 @@ a.anchor {
 }
 
 #footer ul li a.twitter  {
-  background: url(http://nodejs.org/images/twitter-bird.png) no-repeat 5px 0px;
+  background: url(twitter-bird.png) no-repeat 5px 0px;
   padding-left: 25px;
 }
 
@@ -566,4 +586,18 @@ a.anchor {
   height: 0;
   clear: both;
   visibility: hidden;
+}
+
+.intro_text {
+    font-size: 15px;
+    margin-top: -10px;
+}
+
+
+a:hover {
+    color: #2A6469;
+}
+
+a:visited {
+    color: #6699bb;
 }
