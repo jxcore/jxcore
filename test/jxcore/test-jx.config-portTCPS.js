@@ -13,15 +13,21 @@ var port = 8126;
 var portFromConfigFile = 8976; // <-- value from jxcore.config
 var clientReceived = false;
 
-
-var finish = function (req) {
-  if (req) {
-    req.abort();
-  }
-  srv.unref();
+var done = function() {
+  assert.ok(finished, "Test unit did not finish.");
+  var sid = "Thread id: " + process.threadId + ". ";
+  assert.ok(clientReceived, sid + "Client did not receive message from the server on port " + portFromConfigFile);
   if (process.subThread)
     process.release();
+};
+
+var finish = function (req) {
+  srv.unref();
   finished = true;
+  if (req) {
+    req.abort();
+    done();
+  }
 };
 
 
@@ -87,11 +93,6 @@ var client = function () {
   });
 };
 
-
-process.on("exit", function (code) {
-  assert.ok(finished, "Test unit did not finish.");
-
-  var sid = "Thread id: " + process.threadId + ". ";
-  assert.ok(clientReceived, sid + "Client did not receive message from the server on port " + portFromConfigFile);
-});
+// if done() was not called already...
+setTimeout(done, 10000).unref();
 
