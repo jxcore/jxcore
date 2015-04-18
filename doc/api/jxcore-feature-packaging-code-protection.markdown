@@ -1,8 +1,8 @@
 # Packaging & Code Protection
 
-JXcore introduces a unique feature for packaging and encryption of source files and other assets into JX packages.
+JXcore introduces a unique feature for packaging of source files and other assets into JX packages.
 
-Let’s assume you have a large project consisting of many files. This feature packs them all into a single file to simplify the distribution. It also protects your server side JavaScript code by encrypting all source files.
+Let’s assume you have a large project consisting of many files. This feature packs them all into a single file to simplify the distribution. It also protects your server side JavaScript code by keeping all source files inside a package, which makes them more difficult to reach.
 
 JX packages can be easily executed with JXcore, just like normal JavaScript applications:
 
@@ -85,7 +85,7 @@ As of JXcore v Beta-0.3.0.0 (open source version) this feature is no longer avai
 
 ### About JX package file
 
-The JX package file is what you get as a result of compilation, packaging and encrypting of your project.
+The JX package file is what you get as a result of compilation and packaging of your project.
 It’s a binary file used only by `jx` executable.
 Contains all of the script files of your project, as well as assets, which can be considered as static resources.
 
