@@ -388,7 +388,6 @@
            ],
           'ldflags': [ 'log', 'z', 'android' ],
           'cflags!': [
-            '-O2',
             '-pthread',
           ],
           'cflags': [
@@ -399,7 +398,7 @@
             '-fstack-protector',
             '-fno-short-enums',
             '-finline-limit=64',
-            '-Os',
+            '-O2',
           ],
         }],
         ['OS in "linux android freebsd"', {
