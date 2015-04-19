@@ -33,8 +33,7 @@ int GetThreadId() { return EngineHelper::GetThreadId(); }
 
 Isolate* Isolate::GetCurrent() { return Isolates[GetThreadId()]; }
 
-Isolate* Isolate::New(int threadId) {  // for_thread is true only for initial
-                                       // context
+Isolate* Isolate::New(int threadId) {
   const bool for_thread = threadId != -1;
   JSRuntime* rt;
 
@@ -52,7 +51,7 @@ Isolate* Isolate::New(int threadId) {  // for_thread is true only for initial
           JS_NewRuntime(64L * 1024L * 1024L, 2L * 1024L * 1024L, runtimes[0]);
 
     rt = runtimes[threadId];
-    assert(rt != NULL);
+    assert(rt != NULL && "couldn't initialize a new runtime. Out of memory?");
 
     JS_SetRuntimePrivate(rt, &threadIds[threadId]);
 
@@ -66,11 +65,7 @@ Isolate* Isolate::New(int threadId) {  // for_thread is true only for initial
     JS_SetGCParameter(rt, JSGC_DYNAMIC_MARK_SLICE, 1);
     JS_SetGCParameter(rt, JSGC_SLICE_TIME_BUDGET, 10);
 
-//#if !defined(__ANDROID__) && !defined(__IOS__)
-//    JS_SetGCParametersBasedOnAvailableMemory(rt, 513);
-//#endif
-
-#ifndef __IOS__
+#ifndef __IOS__&& JS_CPU_MIPS
 #if defined(DEBUG) && !defined(__POSIX__)
 // _WIN32
 // TODO(obastemur) investigate how to debug JIT SM on Win
@@ -89,7 +84,7 @@ Isolate* Isolate::New(int threadId) {  // for_thread is true only for initial
 
   JSContext* ctx = JS_NewContext(rt, 32 * 1024);
 
-  assert(ctx != NULL);
+  assert(ctx != NULL && "couldn't initialize a new context. Out of memory?");
   JS_SetThreadId(ctx, threadId);
 
   if (for_thread) {

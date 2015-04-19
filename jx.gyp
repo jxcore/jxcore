@@ -244,7 +244,7 @@
             'defines': ['JS_NUNBOX32', 'JS_CPU_X86=1'],
           }],
           ['target_arch in "mipsel mips"', {
-            'defines' : [ 'JS_CODEGEN_MIPS', 'JS_NUNBOX32' ]
+            'defines' : [ 'JS_CODEGEN_NONE', 'JS_NUNBOX32', 'JS_CPU_MIPS' ]
           }],
           ['OS in "linux android freebsd"', {
             "cflags": [

@@ -277,28 +277,20 @@
                 ]
               }]
             ]
-        }, {
-          'defines': ['HAVE_VA_LIST_AS_ARRAY=1']
         }],
         ['target_arch in "mipsel mips"', {
-          'sources': [
-            'src/jit/mips/Architecture-mips.cpp',
-            'src/jit/mips/Assembler-mips.cpp',
-            'src/jit/mips/Bailouts-mips.cpp',
-            'src/jit/mips/BaselineCompiler-mips.cpp',
-            'src/jit/mips/BaselineIC-mips.cpp',
-            'src/jit/mips/CodeGenerator-mips.cpp',
-            'src/jit/mips/Lowering-mips.cpp',
-            'src/jit/mips/MacroAssembler-mips.cpp',
-            'src/jit/mips/MoveEmitter-mips.cpp',
-            'src/jit/mips/Trampoline-mips.cpp',
-          ], 
-          'defines' : [ 'JS_CODEGEN_MIPS', 'JS_NUNBOX32' ]
+          'sources':[
+            'src/jit/none/Trampoline-none.cpp'   # ION DISABLED
+          ],
+          'defines' : [ 'JS_CODEGEN_NONE', 'JS_NUNBOX32', 'JS_CPU_MIPS' ]
+        }],
+        ['target_arch in "x64 ia32"', {
+          'defines': ['HAVE_VA_LIST_AS_ARRAY=1']
         }],
         ['target_arch=="x64"', {
           'defines':[ 'JS_PUNBOX64', 'JS_CPU_X64=1' ],
           'conditions':[
-        ['OS=="ios"', {
+          ['OS=="ios"', {
           'sources':[
             'src/jit/none/Trampoline-none.cpp'   # ION DISABLED
           ],
