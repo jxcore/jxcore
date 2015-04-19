@@ -1,0 +1,6 @@
+{
+  "files": [
+    "&node_modules/test-require-name-conflict-fs"
+  ],
+  "slim" : "node_modules"
+}
