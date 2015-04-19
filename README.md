@@ -18,7 +18,7 @@ Master build status: [![Build Status](https://travis-ci.org/jxcore/jxcore.svg?br
 
 ### Which architectures are supported
 
-  - ARMV7, ARMV7a, ARMv8 (64 bit)
+  - ARMV7, ARMV7a, ARMv8 (64 bit**)
   - MIPS
   - ia32, X64
   
@@ -83,3 +83,5 @@ Would you like to be one of them? Fork, Hack, and send a Pull Request.
 ### Node.JS authors list:
 
 List of Node.JS contributors can be found from [here](https://github.com/jxcore/jxcore/blob/master/node/AUTHORS)
+
+** compatibility mode
