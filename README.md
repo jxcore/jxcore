@@ -22,7 +22,7 @@ Master build status: [![Build Status](https://travis-ci.org/jxcore/jxcore.svg?br
   - MIPS
   - ia32, X64
   
-  Coming soon;
+Coming soon;
   - Power7, Power8, MIPS (64 bit)
 
 ### Which platforms are supported
