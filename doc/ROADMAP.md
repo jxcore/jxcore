@@ -21,8 +21,7 @@ Node 0.12 (v8 + api) updates will be part of the upcoming releases (as soon as n
 
 ### Next Release RoadMap*
 * Debugger support for SpiderMonkey (@)
-* Windows Build Script (SM) (+)
 * Windows ARM (@)
-* PowerPC (Linux) (@)
+* Power7, Power8, Mips64 Arch. support (+)
 * Debugging from Mobile Applications (@)
 
