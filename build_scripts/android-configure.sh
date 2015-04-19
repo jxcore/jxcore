@@ -5,6 +5,17 @@ then
   exit
 fi
 
+export TOOLCHAIN=$PWD/android-toolchain-mipsel
+rm -rf $TOOLCHAIN
+mkdir -p $TOOLCHAIN
+$1/build/tools/make-standalone-toolchain.sh \
+    --toolchain=mipsel-linux-android-4.9 \
+    --arch=mips \
+    --install-dir=$TOOLCHAIN \
+    --platform=android-9
+    
+rm $TOOLCHAIN/bin/python
+
 export TOOLCHAIN=$PWD/android-toolchain-arm
 rm -rf $TOOLCHAIN
 mkdir -p $TOOLCHAIN

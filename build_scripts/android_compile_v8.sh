@@ -39,6 +39,7 @@ fi
 
 export ANDROID_NDK=$1
 
+MIPS=out_android/mipsel
 ARM7=out_android/arm
 INTEL64=out_android/x64
 INTEL32=out_android/ia32
@@ -68,6 +69,7 @@ MAKE_INSTALL() {
 
 
 COMBINE() {
+  cp "$MIPS/bin/$1_mipsel.a" "$FATBIN/bin/"
   cp "$ARM7/bin/$1_arm.a" "$FATBIN/bin/"
   cp "$INTEL64/bin/$1_x64.a" "$FATBIN/bin/"
   cp "$INTEL32/bin/$1_ia32.a" "$FATBIN/bin/"
@@ -75,6 +77,7 @@ COMBINE() {
 }
 
 
+mkdir out_mipsel_droid
 mkdir out_arm_droid
 mkdir out_x64_droid
 mkdir out_ia32_droid
@@ -83,6 +86,16 @@ mkdir out_android
 rm -rf out
 
 OLD_PATH=$PATH
+export TOOLCHAIN=$PWD/android-toolchain-mipsel
+export PATH=$TOOLCHAIN/bin:$OLD_PATH
+export AR=mipsel-linux-android-ar
+export CC=mipsel-linux-android-gcc
+export CXX=mipsel-linux-android-g++
+export LINK=mipsel-linux-android-g++
+
+LOG $GREEN_COLOR "Compiling Android MIPS\n"
+MAKE_INSTALL mipsel
+
 export TOOLCHAIN=$PWD/android-toolchain-arm
 export PATH=$TOOLCHAIN/bin:$OLD_PATH
 export AR=arm-linux-androideabi-ar
