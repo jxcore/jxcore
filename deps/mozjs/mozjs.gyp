@@ -294,7 +294,7 @@
             'src/jit/mips/Trampoline-mips.cpp',
           ], 
           'defines' : [ 'JS_CODEGEN_MIPS', 'JS_NUNBOX32' ]
-        ],
+        }],
         ['target_arch=="x64"', {
           'defines':[ 'JS_PUNBOX64', 'JS_CPU_X64=1' ],
           'conditions':[

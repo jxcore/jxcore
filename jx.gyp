@@ -245,7 +245,7 @@
           }],
           ['target_arch in "mipsel mips"', {
             'defines' : [ 'JS_CODEGEN_MIPS', 'JS_NUNBOX32' ]
-          ],
+          }],
           ['OS in "linux android freebsd"', {
             "cflags": [
               "-std=c++0x", '-D__STDC_LIMIT_MACROS',
