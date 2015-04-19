@@ -17,47 +17,59 @@ typedef void (*JX_CALLBACK)(JXValue *result, int argc);
 // from the instance JavaScript, you can read process.threadId
 // and send it as a parameter if you need to know which instance is
 // sending the call. You should call below method only once per application.
-JXCORE_EXTERN(void) 
+JXCORE_EXTERN(void)
 JX_Initialize(const char *home_folder, JX_CALLBACK callback);
 
-JXCORE_EXTERN(void)  
+JXCORE_EXTERN(void)
 JX_InitializeNewEngine();
 
-JXCORE_EXTERN(bool) 
+JXCORE_EXTERN(bool)
 JX_Evaluate(const char *data, const char *script_name, JXValue *result);
 
-JXCORE_EXTERN(void) 
+JXCORE_EXTERN(void)
 JX_DefineMainFile(const char *data);
 
-JXCORE_EXTERN(void) 
+JXCORE_EXTERN(void)
 JX_DefineFile(const char *name, const char *script);
 
-JXCORE_EXTERN(void) 
+JXCORE_EXTERN(void)
 JX_StartEngine();
 
-JXCORE_EXTERN(void) 
+JXCORE_EXTERN(void)
 JX_DefineExtension(const char *name, JX_CALLBACK callback);
 
-JXCORE_EXTERN(int) 
+JXCORE_EXTERN(int)
 JX_LoopOnce();
 
 JXCORE_EXTERN(int)
 JX_Loop();
 
-JXCORE_EXTERN(bool) 
+JXCORE_EXTERN(bool)
 JX_IsSpiderMonkey();
 
-JXCORE_EXTERN(bool) 
+JXCORE_EXTERN(bool)
 JX_IsV8();
 
 // returns threadId for the actual instance
 // -1 : there is no active instance for the current thread
 // 0 to 63 threadIds. (JS side: process.threadId + 1)
-JXCORE_EXTERN(int) 
+JXCORE_EXTERN(int)
 JX_GetThreadId();
 
-JXCORE_EXTERN(void) 
+JXCORE_EXTERN(void)
 JX_StopEngine();
+
+// store JXValue and return a corresponding identifier for a future reference
+JXCORE_EXTERN(long)
+JX_StoreValue(JXValue *value);
+
+// return stored type information
+JXCORE_EXTERN(JXValueType)
+JX_GetStoredValueType(const int threadId, const long id);
+
+// get and remove stored value
+JXCORE_EXTERN(JXValue *)
+JX_RemoveStoredValue(const int threadId, const long identifier);
 
 #ifdef __cplusplus
 }

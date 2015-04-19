@@ -25,12 +25,14 @@ char *app_args[2];
       results[i].data_ = NULL;                                    \
       results[i].size_ = 0;                                       \
       results[i].type_ = RT_Undefined;                            \
+      results[i].was_stored_ = false;                             \
       jxcore::JXEngine::ConvertToJXResult(com, val, &results[i]); \
     }                                                             \
     results[len].com_ = context;                                  \
     results[len].data_ = NULL;                                    \
     results[len].size_ = 0;                                       \
     results[len].type_ = RT_Undefined;                            \
+    results[len].was_stored_ = false;                             \
   }
 
 JS_LOCAL_METHOD(asyncCallback) {
@@ -281,4 +283,72 @@ void JX_StopEngine() {
 #if defined(__IOS__) || defined(__ANDROID__) || defined(DEBUG)
   warn_console("JXcore engine is destroyed");
 #endif
+}
+
+// memory vs performance ?
+// we have MAX number of slots allocated so we don't need locks
+#define MAX_STORED_ID 1024 * 1024 * 1024
+static std::map<long, JXValue *> stored_values[65];
+static long stored_ids[65] = {0};
+// store JXValue and return a corresponding identifier for a future reference
+JXCORE_EXTERN(long)
+JX_StoreValue(JXValue *value) {
+  JXValue *tmp = new JXValue[1];
+
+  JX_MakePersistent(value);
+  *tmp = *value;
+  tmp->was_stored_ = true;
+
+  int threadId = JX_GetThreadIdByValue(value);
+  long id = stored_ids[threadId]++;
+  if (stored_values[threadId].find(id) != stored_values[threadId].end()) {
+    // there is something here that we should destroy
+    JX_RemoveStoredValue(threadId, id);
+  }
+
+  stored_values[threadId][id] = tmp;
+
+  // embedders should consume a stored value before storing the
+  // next billion of them
+  id %= MAX_STORED_ID;
+
+  return id;
+}
+
+// return stored type information
+JXCORE_EXTERN(JXValueType)
+JX_GetStoredValueType(const int threadId, const long id) {
+  if (stored_values[threadId].find(id) != stored_values[threadId].end()) {
+    return stored_values[threadId][id]->type_;
+  } else {
+    // id doesn't exist. better crash here
+    assert(0 &&
+           "You either use a stored identifier on a different thread or some "
+           "another "
+           "thing happened. A value for this id doesn't exist.");
+  }
+
+  // compiler likes this
+  return RT_Undefined;
+}
+
+// get and remove stored value
+JXCORE_EXTERN(JXValue *)
+JX_RemoveStoredValue(const int threadId, const long id) {
+  std::map<long, JXValue *>::iterator it = stored_values[threadId].find(id);
+  if (it != stored_values[threadId].end()) {
+    JXValue *val = it->second;
+    stored_values[threadId].erase(it);
+    JX_ClearPersistent(val);
+    return val;
+  } else {
+    // id doesn't exist. better crash here
+    assert(0 &&
+           "You either use a stored identifier on a different thread or some "
+           "another "
+           "thing happened. A value for this id doesn't exist.");
+  }
+
+  // for compiler's sake
+  return 0;
 }

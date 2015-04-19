@@ -253,6 +253,13 @@ JX_Free(JXValue *value) {
   });
   value->data_ = NULL;
   value->size_ = 0;
+  value->type_ = RT_Undefined;
+
+  if (value->was_stored_) {
+	// compiler will be optimizing this anyways..
+    value->was_stored_ = false;
+    delete value;
+  }
 }
 
 JXCORE_EXTERN(bool)
@@ -262,6 +269,7 @@ JX_CallFunction(JXValue *fnc, JXValue *params, const int argc, JXValue *out) {
   out->com_ = fnc->com_;
   out->data_ = NULL;
   out->size_ = 0;
+  out->was_stored_ = false;
   out->type_ = RT_Undefined;
 
   if (fnc->type_ != RT_Function || com == NULL ||
@@ -412,11 +420,11 @@ JX_SetUCString(JXValue *value, const uint16_t *val, const int32_t _length) {
   int32_t length = _length;
 #ifdef JS_ENGINE_MOZJS
   if (length == 0) {
-	for (length = 0; *(val + length) != uint16_t(0); length++) {
-	  if (length + 2 == INT_MAX) {
-		assert(0 && "Memory corruption!");
-	  }
-	}
+    for (length = 0; *(val + length) != uint16_t(0); length++) {
+      if (length + 2 == INT_MAX) {
+        assert(0 && "Memory corruption!");
+      }
+    }
   }
 #endif
 
@@ -479,8 +487,7 @@ JX_SetObject(JXValue *value_to, JXValue *value_from) {
 
   jxcore::JXValueWrapper *wrap_from =
       (jxcore::JXValueWrapper *)value_from->data_;
-  RUN_IN_SCOPE(
-  { wrap->value_ = JS_NEW_PERSISTENT_VALUE(wrap_from->value_); });
+  RUN_IN_SCOPE({ wrap->value_ = JS_NEW_PERSISTENT_VALUE(wrap_from->value_); });
   value_to->persistent_ = false;
 }
 
@@ -519,6 +526,7 @@ JX_New(JXValue *value) {
   value->size_ = 0;
   value->persistent_ = false;
   value->type_ = RT_Undefined;
+  value->was_stored_ = false;
 
   return true;
 }
@@ -542,6 +550,7 @@ JX_CreateEmptyObject(JXValue *value) {
   value->size_ = 1;
   value->persistent_ = false;
   value->type_ = RT_Object;
+  value->was_stored_ = false;
 
   return true;
 }
@@ -564,6 +573,7 @@ JX_CreateArrayObject(JXValue *value) {
   value->size_ = 1;
   value->persistent_ = false;
   value->type_ = RT_Object;
+  value->was_stored_ = false;
 
   return true;
 }
@@ -596,4 +606,12 @@ JX_SetIndexedProperty(JXValue *object, const unsigned index, JXValue *prop) {
     JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(wrap->value_);
     JS_INDEX_SET(obj, index, val);
   });
+}
+
+JXCORE_EXTERN(int)
+JX_GetThreadIdByValue(JXValue *value) {
+  assert(value->com_ &&
+         "You should not call JX_GetThreadIdByValue for an undefined JXValue "
+         "variable");
+  return ((node::commons *)value->com_)->threadId;
 }

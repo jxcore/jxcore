@@ -37,6 +37,7 @@ struct _JXValue {
   // internal use only
   void *com_;
   bool persistent_;
+  bool was_stored_;
 
   void *data_;
   size_t size_;
@@ -157,6 +158,10 @@ JX_SetNamedProperty(JXValue *object, const char *name, JXValue *prop);
 
 JXCORE_EXTERN(void)
 JX_SetIndexedProperty(JXValue *object, const unsigned index, JXValue *prop);
+
+// if you have a JXValue around, this method brings threadId much faster
+JXCORE_EXTERN(int)
+JX_GetThreadIdByValue(JXValue *value);
 
 #ifdef __cplusplus
 }
