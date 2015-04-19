@@ -205,6 +205,17 @@ For a MAC x64 it would return:
 
 ## Others
 
+### cmdSync(command)
+
+Executes shell command in synchronous way. It returns an object containing two values: `exitCode` and `out` (the latter is an application's output).
+
+```js
+var cmd = "jx -jxv";
+var ret = jxcore.utils.cmdSync(cmd);
+console.log(ret);
+// { out: 'v Beta-0.3.0.0\n', exitCode: 0 }
+```
+
 ### smartRequire(moduleName)
 
 Same as `require()`, except that it installs packages (the ones which are not installed) from NPM during the runtime.
