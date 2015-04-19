@@ -142,6 +142,7 @@ COMBINE "libsqlite3"
 
 cp src/public/*.h $FATBIN/bin
 
+rm -rf $MIPS
 rm -rf $ARM7
 rm -rf $INTEL32
 rm -rf $INTEL64
