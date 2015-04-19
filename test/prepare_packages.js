@@ -121,8 +121,12 @@ exports.createSinglePackage = function (src, native) {
   process.chdir(tmpDir);
 
   var cmd = '"' + process.execPath + '" package ' + fname + ' ' + basename;
-  if (fs.existsSync(jxp_file))
+  if (fs.existsSync(jxp_file)) {
     cmd = '"' + process.execPath + '" compile ' + basename + '.jxp';
+  } else {
+    if (obj.slim)
+      cmd += " -slim " + obj.slim;
+  }
 
   if (fs.existsSync(compiled_binary)) fs.unlinkSync(compiled_binary);
 
@@ -141,6 +145,12 @@ exports.createSinglePackage = function (src, native) {
     jx.copyFileSync(src + ".jxcore.config", outputFile + ".jxcore.config");
     jx.copyFileSync(path.join(tmpDir, basename + ".jxp"), path.join(outputDir, basename + ".jxp"));
     jx.copyFileSync(path.join(tmpDir, basename + ".out"), path.join(outputDir, basename + ".out"));
+
+    for (var o in obj.files_fs) {
+      var _src = path.join(tmpDir, obj.files_fs[o]);
+      var _dst = path.join(outputDir, obj.files_fs[o]);
+      jx.copySync(_src, _dst);
+    }
 
     if (!exports.silent) jxcore.utils.console.log(" OK");
 
@@ -199,10 +209,18 @@ exports.checkJSON = function (src, outputDir, native) {
   if (!obj.files) obj.files = [];
 
   obj.files.push("_assert.js");
+  obj.files_fs = [];
 
   for (var o in obj.files) {
-    var _src = path.join(dirname, obj.files[o]);
-    var _dst = path.join(outputDir, obj.files[o]);
+    var f = obj.files[o];
+    var leave = f.slice(0, 1) === "&";
+    if (leave) {
+      f = f.slice(1);
+      leave = f;
+    }
+
+    var _src = path.join(dirname, f);
+    var _dst = path.join(outputDir, f);
 
     if (!fs.existsSync(_src)) continue;
     var stat = fs.statSync(_src);
@@ -210,9 +228,21 @@ exports.checkJSON = function (src, outputDir, native) {
     var d1 = path.dirname(_dst);
     var d2 = path.dirname(d1);
     var d3 = path.dirname(d2);
-    if (!fs.existsSync(d3)) fs.mkdirSync(d3);
-    if (!fs.existsSync(d2)) fs.mkdirSync(d2);
-    if (!fs.existsSync(d1)) fs.mkdirSync(d1);
+
+    var mkdir = function(d) {
+      if (!fs.existsSync(d)) {
+        fs.mkdirSync(d);
+        if (leave)
+          leave = path.basename(d);
+      }
+    };
+
+    mkdir(d3);
+    mkdir(d2);
+    mkdir(d1);
+
+    if (leave)
+      obj.files_fs.push(leave);
 
     if (stat.isDirectory()) if (!fs.existsSync(_dst)) fs.mkdirSync(_dst);
 

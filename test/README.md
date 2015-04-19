@@ -43,6 +43,7 @@ If there is no .json file present - a test is executed as described on top of th
   ],
   "native": false,
   "package": false,
+  "slim" : "node_modules"
 }
 ```
 
@@ -58,11 +59,23 @@ The **args** and **runtime_dependencies** are supported by *testcfg.py* file.
 
 The other fields below are supported for now only by *test/run.js* helper launcher.
 
-* **files** - array of files/folder to be copied to output test directory or packed into jx/native package
+* **files** - array of files/folders to be copied to output test directory or packed into jx/native package.
+If test is performed against jx/native package, then files/folders defined here will be removed after the package is created.
+If you want to keep them in filesystem during test unit execution (particularly useful when combined with **slim**),
+you can prefix the path with **&** sign, e.g.:
+
+``js
+  "files": [
+    "&node_modules/test-require-name-conflict"
+  ],
+  "slim" : [ "node_modules" ]
+```
+
 * **dependencies** - array of npm modules names (may include versions e.g. "express@4.9.5"), which should be installed prior to creating a package,
 	so they can be embedded
 * **native** - when set to false, does not create -native package
 * **package** - when set to false, does not create regular jx package
+* **slim** - value of `-slim` option with will be passed to `jx package` command which creates packaged test unit.
 
 # test/run.js
 
