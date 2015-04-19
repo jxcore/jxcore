@@ -9,6 +9,7 @@ tags
 *.pyc
 doc/api.xml
 tmp/
+android-toolchain-mipsel/
 android-toolchain-arm/
 android-toolchain-arm64/
 android-toolchain-intel/
@@ -29,6 +30,7 @@ jx_g
 /out
 out_ia32_droid/
 out_x64_droid/
+out_mipsel_droid/
 out_arm_droid/
 out_arm7s_droid/
 out_arm64_droid/
