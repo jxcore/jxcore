@@ -15,8 +15,9 @@
 
 namespace jxcore {
 
-void SendMessage(const int threadId, const char *msg_data, const int length,
+void SendMessage(const int threadId, const char *msg_data_, const int length,
                  bool same_thread) {
+  const char *msg_data = msg_data_ == NULL ? "null" : msg_data_;
   char *str = cpystr(msg_data, length);
 
   bool hasIt = false;
