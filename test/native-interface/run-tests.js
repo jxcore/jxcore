@@ -7,7 +7,7 @@ var color_log = jxcore.utils.console.log;
 var args = process.argv.slice(1);
 
 if (args.length<4) {
-  color_log("usage: run-tests <libs folder> <sm or v8> <number of runs>", "green");
+  color_log("usage: run-tests <libs folder> <sm or v8> <number of runs> <optional target folder>", "green");
   process.exit(1);
 }
 
@@ -35,12 +35,21 @@ if (isNaN(runs)) {
 
 var home = process.cwd();
 var dirs = fs.readdirSync(home);
+var target_folder = 0;
+
+if (args.length == 5) {
+  jxcore.utils.console.log("Single target:", args[4], "blue");
+  target_folder = args[4];
+}
+
 
 for (var o in dirs) {
+  if (target_folder && dirs[o] !== target_folder) continue;
   if (dirs[o] == 'commons') continue;
   var stat = fs.statSync(path.join(home, dirs[o]));
   if (!stat.isDirectory())
     continue;
+    
   jxcore.utils.console.write(dirs[o] + ": ", "green");
   var ret = jxcore.utils.cmdSync("./test-single.sh " + args[1] + " " + dirs[o] + " " + args[2] + " 1");
   if (ret.exitCode != 0 || ret.out.length>200) {
