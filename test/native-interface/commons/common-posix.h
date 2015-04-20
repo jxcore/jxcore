@@ -9,11 +9,8 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <assert.h>
-#if defined(JS_ENGINE_V8) || defined(JS_ENGINE_MOZJS)
 #include "public/jx.h"
-#else
-#include "jx.h"
-#endif
+
 
 #define flush_console(...)        \
   do {                            \
