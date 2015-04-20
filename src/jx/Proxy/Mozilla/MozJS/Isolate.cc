@@ -65,17 +65,18 @@ Isolate* Isolate::New(int threadId) {
     JS_SetGCParameter(rt, JSGC_DYNAMIC_MARK_SLICE, 1);
     JS_SetGCParameter(rt, JSGC_SLICE_TIME_BUDGET, 10);
 
-#ifndef __IOS__&& JS_CPU_MIPS
+
 #if defined(DEBUG) && !defined(__POSIX__)
 // _WIN32
 // TODO(obastemur) investigate how to debug JIT SM on Win
 #else
     JS::RuntimeOptionsRef(rt)
         .setBaseline(true)
+#ifndef __IOS__&& JS_CPU_MIPS
         .setIon(true)
+#endif
         .setAsmJS(true)
         .setNativeRegExp(true);
-#endif
 #endif
   } else {
     threadId = GetThreadId();
