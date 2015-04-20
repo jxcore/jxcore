@@ -451,8 +451,9 @@ JXEngine::JXEngine(int argc, char **argv, bool self_hosted) {
 
   inside_scope_ = false;
   threadId_ = node::commons::getAvailableThreadId(!jx_engine_instances.empty());
+  customLock(CSLOCK_JOBS);
   jx_engine_instances[threadId_] = this;
-
+  customUnlock(CSLOCK_JOBS);
 #ifdef JS_ENGINE_MOZJS
   // set only once for proxy
   MozJS::Value::SetGlobalFinalizer(node::ObjectWrap::WeakCallback);
@@ -665,8 +666,10 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
   // Clean up the copy:
   if (argc > 0) free(argv_copy);
 
+  customLock(CSLOCK_JOBS);
   jx_engine_map::iterator it = jx_engine_instances.find(actual_thread_id);
   if (it != jx_engine_instances.end()) jx_engine_instances.erase(it);
+  customUnlock(CSLOCK_JOBS);
 }
 
 void DeclareProxy(node::commons *com, JS_HANDLE_OBJECT_REF methods,
@@ -804,6 +807,7 @@ void JXEngine::Destroy() {
   JSContext *ctx = main_iso_.ctx_;
   JSRuntime *rt = JS_GetRuntime(ctx);
   {
+	customLock(CSLOCK_JOBS);
     if (jx_engine_instances.size() == 1)
       node::commons::process_status_ = node::JXCORE_INSTANCE_EXITING;
     else {
@@ -814,6 +818,7 @@ void JXEngine::Destroy() {
              "First instance can not be destroyed before others");
       main_node_->instance_status_ = node::JXCORE_INSTANCE_EXITING;
     }
+    customUnlock(CSLOCK_JOBS);
 
     AutoScope _scope_(this, false);
 
@@ -850,12 +855,14 @@ void JXEngine::Destroy() {
 
     // do not destroy last context or runtime.
     // we use main runtime as a parent for all the others.
+    customLock(CSLOCK_JOBS);
     if (jx_engine_instances.size() == 1)
       node::commons::process_status_ = node::JXCORE_INSTANCE_EXITED;
     else {
       main_node_->instance_status_ = node::JXCORE_INSTANCE_EXITED;
       JS_DestroyContext(ctx);
     }
+    customUnlock(CSLOCK_JOBS);
 
     // SM can't do GC under GC. we need the destroy other contexts separately
     std::list<JSContext *>::iterator itc =
@@ -876,8 +883,10 @@ void JXEngine::Destroy() {
 
   main_iso_.Dispose();
 
+  customLock(CSLOCK_JOBS);
   jx_engine_map::iterator it = jx_engine_instances.find(main_node_->threadId);
   if (it != jx_engine_instances.end()) jx_engine_instances.erase(it);
+  customUnlock(CSLOCK_JOBS);
 }
 #endif
 
@@ -972,10 +981,13 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
 void JXEngine::Destroy() {
   AutoScope _scope_(this, true);
   {
+	customLock(CSLOCK_JOBS);
     if (jx_engine_instances.size() == 1)
       node::commons::process_status_ = node::JXCORE_INSTANCE_EXITING;
     else
       main_node_->instance_status_ = node::JXCORE_INSTANCE_EXITING;
+    customUnlock(CSLOCK_JOBS);
+
     JS_ENGINE_SCOPE(main_node_, threadId_ != 0);
 
     JS_HANDLE_OBJECT process_l = main_node_->getProcess();
@@ -994,10 +1006,12 @@ void JXEngine::Destroy() {
     main_node_->Dispose();
   }
 
+  customLock(CSLOCK_JOBS);
   if (jx_engine_instances.size() == 1)
     node::commons::process_status_ = node::JXCORE_INSTANCE_EXITED;
   else
     main_node_->instance_status_ = node::JXCORE_INSTANCE_EXITED;
+  customUnlock(CSLOCK_JOBS);
 
 #if defined HAVE_DTRACE || defined HAVE_ETW || defined HAVE_SYSTEMTAP
   node::cleanUpDTrace();
@@ -1007,8 +1021,10 @@ void JXEngine::Destroy() {
   context_.Dispose();
 #endif
 
+  customLock(CSLOCK_JOBS);
   jx_engine_map::iterator it = jx_engine_instances.find(main_node_->threadId);
   if (it != jx_engine_instances.end()) jx_engine_instances.erase(it);
+  customUnlock(CSLOCK_JOBS);
 
   node::removeCommons();
 }
@@ -1119,6 +1135,7 @@ bool JXEngine::ConvertToJXResult(node::commons *com,
                                  JXResult *result) {
   assert(result->com_ && "JXResult object wasn't initialized");
   result->persistent_ = false;
+  result->was_stored_ = false;
 
   JS_DEFINE_STATE_MARKER(com);
 
@@ -1202,6 +1219,7 @@ bool JXEngine::Evaluate(const char *source, const char *filename,
     node::commons *com = main_node_;
     SET_UNDEFINED(result);
     result->com_ = com;
+    result->was_stored_ = false;
 
     JS_LOCAL_STRING source_ = UTF8_TO_STRING(source);
     JS_LOCAL_STRING filename_ = STD_TO_STRING(filename);
