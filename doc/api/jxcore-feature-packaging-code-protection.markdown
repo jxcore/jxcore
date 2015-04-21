@@ -4,7 +4,7 @@ JXcore introduces a unique feature for packaging of source files and other asset
 
 Let’s assume you have a large project consisting of many files. This feature packs them all into a single file to simplify the distribution. It also protects your server side JavaScript code by keeping all source files inside a package, which makes them more difficult to reach.
 
-JX packages can be easily executed with JXcore, just like normal JavaScript applications:
+JX packages can be easily executed with JXcore, just like regular JavaScript applications:
 
     > jx helloworld.jx
 
@@ -19,9 +19,9 @@ instead of:
     > jx package javascript_file name_of_the_package [-slim file||folder, file||folder2, ...] [-add file||folder, file||folder2, ...] [-native]
 
 This command recursively scans the current folder and generates a `JXP` package information file based on all files in that directory.
-After that compiles the `JXP` file (by invoking `compile` command).
+After that, it compiles the `JXP` file (by invoking `compile` command).
 
-* `javascript_file` - the main file, which will be executed when JX package will be launched with JXcore.
+* `javascript_file` - the main file, which will be executed when JX package is launched with JXcore.
 * `name_of_the_package` - indicates the name of the package file. For example, giving the value *MyPackage*  will create *mypackage.jx* file.
 
 Suppose you have a simple *Hello_World* project, with just two files: *helloworld.js* and *index.html*. When you call:
@@ -35,7 +35,7 @@ Description of the switches:
 
 #### -add
 
-This optional parameter followed by file and/or folder names separated with comma - **explicitly adds** those files/folders into the final JX package.
+This optional parameter followed by file and/or folder names separated with commas - **explicitly adds** those files/folders into the final JX package.
 For example, you may want to package only certain files/folders located at current directory - not the whole its contents.
 
 If you want to pack just one file (e.g. *helloworld.js*) you can provide an `-add` option without a file name.
@@ -51,7 +51,7 @@ Yu can still combine `-add` and `-slim` together, e.g. to add a folder, but excl
 
 #### -slim
 
-This optional parameter followed by file and/or folder names separated with comma - **prevents adding** those files/folders into the final JX package.
+This optional parameter followed by file and/or folder names separated with commas - **prevents adding** those files/folders into the final JX package.
 
 ##### wildcards
 
@@ -69,7 +69,7 @@ Comma separated entries are also valid:
 
 ##### absolute and relative paths
 
-Each of single entry provided to `-add` or `-slim` may represent either an absolute path or path relative to current working directory.
+Each single entries provided to `-add` or `-slim` may represent either an absolute path or path relative to current working directory.
 Below example defines for the `-slim` option the same path in 3 ways (2 relative and 3rd absolute), which is of course redundant, however illustrates the subject:
 
      > jx package helloworld.js "Hello World" -slim out,./out,/users/me/folder/out
@@ -92,7 +92,7 @@ On Windows:
 
 ### compile
 
-When you already have a `JXP` project file (either created with `package` command or manually), you can call `compile` for generating JX package.
+When you already have a `JXP` project file (either created with `package` command or manually), you can call `compile` for generating a JX package.
 
     > jx compile project_file.jxp -native
 
@@ -106,7 +106,7 @@ As of JXcore v Beta-0.3.0.0 (open source version) this feature is no longer avai
 
 ### About JX package file
 
-The JX package file is what you get as a result of compilation and packaging of your project.
+The JX package file is what you get as a result of compilation and packaging your project.
 It’s a binary file used only by `jx` executable.
 Contains all of the script files of your project, as well as assets, which can be considered as static resources.
 
@@ -144,7 +144,7 @@ See `package` command with `-slim` switch.
 
 ### File structure
 
-The JXP project file is simple text file that contains package description written as json literal object:
+The JXP project file is a simple text file that contains package description written as json literal object:
 
 ```js
 {
@@ -311,7 +311,7 @@ However, there are two file types, which are treated by JXcore as source files r
 * json
 
 The difference is, that source files cannot be read from a package during runtime.
-This is security feature of JXcore packaging.
+This is a security feature of JXcore packaging.
 For more information see [Accessing Files and Assets from a Package](#jxcore_feature_packaging_code_protection_files).
 
 The `jx package` puts them into the `files` array of `JXP` project file during execution of `jx package` command.
@@ -362,7 +362,7 @@ var file = fs.readFileSync(__dirname + '/folder/file2.html');
 The following sample works as expected, returns the directory contents of the file system. `readdir()` and `readdirSync()`
 return from the JX package only when the given path does not exist on real file system. Calling one of these methods for the main
 folder of the JX package will return the results from actual file system. In order to reach asset files using one of these
-methods, you should consider putting them into a sub folder.
+methods, you should consider putting them in a sub folder.
 
 ```js
 var fs = require('fs');
