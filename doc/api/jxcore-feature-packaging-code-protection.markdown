@@ -33,10 +33,6 @@ which will create the output JX package *helloworld.jx*.
 
 Description of the switches:
 
-#### -slim
-
-This optional parameter followed by file and/or folder names separated with comma - **prevents adding** those files/folders into the final JX package.
-
 #### -add
 
 This optional parameter followed by file and/or folder names separated with comma - **explicitly adds** those files/folders into the final JX package.
@@ -52,6 +48,31 @@ Thus the following two commands are equivalent:
 Yu can still combine `-add` and `-slim` together, e.g. to add a folder, but exclude its sub-directory, like:
 
      > jx package helloworld.js "Hello World" -add node_modules -slim node_modules/express
+
+#### -slim
+
+This optional parameter followed by file and/or folder names separated with comma - **prevents adding** those files/folders into the final JX package.
+
+##### wildcards
+
+For both `-add` and `-slim` you can also use wildcards (`*` and `?`) for each file/folder entry.
+However if you do so, you'd better wrap them in double quotes, like below:
+
+    > jx package helloworld.js "Hello World" -add "file*.txt"
+
+Otherwise the wildcard expression would be evaluated by shell (before invoking the command) and `-add` option
+would receive only first of the matched entries.
+
+Comma separated entries are also valid:
+
+    > jx package helloworld.js "Hello World" -add "file*.txt,*.jpg" -slim "node?modules,dir*"
+
+##### absolute and relative paths
+
+Each of single entry provided to `-add` or `-slim` may represent either an absolute path or path relative to current working directory.
+Below example defines for the `-slim` option the same path in 3 ways (2 relative and 3rd absolute), which is of course redundant, however illustrates the subject:
+
+     > jx package helloworld.js "Hello World" -slim out,./out,/users/me/folder/out
 
 #### -native
 
