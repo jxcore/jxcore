@@ -1387,10 +1387,25 @@
 
     var path = NativeModule.require('path');
     var fs = NativeModule.require('fs');
-    var ret = {};
+    var ret = { regexes : [] };
+
+    var specials = [ "\\", "^", "$", ".", "|", "+", "(", ")", "[", "]", "{", "}" ];  // without '*' and '?'
 
     parms = parms.split(',');
     for (var o in parms) {
+
+      if (parms[o].indexOf("*") !== -1 || parms[o].indexOf("?") !== -1) {
+
+        var r = parms[o];
+        for (var i in specials)
+          r = r.replace(new RegExp("\\" + specials[i], "g"), "\\" + specials[i]);
+
+        r = r.replace(/\*/g, '.*').replace(/\?/g, '.{1,1}');
+        ret.regexes.push(new RegExp('^' + r + '$'));
+        ret.regexes.push(new RegExp('^' + path.join(process.cwd(), r) + '$'));
+        continue;
+      }
+
       ret[parms[o]] = 1;
       var _path;
       if (parms[o].indexOf(process.cwd()) === -1) {
@@ -1406,6 +1421,15 @@
       if (fs.existsSync(_path))
         ret[_path] = 2;
     }
+
+    ret.isWildcardMatching = function(file, file_path) {
+      for(var o in ret.regexes) {
+        var regex = ret.regexes[o];
+        if (regex.test(file) || regex.test(file_path))
+          return true;
+      }
+    };
+
     return ret;
   };
 
@@ -1441,7 +1465,7 @@
       var file = files[o];
       var file_path = path.join(folder, file);
 
-      if (checkOff && (checkOff[file] === 1 || checkOff[file_path] === 2))
+      if (checkOff && (checkOff[file] === 1 || checkOff[file_path] === 2 || checkOff.isWildcardMatching(file, file_path)))
         continue;
 
       var stat = fs.statSync(file_path);
@@ -1451,7 +1475,8 @@
         var tmp = file_path;
         var canAdd = false;
         do {
-          if (add[tmp] === 2) {
+          var basename = path.basename(tmp);
+          if (add[basename] === 1 || add[tmp] === 2 || add.isWildcardMatching(file, file_path)) {
             canAdd = true;
             break;
           }
