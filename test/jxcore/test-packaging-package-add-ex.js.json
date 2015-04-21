@@ -1,4 +1,7 @@
 {
+  "files" : [
+    "assets"
+  ],
   "native": false,
   "package": false
 }

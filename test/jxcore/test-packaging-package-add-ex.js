@@ -45,9 +45,11 @@ var test_add = function (definition, native) {
   var native_name = process.platform === "win32" ? "my_package.exe" : "my_package";
   var jx_file = path.join(dir, native ? native_name : "my_package.jx");
 
-  var add = definition.add;
+  var add = '"' + definition.add + '"';
   // makes an absolute path
   add = add.replace("#DIR#", dir);
+  if (process.platform === "win32")
+    add = path.normalize(add);
 
   jx.rmdirSync(dir);
   fs.mkdirSync(dir);
@@ -69,7 +71,7 @@ var test_add = function (definition, native) {
     var files = fs.readdirSync(dir);
     for (var o in files) {
       var f = path.join(dir, files[o]);
-      if (f === jx_file) continue;
+      if (f === jx_file || files[o] === "config.json" || files[o] === "my_package.jxp") continue;
       var stat = fs.statSync(f);
       if (stat.isDirectory())
         jx.rmdirSync(f);
@@ -77,7 +79,7 @@ var test_add = function (definition, native) {
         fs.unlinkSync(f);
     }
 
-    var cmd = 'cd "' + dir + '" && "' + (native ? jx_file : '"' + process.execPath + '" ' + jx_file);
+    var cmd = 'cd "' + dir + '" && ' + (native ? jx_file : '"' + process.execPath + '" ' + jx_file);
     var ret = jxcore.utils.cmdSync(cmd);
     if (ret.out.toString().length)
       errors.push(
@@ -144,14 +146,30 @@ var definitions = [
   {
     add: "subfolder1,#DIR#/src/a/b/src",
     should_not_be_readable: [
-      "assets1/file1.txt"
+      "assets1/file1.txt",
+      "src/a/b/b1.js",
+      "src/a/b/b1.txt",
+    ],
+    should_be_readable: [
+      "subfolder1/module1.js",
+      "src/a/b/src/src2.txt",
+      "src/a/b/src/src2.js"
+    ]
+  },
+  //wildcards
+  {
+    add: "module*,*1.*",
+    should_not_be_readable: [
+      "assets1/ping.txt",
+      "src/a/b/src/src2.txt",
+      "src/a/b/src/src2.js"
     ],
     should_be_readable: [
       "subfolder1/module1.js",
       "src/a/b/b1.js",
       "src/a/b/b1.txt",
-      "src/a/b/src/src2.txt",
-      "src/a/b/src/src2.js"
+      "assets1/file1.txt",
+      "src/src1.js"
     ]
   }
 ];

@@ -32,7 +32,7 @@ for (var o in json.should_be_readable) {
 
 
 for (var o in json.should_not_be_readable) {
-  var relative_path = json.should_be_readable[o];
+  var relative_path = json.should_not_be_readable[o];
   try {
     fs.readFileSync(relative_path).toString();
     console.error("File should not be readable from package:" + relative_path);
