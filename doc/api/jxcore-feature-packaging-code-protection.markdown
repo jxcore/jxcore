@@ -16,13 +16,20 @@ instead of:
 
 ### package
 
-    > jx package javascript_file name_of_the_package [-slim file||folder, file||folder2, ...] [-add file||folder, file||folder2, ...] [-native]
+    > jx package javascript_file [name_of_the_package] [options]
 
-This command recursively scans the current folder and generates a `JXP` package information file based on all files in that directory.
+You may specify none, one or more of the following options:
+
+* -add [file||folder, file||folder2, ...]
+* -slim file||folder, file||folder2, ...
+* JXP fields may be also provided here. See below for their description.
+
+The `jx package` command recursively scans the current folder and generates a `JXP` package information file based on all files in that directory.
 After that, it compiles the `JXP` file (by invoking `compile` command).
 
 * `javascript_file` - the main file, which will be executed when JX package is launched with JXcore.
 * `name_of_the_package` - indicates the name of the package file. For example, giving the value *MyPackage*  will create *mypackage.jx* file.
+This value is optional. When not provided, the package name will be evaluated from `javascript_file` parameter (file name without an extension).
 
 Suppose you have a simple *Hello_World* project, with just two files: *helloworld.js* and *index.html*. When you call:
 
@@ -89,6 +96,80 @@ Thus, you can run it on Unix systems the following way:
 On Windows:
 
     > helloworld.exe
+
+#### -name
+
+String value.
+
+#### -version
+
+String value.
+
+#### -author
+
+String value.
+
+#### -description
+
+String value.
+
+#### -company
+
+String value.
+
+#### -website
+
+String value.
+
+#### -extract
+
+Boolean value. Default is `false`.
+
+- if not provided, uses the default value.
+- if provided, but not followed by any value, it acts as `true`:
+
+```bash
+> jx package helloworld.js -extract
+```
+
+- if provided, and followed by `0` or `no` or `false`, it acts as `false`:
+
+```bash
+> jx package helloworld.js -extract 0
+```
+
+- if provided, and followed by anything else than `0` or `no` or `false`, it acts as `true`:
+
+```bash
+> jx package helloworld.js -extract 1
+```
+
+#### -library
+
+Boolean value. Default is `true`. See also notes above.
+
+#### -fs_reach_sources
+
+Boolean value. Default is `true`. See also notes above.
+
+#### -preInstall or -preinstall
+
+This parameter receives commands separated with commas.
+
+For example, the following command line:
+
+    > jx package helloworld.js -preinstall "mkdir dir1,touch dir1/file.txt"
+
+will get converted to the following array and embedded into JXP project file:
+
+```js
+    ...
+	"preInstall": [
+		"mkdir dir1",
+		"touch dir1/file.txt"
+	],
+	...
+```
 
 ### compile
 
