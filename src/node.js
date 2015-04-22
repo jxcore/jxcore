@@ -269,7 +269,7 @@
       _jx(process.argv, __ops);
       return;
     } else if (__ops.package || __ops.packagetojx) {
-      if (process.argv.length < 4) {
+      if (process.argv.length < 3) {
         jxcore.utils.console.log('J' + 'Xcore Packaging System');
         co.log("usage: package [main javascript file] [project name]");
         co.log('');
@@ -1364,16 +1364,42 @@
     return content;
   }
 
-  var getOptions = function (name) {
+  var getOptions = function (name, defaultValue) {
     for (var o = 0; o < process.argv.length; o++) {
-      if (process.argv[o] == name) {
-        if (process.argv.length > o + 1)
+      if (process.argv[o].toLowerCase() == name.toLowerCase()) {
+        if (process.argv.length > o + 1 && typeof process.argv[o + 1] === "string" && process.argv[o + 1].slice(0,1) !== "-")
           return process.argv[o + 1];
         else
-          return true;
+          return (typeof defaultValue === "undefined" ? true : defaultValue);
       }
     }
-    return false;
+    return (typeof defaultValue === "undefined" ? false : defaultValue);
+  };
+
+  var getBoolOption = function(name, defaultValue) {
+    var _val = getOptions(name, "not_found");
+    if (_val === true || _val === false) return _val;
+    if (_val === "not_found" && process.argv.indexOf(name) === -1)
+      return defaultValue;
+    var _str = _val.toString().toLowerCase();
+    return (_str === "no" || _str === "false" || _str === "0") ? false : true;
+  };
+
+  var getArrayOption = function(name, defaultValue) {
+    var _val = getOptions(name, defaultValue);
+    var arr = null;
+    try {
+      arr = _val.split(",");
+      if (!arr.length) arr = null;
+    } catch (ex) { }
+
+    if (!arr)
+      return null
+
+    for(var o in arr)
+      arr[o] = arr[o].trim();
+
+    return arr;
   };
 
   var parseValues = function(name) {
@@ -1383,7 +1409,7 @@
       return null;
 
     if (typeof parms !== "string")
-      return {};
+      return { isWildcardMatching : function() {} };
 
     var path = NativeModule.require('path');
     var fs = NativeModule.require('fs');
@@ -1520,6 +1546,21 @@
     return fz;
   };
 
+  // returns argv[3], or if not provided: basename(argv[2)
+  var getPackageName = function(argv) {
+    var name = null;
+    if (argv.length >= 4)
+      name = argv[3];
+    if (!name || name.slice(0,1) === "-") {
+      name = argv[2];
+      if (name.slice(-3).toLowerCase() === ".js") {
+        var path = NativeModule.require('path');
+        name = path.basename(name.slice(0, name.length - 3));
+      }
+    }
+    return name;
+  };
+
   var cjx = function (argv) {
     var path = NativeModule.require('path');
     var console = NativeModule.require('console');
@@ -1537,24 +1578,24 @@
     }
 
     var jxp = {
-      "name": argv[3],
-      "version": "1.0",
-      "author": "",
-      "description": "",
-      "company": "",
-      "website": "",
+      "name": getPackageName(argv),
+      "version": getOptions("-version", "1.0"),
+      "author": getOptions("-author", ""),
+      "description": getOptions("-description", ""),
+      "company": getOptions("-company", ""),
+      "website": getOptions("-website", ""),
       "package": null,
       "startup": fol,
       "execute": executer,
-      "extract": false,
+      "extract": getBoolOption("-extract", false),
       "output": null,
       "files": [],
       "assets": [],
-      "preInstall": null,
-      "library": true,
+      "preInstall": getArrayOption("-preInstall", null),
+      "library": getBoolOption("-library", true),
       "license_file": null,
       "readme_file": null,
-      "fs_reach_sources": true
+      "fs_reach_sources": getBoolOption("-fs_reach_sources", true)
     };
 
     if (getOptions('-native')) {
@@ -1912,7 +1953,7 @@
     c = null;
     jxcore.tasks.forceGC();
 
-    var op = process.argv[3];
+    var op = getPackageName(process.argv);
     if (!op || (ops && ops.compile)) {
       op = contents.project.output;
     }
