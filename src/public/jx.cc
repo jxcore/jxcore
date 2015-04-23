@@ -144,11 +144,17 @@ void JX_Initialize(const char *home_folder, JX_CALLBACK callback) {
   size_t home_length = strlen(home_folder);
   argv = (char *)malloc((12 + home_length) * sizeof(char));
   memcpy(argv, home_folder, home_length * sizeof(char));
-  memcpy(argv + home_length, "/jx\0main.js", 11 * sizeof(char));
-  argv[home_length + 11] = '\0';
+  if (home_length && home_folder[home_length-1] != '/' && home_folder[home_length-1] != '\\') {
+    memcpy(argv + home_length, "/jx\0main.js", 11 * sizeof(char));
+    argv[home_length + 11] = '\0';
+    app_args[1] = argv + home_length + 4;
+  } else {
+	memcpy(argv + home_length, "jx\0main.js", 10 * sizeof(char));
+	argv[home_length + 10] = '\0';
+	app_args[1] = argv + home_length + 3;
+  }
 
   app_args[0] = argv;
-  app_args[1] = argv + home_length + 4;
 
 #if defined(__IOS__) || defined(__ANDROID__) || defined(DEBUG)
   warn_console("JXcore engine is ready\n");
