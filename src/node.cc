@@ -1936,6 +1936,7 @@ void SetupProcessObject(const int threadId) {
   JS_NAME_SET(versions, JS_STRING_ID("ares"), STD_TO_STRING(ARES_VERSION_STR));
   JS_NAME_SET(versions, JS_STRING_ID("uv"), STD_TO_STRING(uv_version_string()));
   JS_NAME_SET(versions, JS_STRING_ID("zlib"), STD_TO_STRING(ZLIB_VERSION));
+  JS_NAME_SET(versions, JS_STRING_ID("sqlite"), STD_TO_STRING(SQLITE_VERSION));
   JS_NAME_SET(versions, JS_STRING_ID("modules"),
               STD_TO_STRING(NODE_STRINGIFY(NODE_MODULE_VERSION)));
 #if HAVE_OPENSSL
