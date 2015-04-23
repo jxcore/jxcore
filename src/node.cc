@@ -2080,12 +2080,6 @@ void SetupProcessObject(const int threadId) {
                 STD_TO_STRING_WITH_LENGTH(execPath, size));
   }
 
-#ifdef __IOS__
-  JS_NAME_SET(process, JS_STRING_ID("IsIOS"), STD_TO_BOOLEAN(true));
-#elif defined(__ANDROID__)
-  JS_NAME_SET(process, JS_STRING_ID("IsAndroid"), STD_TO_BOOLEAN(true));
-#endif
-
 #if defined(__IOS__) || defined(__ANDROID__)
   // mobile app delivers the full path via argv[0]
   char* docs_home = NULL;
