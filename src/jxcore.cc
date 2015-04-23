@@ -127,6 +127,7 @@ bool JSEngineInterrupt(JSContext *ctx) {
 }
 #endif
 
+#ifndef JXCORE_EMBEDDED
 void JXEngine::ParseDebugOpt(const char *arg) {
 #ifdef JS_ENGINE_V8
   const char *p = 0;
@@ -161,7 +162,6 @@ void JXEngine::ParseDebugOpt(const char *arg) {
 }
 
 void JXEngine::PrintHelp() {
-#ifndef JXCORE_EMBEDDED
   printf(
       "Usage: jx [options] [ -e script | script.js ] [arguments] \n"
 #ifdef JS_ENGINE_V8
@@ -203,13 +203,14 @@ void JXEngine::PrintHelp() {
       "NODE_DISABLE_COLORS    Set to 1 to disable colors in the REPL\n"
       "\n"
       "Documentation can be found at http://jxcore.com/docs/\n");
-#endif
 }
+#endif
 
 // Parse node command line arguments.
 void JXEngine::ParseArgs(int argc, char **argv) {
   int i = 1;
 
+#ifndef JXCORE_EMBEDDED
   std::string original("jxcore.bin(?@@?!$<$?!*)");
 
   if (original.c_str()[14] != '?') {
@@ -224,23 +225,17 @@ void JXEngine::ParseArgs(int argc, char **argv) {
         argv[i] = const_cast<char *>("");
       } else if (strcmp(arg, "--version") == 0 || strcmp(arg, "-v") == 0) {
         log_console("%s\n", NODE_VERSION);
-#ifndef JXCORE_EMBEDDED
         exit(0);
-#endif
       } else if (strcmp(arg, "--jsversion") == 0 || strcmp(arg, "-jsv") == 0) {
 #ifdef JS_ENGINE_V8
         flush_console("Google V8 v%s\n", v8::V8::GetVersion());
 #elif defined(JS_ENGINE_MOZJS)
         flush_console("Mozilla SpiderMonkey v%d\n", MOZJS_VERSION);
 #endif
-#ifndef JXCORE_EMBEDDED
         exit(0);
-#endif
       } else if (strcmp(arg, "--jxversion") == 0 || strcmp(arg, "-jxv") == 0) {
         log_console("%s\n", JXCORE_VERSION);
-#ifndef JXCORE_EMBEDDED
         exit(0);
-#endif
       } else if (strstr(arg, "--max-stack-size=") == arg) {
         const char *p = 0;
         p = 1 + strchr(arg, '=');
@@ -250,10 +245,8 @@ void JXEngine::ParseArgs(int argc, char **argv) {
         error_console("--max-stack-size flag has no effect for non-V8 build\n");
 #endif
       } else if (strcmp(arg, "--help") == 0 || strcmp(arg, "-h") == 0) {
-#ifndef JXCORE_EMBEDDED
         PrintHelp();
         exit(0);
-#endif
       } else if (strcmp(arg, "--enable-ssl2") == 0) {
         node::SSL2_ENABLE = true;
         argv[i] = const_cast<char *>("");
@@ -263,7 +256,6 @@ void JXEngine::ParseArgs(int argc, char **argv) {
       } else if (strcmp(arg, "--eval") == 0 || strcmp(arg, "-e") == 0 ||
                  strcmp(arg, "--print") == 0 || strcmp(arg, "-pe") == 0 ||
                  strcmp(arg, "-p") == 0) {
-#ifndef JXCORE_EMBEDDED
         bool is_eval = strchr(arg, 'e') != NULL;
         bool is_print = strchr(arg, 'p') != NULL;
 
@@ -290,12 +282,9 @@ void JXEngine::ParseArgs(int argc, char **argv) {
         main_node_->eval_string = argv[++i];
         if (strncmp(main_node_->eval_string, "\\-", 2) == 0)
           ++main_node_->eval_string;
-#endif
       } else if (strcmp(arg, "--interactive") == 0 || strcmp(arg, "-i") == 0) {
-#ifndef JXCORE_EMBEDDED
         main_node_->force_repl = true;
         argv[i] = const_cast<char *>("");
-#endif
       } else if (strcmp(arg, "--v8-options") == 0) {
         argv[i] = const_cast<char *>("--help");
       } else if (strcmp(arg, "--no-deprecation") == 0) {
@@ -312,6 +301,7 @@ void JXEngine::ParseArgs(int argc, char **argv) {
       }
     }
   }
+#endif
   main_node_->option_end_index = i;
 }
 
