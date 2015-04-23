@@ -9,6 +9,7 @@
 #include "wrappers/thread_wrap.h"
 #include "string_bytes.h"
 #include "ares.h"
+#include "sqlite3.h"
 
 #include <limits.h> /* PATH_MAX */
 #include <assert.h>
