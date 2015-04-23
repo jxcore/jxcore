@@ -653,9 +653,11 @@ JS_LOCAL_METHOD(GetActiveHandles) {
 JS_METHOD_END
 
 static JS_LOCAL_METHOD(Abort) {
-  error_console("process.abort is called from the JavaScript Thread %d\n",
-                com->threadId);
+#ifndef JXCORE_EMBEDDED
   abort();
+#else
+  THROW_EXCEPTION("You may not call abort when JXcore is embedded");
+#endif
 }
 JS_METHOD_END
 
