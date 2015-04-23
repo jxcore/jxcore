@@ -11,7 +11,7 @@
 
 #ifndef JXCORE_ALOG_TAG
 #define JXCORE_ALOG_TAG "jxcore-log"
-#ifdef __ANDROID__  // change to EMBEDDED
+#if defined(__ANDROID__) && defined(JXCORE_EMBEDDED)
 #include <android/log.h>
 #define ALOG_TAG "jxcore-log"
 #define log_console(...) \

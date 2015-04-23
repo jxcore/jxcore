@@ -25,7 +25,7 @@ typedef void (*JS_FINALIZER_METHOD)(JS_HANDLE_VALUE_REF val, void* data);
 
 #ifndef JXCORE_ALOG_TAG
 #define JXCORE_ALOG_TAG "jxcore-log"
-#ifdef __ANDROID__
+#if defined(__ANDROID__) && defined(JXCORE_EMBEDDED)
 #include <android/log.h>
 #define log_console(...) \
   __android_log_print(ANDROID_LOG_INFO, JXCORE_ALOG_TAG, __VA_ARGS__)
