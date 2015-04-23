@@ -22,6 +22,13 @@ var checkToString = function (stat, func_name) {
   }
 };
 
+var isError = function(err, func_name) {
+  if (err) {
+    errors.push(func_name + "() error: " + err);
+    return true;
+  }
+};
+
 process.on('exit', function () {
   if (errors.length) {
     console.error(errors.join("\n"));
@@ -33,6 +40,7 @@ var filename = path.join(__dirname, "testcfg.py");
 
 // stat
 fs.stat(filename, function (err, stat) {
+  if (isError(err, "stat")) return;
   strictEqual(typeof stat, "object", "stat", str_typeof);
   strictEqual(stat instanceof fs.Stats, true, "stat", str_instanceof);
   checkToString(stat, "stat");
@@ -47,6 +55,7 @@ checkToString(stat, "statSync");
 
 // lstat
 fs.lstat(filename, function (err, stat) {
+  if (isError(err, "lstat")) return;
   strictEqual(typeof stat, "object", "lstat", str_typeof);
   strictEqual(stat instanceof fs.Stats, true, "lstat", str_instanceof);
   checkToString(stat, "lstat");
@@ -63,6 +72,7 @@ var fd = fs.openSync(filename, "r");
 
 // fstat
 fs.fstat(fd, function (err, stat) {
+  if (isError(err, "fstat")) return;
   strictEqual(typeof stat, "object", "fstat", str_typeof);
   strictEqual(stat instanceof fs.Stats, true, "fstat", str_instanceof);
   checkToString(stat, "fstat");
