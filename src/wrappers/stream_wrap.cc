@@ -14,14 +14,6 @@
 #include <stdlib.h>  // abort()
 #include <limits.h>  // INT_MAX
 
-#if defined(__ANDROID__) || defined(__IOS__) || defined(__WIN_RT__)
-#define SLAB_SIZE (512 * 1024)
-#elif defined(__ARM__) || defined(__ARMEB__) || defined(__ARM_EABI__)
-#define SLAB_SIZE (1024 * 1024)
-#else
-#define SLAB_SIZE (8 * 1024 * 1024)
-#endif
-
 namespace node {
 typedef class ReqWrap<uv_shutdown_t> ShutdownWrap;
 

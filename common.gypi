@@ -316,7 +316,13 @@
         'ldflags': [
           '-Wl,--export-dynamic',
         ],
-      }]
+      }],
+      ['target_arch in "mipsel mips"', {
+        'defines' : [ '__MIPSEL__' ] #force define mipsel
+      }],
+      ['OS=="android"', {
+        'defines': [ 'ANDROID' ] #force define ANDROID
+      }],
     ],
   }
 }

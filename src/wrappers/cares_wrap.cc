@@ -12,7 +12,7 @@
 #include "tree.h"
 
 #if defined(__OpenBSD__) || defined(__MINGW32__) || defined(_MSC_VER) || \
-    defined(__ANDROID__) || defined(ANDROID)
+    defined(__ANDROID__)
 #include <nameser.h>
 #else
 #include <arpa/nameser.h>

@@ -38,6 +38,14 @@
 #define MAP_HOST std::map
 #endif
 
+#if defined(JXCORE_EMBEDDED) || defined(__MIPSEL__)
+#define SLAB_SIZE (512 * 1024)
+#elif defined(__ARM__) || defined(__ARMEB__) || defined(__ARM_EABI__)
+#define SLAB_SIZE (1024 * 1024)
+#else
+#define SLAB_SIZE (8 * 1024 * 1024)
+#endif
+
 namespace node {
 
 #define MAX_JX_THREADS 64

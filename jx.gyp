@@ -256,11 +256,6 @@
               "JS_HAVE_ENDIAN_H",
             ],
           }],
-          ['OS=="android"', {
-            'defines': [
-              'ANDROID'
-            ]
-          }],
           ['OS=="ios" or OS=="mac"',
           {
             'defines': [
