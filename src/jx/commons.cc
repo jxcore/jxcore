@@ -435,7 +435,7 @@ commons::commons(const int tid) {
 #endif
   threadOnHold = 0;
   waitCounter = 0;
-  is_embedded_ = false;
+  is_packaged_ = false;
 
   expects_reset = false;
   using_domains = false;

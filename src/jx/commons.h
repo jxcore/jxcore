@@ -91,7 +91,7 @@ class commons {
   static bool embedded_multithreading_;
 
   static char *embedded_source_;  // static data for entry point
-  bool is_embedded_;              // marker check
+  bool is_packaged_;              // marker check
 
   // configuration
   static int bTCP, bTCPS;

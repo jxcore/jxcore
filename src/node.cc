@@ -57,7 +57,7 @@ extern char** environ;
 #include <windows.h>
 #else
 #include <unistd.h>
-#define Sleep(x) usleep((x) * 1000)
+#define Sleep(x) usleep((x)*1000)
 #endif
 
 namespace node {
@@ -993,16 +993,16 @@ JS_METHOD_END
 #endif  // __POSIX__
 
 JS_LOCAL_METHOD(Exit) {
-  // if this is an embedded instance we shouldn't terminate the process
-  // TODO(obastemur) apply this rule to other places
-  if (node::commons::self_hosted_process_) {
-    ENGINE_PRINT_LOGS();
-    exit(args.GetInt32(0));
-  } else {
-    com->expects_reset = com->threadId > 0;
-    JS_TERMINATE_EXECUTION(com->threadId);
-    uv_stop(com->loop);
-  }
+// if this is an embedded instance we shouldn't terminate the process
+// TODO(obastemur) apply this rule to other places
+#ifndef JXCORE_EMBEDDED
+  ENGINE_PRINT_LOGS();
+  exit(args.GetInt32(0));
+#else
+  com->expects_reset = com->threadId > 0;
+  JS_TERMINATE_EXECUTION(com->threadId);
+  uv_stop(com->loop);
+#endif
 }
 JS_METHOD_END
 
@@ -1292,16 +1292,16 @@ static JS_GETTER_METHOD(EnvGetter) {
 #else  // _WIN32
 #ifdef JS_ENGINE_V8
   v8::String::Value key(property);
-  const WCHAR *key_ptr = reinterpret_cast<const WCHAR*>(*key);
+  const WCHAR* key_ptr = reinterpret_cast<const WCHAR*>(*key);
 #elif defined(JS_ENGINE_MOZJS)
   jxcore::JXString key(property);
-  WCHAR *key_ptr = (WCHAR*)malloc(sizeof(WCHAR) * (key.length() + 1));
-  MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, *key, -1, key_ptr, key.length() + 1);
+  WCHAR* key_ptr = (WCHAR*)malloc(sizeof(WCHAR) * (key.length() + 1));
+  MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, *key, -1, key_ptr,
+                      key.length() + 1);
 #endif
   WCHAR buffer[32767];  // The maximum size allowed for environment variables.
 
-  DWORD result = GetEnvironmentVariableW(key_ptr, buffer,
-                                         ARRAY_SIZE(buffer));
+  DWORD result = GetEnvironmentVariableW(key_ptr, buffer, ARRAY_SIZE(buffer));
 #ifdef JS_ENGINE_MOZJS
   free(key_ptr);
 #endif
@@ -1331,19 +1331,21 @@ static JS_SETADD_METHOD(EnvSetter) {
 #ifdef JS_ENGINE_V8
   v8::String::Value key(property);
   v8::String::Value val(value);
-  const WCHAR *key_ptr = reinterpret_cast<const WCHAR*>(*key);
-  const WCHAR *val_ptr = reinterpret_cast<const WCHAR*>(*val);
+  const WCHAR* key_ptr = reinterpret_cast<const WCHAR*>(*key);
+  const WCHAR* val_ptr = reinterpret_cast<const WCHAR*>(*val);
 #elif defined(JS_ENGINE_MOZJS)
   jxcore::JXString key;
   key.SetFromHandle(property, true);
   jxcore::JXString val;
   val.SetFromHandle(value, true);
 
-  WCHAR *key_ptr = (WCHAR*)malloc(sizeof(WCHAR) * (key.length() + 1));
-  MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, *key, -1, key_ptr, key.length() + 1);
+  WCHAR* key_ptr = (WCHAR*)malloc(sizeof(WCHAR) * (key.length() + 1));
+  MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, *key, -1, key_ptr,
+                      key.length() + 1);
 
-  WCHAR *val_ptr = (WCHAR*)malloc(sizeof(WCHAR) * (val.length() + 1));
-  MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, *val, -1, val_ptr, val.length() + 1);
+  WCHAR* val_ptr = (WCHAR*)malloc(sizeof(WCHAR) * (val.length() + 1));
+  MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, *val, -1, val_ptr,
+                      val.length() + 1);
 #endif
   // Environment variables that start with '=' are read-only.
   if (key_ptr[0] != L'=') {
@@ -1365,11 +1367,12 @@ JS_DELETER_METHOD(EnvDeleter) {
 #else
 #ifdef JS_ENGINE_V8
   v8::String::Value key(property);
-  const WCHAR *key_ptr = reinterpret_cast<const WCHAR*>(*key);
+  const WCHAR* key_ptr = reinterpret_cast<const WCHAR*>(*key);
 #elif defined(JS_ENGINE_MOZJS)
   jxcore::JXString key(property);
-  WCHAR *key_ptr = (WCHAR*)malloc(sizeof(WCHAR) * (key.length() + 1));
-  MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, *key, -1, key_ptr, key.length() + 1);
+  WCHAR* key_ptr = (WCHAR*)malloc(sizeof(WCHAR) * (key.length() + 1));
+  MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, *key, -1, key_ptr,
+                      key.length() + 1);
 #endif
 
   if (key_ptr[0] == L'=' || !SetEnvironmentVariableW(key_ptr, NULL)) {
@@ -1496,11 +1499,11 @@ static bool EnvQuery(JSContext* __contextORisolate, JS::HandleObject ___obj,
   }
 #else  // _WIN32
   WCHAR buffer[32767];  // The maximum size allowed for environment variables.
-  WCHAR *temp_name = (WCHAR*)malloc(sizeof(WCHAR) * (key.length()+1));
-  MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, *key, -1, temp_name, key.length() + 1);
+  WCHAR* temp_name = (WCHAR*)malloc(sizeof(WCHAR) * (key.length() + 1));
+  MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, *key, -1, temp_name,
+                      key.length() + 1);
 
-  DWORD result = GetEnvironmentVariableW(temp_name, buffer,
-                                         ARRAY_SIZE(buffer));
+  DWORD result = GetEnvironmentVariableW(temp_name, buffer, ARRAY_SIZE(buffer));
 
   free(temp_name);
   // If result >= sizeof buffer the buffer was too small. That should never
@@ -1559,13 +1562,13 @@ static bool EnvEnumerator(JSContext* cx, JS::HandleObject obj) {
         UTF8_TO_STRING_WITH_LENGTH(reinterpret_cast<uint16_t*>(p), s - p);
 
     const int tmp_len = 1 + (s - p);
-    WCHAR *temp_name = (WCHAR *)malloc(tmp_len * sizeof(WCHAR));
-    memcpy(temp_name, p, (tmp_len-1) * sizeof(WCHAR));
-    temp_name[tmp_len-1] = WCHAR(0);
+    WCHAR* temp_name = (WCHAR*)malloc(tmp_len * sizeof(WCHAR));
+    memcpy(temp_name, p, (tmp_len - 1) * sizeof(WCHAR));
+    temp_name[tmp_len - 1] = WCHAR(0);
 
     WCHAR buffer[32767];  // The maximum size allowed for environment variables.
-    DWORD result = GetEnvironmentVariableW(temp_name,
-                                           buffer, ARRAY_SIZE(buffer));
+    DWORD result =
+        GetEnvironmentVariableW(temp_name, buffer, ARRAY_SIZE(buffer));
 
     free(temp_name);
     // If result >= sizeof buffer the buffer was too small. That should never
@@ -2115,10 +2118,15 @@ void SetupProcessObject(const int threadId) {
   JS_ACCESSOR_SET(process, STD_TO_STRING("debugPort"), DebugPortGetter,
                   DebugPortSetter);
 
-  // this embedded means the native binary.
-  // TODO(?) solve the embedded term confusion.
   JS_NAME_SET(process, JS_STRING_ID("IsEmbedded"),
-              STD_TO_BOOLEAN(com->is_embedded_));
+#ifdef JXCORE_EMBEDDED
+              STD_TO_BOOLEAN(true));
+#else
+              STD_TO_BOOLEAN(false));
+#endif
+
+  JS_NAME_SET(process, JS_STRING_ID("IsPackaged"),
+              STD_TO_BOOLEAN(com->is_packaged_));
 
   // define various internal methods
   JS_METHOD_SET(process, "_getActiveRequests", GetActiveRequests);

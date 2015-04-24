@@ -214,10 +214,10 @@ void JXEngine::ParseArgs(int argc, char **argv) {
   std::string original("jxcore.bin(?@@?!$<$?!*)");
 
   if (original.c_str()[14] != '?') {
-    main_node_->is_embedded_ = true;
+    main_node_->is_packaged_ = true;
   }
 
-  if (!main_node_->is_embedded_) {
+  if (!main_node_->is_packaged_) {
     for (; i < argc; i++) {
       const char *arg = argv[i];
       if (strstr(arg, "--debug") == arg) {
@@ -350,7 +350,7 @@ char **JXEngine::Init(int argc, char *argv[], bool engine_inited_already) {
           &constraints);  // Must be done before V8::Initialize
     }
 
-    if (!main_node_->is_embedded_)
+    if (!main_node_->is_packaged_)
       v8::V8::SetFlagsFromCommandLine(&v8argc, v8argv, false);
 #elif defined(JS_ENGINE_MOZJS)
 // TODO(obastemur) set command line flags ?
