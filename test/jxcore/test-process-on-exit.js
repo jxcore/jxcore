@@ -4,7 +4,7 @@
  This code spawns itself with mt-keep param and checks for spawn error
  */
 
-if (process.IsEmbedded)
+if (process.IsPackaged)
   return;
 
 var path = require("path");

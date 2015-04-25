@@ -4,7 +4,7 @@
  This code spawns itself with mt/mt-keep param (process.argv[2) and checks for spawn error
  */
 
-if (process.IsEmbedded)
+if (process.IsPackaged)
   return;
 
 // spawned process

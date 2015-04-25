@@ -5,7 +5,7 @@
  Then we check if added files are present in package, while others should not be in there.
  */
 
-if (process.IsEmbedded || exports.$JXP)
+if (process.IsPackaged || exports.$JXP)
   return;
 
 

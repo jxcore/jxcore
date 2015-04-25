@@ -3,7 +3,7 @@
 // This unit is testing NODE_PATH environment variable applied to
 // virtual path inside package / native package
 
-if (process.IsEmbedded || exports.$JXP)
+if (process.IsPackaged || exports.$JXP)
   return;
 
 // -------------   init part

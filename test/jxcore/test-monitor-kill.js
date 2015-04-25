@@ -1,6 +1,6 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-if (process.IsEmbedded)
+if (process.IsPackaged)
   return;
 
 var http = require("http"),
