@@ -6,7 +6,7 @@
  */
 
 
-if (process.IsPackaged)
+if (process.isPackaged)
   return;
 
 var path = require("path");

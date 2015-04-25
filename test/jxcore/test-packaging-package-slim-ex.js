@@ -5,7 +5,7 @@
  Then we check if slimmed folder is present in package, or not.
  */
 
-if (process.IsPackaged || exports.$JXP)
+if (process.isPackaged || exports.$JXP)
   return;
 
 

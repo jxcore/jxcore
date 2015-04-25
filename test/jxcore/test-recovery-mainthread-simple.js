@@ -29,7 +29,7 @@ if (!isChild) {
   var assert = require('assert')
   var finished = false;
 
-  var fname = process.IsPackaged ? process.execPath : __filename.replace(".js.jx", ".jx");
+  var fname = process.isPackaged ? process.execPath : __filename.replace(".js.jx", ".jx");
   var child = cp.exec('"' + process.execPath + '" "' + fname + '" child', null, function (error, stdout, stderr) {
 
     var str = "" + stdout + stderr;

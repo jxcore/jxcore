@@ -5,7 +5,7 @@
  Then we check if slimmed folder is present in package, or not (by calling require())
  */
 
-if (process.IsPackaged || exports.$JXP)
+if (process.isPackaged || exports.$JXP)
   return;
 
 // -------------   init part

@@ -7,7 +7,7 @@
 var jx = require('jxtools');
 var assert = jx.assert;
 
-if (process.IsPackaged || process.argv[1].slice(0, 2) !== "mt") {
+if (process.isPackaged || process.argv[1].slice(0, 2) !== "mt") {
   // main thread
   assert.strictEqual(process.subThread, false, "main thread: process.subThread is " + process.subThread + " but should be false.");
   assert.strictEqual(process.threadId, -1, "main thread: process.subThread is " + process.threadId + " but should be -1.");

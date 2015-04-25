@@ -6,7 +6,7 @@ var expectedVersion = "v Beta-0.3.0.0";
 var color = jxcore.utils.console.setColor;
 var str_insteadof = " instead of " + color(expectedVersion, "green");
 
-if (!process.IsPackaged) {
+if (!process.isPackaged) {
   var ret = jxcore.utils.cmdSync('"' + process.execPath + '" -jxv');
   var _out = ret.out.trim();
 

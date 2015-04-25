@@ -219,18 +219,18 @@
       return sep;
     };
 
-    var IsPackaged = checkSource(process.subThread);
-    if (process.IsPackaged != IsPackaged) {
+    var isPackaged = checkSource(process.subThread);
+    if (process.isPackaged != isPackaged) {
       if (process.subThread) {
-        process.IsPackaged = IsPackaged;
+        process.isPackaged = isPackaged;
       } else {
         co.error("Binary corrupted");
         process.exit(1);
       }
     }
     
-    if (!process.IsPackaged) {
-      delete (process.IsPackaged);
+    if (!process.isPackaged) {
+      delete (process.isPackaged);
     } else {
       process._EmbeddedSource = true;
     }

@@ -10,7 +10,7 @@ console.log("\t__dirname", __dirname);
 console.log("\tprocess.cwd()", process.cwd());
 console.log("\tpath.dirname(process.execPath)", path.dirname(process.execPath));
 
-if (process.IsPackaged)
+if (process.isPackaged)
   assert.strictEqual(__dirname, path.dirname(process.execPath), "For native packages, __dirname is not equal to path.dirname(process.execPath)");
 else
   assert.strictEqual(__dirname, path.dirname(__filename), "__dirname is not equal to path.dirname(process.execPath)");

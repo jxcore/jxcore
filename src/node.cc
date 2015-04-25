@@ -2118,14 +2118,14 @@ void SetupProcessObject(const int threadId) {
   JS_ACCESSOR_SET(process, STD_TO_STRING("debugPort"), DebugPortGetter,
                   DebugPortSetter);
 
-  JS_NAME_SET(process, JS_STRING_ID("IsEmbedded"),
+  JS_NAME_SET(process, JS_STRING_ID("isEmbedded"),
 #ifdef JXCORE_EMBEDDED
               STD_TO_BOOLEAN(true));
 #else
               STD_TO_BOOLEAN(false));
 #endif
 
-  JS_NAME_SET(process, JS_STRING_ID("IsPackaged"),
+  JS_NAME_SET(process, JS_STRING_ID("isPackaged"),
               STD_TO_BOOLEAN(com->is_packaged_));
 
   // define various internal methods

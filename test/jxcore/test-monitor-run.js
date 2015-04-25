@@ -1,7 +1,7 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
 
-if (process.IsPackaged)
+if (process.isPackaged)
   return;
 
 
