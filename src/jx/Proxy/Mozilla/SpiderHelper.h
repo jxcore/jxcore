@@ -35,11 +35,11 @@ class MemoryScript {
 MemoryScript GetScriptMemory(JSContext *ctx, JSScript *script);
 JSScript *GetScript(JSContext *ctx, MemoryScript ms);
 
-JSObject *NewGlobalObject(JSContext *ctx);
-JSObject *NewContextGlobal(JSContext *ctx);
+void NewGlobalObject(JSContext *ctx, JS::MutableHandleObject ret_val);
+void NewContextGlobal(JSContext *ctx, JS::MutableHandleObject ret_val);
 MozJS::Value getGlobal(const int threadId);
 JSObject *getGlobalObject(const int threadId);
-JSObject *NewTransplantObject(JSContext *ctx);
+void NewTransplantObject(JSContext *ctx, JS::MutableHandleObject ret_val);
 void CrossCompartmentCopy(JSContext *orig_context, JSContext *new_context,
                           MozJS::Value &source, bool global_object,
                           JS::MutableHandleObject retval);

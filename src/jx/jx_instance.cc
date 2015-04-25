@@ -87,7 +87,8 @@ void JXInstance::runScript(void *x) {
       JS_LOCAL_OBJECT global = context->Global();
 #elif defined(JS_ENGINE_MOZJS)
       JSAutoRequest ar(ctx);
-      JS::RootedObject _global(ctx, jxcore::NewGlobalObject(ctx));
+      JS::RootedObject _global(ctx);
+      jxcore::NewGlobalObject(ctx, &_global);
       assert(_global != NULL);
       JSAutoCompartment ac(ctx, _global);
       JS_LOCAL_OBJECT global(_global, ctx);

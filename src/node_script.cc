@@ -423,7 +423,9 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(jxcore::PArguments &args,
 static void CrossCompartmentClone(MozJS::Value &orig_obj, JSContext *newc,
                                   JS::MutableHandleObject retval) {
   JSContext *context = orig_obj.GetContext();
-  MozJS::Value target_sandbox(jxcore::NewTransplantObject(context), context);
+  JS::RootedObject rt_ts(context);
+  jxcore::NewTransplantObject(context, &rt_ts);
+  MozJS::Value target_sandbox(rt_ts, context);
 
   jxcore::CrossCompartmentCopy(context, newc, target_sandbox, false, retval);
 
@@ -485,30 +487,32 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(
   JSObject *fake_sandbox = NULL;
   JSCompartment *comp = NULL;
 
-#define LEAVE_COMPARTMENT(copy_result)                                        \
-  if (fake_sandbox != NULL) {                                                 \
-    JS_LOCAL_VALUE result_backup;                                             \
-    if (copy_result) {                                                        \
-      result_backup = result;                                                 \
-      result = JS_LOCAL_VALUE(jxcore::NewTransplantObject(context), context); \
-      JS_NAME_SET(result, JS_STRING_ID("result"), result_backup);             \
-    }                                                                         \
-    MozJS::Value source_sandbox(fake_sandbox, context);                       \
-    JS::RootedObject cs_sandbox(__contextORisolate);                          \
-    CrossCompartmentClone(source_sandbox, __contextORisolate, &cs_sandbox);   \
-    JS::RootedObject result_sandbox(__contextORisolate);                      \
-    if (copy_result) {                                                        \
-      CrossCompartmentClone(result, __contextORisolate, &result_sandbox);     \
-    }                                                                         \
-    JS_LeaveCompartment(context, comp);                                       \
-    MozJS::Value comp_sandbox(cs_sandbox, __contextORisolate);                \
-    CloneObject(__contextORisolate, sandbox, comp_sandbox, sandbox);          \
-    if (result_sandbox != nullptr) {                                          \
-      result = JS_LOCAL_OBJECT(result_sandbox, __contextORisolate);           \
-      result = JS_GET_NAME(result, JS_STRING_ID("result"));                   \
-    }                                                                         \
-    JS_DestroyContext(context);                                               \
-    iso->Dispose();                                                           \
+#define LEAVE_COMPARTMENT(copy_result)                                      \
+  if (fake_sandbox != NULL) {                                               \
+    JS_LOCAL_VALUE result_backup;                                           \
+    if (copy_result) {                                                      \
+      result_backup = result;                                               \
+      JS::RootedObject rt_ts(context);                                      \
+      jxcore::NewTransplantObject(context, &rt_ts);                         \
+      result = JS_LOCAL_VALUE(rt_ts, context);                              \
+      JS_NAME_SET(result, JS_STRING_ID("result"), result_backup);           \
+    }                                                                       \
+    MozJS::Value source_sandbox(fake_sandbox, context);                     \
+    JS::RootedObject cs_sandbox(__contextORisolate);                        \
+    CrossCompartmentClone(source_sandbox, __contextORisolate, &cs_sandbox); \
+    JS::RootedObject result_sandbox(__contextORisolate);                    \
+    if (copy_result) {                                                      \
+      CrossCompartmentClone(result, __contextORisolate, &result_sandbox);   \
+    }                                                                       \
+    JS_LeaveCompartment(context, comp);                                     \
+    MozJS::Value comp_sandbox(cs_sandbox, __contextORisolate);              \
+    CloneObject(__contextORisolate, sandbox, comp_sandbox, sandbox);        \
+    if (result_sandbox != nullptr) {                                        \
+      result = JS_LOCAL_OBJECT(result_sandbox, __contextORisolate);         \
+      result = JS_GET_NAME(result, JS_STRING_ID("result"));                 \
+    }                                                                       \
+    JS_DestroyContext(context);                                             \
+    iso->Dispose();                                                         \
   }
 
   JS_HANDLE_VALUE result;
@@ -552,8 +556,9 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(
   if (output_flag == returnResult) {
     std::string ex_message = "", ex_stack = "";
     if (context_flag == userContext || context_flag == newContext) {
-      JS_LOCAL_OBJECT sandbox_backup = JS_LOCAL_OBJECT(
-          jxcore::NewTransplantObject(__contextORisolate), __contextORisolate);
+      JS::RootedObject rt_ts(__contextORisolate);
+      jxcore::NewTransplantObject(__contextORisolate, &rt_ts);
+      JS_LOCAL_OBJECT sandbox_backup(rt_ts, __contextORisolate);
 
       JS::RootedObject prep(__contextORisolate);
       jxcore::CrossCompartmentCopy(__contextORisolate, context, sandbox_backup,

@@ -29,8 +29,8 @@ MozJS::Value getGlobal(const int threadId) {
 
 JSObject *getGlobalObject(const int threadId) { return globals[threadId]; }
 
-JSObject *NewTransplantObject(JSContext *ctx) {
-  return JS_NewObject(ctx, &transplant_class, JS::NullPtr(), JS::NullPtr());
+void NewTransplantObject(JSContext *ctx, JS::MutableHandleObject ret_val) {
+  ret_val.set(JS_NewObject(ctx, &transplant_class, JS::NullPtr(), JS::NullPtr()));
 }
 
 void CrossCompartmentCopy(JSContext *orig_context, JSContext *new_context,
@@ -38,17 +38,17 @@ void CrossCompartmentCopy(JSContext *orig_context, JSContext *new_context,
                           JS::MutableHandleObject retval) {
   JS::RootedObject cs_root(orig_context, source.GetRawObjectPointer());
 
-  JSObject *tp_obj;
+  JS::RootedObject tp_obj(new_context);
   if (global_object) {
-    tp_obj = jxcore::NewContextGlobal(new_context);
+    jxcore::NewContextGlobal(new_context, &tp_obj);
   } else {
-    tp_obj = NewTransplantObject(new_context);
+    NewTransplantObject(new_context, &tp_obj);
   }
   JS::RootedObject cs_fake_target(new_context, tp_obj);
   retval.set(JS_TransplantObject(new_context, cs_root, cs_fake_target));
 }
 
-JSObject *NewContextGlobal(JSContext *ctx) {
+void NewContextGlobal(JSContext *ctx, JS::MutableHandleObject ret_val) {
   JS::CompartmentOptions options;
   options.setVersion(JSVERSION_LATEST);
 
@@ -64,7 +64,7 @@ JSObject *NewContextGlobal(JSContext *ctx) {
 
   JS_FireOnNewGlobalObject(ctx, global);
 
-  return c_global;
+  ret_val.set(c_global);
 }
 
 MemoryScript GetScriptMemory(JSContext *ctx, JSScript *script) {
@@ -79,7 +79,7 @@ JSScript *GetScript(JSContext *ctx, MemoryScript ms) {
   return JS_DecodeScript(ctx, ms.data(), ms.length(), nullptr);
 }
 
-JSObject *NewGlobalObject(JSContext *ctx) {
+void NewGlobalObject(JSContext *ctx, JS::MutableHandleObject ret_val) {
   JS::CompartmentOptions options;
   options.setVersion(JSVERSION_LATEST);
 
@@ -96,7 +96,7 @@ JSObject *NewGlobalObject(JSContext *ctx) {
 
   JS_FireOnNewGlobalObject(ctx, global);
 
-  return global;
+  ret_val.set(global);
 }
 
 }  // namespace jxcore

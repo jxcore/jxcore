@@ -580,7 +580,8 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
       }
 #elif defined(JS_ENGINE_MOZJS)
       JSAutoRequest ar(ctx);
-      JS::RootedObject global(ctx, jxcore::NewGlobalObject(ctx));
+      JS::RootedObject global(ctx);
+      jxcore::NewGlobalObject(ctx, &global);
       assert(global != NULL);
       JSAutoCompartment ac(ctx, global);
 #endif
@@ -765,7 +766,8 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
   Init(argc, argv_copy, was_inited);
 
   JS_BeginRequest(ctx);
-  JS::RootedObject global(ctx, jxcore::NewGlobalObject(ctx));
+  JS::RootedObject global(ctx);
+  jxcore::NewGlobalObject(ctx, &global);
   assert(global != NULL);
   jscomp_ = JS_EnterCompartment(ctx, global);
   global_ = new MozJS::Value(global, ctx);
