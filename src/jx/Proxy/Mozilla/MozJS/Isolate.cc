@@ -72,9 +72,7 @@ Isolate* Isolate::New(int threadId) {
 #else
     JS::RuntimeOptionsRef(rt)
         .setBaseline(true)
-#ifndef __IOS__&& JS_CPU_MIPS
         .setIon(true)
-#endif
         .setAsmJS(true)
         .setNativeRegExp(true);
 #endif
