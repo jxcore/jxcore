@@ -14,13 +14,19 @@ Attaching any callback to `restart` event, depending on the context in which it 
 
 Internal Recovery is a separate section described [here](jxcore-feature-internal-recovery.html).
 
-## process.IsEmbedded
+## process.isEmbedded
+
+This property returns `true`, if the binary is a static/shared library. This case applies e.g. for mobile deployments (android, iOS).
+
+## process.isPackaged
+
+> This property formerly was known as `process.IsEmbedded` and received the current name during JXcore v Beta-0.3.0.0 development.
 
 This property returns `true`, if the current code block runs under native package (a package compiled with [-native](jxcore-feature-packaging-code-protection.markdown#-native) switch).
 
 For example, let's have the following *index.js*:
 ```js
-console.log("IsEmbedded", process.IsEmbedded);
+console.log("isPackaged", process.isPackaged);
 ```
 
 We can compile it now with `-native` switch:
