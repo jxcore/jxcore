@@ -115,20 +115,45 @@ JX_SetDouble(JXValue *value, const double val);
 JXCORE_EXTERN(void)
 JX_SetBoolean(JXValue *value, const bool val);
 
+#ifdef __cplusplus
 JXCORE_EXTERN(void)
 JX_SetString(JXValue *value, const char *val, const int32_t length = 0);
+#else
+JXCORE_EXTERN(void)
+JX_SetString(JXValue *value, const char *val, const int32_t length);
+#endif
 
+#ifdef __cplusplus
 JXCORE_EXTERN(void)
 JX_SetUCString(JXValue *value, const uint16_t *val, const int32_t length = 0);
+#else
+JXCORE_EXTERN(void)
+JX_SetUCString(JXValue *value, const uint16_t *val, const int32_t length);
+#endif
 
+#ifdef __cplusplus
 JXCORE_EXTERN(void)
 JX_SetJSON(JXValue *value, const char *val, const int32_t length = 0);
+#else
+JXCORE_EXTERN(void)
+JX_SetJSON(JXValue *value, const char *val, const int32_t length);
+#endif
 
+#ifdef __cplusplus
 JXCORE_EXTERN(void)
 JX_SetError(JXValue *value, const char *val, const int32_t length = 0);
+#else
+JXCORE_EXTERN(void)
+JX_SetError(JXValue *value, const char *val, const int32_t length);
+#endif
 
+#ifdef __cplusplus
 JXCORE_EXTERN(void)
 JX_SetBuffer(JXValue *value, const char *val, const int32_t length = 0);
+#else
+JXCORE_EXTERN(void)
+JX_SetBuffer(JXValue *value, const char *val, const int32_t length);
+#endif
 
 JXCORE_EXTERN(void)
 JX_SetUndefined(JXValue *value);
