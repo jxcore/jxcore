@@ -1,8 +1,8 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-var is_windows = process.platform === 'win32';
+var unsupported = jxcore.utils.OSInfo().isMobile || jxcore.utils.OSInfo().isWindows;
 
-if (!is_windows) {
+if(!unsupported){
   if (!process.versions.openssl) {
     console.error('Skipping because node compiled without OpenSSL.');
     process.exit(0);
