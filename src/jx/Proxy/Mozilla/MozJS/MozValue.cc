@@ -397,9 +397,7 @@ bool Value::Equals(Value *that) const {
 int32_t Value::Int32Value() {
   if (empty_) return 0;
 
-  if (value_.isInt32()) {
-    return value_.toInt32();
-  } else if (value_.isNumber()) {
+  if (value_.isNumber()) {
     return (int32_t)value_.toNumber();
   } else if (value_.isBoolean()) {
     return value_.toBoolean() ? 1 : 0;
@@ -416,10 +414,14 @@ int32_t Value::Int32Value() {
 }
 
 uint32_t Value::Uint32Value() {
-  if (value_.isInt32())
+  if (value_.isNumber()) {
+    int64_t val64 = (int64_t)value_.toNumber();
+    if (val64 >= 0) return (uint32_t)val64;
+
     return value_.toPrivateUint32();
-  else
+  } else {
     return (uint32_t)Int32Value();
+  }
 }
 
 int64_t Value::IntegerValue() {
@@ -591,8 +593,17 @@ void Value::SetInternalFieldCount(int count) {
   }
 }
 
-Value Value::FromInteger(JSContext *ctx, const int32_t n) {
-  jsval val = JS::Int32Value(n);
+Value Value::FromInteger(JSContext *ctx, const int64_t n) {
+  int32_t tmp = (int32_t)n;
+  int64_t tmp64 = (int64_t)tmp;
+
+  // SM doesn't store int64_t. it's either int32_t or double
+  jsval val;
+  if (tmp64 == n)
+    val = JS::Int32Value(n);
+  else
+    val = JS::DoubleValue(n);
+
   return Value(val, ctx);
 }
 
@@ -601,8 +612,17 @@ Value Value::FromBoolean(JSContext *ctx, const bool n) {
   return Value(val, ctx);
 }
 
-Value Value::FromUnsigned(JSContext *ctx, const unsigned n) {
-  jsval val = JS::PrivateUint32Value(n);
+Value Value::FromUnsigned(JSContext *ctx, const uint32_t n) {
+  // SM doesn't store uint32_t. it's either int32_t or double
+  int32_t tmp = (int32_t)n;
+  int64_t tmp64 = (int64_t)n;
+
+  jsval val;
+  if (tmp != tmp64)
+    val = JS::DoubleValue(n);
+  else
+	val = JS::PrivateUint32Value(n);
+
   return Value(val, ctx);
 }
 

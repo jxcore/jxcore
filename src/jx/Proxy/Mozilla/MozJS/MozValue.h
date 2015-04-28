@@ -177,9 +177,9 @@ class Value : protected MozRoot {
   int InternalFieldCount() const;  // JS_HasPrivate
   void SetInternalFieldCount(int count = 0);
 
-  static Value FromInteger(JSContext *ctx, const int32_t n);
+  static Value FromInteger(JSContext *ctx, const int64_t n);
   static Value FromBoolean(JSContext *ctx, const bool n);
-  static Value FromUnsigned(JSContext *ctx, const unsigned n);
+  static Value FromUnsigned(JSContext *ctx, const uint32_t n);
   static Value FromDouble(JSContext *ctx, const double n);
 
   static Value Undefined(JSContext *ctx);

@@ -261,8 +261,6 @@ int64_t PArguments::GetInteger(const unsigned index) {
     return 0;
   }
 
-  if (args_[index].isInt32()) return args_[index].toInt32();
-
   if (args_[index].isNumber()) return (int64_t)args_[index].toNumber();
 
   if (args_[index].isBoolean()) return args_[index].toBoolean() ? 1 : 0;
@@ -311,10 +309,14 @@ unsigned PArguments::GetUInteger(const unsigned index) {
     return 0;
   }
 
-  if (args_[index].isInt32())
+  if (args_[index].isNumber()) {
+    int64_t val64 = (int64_t)args_[index].toNumber();
+    if (val64 >= 0) return (uint32_t)val64;
+
     return args_[index].toPrivateUint32();
-  else
+  } else {
     return (unsigned)GetInteger(index);
+  }
 }
 
 int PArguments::GetString(const unsigned index, jxcore::JXString *jxs) {
