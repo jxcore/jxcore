@@ -700,7 +700,7 @@ TIMEOUT_SCALEFACTOR = {
 
 class Context(object):
 
-  def __init__(self, workspace, buildspace, verbose, vm, timeout, processor, suppress_dialogs, store_unexpected_output, repeat):
+  def __init__(self, workspace, buildspace, verbose, vm, timeout, processor, suppress_dialogs, store_unexpected_output, options):
     self.workspace = workspace
     self.buildspace = buildspace
     self.verbose = verbose
@@ -709,7 +709,9 @@ class Context(object):
     self.processor = processor
     self.suppress_dialogs = suppress_dialogs
     self.store_unexpected_output = store_unexpected_output
-    self.repeat = repeat
+    self.repeat = options.repeat
+    if options.jxpath:
+      self.jxpath = options.jxpath
 
   def GetVm(self, mode):
     if mode == 'debug':
@@ -729,6 +731,9 @@ class Context(object):
           name = os.path.abspath('Release/jx.exe')
       else:
         name = os.path.abspath(name + '.exe')
+
+    if hasattr(self, "jxpath"):
+      name = self.jxpath
 
     return name
 
@@ -1234,6 +1239,7 @@ def BuildOptions():
   result.add_option("--no-store-unexpected-output", 
       help="Deletes the temporary JS files from tests that fails",
       dest="store_unexpected_output", action="store_false")
+  result.add_option("--jxpath", help="Path for jx binary file to be tested (if different than default)")
   return result
 
 
@@ -1388,7 +1394,7 @@ def Main():
                     processor,
                     options.suppress_dialogs,
                     options.store_unexpected_output,
-                    options.repeat)
+                    options)
   # First build the required targets
   if not options.no_build:
     reqs = [ ]

@@ -148,7 +148,7 @@ if (single_test_dir) dirs.push(single_test_dir.name);
  * @param cb
  */
 var run = function (what, cb) {
-  var args = ["tools/test.py", "-p", "color"];
+  var args = ["tools/test.py", "-p", "color", "--jxpath", process.execPath];
   if (repeat)
     args.push("--repeat", repeat);
   if (timeout)
