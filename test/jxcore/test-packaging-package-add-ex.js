@@ -37,7 +37,7 @@ process.on("exit", function (code) {
 
 
 // creates a package in separate folder (dir)
-var test_add = function (definition, native) {
+var test_add = function (definition, native, cb) {
 
   started++;
   var dir = path.join(__dirname, path.basename(__filename) + "-tmp-dir-" + started);
@@ -64,6 +64,7 @@ var test_add = function (definition, native) {
     finished++;
     if (!fs.existsSync(jx_file)) {
       errors.push("Cannot find compiled package " + jx_file);
+      cb();
       return;
     }
 
@@ -86,6 +87,7 @@ var test_add = function (definition, native) {
         jxcore.utils.console.setColor("Errors for package add `" + add + "` (", native ? "native" : "jx", "package ) :\n", "red") +
         jxcore.utils.console.setColor(jx_file, "yellow") +
         ":\n\t" + ret.out);
+    cb();
   });
 };
 
@@ -175,11 +177,27 @@ var definitions = [
 ];
 
 
-for (var o in definitions) {
-  test_add(definitions[o]);
+var item = null;
+
+var next = function() {
+  item = definitions.shift();
+  if (item)
+    test_add(item, false, nextNative);
+};
+
+var nextNative = function() {
   // sm native packaging is slow for now
-  if (!process.versions.sm)
-    test_add(definitions[o], true);
-}
+  if (process.versions.sm) {
+    next();
+    return;
+  }
+
+  if (item)
+    test_add(item, true, next);
+  else
+    next();
+};
+
+next();
 
 
