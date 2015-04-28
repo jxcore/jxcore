@@ -1,9 +1,5 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
-
-
-
 (function() {
   var assert = require('assert'),
       child = require('child_process'),
@@ -23,12 +19,12 @@
     child.exec(process.execPath + ' test-init', {env: envCopy},
         function(err, stdout, stderr) {
           assert.equal(stdout, 'Loaded successfully!',
-                       '`node test-init` failed!');
+                       '`jx test-init` failed!');
         });
     child.exec(process.execPath + ' test-init.js', {env: envCopy},
         function(err, stdout, stderr) {
           assert.equal(stdout, 'Loaded successfully!',
-                       '`node test-init.js` failed!');
+                       '`jx test-init.js` failed!');
         });
 
     // test-init-index is in fixtures dir as requested by ry, so go there
@@ -37,7 +33,7 @@
     child.exec(process.execPath + ' test-init-index', {env: envCopy},
         function(err, stdout, stderr) {
           assert.equal(stdout, 'Loaded successfully!',
-                       '`node test-init-index failed!');
+                       '`jx test-init-index failed!');
         });
 
     // ensures that `node fs` does not mistakenly load the native 'fs' module
