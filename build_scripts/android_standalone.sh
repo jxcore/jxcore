@@ -113,5 +113,6 @@ fi
 LOG $GREEN_COLOR "Compiling JXcore standalone-$3 for Android-$2\n"
 MAKE_INSTALL $CPU_TYPE $3
 
-
-LOG $GREEN_COLOR "jx binary is ready under out_android/sa_$CPU_TYPE_$3/Release/\n"
+CT="$CPU_TYPE"
+CT+="_$3"
+LOG $GREEN_COLOR "jx binary is ready under out_android/sa_$CT/Release/\n"
