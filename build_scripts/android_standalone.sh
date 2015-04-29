@@ -31,12 +31,14 @@ ERROR_ABORT_MOVE() {
 }
 
 SHOW_USAGE() {
-  LOG $GREEN_COLOR "usage: android_compile_v8 <ndk_path> <arch>"
+  LOG $GREEN_COLOR "usage: android_standalone.sh <ndk_path> <arch> <engine>"
   LOG $GREEN_COLOR "arch: intel arm mips"
+  LOG $GREEN_COLOR "engine:v8 sm"
+  LOG $GREEN_COLOR "\nsample:./android_standalone.sh sdk/android-ndk arm v8"
   exit
 }
 
-if [ $# -lt 2 ]
+if [ $# -lt 3 ]
 then
   LOG $RED_COLOR "no argument provided."
   SHOW_USAGE
@@ -45,11 +47,17 @@ fi
 export ANDROID_NDK=$1
     
 MAKE_INSTALL() {
-  TARGET_DIR="out_android/sa_$1"
+  TARGET_DIR="out_android/sa_$1_$2"
 
   mkdir -p $TARGET_DIR  
   mv $TARGET_DIR out
-  ./configure --prefix=$TARGET_DIR/__/ --dest-os=android --dest-cpu=$1 --without-snapshot
+  if [[ $2 == 'v8' ]]
+  then
+    ./configure --prefix=$TARGET_DIR/__/ --dest-os=android --dest-cpu=$1 --without-snapshot
+  else
+    ./configure --prefix=$TARGET_DIR/__/ --dest-os=android --dest-cpu=$1 --engine-mozilla
+  fi
+  
   ERROR_ABORT_MOVE "mv out $TARGET_DIR" $1
   
   make
@@ -102,8 +110,8 @@ then
   SHOW_USAGE
 fi
 
-LOG $GREEN_COLOR "Compiling JXcore standalone for Android-$2\n"
-MAKE_INSTALL $CPU_TYPE
+LOG $GREEN_COLOR "Compiling JXcore standalone-$3 for Android-$2\n"
+MAKE_INSTALL $CPU_TYPE $3
 
 
-LOG $GREEN_COLOR "jx binary is ready under out_android/sa_$CPU_TYPE/Release/\n"
+LOG $GREEN_COLOR "jx binary is ready under out_android/sa_$CPU_TYPE_$3/Release/\n"
