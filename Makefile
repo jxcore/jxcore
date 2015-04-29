@@ -59,6 +59,9 @@ install: all
 uninstall:
 	$(PYTHON) tools/install.py $@ $(DESTDIR)
 
+zip: all
+	@$(NODE) ./tools/create_download_packages.js
+
 clean:
 	-rm -rf out/Makefile jx jx_g out/$(BUILDTYPE)/jx blog.html email.md
 	-find out/ -name '*.o' -o -name '*.a' | xargs rm -rf
