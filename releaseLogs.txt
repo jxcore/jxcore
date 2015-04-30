@@ -1,4 +1,22 @@
-﻿Nubisa Inc. 2014 (http://nubisa.com)
+JXcore (http://jxcore.io)
+
+----JXcore 3.0.0
+
+- openssl, node core, libuv updates bug fixes
+- SpiderMonkey support
+- ES6 support with SM builds
+- Android and iOS support
+- Android standalone binary release
+- Packaging bug fixes and improvements
+- Multithreading bug fixes
+- Performance improvements
+- Embeddable interface
+- MIPS support
+- HTTP header size default limit removed 
+- Monitoring bug fixes
+- getOSInfo supports additional platforms
+- cmdSync return value is fixed
+- Multiple engine node-gyp support
 
 ----JXcore Beta 2.3.7
 
