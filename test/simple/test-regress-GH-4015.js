@@ -14,5 +14,5 @@ exec(cmd, function(err, stdout, stderr) {
   if(process.versions.v8)
     assert(/RangeError: Maximum call stack size exceeded/.test(stderr));
   else
-    assert(/InternalError: too much recursion/.test(stderr));
+    assert(err.signal == "SIGSEGV");
 });

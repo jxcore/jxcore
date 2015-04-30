@@ -180,12 +180,14 @@ MozJS::Value commons::CreateJSObject(const char *type_name) {
     JS_LOCAL_FUNCTION objectMethod = JS_CAST_FUNCTION(
         JS_COMPILE_AND_RUN(STD_TO_STRING(
                                "(function(type) {\n"
-                               "if(type == 'Error')\n"
-                               "return new Error();\n"
-                               "else if(type == 'TypeError')\n"
-                               "return new TypeError();\n"
-                               "else if(type == 'RangeError')\n"
-                               "return new RangeError();\n"
+                               "  if(type == 'Error')\n"
+                               "    return new Error();\n"
+                               "  else if(type == 'TypeError')\n"
+                               "    return new TypeError();\n"
+                               "  else if(type == 'RangeError')\n"
+                               "    return new RangeError();\n"
+                               "  else\n"
+        	                   "    return new Error();\n"
                                "})"),
                            STD_TO_STRING("native:jxcore_js_object")));
     JSObjectMaker_ = JS_NEW_PERSISTENT_FUNCTION(objectMethod);

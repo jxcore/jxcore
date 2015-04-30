@@ -79,6 +79,7 @@
           var arr = err.stack.join("\n");
           if (arr.length > 4 && arr.substr(arr.length - 3, 2) == 'at')
             arr = arr.substr(0, arr.length - 3);
+          if (!err.name) err.name = "Error";
           return err.name + ": " + err.message + "\n" + arr;
         }
       }

@@ -90,8 +90,11 @@ function error_test() {
       common.error('didn\'t see prompt yet, buffering.');
     }
   });
+  
+  var ijson = process.versions.sm ? /^Error: JSON.parse: expected property name or/ :
+  	                            /^SyntaxError: Unexpected token i/ ;
 
-  send_expect([
+  var arr = [
     // Uncaught error throws and prints out
     { client: client_unix, send: 'throw new Error(\'test error\');',
       expect: /^Error: test error/ },
@@ -113,37 +116,22 @@ function error_test() {
     // invalid input to JSON.parse error is special case of syntax error,
     // should throw
     { client: client_unix, send: 'JSON.parse(\'{invalid: \\\'json\\\'}\');',
-      expect: /^SyntaxError: Unexpected token i/ },
+      expect: ijson
+    },
     // end of input to JSON.parse error is special case of syntax error,
     // should throw
     { client: client_unix, send: 'JSON.parse(\'066\');',
-      expect: /^SyntaxError: Unexpected number/ },
+      expect: process.versions.v8 ? /^SyntaxError: Unexpected number/ : /unexpected/
+    },
     // should throw
     { client: client_unix, send: 'JSON.parse(\'{\');',
-      expect: /^SyntaxError: Unexpected end of input/ },
-    // invalid RegExps are a special case of syntax error,
-    // should throw
-    { client: client_unix, send: '/(/;',
-      expect: /^SyntaxError: Invalid regular expression\:/ },
+      expect: process.versions.v8 ? /^SyntaxError: Unexpected end of input/ : /end of data/
+    },
     // invalid RegExp modifiers are a special case of syntax error,
     // should throw (GH-4012)
     { client: client_unix, send: 'new RegExp("foo", "wrong modifier");',
-      expect: /^SyntaxError: Invalid flags supplied to RegExp constructor/ },
-    // strict mode syntax errors should be caught (GH-5178)
-    { client: client_unix, send: '(function() { "use strict"; return 0755; })()',
-      expect: /^SyntaxError: Octal literals are not allowed in strict mode/ },
-    { client: client_unix, send: '(function() { "use strict"; return { p: 1, p: 2 }; })()',
-      expect: /^SyntaxError: Duplicate data property in object literal not allowed in strict mode/ },
-    { client: client_unix, send: '(function(a, a, b) { "use strict"; return a + b + c; })()',
-      expect: /^SyntaxError: Strict mode function may not have duplicate parameter names/ },
-    { client: client_unix, send: '(function() { "use strict"; with (this) {} })()',
-      expect: /^SyntaxError: Strict mode code may not include a with statement/ },
-    { client: client_unix, send: '(function() { "use strict"; var x; delete x; })()',
-      expect: /^SyntaxError: Delete of an unqualified identifier in strict mode/ },
-    { client: client_unix, send: '(function() { "use strict"; eval = 17; })()',
-      expect: /^SyntaxError: Assignment to eval or arguments is not allowed in strict mode/ },
-    { client: client_unix, send: '(function() { "use strict"; if (true){ function f() { } } })()',
-      expect: /^SyntaxError: In strict mode code, functions can only be declared at top level or immediately within another function/ },
+      expect: process.versions.v8 ? /^SyntaxError: Invalid flags supplied to RegExp constructor/ : /invalid regular expression/ 
+    },
     // Named functions can be used:
     { client: client_unix, send: 'function blah() { return 1; }',
       expect: prompt_unix },
@@ -177,7 +165,42 @@ function error_test() {
       expect: 'http://google.com/' },
     { client: client_unix, send: 'var path = 42; path',
       expect: '42' }
-  ]);
+  ];
+  
+  if (process.versions.v8) {
+    // these are the test cases don't produce an issue for SM
+    
+    arr.push(
+    // invalid RegExps are a special case of syntax error,
+    // should throw
+    { client: client_unix, send: '/(/;',
+      expect: /^SyntaxError: Invalid regular expression\:/
+    });
+    
+    // strict mode syntax errors should be caught (GH-5178)
+    arr.push({ client: client_unix, send: '(function() { "use strict"; return 0755; })()',
+      expect: /^SyntaxError: Octal literals are not allowed in strict mode/ });
+      
+    arr.push({ client: client_unix, send: '(function() { "use strict"; return { p: 1, p: 2 }; })()',
+      expect: /^SyntaxError: Duplicate data property in object literal not allowed in strict mode/ });
+    
+    arr.push({ client: client_unix, send: '(function(a, a, b) { "use strict"; return a + b + c; })()',
+      expect: /^SyntaxError: Strict mode function may not have duplicate parameter names/ });
+    
+    arr.push({ client: client_unix, send: '(function() { "use strict"; with (this) {} })()',
+      expect: /^SyntaxError: Strict mode code may not include a with statement/ });
+    
+    arr.push({ client: client_unix, send: '(function() { "use strict"; var x; delete x; })()',
+      expect: /^SyntaxError: Delete of an unqualified identifier in strict mode/ });
+    
+    arr.push({ client: client_unix, send: '(function() { "use strict"; eval = 17; })()',
+      expect: /^SyntaxError: Assignment to eval or arguments is not allowed in strict mode/ });
+    
+    arr.push({ client: client_unix, send: '(function() { "use strict"; if (true){ function f() { } } })()',
+      expect: /^SyntaxError: In strict mode code, functions can only be declared at top level or immediately within another function/ });
+  }
+  
+  send_expect(arr);
 }
 
 function tcp_test() {
