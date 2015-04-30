@@ -4459,7 +4459,7 @@ CallResolveOp(JSContext *cx, HandleObject obj, HandleId id, MutableHandleObject 
 #define SETTER_EXTERNAL(type)\
 {\
 type* str = (type*)data;\
-type *num = (type*)&number;\
+type *num = reinterpret_cast<type*>(&number);\
 *(str+index) = *num;\
 }
 
@@ -4508,7 +4508,6 @@ inline ObjectStore* JXGetProperty(JSContext *cx, JS::Handle<JSObject*> obj) {
 
     const char* cs_name = o->getClass()->name; // QJXIndexed
     if(cs_name == 0 || cs_name[0] != 'Q' || cs_name[1] != 'J') {
-	  printf("A");
 	  return nullptr;
     }
 
@@ -4538,6 +4537,9 @@ bool jxcore_buffer_setter(JSContext *cx, JS::Handle<JSObject*> obj, JS::Handle<j
       uint32_t number;
       if (vp.isNumber()) {
         number = vp.toNumber();
+#ifdef JS_CPU_ARM
+    	if (number == 0) number = vp.toInt32();
+#endif
       } else if (vp.isString()) {
         char *str_ = JS_EncodeString(cx, vp.toString());
         number = atol(str_);

@@ -398,7 +398,12 @@ int32_t Value::Int32Value() {
   if (empty_) return 0;
 
   if (value_.isNumber()) {
-    return (int32_t)value_.toNumber();
+	int32_t xv = (int32_t)value_.toNumber();
+#ifdef JS_CPU_ARM
+	if (xv == 0)
+	  xv = value_.toInt32();
+#endif
+    return xv;
   } else if (value_.isBoolean()) {
     return value_.toBoolean() ? 1 : 0;
   } else if (value_.isString()) {
@@ -416,6 +421,10 @@ int32_t Value::Int32Value() {
 uint32_t Value::Uint32Value() {
   if (value_.isNumber()) {
     int64_t val64 = (int64_t)value_.toNumber();
+#ifdef JS_CPU_ARM
+	if (val64 == 0)
+	  val64 = -1;
+#endif
     if (val64 >= 0) return (uint32_t)val64;
 
     return value_.toPrivateUint32();
@@ -426,7 +435,12 @@ uint32_t Value::Uint32Value() {
 
 int64_t Value::IntegerValue() {
   if (value_.isNumber()) {
-    return (int64_t)value_.toNumber();
+	int64_t xv = (int64_t)value_.toNumber();
+#ifdef JS_CPU_ARM
+	if (xv == 0)
+	  xv = value_.toInt32();
+#endif
+    return xv;
   }
 
   return Int32Value();
@@ -438,7 +452,7 @@ bool Value::BooleanValue() {
   if (value_.isBoolean())
     return value_.toBoolean();
   else if (value_.isNumber())
-    return value_.toNumber() != 0;
+    return value_.toInt32() != 0;
 
   return !value_.isNullOrUndefined();
 }
