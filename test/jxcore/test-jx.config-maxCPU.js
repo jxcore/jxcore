@@ -11,10 +11,20 @@ var path = require("path");
 
 
 var cmd = '"' + process.execPath + '" ' + path.join(__dirname, "jx_config/maxCPU/test.js");
-cp.exec(cmd, {timeout: 10000}, function (error, stdout, stderr) {
+var child = cp.exec(cmd, {timeout: 10000}, function (error, stdout, stderr) {
 
-  var str = "" + stdout + stderr;
-  console.log(cmd,str);
-  assert.ok(str.indexOf("reached beyond the pre-defined cpu limits") !== -1, "There should be an error. maxCPU not working.")
+  var isAlive = false;
+  try {
+    isAlive = !!process.kill(child.pid, 0);
+  } catch (ex) {
+  }
+
+  assert.notStrictEqual(isAlive, true, "There should be an error. maxCPU not working.");
+
+  // extra check for unix platforms
+  if (process.platform !== "win32") {
+    var str = "" + stdout + stderr;
+    assert.ok(str.indexOf("reached beyond the pre-defined cpu limits") !== -1, "There should be an error. maxCPU not working.")
+  }
 });
 
