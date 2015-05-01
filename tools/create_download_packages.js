@@ -52,13 +52,16 @@ var packFile = function(jxpath) {
     jxtools.rmdirSync(tmp);
 
   fs.mkdirSync(tmp);
-  jxtools.copyFileSync(jxpath, path.join(tmp, path.basename(jxpath)));
+  var newjx = path.join(tmp, path.basename(jxpath));
+  jxtools.copyFileSync(jxpath, newjx);
   jxtools.copyFileSync(path.join(repoPath, "JXCORE_LICENSE"), path.join(tmp, "JXCORE_LICENSE"));
   jxtools.copyFileSync(path.join(repoPath, "releaseLogs.txt"), path.join(tmp, "releaseLogs.txt"));
 
   process.chdir(tmp);
 
   var cmd = "zip -9 " + zip_basename + " *";
+  if (process.platform !== "win32")
+    cmd = "chmod +x " + newjx + "; " + cmd;
   jxcore.utils.console.write("Preparing download package", json.OSInfo.OS_STR + engine, "... ", "magenta");
   var ret = jxcore.utils.cmdSync(cmd);
   process.chdir(__dirname);
@@ -83,6 +86,7 @@ var packFile = function(jxpath) {
   jxtools.copyFileSync(zip, dest);
   jxcore.utils.console.log("OK. Saved at", dest.replace(repoPath, "."), "green");
 
+  jxtools.rmdirSync(tmp);
   done[zip_basename] = true;
 };
 
