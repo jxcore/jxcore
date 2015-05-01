@@ -10,7 +10,18 @@ Go to root folder of jxcore project and;
 ```bash
 $> build_scripts/android-configure.sh ~/androidNDK/
 ```
-This should create `android-toolchain` and `android-toolchain-intel` folders under the project's root folder. We need this folders to prepare Android ARM and Intel binaries. 
+This should create `android-toolchain` and `android-toolchain-intel` folders under the project's root folder. We need this folders to prepare Android ARM, MIPS and Intel binaries. 
+
+### Compile as a Standalone Process
+
+```bash
+$> build_scripts/android_standalone.sh ~/androidNDK/ intel sm
+```
+Instead of 'intel' you can also set 'arm' for ARM target. sm symbolizes Spider Monkey, for V8 engine set 'v8'
+
+When the compilation is completed, you can find the 'jx' binary is available under `out_android` folder.
+
+### Compile as a Static Library
 
 Now we can compile jxcore for android. type;
 ```bash
