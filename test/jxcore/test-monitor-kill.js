@@ -22,6 +22,7 @@ if (fs.existsSync(oldLog))
 
 // monitored app will just create an http server
 var baseFileName = "__test-monitor-run-app-tmp.js";
+var logFileName = "__test-monitor-run-app-tmp-monitor.log";
 var appFileName = __dirname + path.sep + baseFileName;
 
 var str = 'require("http").createServer().listen(8587, "localhost");\n';
@@ -75,26 +76,43 @@ assert.ok(ret.exitCode <= 0, "Monitor did not start after `start` command. \n", 
 
 // ########################## jx monitor run test-monitor-run-app.js
 
-var child = childprocess.exec(cmd + "run " + appFileName);
+// this should be launched in background. & at the end of cmd does not work proper on windows
+var out = fs.openSync(logFileName, 'a');
+var err = fs.openSync(logFileName, 'a');
+var child = childprocess.spawn(process.execPath, [ "monitor", "run", appFileName ] , { detached: true, stdio: [ 'ignore', out, err ] });
+child.unref();
 
-setTimeout(function () {
+var start = Date.now();
+
+var check = function() {
   getJSON(function (err, txt) {
 
     // should be no error and json should be returned with subscribed application data
     // including "pid" number
     if (!err && txt && txt.length && txt.indexOf(baseFileName) > -1) {
       subscribed = true;
+      console.log("subscribed");
+      // app subscribed to the monitor
+      jxcore.utils.cmdSync(cmd + "kill " + appFileName);
+
+      getJSON(function (err, txt) {
+        // should be no error and json should be returned with only []
+        if (!err && txt === "[]") {
+          console.log("killed");
+          killed = true;
+        }
+        finished = true;
+      });
+
+      return;
     }
 
-    // app subscribed to the monitor
-    jxcore.utils.cmdSync(cmd + "kill " + appFileName);
-
-    getJSON(function (err, txt) {
-      // should be no error and json should be returned with only []
-      if (!err && txt === "[]") {
-        killed = true;
-      }
+    if (Date.now() - start < 20000)
+      setTimeout(check, 1000);
+    else
       finished = true;
-    });
   });
-}, 3000);
+};
+
+check();
+

@@ -22,9 +22,10 @@ if (fs.existsSync(oldLog))
 
 // monitored app will just create an http server
 var baseFileName = "__test-monitor-run-app-tmp.js";
+var logFileName = "__test-monitor-run-app-tmp-monitor.log";
 var appFileName = path.join(__dirname, baseFileName);
 
-var str = 'setTimeout(process.exit, 10000);';  // let it end after 10 secs
+var str = 'setTimeout(process.exit, 30000);';  // let it end after 30 secs
 fs.writeFileSync(appFileName, str);
 
 var cmd = '"' + process.execPath + '" monitor ';
@@ -88,23 +89,30 @@ assert.ok(ret.exitCode <= 0, "Monitor did not start after `start` command. \n", 
 
 // ########################## jx monitor run test-monitor-run-app.js
 
-var child = jxcore.utils.cmdSync('(' + cmd + "run " + appFileName + " &)");
+// this should be launched in background. & at the end of cmd does not work proper on windows
+var out = fs.openSync(logFileName, 'a');
+var err = fs.openSync(logFileName, 'a');
+var child = childprocess.spawn(process.execPath, [ "monitor", "run", appFileName ] , { detached: true, stdio: [ 'ignore', out, err ] });
+child.unref();
 
-setTimeout(function () {
+var start = Date.now();
+
+var check = function() {
   getJSON(function (err, txt) {
 
     // should be no error and json should be returned with subscribed application data
     // including "pid" number
     if (!err && txt && txt.length && txt.indexOf(baseFileName) > -1) {
       subscribed = true;
+      finished = true;
+      return;
     }
 
-    // app subscribed to the monitor
-    ret = jxcore.utils.cmdSync(cmd + "stop");
-
-    if (ret.out.indexOf('not online') > 0 || ret.out.indexOf('service is closed') < 0)
-      throw "Monitor was not stopped after `stop` command.";
-
-    finished = true;
+    if (Date.now() - start < 20000)
+      setTimeout(check, 1000);
+    else
+      finished = true;
   });
-}, 3000);
+};
+
+check();
