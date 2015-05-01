@@ -1304,6 +1304,8 @@ int JXEngine::Loop() {
 }
 
 int JXEngine::LoopOnce() {
+  if (this->IsInScope()) return 1;
+
   int ret_val = 0;
   {
     AutoScope _scope_(this, true);
