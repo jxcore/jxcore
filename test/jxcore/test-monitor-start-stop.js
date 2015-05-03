@@ -44,6 +44,13 @@ var createSrv = function (cb) {
 // that cmdSync will not exit sooner that jx monitor cmd will complete
 // so after it completes we wait for another 1 second
 
+
+var errorOccured = function (err) {
+  console.error(err);
+  finished = true;
+  process.exit(1);
+};
+
 // ########################## jx monitor start
 jxcore.utils.cmdSync(cmd + "start");
 setTimeout(function () {
@@ -64,21 +71,20 @@ setTimeout(function () {
             setTimeout(function () {
               createSrv(function (err) {
                 // should not be error
-                assert.ifError(err, "Monitor was not stopped after `stop` command.");
+                if (err)
+                  return errorOccured("Monitor was not stopped after `stop` command.");
                 finished = true;
               })
-            }, 1);
+            }, 1000);
 
+          } else
+            return errorOccured("Monitor did not start after `restart` command.");
 
-          } else {
-            throw "Monitor did not start after `restart` command.";
-          }
         });
       }, 1);
 
+    } else
+      return errorOccured("Monitor did not start after `start` command.");
 
-    } else {
-      throw "Monitor did not start after `start` command.";
-    }
   });
 }, 1);
