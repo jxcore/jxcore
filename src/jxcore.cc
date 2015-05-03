@@ -17,7 +17,7 @@
 #include <windows.h>
 #else
 #include <unistd.h>
-#define Sleep(x) usleep((x) * 1000)
+#define Sleep(x) usleep((x)*1000)
 #endif
 
 #if HAVE_OPENSSL
@@ -799,7 +799,7 @@ void JXEngine::Destroy() {
   JSContext *ctx = main_iso_.ctx_;
   JSRuntime *rt = JS_GetRuntime(ctx);
   {
-	customLock(CSLOCK_JOBS);
+    customLock(CSLOCK_JOBS);
     if (jx_engine_instances.size() == 1)
       node::commons::process_status_ = node::JXCORE_INSTANCE_EXITING;
     else {
@@ -973,7 +973,7 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
 void JXEngine::Destroy() {
   AutoScope _scope_(this, true);
   {
-	customLock(CSLOCK_JOBS);
+    customLock(CSLOCK_JOBS);
     if (jx_engine_instances.size() == 1)
       node::commons::process_status_ = node::JXCORE_INSTANCE_EXITING;
     else
@@ -1201,36 +1201,44 @@ bool JXEngine::ConvertToJXResult(node::commons *com,
   return true;
 }
 
+bool Evaluate_(const char *source, const char *filename, JXResult *result,
+               node::commons *com) {
+  JS_DEFINE_STATE_MARKER(com);
+
+  SET_UNDEFINED(result);
+  result->com_ = com;
+  result->was_stored_ = false;
+
+  JS_LOCAL_STRING source_ = UTF8_TO_STRING(source);
+  JS_LOCAL_STRING filename_ = STD_TO_STRING(filename);
+
+  JS_TRY_CATCH(try_catch);
+
+  JS_LOCAL_SCRIPT script = JS_SCRIPT_COMPILE(source_, filename_);
+
+  if (JS_IS_EMPTY(script)) {
+    MANAGE_EXCEPTION
+  }
+
+  JS_LOCAL_VALUE scr_return = JS_SCRIPT_RUN(script);
+
+  if (try_catch.HasCaught()) {
+    MANAGE_EXCEPTION
+  }
+
+  return JXEngine::ConvertToJXResult(com, scr_return, result);
+}
+
 bool JXEngine::Evaluate(const char *source, const char *filename,
                         JXResult *result) {
   bool ret_val = false;
-  AutoScope _scope_(this, true);
-  {
+  if (!this->IsInScope()) {
+    AutoScope _scope_(this, true);
     JS_ENGINE_SCOPE(main_node_, threadId_ != 0);
 
-    node::commons *com = main_node_;
-    SET_UNDEFINED(result);
-    result->com_ = com;
-    result->was_stored_ = false;
-
-    JS_LOCAL_STRING source_ = UTF8_TO_STRING(source);
-    JS_LOCAL_STRING filename_ = STD_TO_STRING(filename);
-
-    JS_TRY_CATCH(try_catch);
-
-    JS_LOCAL_SCRIPT script = JS_SCRIPT_COMPILE(source_, filename_);
-
-    if (JS_IS_EMPTY(script)) {
-      MANAGE_EXCEPTION
-    }
-
-    JS_LOCAL_VALUE scr_return = JS_SCRIPT_RUN(script);
-
-    if (try_catch.HasCaught()) {
-      MANAGE_EXCEPTION
-    }
-
-    ret_val = JXEngine::ConvertToJXResult(com, scr_return, result);
+    ret_val = Evaluate_(source, filename, result, main_node_);
+  } else {
+    ret_val = Evaluate_(source, filename, result, main_node_);
   }
 
   return ret_val;
