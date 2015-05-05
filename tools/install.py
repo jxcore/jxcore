@@ -99,10 +99,10 @@ def files(action):
     action(['out/Release/jx'], 'bin/jx')
     action(['src/node.d'], 'lib/dtrace/')
   elif variables.get('node_shared_library') == 1:
-    if variables.get('SHARED_OS') == 'posix':
+    if variables.get('SHARED_OS') == 'darwin':
       action(['out/Release/libjx.dylib'], 'bin/')
     else:
-      action(['out/Release/libjx.so'], 'bin/')
+      action(['out/Release/lib.target/libjx.so'], 'bin/')
   else:
     action([
       'out/Release/libjx.a',

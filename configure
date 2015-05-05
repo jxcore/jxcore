@@ -502,7 +502,7 @@ def configure_node(o):
   o['variables']['node_static_library'] = 1 if options.static_library else 0
   o['variables']['node_shared_library'] = 1 if options.shared_library else 0
   if options.shared_library:
-    o['variables']['SHARED_OS'] = os.name
+    o['variables']['SHARED_OS'] = sys.platform
     
   o['variables']['node_engine_mozilla'] = 1 if options.engine_mozilla else 0
   o['variables']['v8_enable_gdbjit'] = 1 if options.gdb else 0

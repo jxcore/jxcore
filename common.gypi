@@ -18,6 +18,10 @@
 
     # Enable V8's post-mortem debugging only on unix flavors.
     'conditions': [
+      ['OS in "linux freebsd" and node_shared_library==1', {
+        'ldflags':[ '-fPIC' ],
+        'cflags':[ '-fPIC' ],
+      }],
       ['OS != "win" and node_engine_mozilla!=1', {
         'v8_postmortem_support': 'true'
       }],

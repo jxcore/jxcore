@@ -407,8 +407,7 @@
           'defines': ['__POSIX__'],
           'ldflags': ['-pthread'],
       }],
-      ['OS=="mac"',
-      {
+      ['OS=="mac"', {
         'libraries': ['-framework Carbon'],
         '!defines': [
           'PLATFORM="darwin"'
@@ -443,8 +442,7 @@
           'PLATFORM="sunos"'
         ],
       }],
-      [
-        'OS in "linux freebsd" and node_shared_v8=="false" and node_engine_mozilla!=1',
+      ['OS in "linux freebsd" and node_shared_v8=="false" and node_engine_mozilla!=1',
         {
           'ldflags': [
             '-Wl,--whole-archive <(V8_BASE) -Wl,--no-whole-archive',
