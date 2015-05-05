@@ -1,8 +1,14 @@
 if [ $# -eq 0 ]
 then
   echo "no argument provided."
-  echo "usage: android_configure <ndk_path>\n"
+  echo "usage: android_configure <ndk_path> <optional ndk version number>\n"
   exit
+fi
+
+ANDROID_TARGET=android-9
+if [ $# -gt 1 ]
+then
+  ANDROID_TARGET="android-$2"
 fi
 
 export TOOLCHAIN=$PWD/android-toolchain-mipsel
@@ -12,7 +18,7 @@ $1/build/tools/make-standalone-toolchain.sh \
     --toolchain=mipsel-linux-android-4.9 \
     --arch=mips \
     --install-dir=$TOOLCHAIN \
-    --platform=android-9
+    --platform=$ANDROID_TARGET
     
 rm $TOOLCHAIN/bin/python
 
@@ -23,7 +29,7 @@ $1/build/tools/make-standalone-toolchain.sh \
     --toolchain=arm-linux-androideabi-4.9 \
     --arch=arm \
     --install-dir=$TOOLCHAIN \
-    --platform=android-9
+    --platform=$ANDROID_TARGET
     
 rm $TOOLCHAIN/bin/python
 
@@ -34,7 +40,7 @@ $1/build/tools/make-standalone-toolchain.sh \
     --toolchain=x86-4.8 \
     --arch=x86 \
     --install-dir=$TOOLCHAIN_INTEL \
-    --platform=android-9
+    --platform=$ANDROID_TARGET
     
 rm $TOOLCHAIN_INTEL/bin/python
 
