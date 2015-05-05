@@ -67,7 +67,7 @@ if /i "%1"=="test"          set test=test&goto arg-ok
 if /i "%1"=="msi"           set msi=1&set licensertf=1&goto arg-ok
 if /i "%1"=="upload"        set upload=1&goto arg-ok
 if /i "%1"=="jslint"        set jslint=1&goto arg-ok
-if /i "%1"=="--shared-library" set static_library=--static-library&goto arg-ok
+if /i "%1"=="--shared-library" set static_library=--shared-library&goto arg-ok
 if /i "%1"=="--engine-mozilla" set engine_mozilla=--engine-mozilla&goto arg-ok
 if /i "%1"=="--compress-internals" set compress_internals=--compress-internals&goto arg-ok
 

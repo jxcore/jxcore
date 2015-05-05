@@ -1606,8 +1606,9 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       if (self.flavor == 'mac' and not 'product_dir' in spec and
           self.toolset == 'target'):
         # On mac, products are created in install_path immediately.
-        assert install_path == self.output, '%s != %s' % (
-            install_path, self.output)
+        install_path = self.output
+        #assert install_path == self.output, '%s != %s' % (
+        #    install_path, self.output)
 
       # Point the target alias to the final binary output.
       self.WriteMakeRule([self.target], [install_path],

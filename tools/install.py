@@ -95,9 +95,14 @@ def subdir_files(path, dest, action):
 
 def files(action):
   
-  if variables.get('node_static_library') == 0:
+  if variables.get('node_static_library') == 0 and variables.get('node_shared_library') == 0:
     action(['out/Release/jx'], 'bin/jx')
     action(['src/node.d'], 'lib/dtrace/')
+  elif variables.get('node_shared_library') == 1:
+    if variables.get('SHARED_OS') == 'posix':
+      action(['out/Release/libjx.dylib'], 'bin/')
+    else:
+      action(['out/Release/libjx.so'], 'bin/')
   else:
     action([
       'out/Release/libjx.a',

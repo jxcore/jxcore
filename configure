@@ -287,6 +287,11 @@ parser.add_option("--static-library",
     dest="static_library",
     help="compile target static library instead executable")
     
+parser.add_option("--shared-library",
+    action="store_true",
+    dest="shared_library",
+    help="compile target shared library instead executable")
+    
 parser.add_option("--engine-mozilla",
     action="store_true",
     dest="engine_mozilla",
@@ -495,6 +500,10 @@ def configure_node(o):
     
   o['variables']['node_compress_internals'] = 1 if options.compress_internals else 0 
   o['variables']['node_static_library'] = 1 if options.static_library else 0
+  o['variables']['node_shared_library'] = 1 if options.shared_library else 0
+  if options.shared_library:
+    o['variables']['SHARED_OS'] = os.name
+    
   o['variables']['node_engine_mozilla'] = 1 if options.engine_mozilla else 0
   o['variables']['v8_enable_gdbjit'] = 1 if options.gdb else 0
   o['variables']['v8_no_strict_aliasing'] = 1 # work around compiler bugs

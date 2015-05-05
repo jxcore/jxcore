@@ -18,6 +18,7 @@
     'node_shared_openssl%': 'false',
     'node_shared_sqlite%': 'false',
     'node_engine_mozilla%': 0,
+    'node_shared_library%': 0,
     'library_files': [
       'lib/jx/_jx_subs.js',
       'lib/jx/_jx_memStore.js',
@@ -172,16 +173,15 @@
       {
         'defines!': ['HAVE_DTRACE'],
         'defines': ['JXCORE_EMBEDDED'],
-        'conditions': [
-          ['OS=="win"',
-          {
-            'type': 'shared_library'
-          },
-          {
-            'type': 'static_library'
-          }],
-        ]
-      },
+        'type': 'static_library'
+      }],
+      ['node_shared_library==1',
+      {
+        'defines!': ['HAVE_DTRACE'],
+        'defines': ['JXCORE_EMBEDDED'],
+        'type': 'shared_library'
+      }],
+      ['node_shared_library==0 and node_static_library==0',
       {
         'type': 'executable',
         'sources': [
