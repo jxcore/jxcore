@@ -1,6 +1,7 @@
 #include "../jx/commons.h"
 #include "../jxcore.h"
 #include "jx_result.h"
+#include "node_buffer.h"
 #ifdef JS_ENGINE_MOZJS
 #include <limits>  // INT_MAX
 #endif
@@ -459,7 +460,24 @@ JX_SetError(JXValue *value, const char *val, const int32_t length) {
 
 JXCORE_EXTERN(void)
 JX_SetBuffer(JXValue *value, const char *val, const int32_t length) {
-  SET_STRING(RT_Buffer, char);
+  UNWRAP_COM(value);
+  UNWRAP_RESULT(value->data_);
+
+  if (wrap == NULL) {
+    wrap = new jxcore::JXValueWrapper();
+    value->data_ = (void *)wrap;
+  } else if (!JS_IS_EMPTY(wrap->value_)) {
+    JS_CLEAR_PERSISTENT(wrap->value_);
+  }
+
+  value->type_ = RT_Buffer;
+  value->size_ = length == 0 ? strlen(val) : length;
+
+  RUN_IN_SCOPE({
+	node::Buffer *buff = node::Buffer::New(val, length, com);
+    JS_LOCAL_OBJECT hval = JS_VALUE_TO_OBJECT(buff->handle_);
+    wrap->value_ = JS_NEW_PERSISTENT_VALUE(hval);
+  });
 }
 
 JXCORE_EXTERN(void)
