@@ -233,6 +233,9 @@ void JXEngine::ParseArgs(int argc, char **argv) {
         flush_console("Mozilla SpiderMonkey v%d\n", MOZJS_VERSION);
 #endif
         exit(0);
+      } else if (strcmp(arg, "--arch") == 0 || strcmp(arg, "-a") == 0) {
+        log_console("%s\n", ARCH);
+        exit(0);
       } else if (strcmp(arg, "--jxversion") == 0 || strcmp(arg, "-jxv") == 0) {
         log_console("%s\n", JXCORE_VERSION);
         exit(0);
