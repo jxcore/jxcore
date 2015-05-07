@@ -209,12 +209,40 @@ JX_GetString(JXValue *value) {
 
   char *ret;
   RUN_IN_SCOPE({
-    if (value->type_ != RT_JSON) {
-      ret = strdup(STRING_TO_STD(wrap->value_));
-    } else {
-      ret = jxcore::JX_Stringify(com, JS_VALUE_TO_OBJECT(wrap->value_),
-                                 &value->size_);
-      MOZ_CLEAR_
+    switch (value->type_) {
+      case RT_String: {
+        ret = strdup(STRING_TO_STD(wrap->value_));
+      } break;
+      case RT_JSON: {
+        JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(wrap->value_);
+
+        {
+          ret = jxcore::JX_Stringify(com, obj, &value->size_);
+          MOZ_CLEAR_
+        }
+
+        bool get_message = false;
+        JS_LOCAL_STRING str_msg;
+        if (strlen(ret) == 2 && ret[1] == '}') {
+          str_msg = STD_TO_STRING("message");
+          if (JS_HAS_NAME(obj, str_msg)) {
+            free(ret);
+            get_message = true;
+          }
+        }
+
+        if (get_message) {
+          JS_LOCAL_VALUE msg = JS_GET_NAME(obj, str_msg);
+          JS_LOCAL_VALUE name = JS_GET_NAME(obj, STD_TO_STRING("name"));
+          std::string err_msg = STRING_TO_STD(name);
+          err_msg += ": ";
+          err_msg += STRING_TO_STD(msg);
+          ret = strdup(err_msg.c_str());
+        }
+      } break;
+      default:
+        // calls JavaScript .toString
+        ret = strdup(STRING_TO_STD(wrap->value_));
     }
   });
 
