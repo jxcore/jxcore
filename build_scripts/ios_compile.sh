@@ -47,6 +47,7 @@ MAKE_INSTALL() {
   rm -rf $PREFIX_DIR/bin
   make install
   ERROR_ABORT_MOVE "mv out $TARGET_DIR" $1
+  rm -rf out/Release
   mv out $TARGET_DIR
 	
   mv $PREFIX_DIR/bin/libcares.a "$PREFIX_DIR/bin/libcares_$1.a"
@@ -61,8 +62,13 @@ MAKE_INSTALL() {
 
 
 MAKE_FAT() {
-	lipo -create "$ARM64/bin/$1_arm64.a" "$ARM7/bin/$1_arm.a" "$ARM7s/bin/$1_armv7s.a" "$INTEL64/bin/$1_x64.a" "$INTEL32/bin/$1_ia32.a" -output "$FATBIN/bin/$1.a"
-	ERROR_ABORT
+  strip -x "$ARM64/bin/$1_arm64.a"
+  strip -x "$ARM7/bin/$1_arm.a"
+  strip -x "$ARM7s/bin/$1_armv7s.a"
+  strip -x "$INTEL64/bin/$1_x64.a"
+  strip -x "$INTEL32/bin/$1_ia32.a"
+  lipo -create "$ARM64/bin/$1_arm64.a" "$ARM7/bin/$1_arm.a" "$ARM7s/bin/$1_armv7s.a" "$INTEL64/bin/$1_x64.a" "$INTEL32/bin/$1_ia32.a" -output "$FATBIN/bin/$1.a"
+  ERROR_ABORT
 }
 
 
