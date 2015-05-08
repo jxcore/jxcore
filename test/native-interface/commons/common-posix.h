@@ -41,13 +41,11 @@ void ConvertResult(JXValue *result, std::string &to_result) {
     } break;
     case RT_Buffer:
     case RT_JSON:
+    case RT_Error:
     case RT_String: {
       char *_ = JX_GetString(result);
       to_result = _;
       free(_);
-    } break;
-    case RT_Error: {
-      to_result = JX_GetString(result);
     } break;
     default:
       to_result = "null";
