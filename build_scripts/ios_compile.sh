@@ -13,9 +13,9 @@ INTEL32=out_ios/ia32
 FATBIN=out_ios/ios
 
 LOG() {
-    COLOR="$1"
-    TEXT="$2"
-    echo -e "${COLOR}$TEXT ${NORMAL_COLOR}"
+  COLOR="$1"
+  TEXT="$2"
+  echo -e "${COLOR}$TEXT ${NORMAL_COLOR}"
 }
 
 
@@ -47,7 +47,7 @@ MAKE_INSTALL() {
   rm -rf $PREFIX_DIR/bin
   make install
   ERROR_ABORT_MOVE "mv out $TARGET_DIR" $1
-  rm -rf out/Release
+  rm out/Release/*.a
   mv out $TARGET_DIR
 	
   mv $PREFIX_DIR/bin/libcares.a "$PREFIX_DIR/bin/libcares_$1.a"
