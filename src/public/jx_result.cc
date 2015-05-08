@@ -320,8 +320,12 @@ JX_CallFunction(JXValue *fnc, JXValue *params, const int argc, JXValue *out) {
       (JS_HANDLE_VALUE *)malloc(sizeof(JS_HANDLE_VALUE) * argc);
 
   for (int i = 0; i < argc; i++) {
-    jxcore::JXValueWrapper *wrap = (jxcore::JXValueWrapper *)params[i].data_;
-    arr[i] = wrap->value_;
+    if (params[i].size_ == 0 || params[i].data_ == NULL) {
+      arr[i] = JS_NULL();
+    } else {
+      jxcore::JXValueWrapper *wrap = (jxcore::JXValueWrapper *)params[i].data_;
+      arr[i] = wrap->value_;
+    }
   }
 
   bool done = false;
@@ -638,9 +642,16 @@ JX_SetNamedProperty(JXValue *object, const char *name, JXValue *prop) {
 
   assert(object->type_ == RT_Object && "object must be an Object");
 
-  jxcore::JXValueWrapper *wrap_prop = (jxcore::JXValueWrapper *)prop->data_;
+  jxcore::JXValueWrapper *wrap_prop = NULL;
+
+  if (prop->size_ != 0 && prop->data_ != NULL) {
+    wrap_prop = (jxcore::JXValueWrapper *)prop->data_;
+  }
+
   RUN_IN_SCOPE({
-    JS_LOCAL_VALUE val = JS_TYPE_TO_LOCAL_VALUE(wrap_prop->value_);
+    JS_LOCAL_VALUE val = wrap_prop != NULL
+                             ? JS_TYPE_TO_LOCAL_VALUE(wrap_prop->value_)
+                             : JS_NULL();
     JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(wrap->value_);
     JS_NAME_SET(obj, JS_STRING_ID(name), val);
   });
@@ -653,9 +664,16 @@ JX_SetIndexedProperty(JXValue *object, const unsigned index, JXValue *prop) {
 
   assert(object->type_ == RT_Object && "object must be an Object");
 
-  jxcore::JXValueWrapper *wrap_prop = (jxcore::JXValueWrapper *)prop->data_;
+  jxcore::JXValueWrapper *wrap_prop = NULL;
+
+  if (prop->size_ != 0 && prop->data_ != NULL) {
+    wrap_prop = (jxcore::JXValueWrapper *)prop->data_;
+  }
+
   RUN_IN_SCOPE({
-    JS_LOCAL_VALUE val = JS_TYPE_TO_LOCAL_VALUE(wrap_prop->value_);
+    JS_LOCAL_VALUE val = wrap_prop != NULL
+                             ? JS_TYPE_TO_LOCAL_VALUE(wrap_prop->value_)
+                             : JS_NULL();
     JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(wrap->value_);
     JS_INDEX_SET(obj, index, val);
   });
