@@ -6,9 +6,9 @@ GREEN_COLOR='\033[0;32m'
 GRAY_COLOR='\033[0;37m'
 
 LOG() {
-    COLOR="$1"
-    TEXT="$2"
-    echo -e "${COLOR}$TEXT ${NORMAL_COLOR}"
+  COLOR="$1"
+  TEXT="$2"
+  echo -e "${COLOR}$TEXT ${NORMAL_COLOR}"
 }
 
 
@@ -54,18 +54,33 @@ MAKE_INSTALL() {
   rm -rf $PREFIX_DIR/bin
   make install
   ERROR_ABORT_MOVE "mv out $TARGET_DIR" $1
+  rm out/Release/*.a
   mv out $TARGET_DIR
   
+  $STRIP -d $PREFIX_DIR/bin/libcares.a
   mv $PREFIX_DIR/bin/libcares.a "$PREFIX_DIR/bin/libcares_$1.a"
+  
+  $STRIP -d $PREFIX_DIR/bin/libchrome_zlib.a
   mv $PREFIX_DIR/bin/libchrome_zlib.a "$PREFIX_DIR/bin/libchrome_zlib_$1.a"
+  
+  $STRIP -d $PREFIX_DIR/bin/libhttp_parser.a
   mv $PREFIX_DIR/bin/libhttp_parser.a "$PREFIX_DIR/bin/libhttp_parser_$1.a"
+  
+  $STRIP -d $PREFIX_DIR/bin/libjx.a
   mv $PREFIX_DIR/bin/libjx.a "$PREFIX_DIR/bin/libjx_$1.a"
+  
+  $STRIP -d $PREFIX_DIR/bin/libmozjs.a
   mv $PREFIX_DIR/bin/libmozjs.a "$PREFIX_DIR/bin/libmozjs_$1.a"
+  
+  $STRIP -d $PREFIX_DIR/bin/libopenssl.a
   mv $PREFIX_DIR/bin/libopenssl.a "$PREFIX_DIR/bin/libopenssl_$1.a"
+  
+  $STRIP -d $PREFIX_DIR/bin/libuv.a
   mv $PREFIX_DIR/bin/libuv.a "$PREFIX_DIR/bin/libuv_$1.a"
+  
+  $STRIP -d $PREFIX_DIR/bin/libsqlite3.a
   mv $PREFIX_DIR/bin/libsqlite3.a "$PREFIX_DIR/bin/libsqlite3_$1.a"
 }
-
 
 COMBINE() {
   cp "$MIPS/bin/$1_mipsel.a" "$FATBIN/bin/"
@@ -90,6 +105,7 @@ export AR=mipsel-linux-android-ar
 export CC=mipsel-linux-android-gcc
 export CXX=mipsel-linux-android-g++
 export LINK=mipsel-linux-android-g++
+export STRIP=mipsel-linux-android-strip
 
 LOG $GREEN_COLOR "Compiling Android MIPS\n"
 MAKE_INSTALL mipsel
@@ -100,6 +116,7 @@ export AR=arm-linux-androideabi-ar
 export CC=arm-linux-androideabi-gcc
 export CXX=arm-linux-androideabi-g++
 export LINK=arm-linux-androideabi-g++
+export STRIP=arm-linux-androideabi-strip
 
 LOG $GREEN_COLOR "Compiling Android ARM7\n"
 MAKE_INSTALL arm
@@ -110,6 +127,7 @@ export AR=x86_64-linux-android-ar
 export CC=x86_64-linux-android-gcc
 export CXX=x86_64-linux-android-g++
 export LINK=x86_64-linux-android-g++
+export STRIP=x86_64-linux-android-strip
 
 LOG $GREEN_COLOR "Compiling Android INTEL64\n"
 MAKE_INSTALL x64
@@ -120,6 +138,7 @@ export AR=i686-linux-android-ar
 export CC=i686-linux-android-gcc
 export CXX=i686-linux-android-g++
 export LINK=i686-linux-android-g++
+export STRIP=i686-linux-android-strip
 
 LOG $GREEN_COLOR "Compiling Android INTEL32\n"
 MAKE_INSTALL ia32
