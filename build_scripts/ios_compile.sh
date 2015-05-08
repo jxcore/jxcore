@@ -37,6 +37,12 @@ ERROR_ABORT_MOVE() {
   fi
 }
 
+NO_STRIP=0
+if [[ $1 == "--no-strip" ]]
+then
+  NO_STRIP=1
+fi
+
 
 MAKE_INSTALL() {
   TARGET_DIR="out_$1_ios"
@@ -62,11 +68,15 @@ MAKE_INSTALL() {
 
 
 MAKE_FAT() {
-  strip -x "$ARM64/bin/$1_arm64.a"
-  strip -x "$ARM7/bin/$1_arm.a"
-  strip -x "$ARM7s/bin/$1_armv7s.a"
-  strip -x "$INTEL64/bin/$1_x64.a"
-  strip -x "$INTEL32/bin/$1_ia32.a"
+  if [[ $NO_STRIP == 0 ]]
+  then
+    strip -x "$ARM64/bin/$1_arm64.a"
+    strip -x "$ARM7/bin/$1_arm.a"
+    strip -x "$ARM7s/bin/$1_armv7s.a"
+    strip -x "$INTEL64/bin/$1_x64.a"
+    strip -x "$INTEL32/bin/$1_ia32.a"
+  fi
+  
   lipo -create "$ARM64/bin/$1_arm64.a" "$ARM7/bin/$1_arm.a" "$ARM7s/bin/$1_armv7s.a" "$INTEL64/bin/$1_x64.a" "$INTEL32/bin/$1_ia32.a" -output "$FATBIN/bin/$1.a"
   ERROR_ABORT
 }
