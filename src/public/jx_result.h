@@ -87,6 +87,9 @@ JXCORE_EXTERN(bool)
 JX_IsNull(JXValue *value);
 
 JXCORE_EXTERN(bool)
+JS_IsNullOrUndefined(JXValue *value);
+
+JXCORE_EXTERN(bool)
 JX_IsObject(JXValue *value);
 
 JXCORE_EXTERN(int32_t)

@@ -128,6 +128,13 @@ JX_IsNull(JXValue *value) {
 }
 
 JXCORE_EXTERN(bool)
+JX_IsNullOrUndefined(JXValue *value) {
+  NULL_CHECK
+  return value->type_ == RT_Null || value->size_ == 0 ||
+         value->type_ == RT_Undefined;
+}
+
+JXCORE_EXTERN(bool)
 JX_IsObject(JXValue *value) {
   NULL_CHECK
   return value->type_ == RT_Object;
@@ -285,7 +292,7 @@ JX_Free(JXValue *value) {
   value->type_ = RT_Undefined;
 
   if (value->was_stored_) {
-	// compiler will be optimizing this anyways..
+    // compiler will be optimizing this anyways..
     value->was_stored_ = false;
     delete value;
   }
@@ -502,7 +509,7 @@ JX_SetBuffer(JXValue *value, const char *val, const int32_t length) {
   value->size_ = length == 0 ? strlen(val) : length;
 
   RUN_IN_SCOPE({
-	node::Buffer *buff = node::Buffer::New(val, length, com);
+    node::Buffer *buff = node::Buffer::New(val, length, com);
     JS_LOCAL_OBJECT hval = JS_VALUE_TO_OBJECT(buff->handle_);
     wrap->value_ = JS_NEW_PERSISTENT_VALUE(hval);
   });
