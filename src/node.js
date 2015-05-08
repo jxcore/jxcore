@@ -2314,6 +2314,8 @@
         str = target + " " + targetBin + " install "
         + (process.argv.slice(2).join(" "));
       }
+      if (str.indexOf("--loglevel") === -1)
+        str += " --loglevel http ";
       var ec = exec(str, {
         maxBuffer: 1e8
       }, function (error, stdout, stderr) {
