@@ -511,6 +511,8 @@ cases.
 ## process.arch
 
 What processor architecture you're running on: `'arm'`, `'ia32'`, or `'x64'`.
+To be more precise, it indicates the architecture, for which the current jx binary was compiled.
+If, for example, on x64 platforms you will use jx compiled for x32 processors, `process.arch` will contain the `ia32` value.
 
     console.log('This processor architecture is ' + process.arch);
 
