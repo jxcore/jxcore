@@ -100,7 +100,7 @@ JX_IsBoolean(JXValue *value) {
 JXCORE_EXTERN(bool)
 JX_IsString(JXValue *value) {
   NULL_CHECK
-  return value->size_ > 0 && value->type_ == RT_String;
+  return value->size_ >= 0 && value->type_ == RT_String;
 }
 
 JXCORE_EXTERN(bool)
@@ -118,7 +118,7 @@ JX_IsBuffer(JXValue *value) {
 JXCORE_EXTERN(bool)
 JX_IsUndefined(JXValue *value) {
   NULL_CHECK
-  return value->size_ == 0 || value->type_ == RT_Undefined;
+  return value->type_ == RT_Undefined;
 }
 
 JXCORE_EXTERN(bool)
@@ -130,8 +130,7 @@ JX_IsNull(JXValue *value) {
 JXCORE_EXTERN(bool)
 JX_IsNullOrUndefined(JXValue *value) {
   NULL_CHECK
-  return value->type_ == RT_Null || value->size_ == 0 ||
-         value->type_ == RT_Undefined;
+  return value->type_ == RT_Null || value->type_ == RT_Undefined;
 }
 
 JXCORE_EXTERN(bool)
@@ -140,11 +139,9 @@ JX_IsObject(JXValue *value) {
   return value->type_ == RT_Object;
 }
 
-#define EMPTY_CHECK(x)                                \
-  if (value == NULL) return x;                        \
-  if (value->size_ == 0 || value->type_ == RT_Null || \
-      value->type_ == RT_Undefined)                   \
-  return x
+#define EMPTY_CHECK(x)         \
+  if (value == NULL) return x; \
+  if (value->type_ == RT_Null || value->type_ == RT_Undefined) return x
 
 #define UNWRAP_RESULT(x) \
   jxcore::JXValueWrapper *wrap = (jxcore::JXValueWrapper *)x
@@ -271,7 +268,9 @@ JX_Free(JXValue *value) {
 
   UNWRAP_COM(value);
 
-  if (value->data_ == NULL || value->size_ == 0) return;
+  if (value->data_ == NULL || value->type_ == RT_Undefined ||
+      value->type_ == RT_Null)
+    return;
 
   RUN_IN_SCOPE({
     if (value->type_ == RT_Function) {
@@ -320,7 +319,8 @@ JX_CallFunction(JXValue *fnc, JXValue *params, const int argc, JXValue *out) {
       (JS_HANDLE_VALUE *)malloc(sizeof(JS_HANDLE_VALUE) * argc);
 
   for (int i = 0; i < argc; i++) {
-    if (params[i].size_ == 0 || params[i].data_ == NULL) {
+    if (params[i].type_ == RT_Undefined || params[i].type_ == RT_Null ||
+        params[i].data_ == NULL) {
       arr[i] = JS_NULL();
     } else {
       jxcore::JXValueWrapper *wrap = (jxcore::JXValueWrapper *)params[i].data_;
@@ -550,7 +550,8 @@ JX_SetObject(JXValue *value_to, JXValue *value_from) {
 
 JXCORE_EXTERN(bool)
 JX_MakePersistent(JXValue *value) {
-  assert(value->com_ != NULL && value->size_ != 0 &&
+  assert(value->com_ != NULL && value->type_ != RT_Undefined &&
+         value->type_ != RT_Null &&
          "Empty, Null or Undefined JS Value can not be persistent");
 
   bool pre = value->persistent_;
@@ -561,7 +562,8 @@ JX_MakePersistent(JXValue *value) {
 
 JXCORE_EXTERN(bool)
 JX_ClearPersistent(JXValue *value) {
-  assert(value->com_ != NULL && value->size_ != 0 &&
+  assert(value->com_ != NULL && value->type_ != RT_Undefined &&
+         value->type_ != RT_Null &&
          "Empty, Null or Undefined JS Value can not be persistent");
 
   bool pre = value->persistent_;
@@ -644,7 +646,8 @@ JX_SetNamedProperty(JXValue *object, const char *name, JXValue *prop) {
 
   jxcore::JXValueWrapper *wrap_prop = NULL;
 
-  if (prop->size_ != 0 && prop->data_ != NULL) {
+  if (prop->type_ != RT_Undefined && prop->type_ != RT_Null &&
+      prop->data_ != NULL) {
     wrap_prop = (jxcore::JXValueWrapper *)prop->data_;
   }
 
@@ -666,7 +669,8 @@ JX_SetIndexedProperty(JXValue *object, const unsigned index, JXValue *prop) {
 
   jxcore::JXValueWrapper *wrap_prop = NULL;
 
-  if (prop->size_ != 0 && prop->data_ != NULL) {
+  if (prop->type_ != RT_Undefined && prop->type_ != RT_Null &&
+      prop->data_ != NULL) {
     wrap_prop = (jxcore::JXValueWrapper *)prop->data_;
   }
 

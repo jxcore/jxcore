@@ -71,7 +71,8 @@ JS_LOCAL_METHOD(extensionCallback) {
   }
 
   if (results[len].type_ != RT_Undefined) {
-    assert(results[len].data_ != NULL && results[len].size_ != 0 &&
+    assert(results[len].data_ != NULL && (results[len].size_ != 0 ||
+		   results[len].type_ == RT_String) &&
            "Return value was corrupted");
 
     if (results[len].type_ == RT_Error) {

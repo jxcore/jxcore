@@ -1145,6 +1145,8 @@ bool JXEngine::ConvertToJXResult(node::commons *com,
     return true;
   }
 
+  result->type_ = RT_Null;
+
   if (JS_IS_BOOLEAN(ret_val)) {
     result->type_ = RT_Boolean;
     result->size_ = sizeof(bool);
@@ -1171,7 +1173,7 @@ bool JXEngine::ConvertToJXResult(node::commons *com,
     result->size_ = JS_GET_STRING_LENGTH(str);
   }
 
-  if (result->size_ != 0) {
+  if (result->type_ != RT_Null) {
     JXValueWrapper *pr_wrap = new JXValueWrapper(ret_val);
     result->data_ = (void *)pr_wrap;
     return true;
