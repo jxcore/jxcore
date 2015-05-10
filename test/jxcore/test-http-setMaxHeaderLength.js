@@ -37,7 +37,6 @@ var buf = new Array(headerlength + 1).join("a");
 var shouldBeNoError = (maxHeaderLength === 0) || maxHeaderLength > headerlength;
 var port = 8765 + process.threadId;
 var error = false;
-var finished = false;
 
 // ########   server
 
@@ -49,7 +48,7 @@ var srv = http.createServer(function (req, res) {
 
 srv.on('error', function (e) {
   jx.throwMT("Server error: \n" + e);
-  finish();
+  process.exit(1);
 });
 
 srv.on("listening", function () {
@@ -58,20 +57,18 @@ srv.on("listening", function () {
 srv.listen(port, "localhost");
 
 var done = function() {
-  assert.ok(finished, "Test unit did not finish.");
-  assert.ok(shouldBeNoError === !error, "Condition failed.");
+  if (shouldBeNoError && !error)
+    assert.strictEqual(shouldBeNoError, !error, "There should be an error: 'Request is denied for security reasons'");
   if (process.subThread)
     process.release();
 };
 
 var finish = function (req) {
-  if (req) {
+  if (req)
     req.abort();
-  }
   setTimeout(function () {
     srv.unref();
   }, 700);
-  finished = true;
   done();
 };
 
@@ -94,16 +91,13 @@ var client = function () {
 
   req.on("error", function (err) {
     error = true;
-    if (shouldBeNoError) {
-      assert.ifError(err, "client error!\n" + err);
-    }
+    if (shouldBeNoError)
+      assert.ok(!!err, "client error!\n" + err);
     finish(req);
   });
 
-  if (!shouldBeNoError) {
-    console.log(undefined);
-    jxcore.utils.console.log("Error expected:", "green");
-  }
+  if (!shouldBeNoError)
+    jxcore.utils.console.log("Error 'Request is denied for security reasons' expected:", "green");
 
   req.end();
 };
