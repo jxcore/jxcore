@@ -6,7 +6,7 @@ void callback(JXValue *results, int argc) {
 }
 
 const char compare_base[10] = {'1', '4', 't', 't', '{',
-                               'A', 'u', 'n', '{', 'n'};
+                               'A', 'u', 'n', 'E', 'n'};
 
 void sampleMethod(JXValue *results, int argc) {
   for (int i = 0; i < argc; i++) {
