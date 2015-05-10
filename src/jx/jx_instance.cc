@@ -337,10 +337,12 @@ JS_METHOD(JXInstance, refWaitCounter) {
 JS_METHOD_END
 
 JS_METHOD(JXInstance, CallBack) {
-  if (args.Length() == 1) {
+  if (args.Length() == 1 && args.IsString(0)) {
     jxcore::JXString jxs;
     int ln = args.GetString(0, &jxs);
     jxcore::SendMessage(0, *jxs, ln, false);
+  } else {
+    THROW_EXCEPTION("JXInstance::Callback expects a string argument");
   }
 }
 JS_METHOD_END
