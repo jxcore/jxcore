@@ -602,13 +602,21 @@ JS_LOCAL_VALUE ExecuteString(jxcore::JXString* source,
   JS_LOCAL_SCRIPT script = JS_SCRIPT_COMPILE(source_, filename_);
   if (JS_IS_EMPTY(script)) {
     ReportException(try_catch, true);
+#ifndef JXCORE_EMBEDDED
     exit(3);
+#else
+    return;
+#endif
   }
   result = JS_SCRIPT_RUN(script);
 
   if (try_catch.HasCaught()) {
     ReportException(try_catch, true);
+#ifndef JXCORE_EMBEDDED
     exit(4);
+#else
+    return;
+#endif
   }
 
   return JS_LEAVE_SCOPE(result);
@@ -2202,7 +2210,12 @@ void Load(JS_HANDLE_OBJECT process_l) {
   JS_LOCAL_VALUE f_value = ExecuteString(&str, &fname);
   if (try_catch.HasCaught()) {
     ReportException(try_catch, true);
+#ifndef JXCORE_EMBEDDED
     exit(10);
+#else
+    error_console("!!!!Couldn't Initialize JXcore!!!");
+    return;
+#endif
   }
   assert(JS_IS_FUNCTION(f_value));
   JS_LOCAL_FUNCTION f = JS_CAST_FUNCTION(f_value);

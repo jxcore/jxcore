@@ -468,7 +468,11 @@ void JXEngine::Init() {
 
   if (instance_inited_) {
     error_console("JXEngine was already Init'ed\n");
+#ifndef JXCORE_EMBEDDED
     exit(1);
+#else
+    return;
+#endif
   }
 
   instance_inited_ = true;
@@ -491,7 +495,11 @@ void JXEngine::MemoryMap(const char *filename, const char *content,
           "You can set only 1 entry file per engine instance. You've already "
           "set %s\n",
           entry_file_name_.c_str());
-      exit(1);
+#ifndef JXCORE_EMBEDDED
+    exit(1);
+#else
+    return;
+#endif
     }
     entry_file_name_ = filename;
   }
