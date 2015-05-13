@@ -16,7 +16,7 @@ var path = require("path");
 
 var checkFile = function (assetPath) {
 
-  // we will compare file contents between file from read file system and file from jx assets
+  // we will compare file contents between file read from file system and file read from jx assets
 
   // we run jx package from `_auto_jxcore_package` folder
   // but we want to compare the asset content with real file located at `jxcore`,
@@ -35,7 +35,7 @@ var checkFile = function (assetPath) {
     }
   }
 
-  assert.strictEqual(realContents.length, assetsDirContents.length, "Error while testing readDirSync() on assets path: " + assetPath + "\Incorrect array lenght.\nfrom assets dir: \t`" + assetsDirContents.length + "`\nfrom disk dir: \t`" + realContents.length + "`");
+  assert.strictEqual(realContents.length, assetsDirContents.length, "Error while testing readdirSync() on assets path: " + assetPath + "\Incorrect array lenght.\nfrom assets dir: \t`" + assetsDirContents.length + "`\nfrom disk dir: \t`" + realContents.length + "`");
 };
 
 checkFile("assets");
