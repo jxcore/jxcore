@@ -229,7 +229,7 @@
         process.exit(1);
       }
     }
-    
+
     if (!process.isPackaged) {
       delete (process.isPackaged);
     } else {
@@ -1565,13 +1565,19 @@
   var cjx = function (argv) {
     var path = NativeModule.require('path');
     var console = NativeModule.require('console');
+    var fs = NativeModule.require('fs');
 
     var executer = null;
     var sss = argv[2].split('|');
     if (sss.length > 1) executer = sss[1];
     var fol = sss[0];
     fol = (path.relative(process.cwd(), fol));
-    
+
+    if (!fs.existsSync(path.join(process.cwd(), fol))) {
+      jxcore.utils.console.error("Project startup file does not exist:", fol, "red");
+      process.exit(1);
+    }
+
     var startup_extension = path.extname(fol);
     if (startup_extension.toLowerCase() != '.js') {
       jxcore.utils.console.log("Project startup file must have a .js extension.", "red");
