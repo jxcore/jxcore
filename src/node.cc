@@ -605,7 +605,7 @@ JS_LOCAL_VALUE ExecuteString(jxcore::JXString* source,
 #ifndef JXCORE_EMBEDDED
     exit(3);
 #else
-    return;
+    return JS_UNDEFINED();
 #endif
   }
   result = JS_SCRIPT_RUN(script);
@@ -615,7 +615,7 @@ JS_LOCAL_VALUE ExecuteString(jxcore::JXString* source,
 #ifndef JXCORE_EMBEDDED
     exit(4);
 #else
-    return;
+    return JS_UNDEFINED();
 #endif
   }
 
@@ -2212,12 +2212,18 @@ void Load(JS_HANDLE_OBJECT process_l) {
     ReportException(try_catch, true);
 #ifndef JXCORE_EMBEDDED
     exit(10);
+  }
+  assert(JS_IS_FUNCTION(f_value));
 #else
     error_console("!!!!Couldn't Initialize JXcore!!!");
     return;
-#endif
   }
-  assert(JS_IS_FUNCTION(f_value));
+
+  if (JS_IS_UNDEFINED(f_value)) {
+    return;
+  }
+#endif
+
   JS_LOCAL_FUNCTION f = JS_CAST_FUNCTION(f_value);
 
   // Now we call 'f' with the 'process' variable that we've built up with
