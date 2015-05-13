@@ -1653,7 +1653,7 @@
     }
 
     if (ext != '.jxp') {
-      console.log("unknown JX project type '" + fn + "'", "red");
+      console.error("unknown JX project type '" + fn + "'", "red");
       process.exit(1);
       return;
     }
@@ -1664,7 +1664,7 @@
       xt = xt.trim();
       proj = JSON.parse(stripBOM(xt));
     } catch (e) {
-      console.log(e);
+      console.error(e);
       process.exit(1);
       return;
     }
@@ -1674,18 +1674,23 @@
     }
 
     if (!proj) {
-      console.log("corrupted JSON in jxp file", "red");
+      console.error("corrupted JSON in jxp file", "red");
       process.exit(1);
       return;
+    }
+
+    if (!fss.existsSync(path.join(process.cwd(), proj.startup))) {
+      console.error("Project startup file does not exist:", proj.startup, "red");
+      process.exit(1);
     }
 
     proj.startup = "./" + proj.startup;
     var startup_extension = path.extname(proj.startup);
     if (startup_extension.toLowerCase() != '.js') {
-      console.log("Project startup file must have a .js extension.", "red");
+      console.error("Project startup file must have a .js extension.", "red");
       process.exit(1);
     }
-    
+
     
     if (!proj.files || !proj.files.length) {
       console
@@ -1699,7 +1704,7 @@
       var str = "Compiling " + proj.name + " " + proj.version;
       console.log(str, "green");
     } else {
-      console.log(
+      console.error(
         "'name', 'version' and 'output' fields must be defined inside the J"
         + "XP file", "red");
       process.exit(1);
@@ -1723,13 +1728,13 @@
         var x = "" + fss.readFileSync(fn);
         proj = JSON.parse(x);
       } catch (e) {
-        console.log(e);
+        console.error(e);
         process.exit();
         return;
       }
 
       if (!proj) {
-        console.log("corrupted JSON in '" + fn + "' file", red);
+        console.error("corrupted JSON in '" + fn + "' file", red);
         process.exit(1);
         return;
       }
@@ -1876,7 +1881,7 @@
           asset_content = fss.readFileSync(fn);
           _stat = fss.statSync(fn);
         } catch (e) {
-          console.log(e, "red");
+          console.error(e, "red");
           process.exit(1);
           return;
         }
@@ -1921,7 +1926,7 @@
       try {
         ct_license = "" + fss.readFileSync(fn);
       } catch (e) {
-        console.log(e);
+        console.error(e);
         process.exit();
         return;
       }
@@ -1938,7 +1943,7 @@
       try {
         content = "" + fss.readFileSync(fn);
       } catch (e) {
-        console.log(e);
+        console.error(e);
         process.exit();
         return;
       }
