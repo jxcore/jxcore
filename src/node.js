@@ -238,6 +238,7 @@
 
     var __ops = {
       install: false,
+      npm: false,
       compile: false,
       package: false,
       packagetojx: false
@@ -280,7 +281,7 @@
       co.log('Processing the folder..');
       cjx(process.argv);
       return;
-    } else if (__ops.install) {
+    } else if (__ops.install || __ops.npm) {
       NativeModule.installer();
       return;
     } else if (process.argv[1] == 'debug') {
@@ -2315,6 +2316,11 @@
       if (name.indexOf("-") === 0 && name.indexOf("--") < 0
         && name.trim() != "-g") {
         process.argv[2] = process.argv[2].substr(1);
+        str = target + " " + targetBin + " "
+        + (process.argv.slice(2).join(" "));
+        cmd = true;
+      } else
+      if (process.argv[1] === "npm") {
         str = target + " " + targetBin + " "
         + (process.argv.slice(2).join(" "));
         cmd = true;
