@@ -152,7 +152,7 @@
       'PLATFORM="<(OS)"', #'NODE_TAG="<(node_tag)"',
     ],
 
-    'cflags!': ['-ansi'],
+    'cflags!': ['-ansi -pie -fPIE'],
 
     'conditions': [
       ['node_compress_internals!=1',
@@ -405,7 +405,7 @@
       },
       {#POSIX
           'defines': ['__POSIX__'],
-          'ldflags': ['-pthread'],
+          'ldflags': ['-pthread -pie -fPIE'],
       }],
       ['OS=="mac"', {
         'libraries': ['-framework Carbon'],
