@@ -12,39 +12,38 @@ var assert = require('assert');
 var path = require("path");
 var fs = require("fs");
 
-
 var native = process.argv[process.argv.length - 1] == "native";
+var ext = "";
+if (!native)
+  ext = ".jx";
+else
+  ext = process.platform === "win32" ? ".exe" : "";
 
-var cwd = process.cwd();
-var file_js = path.join(__dirname, "assets/node_path/file.js");
-var file_jx = path.join(__dirname, "assets/node_path/file");
-var file_jxp = path.join(__dirname, "assets/node_path/file.jxp");
-file_jx += (native ? ".exe" : ".jx");
+var dir = path.join(__dirname, "assets/node_path");
+var file_jx_basename = "file" + ext;
+var file_jx = path.join(dir, file_jx_basename);
+var file_jxp = path.join(dir, "file.jxp");
+var file_win_bat = path.join(dir, "test_win.bat");
+
+process.on('exit', function () {
+  if (fs.existsSync(file_jx)) fs.unlinkSync(file_jx);
+  if (fs.existsSync(file_jxp)) fs.unlinkSync(file_jxp);
+  if (fs.existsSync(file_win_bat)) fs.unlinkSync(file_win_bat);
+});
 
 if (fs.existsSync(file_jx))
   fs.unlinkSync(file_jx);
 
 // creating the package
-process.chdir(path.dirname(file_js));
-var cmd = '"' + process.execPath + '" package file.js file -slim file.jx,file.exe';
-cmd += (native ? " -native" : "");
+process.chdir(dir);
+var cmd = '"' + process.execPath + '" package file.js -add' + (native ? " -native" : "");
 var ret = jxcore.utils.cmdSync(cmd);
-//console.log(ret);
-process.chdir(cwd);
 
-if (native)
-  fs.renameSync(file_jx.replace(".exe", ''), file_jx);
-
-if (!fs.existsSync(file_jx))
-  throw "Package is not ready:\n" + file_jx;
-
-var dir = path.dirname(file_jx);
-
-
-process.on('exit', function() {
-  if (fs.existsSync(file_jx)) fs.unlinkSync(file_jx);
-  if (fs.existsSync(file_jxp)) fs.unlinkSync(file_jxp);
-});
+if (!fs.existsSync(file_jx)) {
+  console.error("Package is not ready:\n" + file_jx);
+  console.error(ret.out);
+  process.exit(1);
+}
 
 // -------------   exec part
 
@@ -52,14 +51,24 @@ process.on('exit', function() {
 var node_path = path.join(__dirname, "assets/subfolder2");
 
 // running the package with NODE_PATH (works also on windows)
-var c = process.platform === 'win32' ? "set" : "export";
-var cmd = 'cd ' + dir + ' && ' + c + ' NODE_PATH=' + node_path + ' &&';
-if (native) {
-  var fname = path.basename(file_jx);
-  if (process.platform !== 'win32') fname = "./" + fname;
-  cmd += fname;
+if (process.platform === 'win32') {
+  var arr = [];
+  arr.push("set NODE_PATH=" + node_path);
+  if (native)
+    arr.push(file_jx_basename);  // file
+  else
+    arr.push('"' + process.execPath + '" ' + file_jx_basename);  // jx file.jx
+
+  // on windows we have to run bat file, because "set NODE_PATH... && jx file.jx"
+  // does not work properly when called in one-liner
+  fs.writeFileSync(file_win_bat, arr.join("\n"));
+  var cmd = file_win_bat;
 } else {
-  cmd += '"' + process.execPath + '" ' + path.basename(file_jx);
+  var cmd = "export NODE_PATH=" + node_path + " && ";
+  if (native)
+    cmd += "./" + file_jx_basename;  // ./file
+  else
+    cmd += '"' + process.execPath + '" ' + file_jx_basename;  // jx file.jx
 }
 
 var ret = jxcore.utils.cmdSync(cmd);
