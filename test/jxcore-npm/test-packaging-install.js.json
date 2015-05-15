@@ -5,7 +5,8 @@
     {"argv": "boo"},
     {"argv": "express"},
     {"argv": "passport"},
-    {"argv": "mongoose"}
+    {"argv": "mongoose"},
+    {"argv": "tar.gz"}
   ],
   "package": false,
   "native": false

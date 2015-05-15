@@ -1,1 +1,0 @@
-"/Users/nubisa_krzs/Documents/GitHubNew/jxcore/out/Release/jx" install express

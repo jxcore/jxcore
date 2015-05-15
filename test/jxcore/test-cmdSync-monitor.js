@@ -4,7 +4,10 @@
 if (process.isPackaged)
   return;
 
-var assert = require('assert');
+var assert = require('assert'),
+  jxtools = require("jxtools");
+
+jxtools.listenForSignals();
 
 var cmd = '"' + process.execPath + '" monitor ';
 

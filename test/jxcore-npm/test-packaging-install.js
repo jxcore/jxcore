@@ -8,6 +8,7 @@
 // -------------   init part
 
 var jx = require('jxtools');
+jx.listenForSignals();
 var assert = jx.assert;
 
 var fs = require("fs");
@@ -44,6 +45,11 @@ fs.chmodSync(batch, "755");
 
 var child = cp.exec(batch, null, function (error, stdout, stderr) {
 
+  if (error) {
+    jxcore.utils.console.error("Cannot execute:", batch, ":\n", error);
+    process.exit(1);
+  }
+
   var jx_path = path.join(dir, moduleName + ".jx");
   var npm_path = path.join(dir_modules, moduleName);
   var jx_ok = fs.existsSync(jx_path);
@@ -53,7 +59,7 @@ var child = cp.exec(batch, null, function (error, stdout, stderr) {
 
   if (jx_ok || npm_ok) {
     try {
-      console.log("require() for " + str_path.replace(process.cwd() + path.sep, ""));
+      //console.log("require() for " + str_path.replace(process.cwd() + path.sep, ""));
       require(str_path);
     } catch (ex) {
       throw "Error while require('" + str_path + "'):\n" + ex;

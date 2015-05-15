@@ -9,7 +9,10 @@ var http = require("http"),
   fs = require('fs'),
   path = require("path"),
   childprocess = require("child_process"),
-  assert = require('assert');
+  assert = require('assert'),
+  jxtools = require("jxtools");
+
+jxtools.listenForSignals();
 
 var port = 17777;
 var finished = false;

@@ -6,6 +6,8 @@ var cp = require("child_process");
 var prepare_packages = require("./prepare_packages");
 var jx = require("jxtools");
 
+jx.listenForSignals();
+
 var flags_id = process.argv.indexOf("-flags");
 var flags = "_";
 if (flags_id !== -1) {
@@ -229,6 +231,12 @@ process.on('exit', function() {
         }
       }
     }
+
+    try {
+      var nul_file = path.join(__dirname, "../NUL");
+      if (fs.existsSync(nul_file))
+        fs.unlinkSync(nul_file);
+    } catch (ex) {}
 
     jx.rmdirSync(path.join(__dirname, "tmp_jx"));
   }
