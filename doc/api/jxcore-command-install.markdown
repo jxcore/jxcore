@@ -32,11 +32,17 @@ In case if you would like to install different `version` of this package, you ca
 
 Please note that you don’t need to have the npm tool installed on your machine.
 
-For other `npm commands` you can call `jx install -[npm command]`
+### npm
 
-for example;
+For any npm command you can call `jx npm [command]`, for example:
+
+    > jx npm ls
+    > jx npm version
+    > jx npm uninstall express
+
+Formerly this could be achieved with `jx install -[npm command]`.
+Although this method is still available, it becomes **depreciated** as of now and may be removed in future releases:
 
     > jx install -ls
-    > jx install
-    > jx install --production
-
+    > jx install -version
+    > jx install -uninstall express
