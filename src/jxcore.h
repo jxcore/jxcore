@@ -44,14 +44,24 @@ class JXEngine {
   int threadId_;
 
   inline void EnterScope() {
+#ifdef JS_ENGINE_V8
     assert(!inside_scope_ && "JXEngine was already in a scope");
     inside_scope_ = true;
+#endif
   }
   inline void LeaveScope() {
+#ifdef JS_ENGINE_V8
     assert(inside_scope_ && "JXEngine was already outside of a scope");
     inside_scope_ = false;
+#endif
   }
-  inline bool IsInScope() { return inside_scope_; }
+  inline bool IsInScope() {
+#ifdef JS_ENGINE_V8
+    return inside_scope_;
+#else
+    return true;
+#endif
+  }
 
   // internal
   static void InitializeProxyMethods(node::commons *com);
