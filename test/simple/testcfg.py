@@ -160,10 +160,12 @@ class SimpleTestConfiguration(test.TestConfiguration):
             if not exists(nd):
               mkdir(nd)
             cwd = os.getcwd()
-            fh = open("NUL","w")
+            fh = open("py_install.log","w")
             popen = subprocess.Popen( args = [ join(cwd, self.context.GetVm(mode)), 'install', dep ], cwd = dir, stdout = fh)
             popen.wait();
             fh.close()
+            if exists("py_install.log"):
+              os.unlink("py_install.log")
 
           if j and j.get("args"):
             for argv in j["args"]:
