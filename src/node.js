@@ -1813,9 +1813,9 @@
     var cw = process.stdout.columns;
     // it may show 0, e.g. on android
     if (!cw) {
-      var _ret = jxcore.utils.console.log("resize");
+      var _ret = jxcore.utils.cmdSync("echo $COLUMNS");
       if (!_ret.exitCode) {
-        cw = parseInt(ret.out.match(/^COLUMNS=([0-9]+);$/));
+        cw = parseInt(_ret.out);
         if (isNaN(cw))
           cw = 0;
       }
