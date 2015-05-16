@@ -59,7 +59,7 @@ class JXEngine {
 #ifdef JS_ENGINE_V8
     return inside_scope_;
 #else
-    return true;
+    return false;
 #endif
   }
 
