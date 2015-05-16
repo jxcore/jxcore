@@ -1811,6 +1811,15 @@
 
     var scomp = process.binding('jxutils_wrap');
     var cw = process.stdout.columns;
+    // it may show 0, e.g. on android
+    if (!cw) {
+      var _ret = jxcore.utils.console.log("resize");
+      if (!_ret.exitCode) {
+        cw = parseInt(ret.out.match(/^COLUMNS=([0-9]+);$/));
+        if (isNaN(cw))
+          cw = 0;
+      }
+    }
     var ln_files = proj.files.length;
     for (var i = 0; i < ln_files; i++) {
       var loc = proj.files[i].trim();
@@ -1990,7 +1999,7 @@
         if (os_info.isWindows)
           op_str = 'del "' + file_name + copy_ext + '"';
         else
-          op_str = "rm -rf " + file_name;
+          op_str = process.platform === "android" ? "rm -r " + file_name : "rm -rf " + file_name;
         cmd_sync(op_str);
         if (fss.existsSync(file_name + copy_ext)) {
           cc("Target file in use", file_name + copy_ext, "red");
@@ -1999,8 +2008,25 @@
         op_str = copy + ' "' + process.execPath + '" "' + file_name + '"';
         ret = cmd_sync(op_str);
         if (ret.exitCode != 0) {
-          cc(ret.out, "red");
-          process.exit(1);
+
+          // on android there might be an error when copying the file with system command:
+          // cp: can't stat 'jx': Value too large for defined data type
+          // so we try to copy one more time by using fs module:
+          fss.writeFileSync(file_name, fss.readFileSync(process.execPath));
+          if (!fss.existsSync(file_name)) {
+            cc(ret.out, "red");
+            process.exit(1);
+          }
+
+          // copy chmod value
+          try {
+            var stat = fss.statSync(process.execPath);
+            var octal_chmod = '0' + (stat.mode & parseInt('777', 8)).toString(8);
+            fss.chmod(file_name, octal_chmod);
+          } catch (ex) {
+            cc("Cannot set file mode with chmod:", ex.toString(), "red");
+            process.exit(1);
+          }
         }
 
         if (!fss.existsSync(file_name)) {
