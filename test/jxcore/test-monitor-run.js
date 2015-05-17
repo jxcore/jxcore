@@ -38,13 +38,14 @@ jxcore.utils.cmdSync(cmd + "stop");
 
 process.on('exit', function (code) {
   jxcore.utils.cmdSync(cmd + 'stop');
-  var _cmd = process.platform == 'win32' ? 'del /q ' : 'rm -f ';
-  jxcore.utils.cmdSync(_cmd + "*monitor*.log");
+  jxtools.rmfilesSync("*monitor*.log");
   if (fs.existsSync(appFileName))
     fs.unlinkSync(appFileName);
 
-  assert.ok(finished, "Test unit did not finish.");
-  assert.ok(subscribed, "Application did not subscribe to a monitor with `jx monitor run` command.");
+  if (!jxtools.gotSignal) {
+    assert.ok(finished, "Test unit did not finish.");
+    assert.ok(subscribed, "Application did not subscribe to a monitor with `jx monitor run` command.");
+  }
 });
 
 // calls monitor and gets json: http://localhost:17777/json

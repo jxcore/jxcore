@@ -16,8 +16,7 @@ jxcore.utils.cmdSync(cmd + "stop");
 
 process.on('exit', function (code) {
   jxcore.utils.cmdSync(cmd + 'stop');
-  var _cmd = process.platform == 'win32' ? 'del /q ' : 'rm -f ';
-  jxcore.utils.cmdSync(_cmd + "*monitor*.log");
+  jxtools.rmfilesSync("*monitor*.log");
 });
 
 var arr = [

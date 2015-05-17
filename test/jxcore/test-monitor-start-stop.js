@@ -22,9 +22,10 @@ jxcore.utils.cmdSync(cmd + "stop");
 
 process.on('exit', function (code) {
   jxcore.utils.cmdSync(cmd + 'stop');
-  var _cmd = process.platform == 'win32' ? 'del /q ' : 'rm -f ';
-  jxcore.utils.cmdSync(_cmd + "*monitor*.log");
-  assert.ok(finished, "Test unit did not finish.");
+  jxtools.rmfilesSync("*monitor*.log");
+
+  if (!jxtools.gotSignal)
+    assert.ok(finished, "Test unit did not finish.");
 });
 
 // this is for testing if http port is taken by monitor process or not
