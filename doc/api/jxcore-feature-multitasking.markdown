@@ -55,7 +55,7 @@ It means that it occupies a different place in the memory, hence the queues do 
 
 ### Native C++ Node.JS modules
 
-See [native](https://github.com/Nubisa/jxdocs/tree/master/native).
+See [native](https://github.com/jxcore/jxcore/tree/master/doc/native).
 
 ## How to run multitasked code?
 

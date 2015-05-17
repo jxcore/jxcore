@@ -20,7 +20,7 @@ JXcore (http://jxcore.io)
 
 ----JXcore Beta 2.3.7
 
-- improvement for getOSInfo (debian ovh.net) https://github.com/Nubisa/jxdocs/issues/133
+- improvement for getOSInfo (debian ovh.net) https://github.com/jxcore/jxcore/issues/133
 - monitor followMe casing fix
 - jx package slim file names
 - NODE_PATH casing improvements for Windows
@@ -80,7 +80,7 @@ JXcore (http://jxcore.io)
 
 - NEW: ARM RH/Fedora 
 - ARM optimizations (v7+)
-- FIX: require('config') fails - https://github.com/Nubisa/jxdocs/issues/105
+- FIX: require('config') fails - https://github.com/jxcore/jxcore/issues/105
 
 ----JXcore Beta 2.2.4
 
@@ -125,7 +125,7 @@ JXcore (http://jxcore.io)
 
 ----JXcore Beta 2.1.6
 
-- Fix: JXP stream finish event - https://github.com/Nubisa/jxdocs/issues/86
+- Fix: JXP stream finish event - https://github.com/jxcore/jxcore/issues/86
 - Fix: Memory limit abort message now shows the memory used.
 - Security: Prevent overflow when Monitor respawn_id  > 1e5
 
@@ -168,9 +168,9 @@ Changes
 ----JXcore Beta 2.1.2 (http://jxcore.com)
 
 Changes
-- JXP stream pipe chaining - https://github.com/Nubisa/jxdocs/issues/83
+- JXP stream pipe chaining - https://github.com/jxcore/jxcore/issues/83
 - JXP binary file support
-- MT now waits for the events from sub threads - https://github.com/Nubisa/jxdocs/issues/88
+- MT now waits for the events from sub threads - https://github.com/jxcore/jxcore/issues/88
 - jxcore.config - restrict application wide http/https ports / and memory on hosting environments
 
 ----JXcore Beta 2.1.1 (http://jxcore.com)
@@ -183,14 +183,14 @@ Changes
 ----JXcore Beta 2.1.0 (http://jxcore.com)
 
 Fixes
-- Windows native modules - https://github.com/Nubisa/jxdocs/issues/66
-- JXP stream on-data - https://github.com/Nubisa/jxdocs/issues/77
-- JXP windows folder resolution - https://github.com/Nubisa/jxdocs/issues/79
+- Windows native modules - https://github.com/jxcore/jxcore/issues/66
+- JXP stream on-data - https://github.com/jxcore/jxcore/issues/77
+- JXP windows folder resolution - https://github.com/jxcore/jxcore/issues/79
 - jx monitor kill prevents re-run
 
 ----JXcore Beta 2.0.9 (http://jxcore.com)
 
-Please visit (https://github.com/Nubisa/jxdocs/issues) to report issues or request a feature
+Please visit (https://github.com/jxcore/jxcore/issues) to report issues or request a feature
 
 New
 - process.sendToThread  - Send an individual thread message 
@@ -214,7 +214,7 @@ Fix
 ----JXcore Beta 2.0.8 (http://jxcore.com)
 
 New
-- JXP pre installation steps - https://github.com/Nubisa/jxdocs/issues/64
+- JXP pre installation steps - https://github.com/jxcore/jxcore/issues/64
 
 Change
 - JX package assets array now public
@@ -226,7 +226,7 @@ Fix
 ----JXcore Beta 2.07 (http://jxcore.com)
 
 Fixes
-- jx monitor run - https://github.com/Nubisa/jxdocs/issues/56
+- jx monitor run - https://github.com/jxcore/jxcore/issues/56
 - jx project files cross platform locations
 
 New
@@ -240,13 +240,13 @@ Patches
 
 ----JXcore Beta 2.06 (http://jxcore.com)
 
-Please visit (https://github.com/Nubisa/jxdocs/issues) to report issues or request a feature
+Please visit (https://github.com/jxcore/jxcore/issues) to report issues or request a feature
 
 Fixes
-- cli compatibility - https://github.com/Nubisa/jxdocs/issues/48
+- cli compatibility - https://github.com/jxcore/jxcore/issues/48
 
 New
-- async fs support for JXP (SYNC methods were already supported) (readdir, readFile) - https://github.com/Nubisa/jxdocs/issues/50
+- async fs support for JXP (SYNC methods were already supported) (readdir, readFile) - https://github.com/jxcore/jxcore/issues/50
 - command line mt / mt-keep max number is 16.
 - files & assets are not part of the final $JXP anymore. 
 
@@ -260,8 +260,8 @@ Features
 - Pipe'd MT support
 
 Fix
-- http status code list - https://github.com/Nubisa/jxdocs/issues/42
-- unix sockets after a task - https://github.com/Nubisa/jxdocs/issues/45
+- http status code list - https://github.com/jxcore/jxcore/issues/42
+- unix sockets after a task - https://github.com/jxcore/jxcore/issues/45
 - JXP __dirname difference
 
 from b2.04
@@ -273,7 +273,7 @@ from b2.04
 ----JXcore Beta 2.03 (http://jxcore.com)
 
 Bug Fix
-- JXP __dirname problem is fixed. - https://github.com/Nubisa/jxdocs/issues/35
+- JXP __dirname problem is fixed. - https://github.com/jxcore/jxcore/issues/35
 
 Structural
 - sqlite version updated to 3.8.4.3 and FTS3, FTS4 are enabled
@@ -302,7 +302,7 @@ Messaging
 ----JXcore Beta 2.02 (http://jxcore.com)
 
 Bug Fixes
-- Internal BSON issue - https://github.com/Nubisa/jxdocs/issues/31 
+- Internal BSON issue - https://github.com/jxcore/jxcore/issues/31
 - JXP reader improvements
 - RH/Centos/Fedora64 ThreadKill issue is fixed 
 
@@ -317,13 +317,13 @@ New
 ----JXcore Beta 2.01 (http://jxcore.com)
 
 Bug Fixes
-- JXP /index.js issue - https://github.com/Nubisa/jxdocs/issues/23
-- Unicode thread messaging - https://github.com/Nubisa/jxdocs/issues/24
+- JXP /index.js issue - https://github.com/jxcore/jxcore/issues/23
+- Unicode thread messaging - https://github.com/jxcore/jxcore/issues/24
 - JXP reverse coverage problem
-- KillThread - force removal async operations - https://github.com/Nubisa/jxdocs/issues/25
+- KillThread - force removal async operations - https://github.com/jxcore/jxcore/issues/25
 - Missing Callback when a thread returns false
-- JXP embed error message improved - https://github.com/Nubisa/jxdocs/issues/28
-- JX Monitor on Windows - https://github.com/Nubisa/jxdocs/issues/29
+- JXP embed error message improved - https://github.com/jxcore/jxcore/issues/28
+- JX Monitor on Windows - https://github.com/jxcore/jxcore/issues/29
 - Task (define) __dirname location is fixed
 
 Improvements
@@ -331,7 +331,7 @@ Improvements
 - Performance improvements
 
 New
--Multithreading - waitLogic(with timeout) - https://github.com/Nubisa/jxdocs/issues/21 
+-Multithreading - waitLogic(with timeout) - https://github.com/jxcore/jxcore/issues/21
 
 
 
