@@ -19,7 +19,7 @@ function method(arg) {
 var args = [1, "2", "three", {four: 1}, [5], ["six"]];
 
 for (var a = 0; a < cnt; a++) {
-  jxcore.tasks.runOnThread(a, method, args[a], function (ret) {
+  jxcore.tasks.runOnThread(a, method, args[a], function (err, ret) {
     finished++;
   });
 }

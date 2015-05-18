@@ -25,7 +25,7 @@ var task = function () {
 
 jxcore.tasks.register(methods);
 
-jxcore.tasks.addTask(task, null, function (ret) {
+jxcore.tasks.addTask(task, null, function (err, ret) {
   methods();
   var main_ret = task();
   for (var o in main_ret)

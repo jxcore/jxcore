@@ -11,17 +11,24 @@ var finished = false;
 var value = JSON.stringify(process.mainModule.filename);
 
 var method = function (obj) {
-  return JSON.stringify(process.mainModule.filename);
+  try {
+    return JSON.stringify(process.mainModule.filename);
+  } catch(e) {
+    console.log('error!', e);
+    return e;
+  }
 };
 
 process.on('exit', function (code) {
   assert.ok(finished, "The test did not finish.");
 });
 
-jxcore.tasks.addTask({
-  define: function () {
-  }, logic: method
-}, null, function (ret) {
+var task = {
+  define: function () {},
+  logic: method
+};
+
+jxcore.tasks.addTask(task, null, function (err, ret) {
 
   finished = true;
 

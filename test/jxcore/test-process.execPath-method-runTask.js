@@ -18,7 +18,7 @@ process.on('exit', function (code) {
   assert.ok(finished, "The test did not finish.");
 });
 
-method.runTask(null, function (ret) {
+method.runTask(null, function (err, ret) {
 
   finished = true;
 

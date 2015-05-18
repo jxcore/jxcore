@@ -24,12 +24,12 @@ process.on('exit', function (code) {
 });
 
 var task = {
-  define: function () {
-  },
+  define: function () {},
   logic: method
 };
 
-jxcore.tasks.addTask(task, null, function (ret) {
+jxcore.tasks.addTask(task, null, function (err, ret) {
+
   finished = true;
 
   clog("main thread:", "green");

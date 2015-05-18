@@ -16,7 +16,7 @@ function method(id) {
 }
 
 for (var a = 0; a < cnt; a++) {
-  jxcore.tasks.runOnThread(a, method, a, function (ret) {
+  jxcore.tasks.runOnThread(a, method, a, function (err, ret) {
     assert.strictEqual(ret.id, ret.tid, "The task no " + ret.id + " was executed on wrong thread: " + ret.tid);
     finished++;
   });

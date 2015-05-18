@@ -77,8 +77,5 @@ var ST = method("main thread");
 
 // now evaluating inside a tasks and comparing with ST evaluations
 jxcore.tasks.addTask(method, "addTask as method");
-jxcore.tasks.addTask({
-  define: function () {
-  }, logic: method
-}, "logic()");
+jxcore.tasks.addTask({ define: function () { }, logic: method }, "logic()");
 jxcore.tasks.addTask({define: method});

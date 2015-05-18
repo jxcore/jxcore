@@ -50,7 +50,7 @@ buf.write("Big string from buffer - 250 000 bytes.", 0);
 strings.push(buf.toString());
 
 
-jxcore.tasks.addTask(method, strings, function (txt) {
+jxcore.tasks.addTask(method, strings, function (err, txt) {
 
   for (var a = 0, len = strings.length; a < len; a++) {
     process.sendToThreads({id: a, string: strings[a]});

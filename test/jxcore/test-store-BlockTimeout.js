@@ -19,7 +19,7 @@ var method = function () {
   return jxcore.store.shared.getBlockTimeout();
 };
 
-jxcore.tasks.addTask(method, null, function (ret) {
+jxcore.tasks.addTask(method, null, function (err, ret) {
   assert.strictEqual(ret, value, "1. getBlockTimeout() should return " + value);
 });
 
@@ -29,6 +29,6 @@ var q = {
   }, logic: method
 };
 
-jxcore.tasks.addTask(q, null, function (ret) {
+jxcore.tasks.addTask(q, null, function (err, ret) {
   assert.strictEqual(ret, value, "2. getBlockTimeout() should return " + value);
 });

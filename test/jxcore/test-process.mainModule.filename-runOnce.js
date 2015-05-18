@@ -1,7 +1,7 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
 /*
-  This code compares process.mainModule.filename called from main thread and tasks.runOnce() as method
+ This code compares process.mainModule.filename called from main thread and tasks.runOnce() as method
  */
 
 var assert = require('assert');

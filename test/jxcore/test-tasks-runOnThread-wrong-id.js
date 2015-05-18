@@ -21,7 +21,7 @@ function method() {
 
 // we expect an exception
 try {
-  jxcore.tasks.runOnThread(7, method, null, function (ret) {
+  jxcore.tasks.runOnThread(7, method, null, function (err, ret) {
     throw "This method should not be executed.";
   });
 } catch (ex) {

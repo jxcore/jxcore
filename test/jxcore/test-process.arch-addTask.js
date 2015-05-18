@@ -18,7 +18,7 @@ process.on('exit', function (code) {
   assert.ok(finished, "The test did not finish.");
 });
 
-jxcore.tasks.addTask(method, null, function (ret) {
+jxcore.tasks.addTask(method, null, function (err, ret) {
 
   finished = true;
 
