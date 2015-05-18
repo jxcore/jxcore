@@ -160,7 +160,7 @@
       'VCLinkerTool': {
         'conditions': [
           ['target_arch=="x64"', {
-            'TargetMachine' : 17 # /MACHINE:X64,
+            'TargetMachine' : 17, # /MACHINE:X64
             'msvs_configuration_platform': 'x64',
           }],
           ['target_arch=="arm"', {

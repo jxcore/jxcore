@@ -330,6 +330,12 @@ def pkg_config(pkg):
 def cc_macros():
   """Checks predefined macros using the CC command."""
 
+  if os.name == 'nt':
+    k = {}
+    k['__ARM_ARCH_7__'] = True
+    k['__ARM_NEON__'] = True
+    return k
+
   try:
     p = subprocess.Popen(shlex.split(CC) + ['-dM', '-E', '-'],
                          stdin=subprocess.PIPE,
@@ -497,7 +503,8 @@ def configure_node(o):
   if options.dest_os == 'ios':
     o['variables']['OS'] = 'ios'
     o['variables']['use_system_icu%'] = 1
-    
+  
+  o['variables']['openssl_no_asm'] = 1 if options.dest_cpu == "arm" and os.name == "nt" else 0
   o['variables']['node_compress_internals'] = 1 if options.compress_internals else 0 
   o['variables']['node_static_library'] = 1 if options.static_library else 0
   o['variables']['node_shared_library'] = 1 if options.shared_library else 0
