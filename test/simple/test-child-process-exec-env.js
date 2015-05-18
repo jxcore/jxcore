@@ -22,7 +22,8 @@ function after(err, stdout, stderr) {
 }
 
 if (process.platform !== 'win32') {
-  child = exec('/usr/bin/env', { env: { 'HELLO': 'WORLD' } }, after);
+  var isAndroid = process.platform === 'android';
+  child = exec(isAndroid ? '/system/xbin/env' : '/usr/bin/env', { env: { 'HELLO': 'WORLD' } }, after);
 } else {
   child = exec('set', { env: { 'HELLO': 'WORLD' } }, after);
 }
