@@ -18,6 +18,11 @@ var pairs = {
 // process.arch
 for (var prop in pairs) {
   if (info[prop]) {
+
+    // on ARM do not test is32/is64
+    if (info.isARM && prop !== "isARM")
+      continue;
+
     assert.strictEqual(process.arch, pairs[prop],
       "Incompatibility of process.arch = `" + process.arch + "` and OSInfo()." + prop + " = `" + info[prop] + "`" +
       "The value of process.arch should be: `" + pairs[prop] + "`");
@@ -27,6 +32,11 @@ for (var prop in pairs) {
 // os.arch()
 for (var prop in pairs) {
   if (info[prop]) {
+
+    // on ARM do not test is32/is64
+    if (info.isARM && prop !== "isARM")
+      continue;
+
     assert.strictEqual(os.arch(), pairs[prop],
       "Incompatibility of os.arch() = `" + os.arch() + "` and OSInfo()." + prop + " = `" + info[prop] + "`" +
       "The value of os.arch() should be: `" + pairs[prop] + "`");
