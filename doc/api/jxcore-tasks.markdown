@@ -126,36 +126,29 @@ jxcore.tasks.on('message', callback);
 process.sendToMain( { obj: "something" } );
 ```
 
-## tasks.addTask(method, param, callback, obj)
+## tasks.addTask(method, param, callback)
 
 * `method` {Function}
 * `param` {Object} [optional]
 * `callback` {Function} [optional]
-* `obj` {Object} [optional]
 
 Adds new task **as a method** to be processed in a separate instance. The task will be processed as soon as possible.
 If there is any idle sub-instance, it will be used to execute the task immediately. Otherwise it may wait until the other tasks will finish or some of the sub-instances will become idle.
 
-The task is the function `method` with optional `param` as an argument. After the method completes, the `callback` will be invoked.
-It can receive one or two arguments, depending if `obj` is provided or not.
-
-`obj` is a context object from the main instance and it can contain any value.
-If it’s not provided, the `callback` method will have only one argument, and it will be the result of the task `method`.
-Otherwise, the `callback` will contain two arguments.
-The first one is the `obj` object described here, while the second argument is the result of the task `method`.
+The task is the function `method` with optional `param` as an argument. After the method completes, the `callback` will be invoked with arguments `(err, result)` where `result` is the result of the task `method`.
 
 There are few principles regarding adding the tasks, that you should be aware of:
 
-1. You cannot specify, in which of the sub-instances your task will run. The sub-instance will be chosen automatically. You can find out, which sub-instance is used for that task only from inside the task itself (see `process.threadId` property).
+1. The sub-instance that will run the task is not specified and will be chosen automatically. You can find out which sub-instance is used for that task only from inside the task itself (see `process.threadId` property). Alternatively, `tasks.runOnThread()` can be used to specify the sub-instance to run on.
 2. If for example on your system `getThreadCount()` returns 3, and you add 3 tasks one after another, there is no guarantee, that each of them will run in its own sub-instance, but still it is one of the possibilities. But things can go also in many other ways: all of the 3 tasks can run in the same sub-instance, or two of them in one, and the third in another, etc.
 3. Do not assume the tasks will be executed in the order of which they were added.
 4. When the task `method` returns from its execution block (for example by calling return statement),
-it is considered as completed.
-This means, that if you use in the task code any delayed execution with `setTimeout()` or `setInterval()`, or async calls,
-the task method may return faster, before those delayed/async jobs will have chance to complete.
+it is considered to be completed. 
+If the task performs any delayed execution with `setTimeout()`, `setInterval()` or other asynchronous calls,
+the task method may return before those delayed/async jobs will have had a chance to complete.
 For gaining control over task’s execution time, please use `process.keepAlive()` and `process.release()` methods from [process](jxcore-process.html)  API.
 
-Adding a task with one-argument callback:
+Adding a task with callback:
 
 ```js
 var method = function (param) {
@@ -163,37 +156,19 @@ var method = function (param) {
    return "ok";
 };
 
-jxcore.tasks.addTask(method, { str: "hello" }, function (result) {
+jxcore.tasks.addTask(method, { str: "hello" }, function (err, result) {
+   if(err) throw err;
    console.log("This is result from method running in sub-instance:", result);
    // should display "ok"
 });
 ```
 
-Adding a task with two-argument callback:
-
-```js
-// we're going to pass some object from the main instance to the callback
-var mainThreadVariable = {
-    log : function(txt) {
-        console.log(txt);
-    }
-};
-
-var callback = function (obj, result) {
-    // now we can access mainThreadVariable (by obj argument)
-    obj.log(result);
-};
-
-jxcore.tasks.addTask(method, { str: "hello" }, callback, mainThreadVariable);
-```
-
 There is also an alternative way to run a function as a task. See below for `method.runTask()`.
 
-### method.runTask(param, callback, obj)
+### method.runTask(param, callback)
 
 * `param` {Object}
 * `callback` {Function} [optional]
-* `obj` {Object} [optional]
 
 This is shorter alternative to `tasks.addTask()`.
 JXcore adds `runTask()` method to function's prototype, so each function can be added as a task directly by calling `method.runTask()`:
@@ -204,37 +179,23 @@ var method = function (param) {
     return "ok";
 };
 
-var mainThreadVariable = {
-    log : function(txt) {
-        console.log(txt);
-    }
+var callback = function (err, result) {
+    console.log(result);
 };
 
-var callback = function (obj, result) {
-    // now we can access mainThreadVariable (by obj argument)
-    obj.log(result);
-};
-
-method.runTask({ str: "hello" }, callback, mainThreadVariable);
+method.runTask({ str: "hello" }, callback);
 ```
 
-## tasks.addTask(object, param, callback, obj)
+## tasks.addTask(object, param, callback)
 
 * `object` {Function} - this is the object containing `define()` and/or `logic()` methods, which will be executed in a sub-instance.
 * `param` {Object} - argument for `logic()` method
 * `callback` {Function} [optional]
-* `obj` {Object} [optional]
 
 Adds new task **as an object** to be processed in a separate sub-instance. The task will be processed as soon as possible.
 If there is any idle sub-instance, it will be used to execute the task immediately. Otherwise it may wait until the other tasks will finish or some of the sub-instances will become idle.
 
-After the task completes, the `callback` will be invoked.
-It can receive one or two arguments, depending if `obj` is provided or not.
-
-`obj` is a context object from the main instance and it can contain any value.
-If it’s not provided, the `callback` method will have only one argument, and it will be the result of the task's `logic()` method.
-Otherwise, the `callback` will contain two arguments.
-The first one is the `obj` object described here, while the second argument is the result of `logic()`.
+After the task completes, the `callback` will be invoked with arguments `(err, result)` where `result` is the result of the task's `logic()` method.
 
 There is one important thing to be noted here: the `callback` is invoked only when there is no `waitLogic` defined or when it evaluates to `false` (see `waitLogic` description below).
 
@@ -328,13 +289,13 @@ var task = {
 };
 
 for (var o = 0; o < 2; o++) {
-    jxcore.tasks.addTask(task, o + " Hello", function (res) {
+    jxcore.tasks.addTask(task, o + " Hello", function (err, res) {
         console.log("END", res);
     });
 }
 ```
 
-Below is a sample usage of `addTask` with `callback` invoke and usage of context variable:
+Below is a sample usage of `addTask` with `callback`:
 
 ```js
 var task = {
@@ -346,19 +307,12 @@ var task = {
   }
 };
 
-
-var mainThreadVariable = {
-  log: function (txt) {
-    console.log(txt);
-  }
+var callback = function (err, result) {
+  if(err) throw err;
+  console.log(result);
 };
 
-var callback = function (obj, result) {
-  // now we can access mainThreadVariable (by obj argument)
-  obj.log(result);
-};
-
-jxcore.tasks.addTask(task, {str: "hello"}, callback, mainThreadVariable);
+jxcore.tasks.addTask(task, {str: "hello"}, callback);
 ```
 
 ## tasks.forceGC()
@@ -471,26 +425,19 @@ One of the cases for using `runOnce()` could be setting up a http server on each
 jxcore.tasks.runOnce(method, "some parameter");
 ```
 
-## tasks.runOnThread(threadId, method, param, callback, obj)
+## tasks.runOnThread(threadId, method, param, callback)
 
 * `threadId` {Number}
 * `method` {Function}
 * `param` {Object} [optional]
 * `callback` {Function} [optional]
-* `obj` {Object} [optional]
 
 Runs a task (`method` with `param` argument) on individual sub-instance identified as `threadId`.
 
-After the method completes, the `callback` will be invoked.
-It can receive one or two arguments, depending on whether or not `obj` is provided.
-
-`obj` is a context object from the main instance and it can contain any value.
-If it’s not provided, the `callback` method will have only one argument, and it will be the result of the task `method`.
-Otherwise, the `callback` will contain two arguments.
-The first one is the `obj` object described here, while the second argument is the result of the task `method`.
+After the method completes, the `callback` will be invoked with arguments `(err, result)` where `result` is the result of the task `method`.
 
 *Remind that, in case you provide the task in 'define/logic' form, runOnThread runs both of them every time.
-If this is not inconvenient for your scenario, you may check whether the define was called before on that particular instance by marking a global member.*
+If this is not convenient for your scenario, you may check whether the define has been called on that particular instance by marking a global member.*
 
 ### method.runOnce(param, doNotRemember)
 
