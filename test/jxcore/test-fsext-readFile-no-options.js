@@ -3,6 +3,9 @@
 // The test checks for async `readFile` extension for fs module, when called without options.
 // Also if it does not break fs.readFile on real fs/packaged file.
 
+// async support for fs extensions is disabled for now
+return;
+
 var fs = require("fs");
 var path = require("path");
 var assert = require("assert");
