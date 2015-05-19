@@ -49,19 +49,9 @@ class WrappedScript : ObjectWrap {
   }
   END_INIT_NAMED_MEMBERS(NodeScript)
 
-  enum EvalInputFlags {
-    compileCode,
-    unwrapExternal
-  };
-  enum EvalContextFlags {
-    thisContext,
-    newContext,
-    userContext
-  };
-  enum EvalOutputFlags {
-    returnResult,
-    wrapExternal
-  };
+  enum EvalInputFlags { compileCode, unwrapExternal };
+  enum EvalContextFlags { thisContext, newContext, userContext };
+  enum EvalOutputFlags { returnResult, wrapExternal };
 
   template <EvalInputFlags input_flag, EvalContextFlags context_flag,
             EvalOutputFlags output_flag>
@@ -166,9 +156,7 @@ JS_METHOD(WrappedContext, New) {
 JS_METHOD_END
 
 WrappedContext::WrappedContext() : ObjectWrap() {
-#ifdef JS_ENGINE_V8
   context_ = JS_NEW_EMPTY_CONTEXT();
-#endif
 }
 
 WrappedContext::~WrappedContext() {
@@ -184,14 +172,7 @@ JS_LOCAL_OBJECT WrappedContext::NewInstance(commons *com) {
   return context;
 }
 
-JS_PERSISTENT_CONTEXT WrappedContext::GetV8Context() {
-#ifdef JS_ENGINE_V8
-  return context_;
-#elif defined(JS_ENGINE_MOZJS)
-  assert(0 && "This function should not be called for MozJS implementation");
-  return NULL;
-#endif
-}
+JS_PERSISTENT_CONTEXT WrappedContext::GetV8Context() { return context_; }
 
 JS_METHOD(WrappedScript, New) {
   if (!args.IsConstructCall()) {
@@ -476,8 +457,13 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(
   MozJS::Isolate *iso = NULL;
 
   if (context_flag == newContext || context_flag == userContext) {
-    iso = JS_NEW_EMPTY_CONTEXT();
-    context = iso->GetRaw();
+    if (context_flag == newContext) {
+      iso = JS_NEW_EMPTY_CONTEXT();
+      context = iso->GetRaw();
+    } else {
+      WrappedContext *nContext = ObjectWrap::Unwrap<WrappedContext>(sandbox);
+      context = JS_TYPE_TO_LOCAL_CONTEXT(nContext->GetV8Context());
+    }
     JS_SetErrorReporter(context, node::OnFatalError);
   }
 
@@ -511,8 +497,10 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(
       result = JS_LOCAL_OBJECT(result_sandbox, __contextORisolate);         \
       result = JS_GET_NAME(result, JS_STRING_ID("result"));                 \
     }                                                                       \
-    JS_DestroyContext(context);                                             \
-    iso->Dispose();                                                         \
+    if (context_flag != userContext) {                                      \
+      JS_DestroyContext(context);                                           \
+      iso->Dispose();                                                       \
+    }                                                                       \
   }
 
   JS_HANDLE_VALUE result;
@@ -586,6 +574,8 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(
 
         com->temp_exception_.Clear();
       }
+
+      JS_FORCE_GC();
     } else {
       MozJS::Script script(jxcore::GetScript(context, mscript), context);
       result = script.Run();
