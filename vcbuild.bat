@@ -89,26 +89,9 @@ if defined nosnapshot set nosnapshot_arg=--without-snapshot
 if defined noetw set noetw_arg=--without-etw& set noetw_msi_arg=/p:NoETW=1
 if defined noperfctr set noperfctr_arg=--without-perfctr& set noperfctr_msi_arg=/p:NoPerfCtr=1
 
-:project-gen
-@rem Skip project generation if requested.
-if defined noprojgen goto msbuild
-
 if defined NIGHTLY set TAG=nightly-%NIGHTLY%
 
-@rem Generate the VS project.
-SETLOCAL
-  if defined VS100COMNTOOLS call "%VS100COMNTOOLS%\VCVarsQueryRegistry.bat"
-  call :getpythonversion
-  if errorlevel 1 goto exit
-  python configure %debug_arg% %nosnapshot_arg% %noetw_arg% %noperfctr_arg% --dest-cpu=%target_arch% --tag=%TAG% %static_library% %engine_mozilla% %compress_internals%
-  if errorlevel 1 goto create-msvs-files-failed
-  if not exist jx.sln goto create-msvs-files-failed
-  echo Project files generated.
-ENDLOCAL
-
-:msbuild
-@rem Skip project generation if requested.
-if defined nobuild goto sign
+@rem Set environment for msbuild
 
 @rem Look for Visual Studio 2015
 if not defined VS140COMNTOOLS goto vc-set-2013
@@ -125,7 +108,10 @@ goto msbuild-found
 @rem Look for Visual Studio 2013
 if not defined VS120COMNTOOLS goto vc-set-2012
 if not exist "%VS120COMNTOOLS%\..\..\vc\vcvarsall.bat" goto vc-set-2012
-call "%VS120COMNTOOLS%\..\..\vc\vcvarsall.bat"
+if "%VCVARS_VER%" NEQ "120" (
+  call "%VS120COMNTOOLS%\..\..\vc\vcvarsall.bat"
+  SET VCVARS_VER=120
+)
 if not defined VCINSTALLDIR goto msbuild-not-found
 set GYP_MSVS_VERSION=2013
 goto msbuild-found
@@ -134,7 +120,10 @@ goto msbuild-found
 @rem Look for Visual Studio 2012
 if not defined VS110COMNTOOLS goto vc-set-2010
 if not exist "%VS110COMNTOOLS%\..\..\vc\vcvarsall.bat" goto vc-set-2010
-call "%VS110COMNTOOLS%\..\..\vc\vcvarsall.bat"
+if "%VCVARS_VER%" NEQ "110" (
+  call "%VS110COMNTOOLS%\..\..\vc\vcvarsall.bat"
+  SET VCVARS_VER=110
+)
 if not defined VCINSTALLDIR goto msbuild-not-found
 set GYP_MSVS_VERSION=2012
 goto msbuild-found
@@ -142,15 +131,35 @@ goto msbuild-found
 :vc-set-2010
 if not defined VS100COMNTOOLS goto msbuild-not-found
 if not exist "%VS100COMNTOOLS%\..\..\vc\vcvarsall.bat" goto msbuild-not-found
-call "%VS100COMNTOOLS%\..\..\vc\vcvarsall.bat"
+if "%VCVARS_VER%" NEQ "100" (
+  call "%VS100COMNTOOLS%\..\..\vc\vcvarsall.bat"
+  SET VCVARS_VER=100
+)
 if not defined VCINSTALLDIR goto msbuild-not-found
+set GYP_MSVS_VERSION=2010
 goto msbuild-found
 
 :msbuild-not-found
-echo Build skipped. To build, this file needs to run from VS cmd prompt.
-goto run
+echo Failed to find Visual Studio installation.
+goto exit
 
 :msbuild-found
+
+:project-gen
+@rem Skip project generation if requested.
+if defined noprojgen goto msbuild
+
+@rem Generate the VS project.
+SETLOCAL
+  if defined VS100COMNTOOLS call "%VS100COMNTOOLS%\VCVarsQueryRegistry.bat"
+  call :getpythonversion
+  if errorlevel 1 goto exit
+  python configure %debug_arg% %nosnapshot_arg% %noetw_arg% %noperfctr_arg% --dest-cpu=%target_arch% --tag=%TAG% %static_library% %engine_mozilla% %compress_internals%
+  if errorlevel 1 goto create-msvs-files-failed
+  if not exist jx.sln goto create-msvs-files-failed
+  echo Project files generated.
+ENDLOCAL
+
 @rem Build the sln with msbuild.
 msbuild jx.sln /m /t:%target% /p:Configuration="%config%" %c_platform% /clp:NoSummary;NoItemAndPropertyList;Verbosity=minimal /nologo
 goto exit
