@@ -1259,7 +1259,7 @@ static JS_LOCAL_METHOD(JXBinding) {
     if (skip == 1) {
       JXDefineJavaScript();
       RETURN();
-    } else if (skip == 99) {
+    } else {
       DefineJavaScript(exports);
       JS_NAME_SET(com->binding_cache, module, exports);
     }
@@ -2169,7 +2169,7 @@ void SetupProcessObject(const int threadId) {
   JS_METHOD_SET(process, "uptime", Uptime);
   JS_METHOD_SET(process, "memoryUsage", MemoryUsage);
 
-  JS_METHOD_SET(process, "jx_binding", JXBinding);
+  JS_METHOD_SET(process, "binding", JXBinding);
 
   JS_METHOD_SET(process, "_usingDomains", UsingDomains);
 

@@ -682,28 +682,6 @@
     });
   };
 
-  // process.binding is wrapped in order to keep JXP specific updates from the
-  // output
-  process.binding = function (name, skip) {
-    if (!skip) {
-      skip = 99;
-    }
-
-    var res = process.jx_binding(name, skip);
-    if (res && name == 'natives') {
-      var ind = res['module'].indexOf('/**JXCORE_JXP**/');
-      if (ind >= 0) {
-        res['module'] = res['module'].substr(0, ind);
-      }
-
-      ind = res['fs'].indexOf('/**JXCORE_JXP**/');
-      if (ind >= 0) {
-        res['fs'] = res['fs'].substr(0, ind);
-      }
-    }
-    return res;
-  };
-
   process.dlopen = function (module, filename) {
     var isWindows = process.platform === 'win32';
 
