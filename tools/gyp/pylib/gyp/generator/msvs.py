@@ -2578,14 +2578,17 @@ def _GetMSBuildProjectConfigurations(configurations):
 
 def _GetMSBuildGlobalProperties(spec, guid, gyp_file_name):
   namespace = os.path.splitext(gyp_file_name)[0]
-  return [
-      ['PropertyGroup', {'Label': 'Globals'},
+  props = ['PropertyGroup', {'Label': 'Globals'},
        ['ProjectGuid', guid],
        ['Keyword', 'Win32Proj'],
        ['RootNamespace', namespace],
       ]
-  ]
-
+  for configuration in spec['configurations'].itervalues():
+    platform_name = _ConfigPlatform(configuration)
+    if platform_name == 'ARM':
+      props.append(['WindowsSDKDesktopARMSupport', 'true'])
+      break
+  return [props]
 
 def _GetMSBuildConfigurationDetails(spec, build_file):
   properties = {}
