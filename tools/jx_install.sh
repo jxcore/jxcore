@@ -101,6 +101,29 @@ find_os() {
 }
 
 
+find_latest() {
+    LOG $GREEN_COLOR "Downloading latest version info"
+    latest_str=$(curl -k -s -S "https://jxcore.s3.amazonaws.com/latest.txt")
+
+    if [[ $latest_str != *"|"* || $latest_str == *"Error"* ]]
+    then
+      LOG $RED_COLOR "Could not fetch"
+      exit
+    fi
+
+    latest_url=$(echo "$latest_str" | cut -d "|" -f 1)
+    latest_ver=$(echo "$latest_str" | cut -d "|" -f 2)
+    LOG $GRAY_COLOR "Found $latest_ver"
+
+    current_ver=$(jx -jxv 2>/dev/null)
+
+    if [[ $current_ver != "" && $current_ver == *"$latest_ver"* ]]
+    then
+      LOG $NORMAL_COLOR "You already have the latest version installed."
+      exit
+    fi
+}
+
 LOG $GREEN_COLOR "JXcore Installation Script for X systems\n"
 
 # testing permission
@@ -125,7 +148,11 @@ else
 	zip_file=$(find_os "$output")
 fi
 
-link="https://s3.amazonaws.com/nodejx/$zip_file.zip"
+zip_file="$zip_file""v8"
+
+find_latest
+
+link="$latest_url/""$zip_file.zip"
 LOG $GREEN_COLOR "Downloading $link"
 
 LOG $GRAY_COLOR $(curl -k -o "$zip_file.zip" "$link")
