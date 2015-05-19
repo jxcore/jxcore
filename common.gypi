@@ -61,6 +61,9 @@
           ['target_arch=="x64"', {
             'msvs_configuration_platform': 'x64',
           }],
+          ['target_arch=="arm"', {
+            'msvs_configuration_platform': 'ARM',
+          }],
         ],
         'msvs_settings': {
           'VCCLCompilerTool': {
@@ -83,6 +86,9 @@
         'conditions': [
           ['target_arch=="x64"', {
             'msvs_configuration_platform': 'x64',
+          }],
+          ['target_arch=="arm"', {
+            'msvs_configuration_platform': 'ARM',
           }],
           ['node_unsafe_optimizations==1', {
             'cflags': [ '-O3', '-ffunction-sections', '-fdata-sections' ],
@@ -158,15 +164,6 @@
       'VCLibrarianTool': {
       },
       'VCLinkerTool': {
-        'conditions': [
-          ['target_arch=="x64"', {
-            'TargetMachine' : 17, # /MACHINE:X64
-            'msvs_configuration_platform': 'x64',
-          }],
-          ['target_arch=="arm"', {
-            'msvs_configuration_platform': 'ARM',
-          }],
-        ],
         'GenerateDebugInformation': 'true',
         'RandomizedBaseAddress': 2, # enable ASLR
         'DataExecutionPrevention': 2, # enable DEP

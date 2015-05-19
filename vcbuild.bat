@@ -49,7 +49,7 @@ if /i "%1"=="clean"         set target=Clean&goto arg-ok
 if /i "%1"=="ia32"          set c_platform="/p:Platform=Win32"&set target_arch=ia32&goto arg-ok
 if /i "%1"=="x86"           set c_platform="/p:Platform=Win32"&set target_arch=ia32&goto arg-ok
 if /i "%1"=="x64"           set target_arch=x64&goto arg-ok
-if /i "%1"=="arm"           set target_arch=arm&goto arg-ok
+if /i "%1"=="arm"           set c_platform="/p:Platform=ARM"&set target_arch=arm&goto arg-ok
 if /i "%1"=="noprojgen"     set noprojgen=1&goto arg-ok
 if /i "%1"=="nobuild"       set nobuild=1&goto arg-ok
 if /i "%1"=="nosign"        set nosign=1&goto arg-ok
