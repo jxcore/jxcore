@@ -1405,12 +1405,16 @@
 
     parms = parms.split(',');
     for (var o in parms) {
+      if (!parms.hasOwnProperty(o))
+        continue;
 
       if (parms[o].indexOf("*") !== -1 || parms[o].indexOf("?") !== -1) {
 
         var r = parms[o];
-        for (var i in specials)
-          r = r.replace(new RegExp("\\" + specials[i], "g"), "\\" + specials[i]);
+        for (var i in specials) {
+          if (specials.hasOwnProperty(i))
+            r = r.replace(new RegExp("\\" + specials[i], "g"), "\\" + specials[i]);
+        }
 
         r = r.replace(/\*/g, '.*').replace(/\?/g, '.{1,1}');
         ret.regexes.push(new RegExp('^' + r + '$'));
@@ -1436,6 +1440,9 @@
 
     ret.isWildcardMatching = function(file, file_path) {
       for(var o in ret.regexes) {
+        if (!ret.regexes.hasOwnProperty(o))
+          continue;
+
         var regex = ret.regexes[o];
         if (regex.test(file) || regex.test(file_path))
           return true;
@@ -1447,7 +1454,7 @@
 
   var checkOff, add;
 
-  var getFiles = function (folder, startup_path) {
+  var getFiles = function (folder, startup_path, jxp) {
     var fz = {
       f: [],
       a: []
@@ -1472,10 +1479,28 @@
     if (add === undefined)
       add = parseValues("-add");
 
+    var dest_bin = path.join(process.cwd(), jxp.name);
+    var dest_bin_native = dest_bin + (process.platform === "win32" ? ".exe" : "");
+    var dest_bin_jx = dest_bin + ".jx";
+    if (process.platform === "win32") {
+      dest_bin_native = dest_bin_native.toLocaleLowerCase();
+      dest_bin_jx = dest_bin_jx.toLocaleLowerCase();
+    }
+
     var files = fs.readdirSync(folder);
     for (var o in files) {
+      if (!files.hasOwnProperty(o))
+        continue;
+
       var file = files[o];
       var file_path = path.join(folder, file);
+
+      var _file_path = process.platform === "win32" ? file_path.toLocaleLowerCase() : file_path;
+      if (_file_path === dest_bin_jx || _file_path === dest_bin_native) {
+        jxcore.utils.console.write("skipping existing package", "magenta");
+        jxcore.utils.console.log(" " + path.basename(file_path));
+        continue;
+      }
 
       if (checkOff && (checkOff[file] === 1 || checkOff[file_path] === 2 || checkOff.isWildcardMatching(file, file_path)))
         continue;
@@ -1506,7 +1531,7 @@
 
       if (stat.isDirectory()) {
         if (file.indexOf('.') != 0) {
-          var az = getFiles(file_path, startup_path);
+          var az = getFiles(file_path, startup_path, jxp);
           fz.f = fz.f.concat(az.f);
           fz.a = fz.a.concat(az.a);
         }
@@ -1596,13 +1621,13 @@
 
     try {
       var fs = NativeModule.require('fs');
-      var fz = getFiles(null, fol);
+      var fz = getFiles(null, fol, jxp);
       jxp.files = fz.f;
       jxp.assets = fz.a;
       jxp.license_file = fz.license;
       jxp.readme_file = fz.readme;
 
-      fin = jxp.name + ".jxp";
+      var fin = jxp.name + ".jxp";
       jxp.output = jxp.name + ".jx";
 
       fs.writeFileSync(fin, JSON.stringify(jxp, null, '\t'));
