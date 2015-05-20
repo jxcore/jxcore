@@ -2335,54 +2335,62 @@
       req.end();
     };
     var name = "";
-    var npm_basename = "npmjxv1_4.jx";
+    var npm_basename = "npmjxv1_5.jx";
     var npm_str = "https://s3.amazonaws.com/nodejx/" + npm_basename;
     var isWindows = process.platform === 'win32';
     var homeFolder = process.__npmjxpath || process.env.HOME
       || process.env.HOMEPATH || process.env.USERPROFILE;
     var jxFolder = homeFolder + pathModule.sep + ".jx";
     var targetBin = jxFolder + pathModule.sep + "npm";
+    var npmrcPath = targetBin + pathModule.sep + "npmrc";
 
-    function Install(target) {
-      var str;
+    function Install() {
+      var arr = [];
       if (name.trim() == "-global") {
         name = "-g";
       }
       if (name.indexOf("-") === 0 && name.indexOf("--") < 0
         && name.trim() != "-g") {
         process.argv[2] = process.argv[2].substr(1);
-        str = target + " " + targetBin + " "
-        + (process.argv.slice(2).join(" "));
+        arr.push(targetBin);
         cmd = true;
       } else
       if (process.argv[1] === "npm") {
-        str = target + " " + targetBin + " "
-        + (process.argv.slice(2).join(" "));
+        arr.push(targetBin);
         cmd = true;
       } else {
         if (name.trim() == "-g" && jxpath) {
           process.argv[process.argv.length] = "--prefix=" + jxpath;
         }
-        str = target + " " + targetBin + " install "
-        + (process.argv.slice(2).join(" "));
-      }
-      if (str.indexOf("--loglevel") === -1)
-        str += " --loglevel http ";
-      var ec = exec(str, {
-        maxBuffer: 1e8
-      }, function (error, stdout, stderr) {
-      });
-      ec.stdout.pipe(process.stdout);
-      ec.stderr.pipe(process.stderr);
-    }
-
-    function GoEn() {
-      var target = args[0];
-      if (isWindows) {
-        target = '"' + target + '"';
+        arr.push(targetBin);
+        arr.push("install");
       }
 
-      Install(target);
+      arr = arr.concat(process.argv.slice(2));
+      var found = false;
+
+      // copying npm settings, if available
+      if (pathModule.basename(targetBin) === "npm") {
+        var ret = jxcore.utils.cmdSync("npm config ls -l");
+        if (!ret.exitCode && ret.out) {
+          fs.writeFileSync(npmrcPath, ret.out);
+          found = true;
+        }
+      }
+
+      if (!found) {
+        arr.push("--loglevel");
+        arr.push("http");
+        if (!isWindows) {
+          // https://docs.npmjs.com/misc/config#color
+          // Default: true on Posix, false on Windows
+          arr.push("--color")
+          arr.push("true")
+        }
+      }
+
+      // spawn allows to pass formatted output (colors)
+      NativeModule.require('child_process').spawn(process.execPath, arr, { stdio: "inherit" });
     }
 
     var delTree = function (loc) {
@@ -2416,7 +2424,7 @@
       }
 
       if (!forced && fs.existsSync(jxFolder + pathModule.sep + "npm")) {
-        GoEn();
+        Install();
         return;
       }
 
@@ -2445,7 +2453,7 @@
 
       targetBin = jxFolder + pathModule.sep + npm_basename;
       download(npm_str, targetBin, function () {
-        GoEn();
+        Install();
       });
     }
 

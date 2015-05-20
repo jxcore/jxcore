@@ -3,7 +3,8 @@
 // npm for jx
 var http = require('https')
   , path = require('path')
-  , fs = require("fs");
+  , fs = require("fs")
+  , cp = require("child_process");
 
 var getOptions = function (name) {
   for (var o = 0; o < process.argv.length; o++) {
@@ -103,6 +104,7 @@ var download = function (url, target, cb) {
 };
 
 var npmloc = __dirname + path.sep + "npm";
+var npmrcPath = npmloc + path.sep + "npmrc";
 var exec = require('child_process').exec;
 
 function clear_files(folder) {
@@ -160,11 +162,31 @@ var gonpm = function () {
 
   console.log("executing... please wait.");
 
-  var ec = exec(process.argv.join(" "), {maxBuffer: 1e8},
-    function (error, stdout, stderr) {
-    });
-  ec.stdout.pipe(process.stdout);
-  ec.stderr.pipe(process.stderr);
+  var arr = [npmloc].concat(process.argv.slice(2));
+  var found = false;
+
+  // copying npm settings, if available
+  if (fs.existsSync(npmloc)) {
+    var ret = jxcore.utils.cmdSync("npm config ls -l");
+    if (!ret.exitCode && ret.out) {
+      fs.writeFileSync(npmrcPath, ret.out);
+      found = true;
+    }
+  }
+
+  if (!found) {
+    arr.push("--loglevel");
+    arr.push("http");
+    if (process.platform !== "win32") {
+      // https://docs.npmjs.com/misc/config#color
+      // Default: true on Posix, false on Windows
+      arr.push("--color")
+      arr.push("true")
+    }
+  }
+
+  // spawn allows to pass formatted output (colors)
+  cp.spawn(process.execPath, arr, { stdio: "inherit" });
 };
 
 jxcore.utils.console.log("Downloading NPM for JXcore", "yellow");
