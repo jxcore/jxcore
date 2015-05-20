@@ -277,11 +277,32 @@ JS_LOCAL_OBJECT BuildStatsObject(commons* com, const uv_statbuf_t* s) {
   X(dev, JS_STRING_ID("dev"))
   X(mode, JS_STRING_ID("mode"))
   X(nlink, JS_STRING_ID("nlink"))
+#if defined(__POSIX__)
   X(uid, JS_STRING_ID("uid"))
   X(gid, JS_STRING_ID("gid"))
   X(rdev, JS_STRING_ID("rdev"))
-#if defined(__POSIX__)
   X(blksize, JS_STRING_ID("blksize"))
+  JS_NAME_SET(stats, JS_STRING_ID("sequenceId"), STD_TO_INTEGER(0));
+#elif defined(_MSC_VER)
+  unsigned short temp_arr[5];
+
+  temp_arr[0] = s->st_ino;
+  temp_arr[1] = s->st_gid;
+  temp_arr[2] = s->st_uid;
+  memcpy(temp_arr + 3, &s->st_rdev, std::min(sizeof(_dev_t), sizeof(unsigned short) * 2));
+
+  DWORD temp_number[2];
+  memcpy(temp_number, temp_arr, std::min(sizeof(unsigned short) * 5, sizeof(DWORD) * 2));
+
+  JS_NAME_SET(stats, JS_STRING_ID("ino"), STD_TO_NUMBER(temp_number[0]));
+  
+  // squenceId holds the value from GetFileInformationByHandle:::nFileIndexHigh
+  JS_NAME_SET(stats, JS_STRING_ID("sequenceId"), STD_TO_NUMBER(temp_number[1]));
+
+  JS_NAME_SET(stats, JS_STRING_ID("rdev"), STD_TO_INTEGER(0));
+  JS_NAME_SET(stats, JS_STRING_ID("blksize"), STD_TO_INTEGER(0));
+  JS_NAME_SET(stats, JS_STRING_ID("uid"), STD_TO_INTEGER(0));
+  JS_NAME_SET(stats, JS_STRING_ID("gid"), STD_TO_INTEGER(0));
 #endif
 #undef X
 
@@ -291,9 +312,9 @@ JS_LOCAL_OBJECT BuildStatsObject(commons* com, const uv_statbuf_t* s) {
     if (JS_IS_EMPTY(val)) return JS_LOCAL_OBJECT();                        \
     JS_NAME_SET(stats, v, val);                                            \
   }
-  X(ino, JS_STRING_ID("ino"))
   X(size, JS_STRING_ID("size"))
 #if defined(__POSIX__)
+  X(ino, JS_STRING_ID("ino"))
   X(blocks, JS_STRING_ID("blocks"))
 #endif
 #undef X

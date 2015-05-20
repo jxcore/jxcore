@@ -756,18 +756,31 @@ void fs__readdir(uv_fs_t* req) {
 
 INLINE static int fs__stat_handle(HANDLE handle, uv_statbuf_t* statbuf) {
   BY_HANDLE_FILE_INFORMATION info;
+  // we need a space for 2 DWORDs 
+  // st_ino (ushort), st_gid(short), st_uid(short), and st_rdev(uint) are the 
+  // variables we can use. 
+  unsigned short temp_arr[5] = { 0 };
+  DWORD temp_number[2];
 
   if (!GetFileInformationByHandle(handle, &info)) {
     return -1;
   }
 
-  /* TODO: set st_dev, st_rdev and st_ino to something meaningful. */
-  statbuf->st_ino = 0;
-  statbuf->st_dev = 0;
-  statbuf->st_rdev = 0;
+  // _dev_t has enough space for dwVolumeSerialNumber
+  // https://msdn.microsoft.com/en-us/library/s3f49ktz.aspx
+  statbuf->st_dev = info.dwVolumeSerialNumber;
 
-  statbuf->st_gid = 0;
-  statbuf->st_uid = 0;
+  temp_number[0] = info.nFileIndexLow;
+  temp_number[1] = info.nFileIndexHigh;
+  // according to same MSDN reference given above, 2 x ushort is enough to hold a DWORD(ulong)
+  // however we do have at least 5 x ushort memory space. play safe.
+  memcpy(temp_arr, temp_number, min(sizeof(unsigned short) * 5, sizeof(DWORD) * 2));
+
+  statbuf->st_ino = temp_arr[0];
+  statbuf->st_gid = temp_arr[1];
+  statbuf->st_uid = temp_arr[2];
+  // play safe. although we know sizeof(_dev_t) == sizeof(ushort) * 2 
+  memcpy(&statbuf->st_rdev, temp_arr + 3, min(sizeof(_dev_t), sizeof(unsigned short) * 2));
 
   statbuf->st_mode = 0;
 
