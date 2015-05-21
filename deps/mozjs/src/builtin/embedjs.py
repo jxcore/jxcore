@@ -39,7 +39,8 @@
 from __future__ import with_statement
 import re, sys, os, fileinput, subprocess
 import shlex
-import which
+import which_local
+which = which_local
 from optparse import OptionParser
 
 def ToCAsciiArray(lines):
