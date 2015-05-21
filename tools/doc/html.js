@@ -7,6 +7,7 @@ var path = require('path');
 module.exports = toHTML;
 
 function toHTML(input, filename, template, cb) {
+  input = input.replace(/\.markdown/g, ".html");
   var lexed = marked.lexer(input);
   fs.readFile(template, 'utf8', function(er, template) {
     if (er) return cb(er);
@@ -107,6 +108,13 @@ function parseLists(input) {
     output.push(tok);
   });
 
+  if (input.links) {
+    for(var o in input.links) {
+      if (input.links[o].href)
+        input.links[o].href = input.links[o].href.replace(/\.markdown/g, ".html");
+    }
+  }
+
   return output;
 }
 
@@ -142,7 +150,9 @@ function buildToc(lexed, filename, cb) {
             'Inappropriate heading level\n' + JSON.stringify(tok))); }
 
     depth = tok.depth;
-    var id = getId(filename + '_' + tok.text.trim());
+    // original from node team:
+    // var id = getId(filename + '_' + tok.text.trim());
+    var id = getId(tok.text.trim());
     toc.push(new Array((depth - 1) * 2 + 1).join(' ') + '* <a href="#' + id
             + '">' + tok.text + '</a>');
     tok.text += '<span><a class="mark" href="#' + id + '" ' + 'id="' + id
@@ -156,9 +166,15 @@ function buildToc(lexed, filename, cb) {
 var idCounters = {};
 function getId(text) {
   text = text.toLowerCase();
-  text = text.replace(/[^a-z0-9]+/g, '_');
-  text = text.replace(/^_+|_+$/, '');
-  text = text.replace(/^([^a-z])/, '_$1');
+  // original from node team:
+  // text = text.replace(/[^a-z0-9]+/g, '_');
+  // text = text.replace(/^_+|_+$/, '');
+  // text = text.replace(/^([^a-z])/, '_$1');
+
+  // same as github does
+  text = text.replace(/[^a-z0-9\s]+/g, '');
+  text = text.replace(/\s/g, '-');
+
   if (idCounters.hasOwnProperty(text)) {
     text += '_' + (++idCounters[text]);
   } else {

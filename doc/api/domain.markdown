@@ -437,4 +437,4 @@ possible, once a domain is disposed, further errors from the emitters in
 that set will be ignored.  So, even if some remaining actions are still
 in flight, JXcore will not communicate further about them.
 
-[EventEmitter]: events.html#events_class_events_eventemitter
+[EventEmitter]: events.markdown#class-eventseventemitter

@@ -4,7 +4,7 @@
 
 A stream is an abstract interface implemented by various objects in
 JXcore.  For example a [request to an HTTP
-server](http.html#http_http_incomingmessage) is a stream, as is
+server](http.markdown#httpincomingmessage) is a stream, as is
 [stdout][]. Streams are readable, writable, or both. All streams are
 instances of [EventEmitter][]
 
@@ -112,9 +112,9 @@ out.
 
 Examples of readable streams include:
 
-* [http responses, on the client](http.html#http_http_incomingmessage)
-* [http requests, on the server](http.html#http_http_incomingmessage)
-* [fs read streams](fs.html#fs_class_fs_readstream)
+* [http responses, on the client](http.markdown#httpincomingmessage)
+* [http requests, on the server](http.markdown#httpincomingmessage)
+* [fs read streams](fs.markdown#class-fsreadstream)
 * [zlib streams][]
 * [crypto streams][]
 * [tcp sockets][]
@@ -444,13 +444,13 @@ that you are writing data *to*.
 
 Examples of writable streams include:
 
-* [http requests, on the client](http.html#http_class_http_clientrequest)
-* [http responses, on the server](http.html#http_class_http_serverresponse)
-* [fs write streams](fs.html#fs_class_fs_writestream)
+* [http requests, on the client](http.markdown#class-httpclientrequest)
+* [http responses, on the server](http.markdown#class-httpserverresponse)
+* [fs write streams](fs.markdown#class-fswritestream)
 * [zlib streams][]
 * [crypto streams][]
 * [tcp sockets][]
-* [child process stdin](child_process.html#child_process_child_stdin)
+* [child process stdin](child_process.markdown#childstdin)
 * [process.stdout][], [process.stderr][]
 
 #### writable.write(chunk, [encoding], [callback])
@@ -639,7 +639,7 @@ of stream class you are writing:
       <p>Reading only</p>
     </td>
     <td>
-      <p>[Readable](#stream_class_stream_readable_1)</p>
+      <p>[Readable](#class-streamreadable-1)</p>
     </td>
     <td>
       <p><code>[_read][]</code></p>
@@ -650,7 +650,7 @@ of stream class you are writing:
       <p>Writing only</p>
     </td>
     <td>
-      <p>[Writable](#stream_class_stream_writable_1)</p>
+      <p>[Writable](#class-streamwritable-1)</p>
     </td>
     <td>
       <p><code>[_write][]</code></p>
@@ -661,7 +661,7 @@ of stream class you are writing:
       <p>Reading and writing</p>
     </td>
     <td>
-      <p>[Duplex](#stream_class_stream_duplex_1)</p>
+      <p>[Duplex](#class-streamduplex-1)</p>
     </td>
     <td>
       <p><code>[_read][]</code>, <code>[_write][]</code></p>
@@ -672,7 +672,7 @@ of stream class you are writing:
       <p>Operate on written data, then read the result</p>
     </td>
     <td>
-      <p>[Transform](#stream_class_stream_transform_1)</p>
+      <p>[Transform](#class-streamtransform-1)</p>
     </td>
     <td>
       <p><code>_transform</code>, <code>_flush</code></p>
@@ -1448,41 +1448,41 @@ beyond setting option flags in the constructor, it is **not** safe to
 modify them.
 
 
-[EventEmitter]: events.html#events_class_events_eventemitter
-[Object mode]: #stream_object_mode
-[`stream.push(chunk)`]: #stream_readable_push_chunk_encoding
-[`stream.push(null)`]: #stream_readable_push_chunk_encoding
-[`stream.push()`]: #stream_readable_push_chunk_encoding
-[`unpipe()`]: #stream_readable_unpipe_destination
-[unpiped]: #stream_readable_unpipe_destination
-[tcp sockets]: net.html#net_class_net_socket
-[zlib streams]: zlib.html
-[zlib]: zlib.html
-[crypto streams]: crypto.html
-[crypto]: crypto.html
-[tls.CryptoStream]: tls.html#tls_class_cryptostream
-[process.stdin]: process.html#process_process_stdin
-[stdout]: process.html#process_process_stdout
-[process.stdout]: process.html#process_process_stdout
-[process.stderr]: process.html#process_process_stderr
-[child process stdout and stderr]: child_process.html#child_process_child_stdout
-[API for Stream Consumers]: #stream_api_for_stream_consumers
-[API for Stream Implementors]: #stream_api_for_stream_implementors
-[Readable]: #stream_class_stream_readable
-[Writable]: #stream_class_stream_writable
-[Duplex]: #stream_class_stream_duplex
-[Transform]: #stream_class_stream_transform
-[`end`]: #stream_event_end
-[`finish`]: #stream_event_finish
-[`_read(size)`]: #stream_readable_read_size_1
-[`_read()`]: #stream_readable_read_size_1
-[_read]: #stream_readable_read_size_1
-[`writable.write(chunk)`]: #stream_writable_write_chunk_encoding_callback
-[`write(chunk, encoding, callback)`]: #stream_writable_write_chunk_encoding_callback
-[`write()`]: #stream_writable_write_chunk_encoding_callback
-[`stream.write(chunk)`]: #stream_writable_write_chunk_encoding_callback
-[`_write(chunk, encoding, callback)`]: #stream_writable_write_chunk_encoding_callback_1
-[`_write()`]: #stream_writable_write_chunk_encoding_callback_1
-[_write]: #stream_writable_write_chunk_encoding_callback_1
-[`util.inherits`]: util.html#util_util_inherits_constructor_superconstructor
-[`end()`]: #stream_writable_end_chunk_encoding_callback
+[EventEmitter]: events.markdown#class-eventseventemitter
+[Object mode]: #object-mode
+[`stream.push(chunk)`]: #readablepushchunk-encoding
+[`stream.push(null)`]: #readablepushchunk-encoding
+[`stream.push()`]: #readablepushchunk-encoding
+[`unpipe()`]: #readableunpipedestination
+[unpiped]: #readableunpipedestination
+[tcp sockets]: net.markdown#class-netsocket
+[zlib streams]: zlib.markdown
+[zlib]: zlib.markdown
+[crypto streams]: crypto.markdown
+[crypto]: crypto.markdown
+[tls.CryptoStream]: tls.markdown#class-cryptostream
+[process.stdin]: process.markdown#processstdin
+[stdout]: process.markdown#processstdout
+[process.stdout]: process.markdown#processstdout
+[process.stderr]: process.markdown#processstderr
+[child process stdout and stderr]: child_process.markdown#childstdout
+[API for Stream Consumers]: #api-for-stream-consumers
+[API for Stream Implementors]: #api-for-stream-implementors
+[Readable]: #class-streamreadable
+[Writable]: #class-streamwritable
+[Duplex]: #class-streamduplex
+[Transform]: #class-streamtransform
+[`end`]: #event-end
+[`finish`]: #event-finish
+[`_read(size)`]: #readablereadsize
+[`_read()`]: #readablereadsize
+[_read]: #readablereadsize
+[`writable.write(chunk)`]: #writablewritechunk-encoding-callback
+[`write(chunk, encoding, callback)`]: #writablewritechunk-encoding-callback
+[`write()`]: #writablewritechunk-encoding-callback
+[`stream.write(chunk)`]: #writablewritechunk-encoding-callback
+[`_write(chunk, encoding, callback)`]: #writablewritechunk-encoding-callback
+[`_write()`]: #writablewritechunk-encoding-callback
+[_write]: #writablewritechunk-encoding-callback
+[`util.inherits`]: util.markdown#utilinheritsconstructor-superconstructor
+[`end()`]: #writableendchunk-encoding-callback

@@ -43,7 +43,7 @@ portTCP, and portTCPS has no effect on global configuration.
 
 ## allowMonitoringAPI
 
-You may use this parameter to disable access to [`jxcore.monitor`](jxcore-monitor.html#jxcore_monitor_api) methods within an application.
+You may use this parameter to disable access to [`jxcore.monitor`](jxcore-monitor.markdown#api) methods within an application.
 The default value is *true*.
 
     jx.config:

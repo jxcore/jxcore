@@ -48,7 +48,7 @@ Example of listening for `uncaughtException`:
 Note that `uncaughtException` is a very crude mechanism for exception
 handling and may be removed in the future.
 
-Don't use it, use [domains](domain.html) instead. If you do use it, restart
+Don't use it, use [domains](domain.markdown) instead. If you do use it, restart
 your application after every unhandled exception!
 
 Do *not* use it as the JXcore equivalent of `On Error Resume Next`. An
@@ -146,7 +146,7 @@ on `process.stderr`, `process.stdout`, or `process.stdin`:
     $ jx -p "Boolean(process.stdout.isTTY)" | cat
     false
 
-See [the tty docs](tty.html#tty_tty) for more information.
+See [the tty docs](tty.markdown#tty) for more information.
 
 ## process.stderr
 
@@ -184,7 +184,7 @@ Example of opening standard input and listening for both events:
 As a Stream, `process.stdin` can also be used in "old" mode that is compatible
 with scripts written for node prior v0.10.
 For more information see
-[Stream compatibility](stream.html#stream_compatibility_with_older_node_versions).
+[Stream compatibility](stream.markdown#compatibility-with-older-node-versions).
 
 In "old" Streams mode the stdin stream is paused by default, so one
 must call `process.stdin.resume()` to read from it. Note also that calling
@@ -461,7 +461,7 @@ An example of the possible output looks like:
 Send a signal to a process. `pid` is the process id and `signal` is the
 string describing the signal to send.  Signal names are strings like
 'SIGINT' or 'SIGHUP'.  If omitted, the signal will be 'SIGTERM'.
-See [Signal Events](#process_signal_events) and kill(2) for more information.
+See [Signal Events](#signal-events) and kill(2) for more information.
 
 Will throw an error if target does not exist, and as a special case, a signal of
 `0` can be used to test for the existence of a process.
@@ -484,7 +484,7 @@ Example of sending a signal to yourself:
     process.kill(process.pid, 'SIGHUP');
 
 Note: When SIGUSR1 is received by JXcore it starts the debugger, see
-[Signal Events](#process_signal_events).
+[Signal Events](#signal-events).
 
 ## process.pid
 
@@ -666,4 +666,4 @@ a diff reading, useful for benchmarks and measuring intervals:
       // benchmark took 1000000527 nanoseconds
     }, 1000);
 
-[EventEmitter]: events.html#events_class_events_eventemitter
+[EventEmitter]: events.markdown#class-eventseventemitter

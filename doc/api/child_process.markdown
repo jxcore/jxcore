@@ -40,8 +40,8 @@ Note that the `exit`-event may or may not fire after an error has occured. If
 you are listening on both events to fire a function, remember to guard against
 calling your function twice.
 
-See also [`ChildProcess#kill()`](#child_process_child_kill_signal) and
-[`ChildProcess#send()`](#child_process_child_send_message_sendhandle).
+See also [`ChildProcess#kill()`](#childkillsignal) and
+[`ChildProcess#send()`](#childsendmessage-sendhandle).
 
 ### Event:  'exit'
 
@@ -197,7 +197,7 @@ will emit objects each time it receives a message on its channel.
 Please note that the `send()` method on both the parent and child are
 synchronous - sending large chunks of data is not advised (pipes can be used
 instead, see
-[`child_process.spawn`](#child_process_child_process_spawn_command_args_options)).
+[`child_process.spawn`](#child_processspawncommand-args-options)).
 
 There is a special case when sending a `{cmd: 'NODE_foo'}` message. All messages
 containing a `NODE_` prefix in its `cmd` property will not be emitted in
@@ -586,4 +586,4 @@ done with care and by default will talk over the fd represented an
 environmental variable `NODE_CHANNEL_FD` on the child process. The input and
 output on this fd is expected to be line delimited JSON objects.
 
-[EventEmitter]: events.html#events_class_events_eventemitter
+[EventEmitter]: events.markdown#class-eventseventemitter

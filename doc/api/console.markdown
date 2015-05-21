@@ -71,5 +71,5 @@ Print a stack trace to stderr of the current position.
 Same as [assert.ok()][] where if the `expression` evaluates as `false` throw an
 AssertionError with `message`.
 
-[assert.ok()]: assert.html#assert_assert_value_message_assert_ok_value_message
-[util.format()]: util.html#util_util_format_format
+[assert.ok()]: assert.markdown#assertvalue-message-assertokvalue-message
+[util.format()]: util.markdown#utilformatformat-

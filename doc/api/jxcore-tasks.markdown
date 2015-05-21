@@ -35,7 +35,7 @@ Note that this particular example does nothing but running hello.js file in mult
 
 We have written a blog post showing How to turn your existing application into a multi-instanced one with a few lines of code.
 
-See also general description of JXcore [multitasking](jxcore-feature-multitasking.html).
+See also general description of JXcore [multitasking](jxcore-feature-multitasking.markdown).
 
 # Passing arguments to tasks
 
@@ -103,7 +103,7 @@ jxcore.tasks.on('emptyQueue', function () {
 
 Please keep in mind, that if you plan to use some delayed/async work inside a task,
 the `emptyQueue` event can be fired before they will have chance to complete.
-Refer to [`process.keepAlive()`](jxcore-process.html#jxcore_process_process_keepalive_timeout) method for that matter.
+Refer to [`process.keepAlive()`](jxcore-process.markdown#processkeepalivetimeout) method for that matter.
 
 ## Event: 'message'
 
@@ -146,7 +146,7 @@ There are few principles regarding adding the tasks, that you should be aware of
 it is considered to be completed. 
 If the task performs any delayed execution with `setTimeout()`, `setInterval()` or other asynchronous calls,
 the task method may return before those delayed/async jobs will have had a chance to complete.
-For gaining control over task’s execution time, please use `process.keepAlive()` and `process.release()` methods from [process](jxcore-process.html)  API.
+For gaining control over task’s execution time, please use `process.keepAlive()` and `process.release()` methods from [process](jxcore-process.markdown)  API.
 
 Adding a task with callback:
 

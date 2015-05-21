@@ -199,10 +199,10 @@ will not execute.
 
 The timer functions are global variables. See the [timers][] section.
 
-[buffer section]: buffer.html
-[module section]: modules.html
-[module system documentation]: modules.html
-[Modules]: modules.html#modules_modules
-[process object]: process.html#process_process
-[console]: console.html
-[timers]: timers.html
+[buffer section]: buffer.markdown
+[module section]: modules.markdown
+[module system documentation]: modules.markdown
+[Modules]: modules.markdown#modules
+[process object]: process.markdown#process
+[console]: console.markdown
+[timers]: timers.markdown

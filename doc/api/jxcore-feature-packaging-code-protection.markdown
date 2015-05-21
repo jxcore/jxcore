@@ -379,7 +379,7 @@ Normally, `fs` can not reach the JavaScript files inside the package. If you nee
 
 * **native**
 When this parameter is set to 'true', the compilation process creates standalone, self-executable binary rather than a package.
-It acts exactly as `jx package` command called with [`-native`](jxcore-feature-packaging-code-protection.html#jxcore_feature_packaging_code_protection_native) switch.
+It acts exactly as `jx package` command called with [`-native`](jxcore-feature-packaging-code-protection.markdown#-native) switch.
 
 ### Supported file types
 
@@ -393,7 +393,7 @@ However, there are two file types, which are treated by JXcore as source files r
 
 The difference is, that source files cannot be read from a package during runtime.
 This is a security feature of JXcore packaging.
-For more information see [Accessing Files and Assets from a Package](#jxcore_feature_packaging_code_protection_files).
+For more information see [Accessing Files and Assets from a Package](#files).
 
 The `jx package` puts them into the `files` array of `JXP` project file during execution of `jx package` command.
 
@@ -403,7 +403,7 @@ Even if you would edit the `JXP` project file manually and add `js` files into t
 
 ### assets
 
-There are a few native methods in the [FileSystem](fs.html) module that you can use to access assets embedded inside a JX package.
+There are a few native methods in the [FileSystem](fs.markdown) module that you can use to access assets embedded inside a JX package.
 
 * `readFile()`
 * `readFileSync()`

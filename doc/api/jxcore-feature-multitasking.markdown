@@ -14,11 +14,11 @@ Every instance in JXcore are called a sub-instance. The sub-instance is complete
 because they all run in different V8′s contexts/isolates. It means that they cannot share or have common objects, variables etc. directly.
 Thus, there is no use for any global variable defined in a main instance – the sub-instance will not see it.
 
-But there is another way – JXcore exposes special thread-safe [Memory Store](jxcore-store.html), which can be shared among instances. See `jxcore.store.shared` for more information.
+But there is another way – JXcore exposes special thread-safe [Memory Store](jxcore-store.markdown), which can be shared among instances. See `jxcore.store.shared` for more information.
 
 Apart from that, there are also two other ways for sub-instances to communicate with the main instance:
 
-1. sending a message – [`process.sendToMain()`](jxcore-process.html#jxcore_process_process_sendtomain_param),
+1. sending a message – [`process.sendToMain()`](jxcore-process.markdown#processsendtomainparam),
 2. returning the result from the task, since this is the regular method.
 
 ### Defaults
@@ -34,8 +34,8 @@ If you launch te code with mt/mt-keep command line parameter, you can set the in
 
     > jx mt:4 hello.js
 
-Otherwise you can use [`tasks.setThreadCount()`](jxcore-tasks.html#jxcore_tasks_tasks_setthreadcount_value) method.
-See also [How to run multitasked code?](jxcore-feature-multitasking.html#jxcore_feature_multitasking_how_to_run_multitasked_code) for more information.
+Otherwise you can use [`tasks.setThreadCount()`](jxcore-tasks.markdown#taskssetthreadcountvalue) method.
+See also [How to run multitasked code?](jxcore-feature-multitasking.markdown#how-to-run-multitasked-code) for more information.
 
 ### Memory management
 
@@ -67,7 +67,7 @@ The first and the easiest one is just to use `mt` or `mt-keep` option in the com
 
     > jx mt-keep:4 easy1.js
 
-This topic is fully described here: [mt / mt-keep](jxcore-command-mt.html)
+This topic is fully described here: [mt / mt-keep](jxcore-command-mt.markdown)
 
 ### Multi-instanced Javascript Tasks
 
@@ -86,4 +86,4 @@ In this model you always have the main instance and the sub-instances.
 You can also get notified, when all task are completed.
 See the API for reference.
 
-This topic is fully described here: [Tasks](jxcore-tasks.html)
+This topic is fully described here: [Tasks](jxcore-tasks.markdown)

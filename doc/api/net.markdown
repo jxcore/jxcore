@@ -172,9 +172,9 @@ already been bound to a port or domain socket.
 Listening on a file descriptor is not supported on Windows.
 
 This function is asynchronous.  When the server has been bound,
-['listening'](#event_listening_) event will be emitted.
+['listening'](#event-listening) event will be emitted.
 the last parameter `callback` will be added as an listener for the
-['listening'](#event_listening_) event.
+['listening'](#event-listening) event.
 
 ### server.close([callback])
 
@@ -521,11 +521,11 @@ Returns true if input is a version 4 IP address, otherwise returns false.
 
 Returns true if input is a version 6 IP address, otherwise returns false.
 
-['connect']: #net_event_connect
-['connection']: #net_event_connection
-['end']: #net_event_end
-[EventEmitter]: events.html#events_class_events_eventemitter
-['listening']: #net_event_listening
-[server.getConnections()]: #net_server_getconnections_callback
-[Readable Stream]: stream.html#stream_readable_stream
-[stream.setEncoding()]: stream.html#stream_stream_setencoding_encoding
+['connect']: #event-connect
+['connection']: #event-connection
+['end']: #event-end
+[EventEmitter]: events.markdown#class-eventseventemitter
+['listening']: #event-listening
+[server.getConnections()]: #servergetconnectionscallback
+[Readable Stream]: stream.markdown#class-streamreadable
+[stream.setEncoding()]: stream.markdown#readablesetencodingencoding

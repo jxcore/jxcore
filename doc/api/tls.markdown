@@ -562,10 +562,10 @@ The numeric representation of the remote port. For example, `443`.
 
 [OpenSSL cipher list format documentation]: http://www.openssl.org/docs/apps/ciphers.html#CIPHER_LIST_FORMAT
 [BEAST attacks]: http://blog.ivanristic.com/2011/10/mitigating-the-beast-attack-on-tls.html
-[CleartextStream]: #tls_class_tls_cleartextstream
-[net.Server.address()]: net.html#net_server_address
-['secureConnect']: #tls_event_secureconnect
-[secureConnection]: #tls_event_secureconnection
-[Stream]: stream.html#stream_stream
+[CleartextStream]: #class-tlscleartextstream
+[net.Server.address()]: net.markdown#serveraddress
+['secureConnect']: #event-secureconnect
+[secureConnection]: #event-secureconnection
+[Stream]: stream.markdown#stream
 [SSL_METHODS]: http://www.openssl.org/docs/ssl/ssl.html#DEALING_WITH_PROTOCOL_METHODS
-[tls.Server]: #tls_class_tls_server
+[tls.Server]: #class-tlsserver
