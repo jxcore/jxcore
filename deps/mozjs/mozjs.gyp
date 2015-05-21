@@ -414,15 +414,18 @@
              '-Wno-missing-field-initializers',
              '-Wno-invalid-offsetof', '-Wno-ignored-qualifiers', '-Wno-extra'
            ],
-           "defines": [
-             "JS_HAVE_ENDIAN_H",
-           ],
         }],
         ['OS=="freebsd"', {
           'ldflags': ['-pthread'],
+          "defines": [
+            "JS_HAVE_MACHINE_ENDIAN_H",
+          ],
         }],
         ['OS in "linux android"', {
           'ldflags': ['dl'],
+          "defines": [
+             "JS_HAVE_ENDIAN_H",
+           ],
         }],
         ['OS=="win"', {
            'defines': [ 'XP_WIN', '_CRT_RAND_S', 'WTF_COMPILER_MSVC', 'EXPORT_JS_API' ],  

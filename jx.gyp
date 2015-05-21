@@ -252,8 +252,15 @@
               '-Wno-missing-field-initializers', '-Wno-extra',
               '-Wno-invalid-offsetof', '-Wno-ignored-qualifiers'
             ],
+          }],
+          ['OS in "linux android"', {
             "defines": [
               "JS_HAVE_ENDIAN_H",
+            ],
+          }],
+          ['OS in "bsd"', {
+            "defines": [
+              "JS_HAVE_MACHINE_ENDIAN_H",
             ],
           }],
           ['OS=="ios" or OS=="mac"',
