@@ -381,18 +381,20 @@
         [ 'OS!="ios" and OS!="android"', {
           'dependencies': [ './jskwgen.gyp:jskwgen' ],
         }],
-        ['OS in "linux freebsd"', {
+        ['OS in "linux"', {
            'sources':[
              'src/perf/pm_linux.cpp',
+           ],
+        }],
+        ['OS in "android bsd"', {
+           'sources':[
+             'src/perf/pm_stub.cpp',
            ],
         }],
         [ 'OS=="android"', {
           'defines': [
             'ANDROID'
           ],
-          'sources':[
-             'src/perf/pm_stub.cpp',
-           ],
           'ldflags': [ 'log', 'z', 'android' ],
           'cflags!': [
             '-pthread',

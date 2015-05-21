@@ -258,7 +258,7 @@
               "JS_HAVE_ENDIAN_H",
             ],
           }],
-          ['OS in "bsd"', {
+          ['OS in "freebsd bsd"', {
             "defines": [
               "JS_HAVE_MACHINE_ENDIAN_H",
             ],
