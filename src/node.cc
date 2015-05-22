@@ -1672,6 +1672,9 @@ void EnableDebug(bool wait_connect, node::commons* node) {
 #ifdef JS_ENGINE_V8
   // If we're called from another thread, make sure to enter the right
   // v8 isolate.
+  if (node->node_isolate == NULL)
+    node->node_isolate = v8::Isolate::GetCurrent();
+
   node->node_isolate->Enter();
 
   v8::Debug::SetDebugMessageDispatchHandler(DispatchMessagesDebugAgentCallback,
