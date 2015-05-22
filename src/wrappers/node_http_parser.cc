@@ -556,7 +556,7 @@ JS_HANDLE_VALUE ExecuteDirect(node::commons* com,
 
   size_t nparsed;
 
-  if ((len < com->max_header_size) || (com->max_header_size == 0)) {
+  if ((len + off < com->max_header_size) || (com->max_header_size == 0)) {
     nparsed = http_parser_execute(&parser->parser_, com->parser_settings,
                                   buffer_data + off, len);
   } else {
