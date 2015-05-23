@@ -145,6 +145,7 @@
 #define JS_TYPE_TO_LOCAL_OBJECT(x) (x)
 #define JS_TYPE_TO_LOCAL_STRING(x) (x)
 #define JS_TYPE_TO_LOCAL_FUNCTION(x) (x)
+#define JS_TYPE_TO_LOCAL_FUNCTION_TEMPLATE(x) (x)
 #define JS_TYPE_TO_LOCAL_CONTEXT(x) (x)->GetRaw()
 
 #define JS_GET_CONTEXT_GLOBAL(x) MozJS::Value(JS::CurrentGlobalOrNull(x), x)

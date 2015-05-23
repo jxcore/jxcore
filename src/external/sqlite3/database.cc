@@ -8,7 +8,6 @@
 using namespace node_sqlite3;
 using namespace node;
 
-// JS_PERSISTENT_FUNCTION_TEMPLATE Database::constructor_template;
 jxcore::ThreadStore<JS_PERSISTENT_FUNCTION_TEMPLATE> Database::jx_persistent;
 
 void Database::Process() {
