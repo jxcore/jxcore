@@ -36,6 +36,50 @@ All at once:
 ## Windows:
 
     vcbuild.bat test
+
+## Non-python platforms
+
+On some platforms, where python is not installed/available (e.g. android) the tests can be launched by JXcore itself with the following command:
+
+    jx test/test.js jxcore
+
+### Android standalone binaries
+
+The steps below can be useful for testing standalone jx binaries on android with script mentioned above.
+Basically it is about copying the test folder and standalone jx to the device and then running the test through `adb shell` command.
+
+Sample preparation script:
+
+```bash
+#!/bin/bash
+
+# working folder on android device:
+DEST=/data/local/tmp/jxcore
+# path to adb tool:
+ADB=~/android-sdks/platform-tools/adb
+# path to local JXcore git repository:
+JXREPO=~/Documents/GitHub/jxcore
+
+# copy test folder from jxcore local repository
+$ADB shell mkdir -p $DEST
+$ADB shell rm -r $DEST/test/
+$ADB push -p $JXREPO/test $DEST/test/
+
+# compile standalone binary for android, if needed
+# cd $JXREPO
+# sudo ./build_scripts/android_standalone.sh ~/android-ndk-r10d arm v8
+
+# copy jx to the device
+$ADB push -p $JXREPO/out_android/sa_arm_v8/Release/jx $DEST
+```
+
+Now you're ready to run the tests:
+
+```bash
+$ ~/android-sdks/platform-tools/adb shell
+shell@android:/ $ cd /data/local/tmp/jxcore
+shell@android:/data/local/tmp/jxcore $ ./jx test/test.js jxcore
+```
     
 ## Native Interface
 
