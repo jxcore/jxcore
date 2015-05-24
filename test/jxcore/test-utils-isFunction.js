@@ -35,11 +35,15 @@ var functions = [function () {
 }, f, obj.m, fn.fn, fn.fn1];
 
 for (var o in nonFunctions) {
-  var is = jxcore.utils.isFunction(nonFunctions[o]);
-  assert.strictEqual(is, false, "This is not a function, but isFunction() returned true! item id = " + o + ": " + nonFunctions[o]);
+  if (nonFunctions.hasOwnProperty(o)) {
+    var is = jxcore.utils.isFunction(nonFunctions[o]);
+    assert.strictEqual(is, false, "This is not a function, but isFunction() returned true! item id = " + o + ": " + nonFunctions[o]);
+  }
 }
 
 for (var o in functions) {
-  var is = jxcore.utils.isFunction(functions[o]);
-  assert.strictEqual(is, true, "This is a function, but isFunction() returned false! item id = " + o + ": " + functions[o]);
+  if (functions.hasOwnProperty(o)) {
+    var is = jxcore.utils.isFunction(functions[o]);
+    assert.strictEqual(is, true, "This is a function, but isFunction() returned false! item id = " + o + ": " + functions[o]);
+  }
 }

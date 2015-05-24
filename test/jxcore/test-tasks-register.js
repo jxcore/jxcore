@@ -29,5 +29,6 @@ jxcore.tasks.addTask(task, null, function (err, ret) {
   methods();
   var main_ret = task();
   for (var o in main_ret)
-    assert.strictEqual(main_ret[o], ret[o], "Values are not equal: main_ret[" + o + "] !== ret[" + o + "]");
+    if (main_ret.hasOwnProperty(o))
+      assert.strictEqual(main_ret[o], ret[o], "Values are not equal: main_ret[" + o + "] !== ret[" + o + "]");
 });

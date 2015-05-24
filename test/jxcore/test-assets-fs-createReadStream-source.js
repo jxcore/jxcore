@@ -42,13 +42,16 @@ var arr = [
 ];
 
 for (var id in arr) {
-  checkFile(arr[id]);
+  if (arr.hasOwnProperty(id))
+    checkFile(arr[id]);
 }
 
 process.on('exit', function () {
   for (var id in arr) {
-    var file = arr[id];
-    assert.ok(!counters[file]["ondata"], "stream.on('data') event was fired for " + file + " but should not!");
-    assert.ok(!counters[file]["onend"], "stream.on('end') event was fired for " + file + " but should not!");
+    if (arr.hasOwnProperty(id)) {
+      var file = arr[id];
+      assert.ok(!counters[file]["ondata"], "stream.on('data') event was fired for " + file + " but should not!");
+      assert.ok(!counters[file]["onend"], "stream.on('end') event was fired for " + file + " but should not!");
+    }
   }
 });

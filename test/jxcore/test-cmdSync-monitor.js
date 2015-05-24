@@ -25,6 +25,9 @@ var arr = [
 ];
 
 for (var o in arr) {
+  if (!arr.hasOwnProperty(o))
+    continue;
+
   var res = jxcore.utils.cmdSync(arr[o]);
   var splited = res.out.split("\n");
 

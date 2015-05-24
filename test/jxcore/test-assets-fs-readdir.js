@@ -27,6 +27,8 @@ var checkFile = function (assetPath) {
   fs.readdir(assetPath, function (err, assetsDirContents) {
 
     for (var id in realContents) {
+      if (!realContents.hasOwnProperty(id))
+        continue;
       var item = realContents[id];
       assert.notStrictEqual(assetsDirContents.indexOf(item), -1 + "Did not find " + item + " in readdir('" + assetPath + "')");
     }

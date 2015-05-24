@@ -147,6 +147,8 @@ exports.createSinglePackage = function (src, native) {
     jx.copyFileSync(path.join(tmpDir, basename + ".out"), path.join(outputDir, basename + ".out"));
 
     for (var o in obj.files_fs) {
+      if (!obj.files_fs.hasOwnProperty(o))
+        continue;
       var _src = path.join(tmpDir, obj.files_fs[o]);
       var _dst = path.join(outputDir, obj.files_fs[o]);
       jx.copySync(_src, _dst);
@@ -199,6 +201,8 @@ exports.checkJSON = function (src, outputDir, native) {
     var old = process.cwd();
     process.chdir(dirname);
     for (var dep in obj.dependencies) {
+      if (!obj.dependencies.hasOwnProperty(dep))
+        continue;
       var ret = jxcore.utils.cmdSync('"' + process.execPath + '" install '
       + obj.dependencies[dep]);
       if (ret.exitCode) console.error(ret.out);
@@ -212,6 +216,9 @@ exports.checkJSON = function (src, outputDir, native) {
   obj.files_fs = [];
 
   for (var o in obj.files) {
+    if (!obj.files.hasOwnProperty(o))
+      continue;
+
     var f = obj.files[o];
     var leave = f.slice(0, 1) === "&";
     if (leave) {
@@ -390,7 +397,7 @@ var removeRedundantFiles = function (dir, leaveFiles) {
     if (f === files[a]) continue; // none of package files for removal
 
     for (var o in leaveFiles) {
-      if (leaveFiles[o] === f + ".js") {
+      if (leaveFiles.hasOwnProperty(o) && leaveFiles[o] === f + ".js") {
         found = true;
         break;
       }

@@ -29,6 +29,8 @@ var checkFile = function (assetPath) {
 
 
   for (var id in realContents) {
+    if (!realContents.hasOwnProperty(id))
+      continue;
     var item = realContents[id];
     if (assetsDirContents.indexOf(item) === -1) {
       console.error("Did not find " + item + " in readdir('" + assetPath + "')");

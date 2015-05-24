@@ -26,8 +26,10 @@ console.time("total");
 process.on("exit", function (code) {
   console.timeEnd("total");
 
-  for (var o in removeOnExit)
-    jx.rmdirSync(removeOnExit[o]);
+  for (var o in removeOnExit) {
+    if (removeOnExit.hasOwnProperty(o))
+      jx.rmdirSync(removeOnExit[o]);
+  }
 
   if (errors.length)
     throw new Error("\n" + errors.join("\n") + "\n");
@@ -71,6 +73,8 @@ var test_slim = function (definition, native, cb) {
     // removing all files except the created package
     var files = fs.readdirSync(dir);
     for (var o in files) {
+      if (!files.hasOwnProperty(o))
+        continue;
       var f = path.join(dir, files[o]);
       if (f === jx_file || files[o] === "config.json" || files[o] === "my_package.jxp") continue;
       var stat = fs.statSync(f);

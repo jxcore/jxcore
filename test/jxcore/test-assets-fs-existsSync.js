@@ -20,5 +20,6 @@ var arr = [
 ];
 
 for (var id in arr) {
-  assert.ok(fs.existsSync(arr[id]), "The exists() method for asset file does not work: " + arr[id]);
+  if (arr.hasOwnProperty(id))
+    assert.ok(fs.existsSync(arr[id]), "The exists() method for asset file does not work: " + arr[id]);
 }

@@ -17,7 +17,7 @@ var pairs = {
 
 // process.arch
 for (var prop in pairs) {
-  if (info[prop]) {
+  if (info[prop] && pairs.hasOwnProperty(prop)) {
 
     // on ARM do not test is32/is64
     if (info.isARM && prop !== "isARM")
@@ -31,7 +31,7 @@ for (var prop in pairs) {
 
 // os.arch()
 for (var prop in pairs) {
-  if (info[prop]) {
+  if (info[prop] && pairs.hasOwnProperty(prop)) {
 
     // on ARM do not test is32/is64
     if (info.isARM && prop !== "isARM")

@@ -140,8 +140,10 @@ var checkFile = function () {
 var _arr = process.argv.slice(1).join("|").replace(__filename, "").replace(
   process.execPath, "").trim().split("|");
 var dirs = [];
-for (var o in _arr)
-  if (_arr[o] && _arr[o].slice(0, 1) != "-") dirs.push(_arr[o]);
+for (var o in _arr) {
+  if (_arr.hasOwnProperty(o))
+    if (_arr[o] && _arr[o].slice(0, 1) != "-") dirs.push(_arr[o]);
+}
 
 if (single_test_dir) dirs.push(single_test_dir.name);
 
@@ -157,6 +159,8 @@ var run = function (what, cb) {
     args.push("--timeout", timeout);
 
   for (var o in dirs) {
+    if (!dirs.hasOwnProperty(o))
+      continue;
     if (what === "-j")
       args.push(dirs[o]);
     else
@@ -218,6 +222,9 @@ process.on('exit', function() {
   if (!no_cleanup) {
     var files = fs.readdirSync(__dirname);
     for(var o in files) {
+      if (!files.hasOwnProperty(o))
+        continue;
+
       var _path = path.join(__dirname, files[o]);
       var stat = fs.statSync(_path);
       if (stat.isDirectory()) {

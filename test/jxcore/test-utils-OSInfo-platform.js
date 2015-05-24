@@ -21,7 +21,7 @@ var pairs = {
 
 // process.platform
 for (var prop in pairs) {
-  if (info[prop]) {
+  if (info[prop] && pairs.hasOwnProperty(prop)) {
     assert.strictEqual(process.platform, pairs[prop],
       "Incompatibility of process.platform = `" + process.platform + "` and OSInfo()." + prop + " = `" + info[prop] + "`" +
       "The value of process.platform should be: `" + pairs[prop] + "`");
@@ -30,7 +30,7 @@ for (var prop in pairs) {
 
 // os.platform()
 for (var prop in pairs) {
-  if (info[prop]) {
+  if (info[prop] && pairs.hasOwnProperty(prop)) {
     assert.strictEqual(os.platform(), pairs[prop],
       "Incompatibility of os.platform() = `" + os.platform() + "` and OSInfo()." + prop + " = `" + info[prop] + "`," +
       "The value of os.platform() should be: `" + pairs[prop] + "`");

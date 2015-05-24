@@ -55,7 +55,14 @@ var objects = {
 };
 
 for (var object in objects) {
+  if (!objects.hasOwnProperty(object))
+    continue;
+
   for (var member in objects[object]) {
+
+    if (!objects[object].hasOwnProperty(member))
+      continue;
+
     var type = objects[object][member];
 
     var name = object + "." + member;

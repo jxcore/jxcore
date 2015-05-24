@@ -22,6 +22,9 @@ try {
 
 
 for (var o in json.should_be_readable) {
+  if (!json.should_be_readable.hasOwnProperty(o))
+    continue;
+
   var relative_path = json.should_be_readable[o];
   try {
     fs.readFileSync(relative_path).toString();
@@ -32,6 +35,9 @@ for (var o in json.should_be_readable) {
 
 
 for (var o in json.should_not_be_readable) {
+  if (!json.should_not_be_readable.hasOwnProperty(o))
+    continue;
+
   var relative_path = json.should_not_be_readable[o];
   try {
     fs.readFileSync(relative_path).toString();
