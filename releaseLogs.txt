@@ -1,5 +1,16 @@
 JXcore (http://jxcore.io)
 
+----JXcore 3.0.1
+
+- SpiderMonkey SM BSD build support 
+- 'jx install' uses npm settings if any available
+- Stat.ino, Stat.dev support on Windows
+- Express apps can be packaged now
+- JXP.Stat now complies to fs.Stat
+- new 'jx npm' command for accessing 'npm'
+- jxcore.tasks : Conform to node-style callbacks (special thanks to @zamb3zi)
+- native interface stability updates
+
 ----JXcore 3.0.0
 
 - openssl, node core, libuv updates bug fixes
