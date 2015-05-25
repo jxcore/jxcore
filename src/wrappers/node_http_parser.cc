@@ -554,7 +554,7 @@ JS_HANDLE_VALUE ExecuteDirect(node::commons* com,
   com->pa_current_buffer_len = buffer_len;
   parser->got_exception_ = false;
 
-  size_t nparsed;
+  int nparsed;
 
   if ((len + off < com->max_header_size) || (com->max_header_size == 0)) {
     nparsed = http_parser_execute(&parser->parser_, com->parser_settings,
