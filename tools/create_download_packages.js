@@ -100,6 +100,8 @@ if (single_jxpath) {
 var files = fs.readdirSync(repoPath);
 
 for(var o in files) {
+  if (!files.hasOwnProperty(o))
+    continue;
 
   var f = files[o];
   var p = path.join(repoPath, f);
