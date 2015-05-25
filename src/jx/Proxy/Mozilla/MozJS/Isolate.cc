@@ -56,7 +56,8 @@ Isolate* Isolate::New(int threadId) {
     JS_SetRuntimePrivate(rt, &threadIds[threadId]);
 
     JS_SetGCParameter(rt, JSGC_MAX_BYTES, 0xffffffff);
-    JS_SetNativeStackQuota(rt, 256 * sizeof(size_t) * 1024);
+    // 256 * ... value seems like only applicable for DEBUG builds
+    JS_SetNativeStackQuota(rt, 128 * sizeof(size_t) * 1024);
     JS_SetGCParameter(rt, JSGC_MODE, JSGC_MODE_INCREMENTAL);
     JS_SetDefaultLocale(rt, "UTF-8");
 
