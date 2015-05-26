@@ -1594,23 +1594,11 @@ unsigned Value::ArrayLength() const {
 }
 
 Value Value::NewEmptyFunction(JSContext *cx) {
-  JS::CompileOptions options(cx);
-  options.setFileAndLine("Value_NewEmptyFunction", 1);
-
-  JS::RootedObject temph(cx, Value::NewEmptyObject(cx));
-
-  JS::RootedFunction fun(cx);
-  JS_CompileFunction(cx, temph, "func", 0, NULL, "", 0, options, &fun);
-  JSObject *funobj = JS_GetFunctionObject(fun);
-
-  return Value(funobj, cx);
-
-  //  String scr = String::FromSTD(cx,
-  //                               "(function(){ var _ = function(){};"
-  //                               "return _; })",
-  //                               0);
-  //  String name = String::FromSTD(cx, "Value_NewEmptyFunction", 0);
-  //  return Value::CompileAndRun(cx, scr, name);
+  String scr = String::FromSTD(cx,
+			       "(function(){ return (function(){}); })()",
+			       0);
+  String name = String::FromSTD(cx, "Value_NewEmptyFunction", 0);
+  return Value::CompileAndRun(cx, scr, name);
 }
 
 Value::Value(JSNative native, bool instance, JSContext *cx) {

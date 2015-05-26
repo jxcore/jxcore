@@ -225,13 +225,7 @@ void commons::CreateNewNonCallableInstance(MozJS::Value *obj,
     JS_LOCAL_FUNCTION objectMethod = JS_CAST_FUNCTION(
         JS_COMPILE_AND_RUN(STD_TO_STRING(
                                "(function(obj) {\n"
-                               "  obj = obj.constructor;\n"
-                               "  var x = new obj();\n"
-                               "  x = Object.create(x);\n"
-                               "  x.toString = function() {\n"
-                               "    return '[object Object]';\n"
-                               "  };\n"
-                               "  return x;\n"
+                               "  return new obj();\n"
                                "})"),
                            STD_TO_STRING("native:jxcore_js_new_instance")));
     JSObjectNew_ = JS_NEW_PERSISTENT_FUNCTION(objectMethod);

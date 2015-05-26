@@ -40,13 +40,8 @@ class File {
     com->nf_stats_constructor_template =
         JS_NEW_PERSISTENT_FUNCTION_TEMPLATE(stat_templ);
 
-#ifdef JS_ENGINE_V8
     JS_NAME_SET(constructor, JS_STRING_ID("Stats"),
                 JS_GET_FUNCTION(com->nf_stats_constructor_template));
-#else
-    JS_NAME_SET(constructor, JS_STRING_ID("Stats"),
-                com->nf_stats_constructor_template.GetConstructor());
-#endif
 
     SET_CLASS_METHOD("close", Close, 2);
     SET_CLASS_METHOD("open", Open, 3);
