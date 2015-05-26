@@ -128,6 +128,7 @@ class Value : protected MozRoot {
 
   ~Value();
 
+  inline bool IsRooted() { return rooted_; }
   inline Value *operator->() { return this; }
   inline Value *operator->() const { return const_cast<Value *>(this); }
 
@@ -338,6 +339,8 @@ class Script {
         ctx_(script->ctx_) {}
 
   Script &operator=(const Script &value);
+
+  inline bool IsRooted() { return rooted_; }
 
   inline Script *operator->() { return this; }
 

@@ -134,10 +134,10 @@
 #define JS_NEW_PERSISTENT_VALUE(x) (x).RootCopy()
 
 #define JS_CLEAR_PERSISTENT_(x) \
-  do {                          \
+  if (x.IsRooted()) {           \
     x.RemoveRoot();             \
     x.Clear();                  \
-  } while (0)
+  }
 
 #define JS_CLEAR_PERSISTENT(x) JS_CLEAR_PERSISTENT_(x)
 
