@@ -551,28 +551,6 @@
       });
       return obj;
     });
-
-    Function.prototype.runTask = function (params, callback) {
-      if (arguments.length > 2) // pass-through deprecated usage.
-        jxcore.tasks.addTask(this, params, callback, arguments[2]);
-      else
-        jxcore.tasks.addTask(this, params, callback);
-    };
-
-    Function.prototype.runOnce = function (params) {
-      jxcore.tasks.runOnce(this, params);
-    };
-
-    Function.prototype._runTask = function (params, callback) {
-      if (arguments.length > 2) // pass-through deprecated usage.
-        jxcore.tasks.addTask(this, params, callback, arguments[2]);
-      else
-        jxcore.tasks._addTask(this, params, callback);
-    };
-
-    Function.prototype._runOnce = function (params) {
-      jxcore.tasks._runOnce(this, params);
-    };
   };
 
   startup._lazyConstants = null;
