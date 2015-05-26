@@ -554,7 +554,7 @@ JS_HANDLE_VALUE ExecuteDirect(node::commons* com,
   com->pa_current_buffer_len = buffer_len;
   parser->got_exception_ = false;
 
-  int nparsed;
+  int64_t nparsed;
 
   if ((len + off < com->max_header_size) || (com->max_header_size == 0)) {
     nparsed = http_parser_execute(&parser->parser_, com->parser_settings,
@@ -576,7 +576,7 @@ JS_HANDLE_VALUE ExecuteDirect(node::commons* com,
     return JS_LEAVE_SCOPE(JS_UNDEFINED());
   }
 
-  JS_LOCAL_INTEGER nparsed_obj = STD_TO_INTEGER(nparsed);
+  JS_LOCAL_VALUE nparsed_obj = STD_TO_NUMBER(nparsed);
   // If there was a parse error in one of the callbacks
   // TODO(?) What if there is an error on EOF?
   if (!parser->parser_.upgrade && nparsed != len && nparsed != -2) {
