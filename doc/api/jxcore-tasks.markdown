@@ -163,28 +163,9 @@ jxcore.tasks.addTask(method, { str: "hello" }, function (err, result) {
 });
 ```
 
-There is also an alternative way to run a function as a task. See below for `method.runTask()`.
-
 ### method.runTask(param, callback)
 
-* `param` {Object}
-* `callback` {Function} [optional]
-
-This is shorter alternative to `tasks.addTask()`.
-JXcore adds `runTask()` method to function's prototype, so each function can be added as a task directly by calling `method.runTask()`:
-
-```js
-var method = function (param) {
-    console.log("We are in a sub-instance now. Argument value is:", param);
-    return "ok";
-};
-
-var callback = function (err, result) {
-    console.log(result);
-};
-
-method.runTask({ str: "hello" }, callback);
-```
+This method is removed as of v0.3.0.1.
 
 ## tasks.addTask(object, param, callback)
 
@@ -441,19 +422,7 @@ If this is not convenient for your scenario, you may check whether the define ha
 
 ### method.runOnce(param, doNotRemember)
 
-* `param` {Object} - Argument for that method.
-* `doNotRemember` {Boolean}
-
-This is shorter alternative to `tasks.runOnce()`.
-JXcore adds `runOnce()` method to function's prototype, so each function can be added as a task directly by calling `method.runOnce()`:
-
-```js
-var method = function (param) {
-    console.log("Sub-instance no " + process.threadId + ". Argument value is:", param);
-};
-
-method.runOnce("hello");
-```
+This method is removed as of v0.3.0.1.
 
 ## tasks.setThreadCount(value)
 
