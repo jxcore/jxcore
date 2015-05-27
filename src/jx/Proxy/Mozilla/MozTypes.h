@@ -147,6 +147,7 @@
 #define JS_TYPE_TO_LOCAL_FUNCTION(x) (x)
 #define JS_TYPE_TO_LOCAL_FUNCTION_TEMPLATE(x) (x)
 #define JS_TYPE_TO_LOCAL_CONTEXT(x) (x)->GetRaw()
+#define JS_TYPE_TO_LOCAL_ARRAY(x) (x)
 
 #define JS_GET_CONTEXT_GLOBAL(x) MozJS::Value(JS::CurrentGlobalOrNull(x), x)
 #define JS_GET_THREAD_ID() com->threadId
@@ -275,6 +276,8 @@
 
 #define JS_COMPARE_BY_CONSTRUCTOR(obj, cons) \
   (obj).GetConstructor().StrictEquals(cons)
+
+#define JS_STRICT_EQUALS(a,b) a.StrictEquals(b)
 
 #define JS_HAS_INSTANCE(obj, to_check) (obj).HasInstance(to_check)
 #define JS_METHOD_CALL(obj, method, argc, args) (obj).Call(method, argc, args)

@@ -127,6 +127,7 @@
 #define JS_TYPE_TO_LOCAL_FUNCTION_TEMPLATE(x) JS_LOCAL_FUNCTION_TEMPLATE::New(x)
 #define JS_TYPE_TO_LOCAL_CONTEXT(x) (x)
 #define JS_NEW_LOCAL_CONTEXT(x) v8::Local<v8::Context>::New(x)
+#define JS_TYPE_TO_LOCAL_ARRAY(x) (x)->ToArray()
 
 #define JS_GET_CONTEXT_GLOBAL(x) x->Global()
 #define JS_GET_THREAD_ID() com->threadId
@@ -227,6 +228,8 @@
 #define JS_COMPARE_BY_CONSTRUCTOR(obj, cons) \
   obj->GetConstructor()->StrictEquals(cons)
 #define JS_HAS_INSTANCE(obj, to_check) obj->HasInstance(to_check)
+
+#define JS_STRICT_EQUALS(a,b) a->StrictEquals(b)
 
 #define JS_METHOD_CALL(obj, method, argc, args) obj->Call(method, argc, args)
 #define JS_METHOD_CALL_NO_PARAM(obj, method) obj->Call(method, 0, NULL)
