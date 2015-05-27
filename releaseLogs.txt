@@ -10,6 +10,9 @@ JXcore (http://jxcore.io)
 - new 'jx npm' command for accessing 'npm'
 - jxcore.tasks : Conform to node-style callbacks (special thanks to @zamb3zi)
 - native interface stability updates
+- http.setMaxHeaderLength fixes for SM
+- tasking helpers removed from function prototype (runTask/runOnce)
+- monitor restart command fixed
 
 ----JXcore 3.0.0
 
