@@ -32,7 +32,7 @@ jxcore.tasks.on("message", function (_, __) {
   if (starter == 2) { // make sure the all threads are live
     starter = 3;
     for (var p = 0; p < totals; p++)
-      threadTask.runTask(p);
+      jxcore.tasks.addTask(threadTask, p);
   }
   else if (starter > 2)
     counters[_]++;
