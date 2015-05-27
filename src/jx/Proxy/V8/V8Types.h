@@ -127,7 +127,7 @@
 #define JS_TYPE_TO_LOCAL_FUNCTION_TEMPLATE(x) JS_LOCAL_FUNCTION_TEMPLATE::New(x)
 #define JS_TYPE_TO_LOCAL_CONTEXT(x) (x)
 #define JS_NEW_LOCAL_CONTEXT(x) v8::Local<v8::Context>::New(x)
-#define JS_TYPE_TO_LOCAL_ARRAY(x) (x)->ToArray()
+#define JS_TYPE_TO_LOCAL_ARRAY(x) (x).As<v8::Array>()
 
 #define JS_GET_CONTEXT_GLOBAL(x) x->Global()
 #define JS_GET_THREAD_ID() com->threadId
