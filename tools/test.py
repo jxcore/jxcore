@@ -48,6 +48,7 @@ sys.path.append(dirname(__file__) + "/../deps/v8/tools");
 import utils
 
 VERBOSE = False
+NO_TRUNCATE = False
 
 
 # ---------------------------------------------
@@ -308,7 +309,8 @@ class CompactProgressIndicator(ProgressIndicator):
       'mins': int(elapsed) / 60,
       'secs': int(elapsed) % 60
     }
-    status = self.Truncate(status, 78)
+    if not NO_TRUNCATE:
+      status = self.Truncate(status, 78)
     self.last_status_length = len(status)
     print status,
     sys.stdout.flush()
@@ -1240,12 +1242,16 @@ def BuildOptions():
       help="Deletes the temporary JS files from tests that fails",
       dest="store_unexpected_output", action="store_false")
   result.add_option("--jxpath", help="Path for jx binary file to be tested (if different than default)")
+  result.add_option("--nt", help="Does not truncate the name of currently tested file", default=False)
+  result.add_option("--no-truncate", help="Does not truncate the name of currently tested file", default=False)
   return result
 
 
 def ProcessOptions(options):
   global VERBOSE
   VERBOSE = options.verbose
+  global NO_TRUNCATE
+  NO_TRUNCATE = options.no_truncate or options.nt
   options.mode = options.mode.split(',')
   for mode in options.mode:
     if not mode in ['debug', 'release']:
