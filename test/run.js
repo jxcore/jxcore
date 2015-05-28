@@ -8,36 +8,20 @@ var jx = require("jxtools");
 
 jx.listenForSignals();
 
-var flags_id = process.argv.indexOf("-flags");
-var flags = "_";
-if (flags_id !== -1) {
-  flags = process.argv[flags_id + 1];
-  if (!flags) {
-    flags = "";
-    process.argv.splice(flags_id, 1);
-  } else {
-    process.argv.splice(flags_id, 2);
-  }
-}
-
-var test_all = process.argv.indexOf("-a") !== -1 || flags.indexOf("a") !== -1;
-var test_packages = process.argv.indexOf("-p") !== -1
-  || flags.indexOf("p") !== -1 || test_all;
-var test_natives = process.argv.indexOf("-n") !== -1
-  || flags.indexOf("n") !== -1 || test_all;
-var test_js = process.argv.indexOf("-j") !== -1 || flags.indexOf("j") !== -1
-  || (!test_packages && !test_natives) || test_all;
-
-var silent = process.argv.indexOf("-s") !== -1 || flags.indexOf("s") !== -1;
-var no_cleanup = process.argv.indexOf("-nc") !== -1;
-var help = process.argv.indexOf("--help") !== -1;
-
-
 var getArg = function(argNames, type) {
-  for(var a in argNames) {
+
+  if (typeof argNames === "string")
+    argNames = [argNames];
+
+  for (var a = 0, len = argNames.length; a<len; a++) {
     var _id = process.argv.indexOf(argNames[a]);
     if (_id == -1)
       continue;
+
+    if (type && type === "no-value") {
+      process.argv.splice(_id, 1);
+      return true;
+    }
 
     var v = process.argv[_id + 1];
     if (!v || v.slice(0,1) == '-') {
@@ -48,7 +32,7 @@ var getArg = function(argNames, type) {
     if (type == "int") {
       v = parseInt(v);
       if (!v || isNaN(v)) {
-        jxcore.utils.console.log("Integer value should be provided after -repeat arg. Skipping.", "red");
+        jxcore.utils.console.log("Integer value should be provided after -" + argNames[a] + " arg. Skipping.", "red");
         process.exit();
       }
     }
@@ -56,15 +40,44 @@ var getArg = function(argNames, type) {
     process.argv.splice(_id, 2);
     return v;
   }
+
+  return "";
 };
 
-var repeat = getArg(['-r', '--repeat'], "int");
+var setArg = function(argName, val) {
+  var _id = process.argv.indexOf(argName);
+  if (_id == -1) {
+    process.argv.push(argName);
+    process.argv.push(val);
+  } else {
+    process.argv[_id + 1] = val;
+  }
+};
+
+var flags = getArg("-flags");
+var test_all = getArg("-a", "no-value") || flags.indexOf("a") !== -1;
+var test_packages = getArg("-p", "no-value") || flags.indexOf("p") !== -1 || test_all;
+var test_natives = getArg("-n", "no-value") || flags.indexOf("n") !== -1 || test_all;
+var test_js = getArg("-j", "no-value") ||  flags.indexOf("j") !== -1
+  || (!test_packages && !test_natives) || test_all;
+
+var silent = getArg("-s", "no-value") ||  flags.indexOf("s") !== -1;
+var no_cleanup = getArg("-nc", "no-value");
+var help = process.argv.indexOf("--help") !== -1;
 var timeout = getArg(['-t', '--timeout'], "int");
 if (!timeout && require('os').cpus().length === 1)
-  timeout = 120;  // default is 60 defined in tools/test.py
+  timeout = 180; // default is 60 defined in tools/test.py
+
+if (timeout)
+  setArg('-t', timeout);
 
 prepare_packages.silent = silent;
-prepare_packages.force_refresh = process.argv.indexOf("-f") !== -1;
+prepare_packages.force_refresh = getArg("-f", "no-value");
+
+// debug
+//var values = { test_all: test_all, test_packages: test_packages, test_natives: test_natives, test_js: test_js,
+//  silent: silent, no_cleanup: no_cleanup, help: help, timeout: timeout, force: prepare_packages.force_refresh };
+//console.log("args", values);
 
 if (help) {
   console.log("Usage:\n");
@@ -136,13 +149,24 @@ var checkFile = function () {
   // console.log("single_test_dir", single_test_dir);
 }();
 
-// stripping everything except args like "jxcore" "simple" etc - test folder names
+// stripping everything except args like "jxcore" "simple" etc. - test folder names
 var _arr = process.argv.slice(1).join("|").replace(__filename, "").replace(
   process.execPath, "").trim().split("|");
 var dirs = [];
-for (var o in _arr) {
-  if (_arr.hasOwnProperty(o))
-    if (_arr[o] && _arr[o].slice(0, 1) != "-") dirs.push(_arr[o]);
+for (var i= 0, len = _arr.length; i<len; i++) {
+  if (!_arr[i])
+    continue;
+
+  var f = path.join(__dirname, _arr[i]);
+  if (!fs.existsSync(f))
+    continue;
+
+  var stat = fs.statSync(f);
+  if (!stat || !stat.isDirectory())
+    continue;
+
+  dirs.push(_arr[i]);
+  _arr.splice(i, 1);
 }
 
 if (single_test_dir) dirs.push(single_test_dir.name);
@@ -153,10 +177,11 @@ if (single_test_dir) dirs.push(single_test_dir.name);
  */
 var run = function (what, cb) {
   var args = ["tools/test.py", "-p", "color", "--jxpath", process.execPath];
-  if (repeat)
-    args.push("--repeat", repeat);
-  if (timeout)
-    args.push("--timeout", timeout);
+
+  for(var o in _arr) {
+    if (_arr[o] && _arr.hasOwnProperty(o))
+      args.push(_arr[o]);
+  }
 
   for (var o in dirs) {
     if (!dirs.hasOwnProperty(o))
@@ -204,6 +229,10 @@ if (process.argv.indexOf("--render-test-configs") !== -1) {
   prepare_packages.renderTestCfg(path.join(__dirname, "pummel"), "Pummel");
   prepare_packages.renderTestCfg(path.join(__dirname, "simple"), "Simple");
   prepare_packages.renderTestCfg(path.join(__dirname, "jxcore-npm"), "JXcoreNPM");
+
+  var temp = path.join(__dirname, "jxcore-temp");
+  if (fs.existsSync(temp))
+    prepare_packages.renderTestCfg(path.join(__dirname, "jxcore-temp"), "JXcoreTEMP");
 
   console.log("ok");
   return;
