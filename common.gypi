@@ -229,6 +229,10 @@
         'defines': ['_GLIBCXX_USE_C99_MATH'],
         'libraries': [ '-llog' ],
       }],
+      [ 'OS=="android" and node_static_library==0', {
+        'cflags': [ '-pie -fPIE' ],
+        'ldflags': [ '-pie -fPIE' ],
+      }],
       ['OS=="mac"', {
         'defines': ['_DARWIN_USE_64_BIT_INODE=1'],
         'xcode_settings': {
