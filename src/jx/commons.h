@@ -84,6 +84,12 @@ typedef enum {
 typedef MAP_HOST<std::string, std::string> BTStore;
 #define DEFINE_PERSISTENT_STRING(str) JS_PERSISTENT_STRING pstr_##str
 
+#ifdef _WIN32
+#define JXCORE_EXTERN(x) __declspec(dllexport) x
+#else
+#define JXCORE_EXTERN(x) x
+#endif
+
 class commons {
   JS_PERSISTENT_OBJECT process_;
 
@@ -315,17 +321,17 @@ class commons {
 
   void setProcess(JS_HANDLE_OBJECT_REF ps);
 
-  inline JS_HANDLE_OBJECT getProcess() { return process_; }
+  inline JXCORE_EXTERN(JS_HANDLE_OBJECT) getProcess() { return process_; }
 
-  static commons *getInstance();
-  static commons *getInstanceIso(JS_ENGINE_MARKER iso);
-  static commons *newInstance(const int tid);
-  static commons *getInstanceByThreadId(const int id);
-  static int getCurrentThreadId();
-  static int threadIdFromThreadPrivate();
-  static int getAvailableThreadId(bool multi_threaded_);
+  static JXCORE_EXTERN(commons*) getInstance();
+  static JXCORE_EXTERN(commons*) getInstanceIso(JS_ENGINE_MARKER iso);
+  static JXCORE_EXTERN(commons*) newInstance(const int tid);
+  static JXCORE_EXTERN(commons*) getInstanceByThreadId(const int id);
+  static JXCORE_EXTERN(int) getCurrentThreadId();
+  static JXCORE_EXTERN(int) threadIdFromThreadPrivate();
+  static JXCORE_EXTERN(int) getAvailableThreadId(bool multi_threaded_);
 
-  static uv_loop_t *getThreadLoop();
+  static JXCORE_EXTERN(uv_loop_t*) getThreadLoop();
 
   void Dispose();
   void setMainIsolate();
