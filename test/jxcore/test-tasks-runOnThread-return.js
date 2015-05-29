@@ -60,5 +60,3 @@ jxcore.tasks.runOnThread(4, method, [5], function (err, ret) {
 process.on('exit', function () {
   assert.strictEqual(finished, cnt, "Test did not finish! Some of the tasks were not executed.");
 });
-
-//setTimeout(process.exit, 1000);

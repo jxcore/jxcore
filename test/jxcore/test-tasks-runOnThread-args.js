@@ -27,5 +27,3 @@ for (var a = 0; a < cnt; a++) {
 process.on('exit', function () {
   assert.strictEqual(finished, cnt, "Test did not finish! Some of the tasks were not executed.");
 });
-
-setTimeout(process.exit, 1000);
