@@ -14,7 +14,7 @@ class String;
   class name {                                                         \
    public:                                                             \
     type *str_;                                                        \
-    size_t length_;                                                    \
+    int32_t length_;                                                   \
     JSContext *ctx_;                                                   \
                                                                        \
     name() {                                                           \

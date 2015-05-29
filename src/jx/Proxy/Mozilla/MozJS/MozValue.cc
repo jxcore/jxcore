@@ -57,7 +57,9 @@ void StringTools::JS_ConvertToJSChar(JSContext *cx, const char *source,
 void StringTools::JS_ConvertToJSChar(JSContext *cx, JSString *source,
                                      auto_jschar *out) {
   out->ctx_ = cx;
-  out->str_ = JS_GetTwoByteString(cx, source, out->length_);
+  size_t out_length;
+  out->str_ = JS_GetTwoByteString(cx, source, out_length);
+  out->length_ = (int32_t) out_length;
 
   // not two bytes
   if (out->length_ == -1 && out->str_ == NULL) {
