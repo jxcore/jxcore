@@ -2,7 +2,7 @@
 
 var assert = require('assert');
 
-var expectedVersion = "v Beta-0.3.0.1";
+var expectedVersion = "v Beta-0.3.0.2";
 var color = jxcore.utils.console.setColor;
 var str_insteadof = " instead of " + color(expectedVersion, "green");
 

@@ -1,22 +1,22 @@
 
 # Test cases
 
-Each of test cases by default is executed in three forms:
+Each of test cases by default can executed in three forms:
 
 * as plain JavaScript file
 * as jx package
-* as native jx package
+* as native jx package (standalone binary)
 
 # .json config file
 
-However in some cases native package should not be tested (e.g. when is spawning a child by `process.execPath`).
+However in some cases native packages should not be tested (e.g. when is spawning a child by `process.execPath`).
 Also some of test cases are designed to run multithreaded (mt/mt-keep) and/or receive extra arguments.
-Such cases may be implemented by using .json config file.
+Such cases may be implemented by using `.json` config file.
 
 For example, a test-case named *test-mt-values.js* may have it's configuration stored in *test-mt-values.js.json*.
 Please note, that we add ".json" to the end of full filename (including ".js" extension).
 
-If there is no .json file present - a test is executed as described on top of this document.
+If there is no `.json` file present - a test is executed as described on top of this document.
 
 ```js
 {
@@ -79,19 +79,19 @@ you can prefix the path with **&** sign, e.g.:
 
 # test/run.js
 
-This is helper launcher, which allow for selective test run (whether only .js, .jx, .exe or any combination of them), e.g:
+This is helper launcher, which allow for selective test run (whether only `.js`, `.jx`, `.exe` or any combination of them), e.g:
 ```bash
-./node test/run.js jxcore simple -p -n
+./jx test/run.js jxcore simple -p -n
 ```
 
 Also it allows to run a test for a single file test-case:
 ```bash
-./node test/run.js - file test/jxcore/test-case.js -a
+./jx test/run.js - file test/jxcore/test-case.js -a
 ```
 
 You can specify here number of repetitions per each test with -r switch:
 ```bash
-./node test/run.js - file test/jxcore/test-case.js -a -r 3
+./jx test/run.js - file test/jxcore/test-case.js -a -r 3
 ```
 
 --help
