@@ -497,12 +497,16 @@ DEFINE_OPERATOR(Value, ValueData)
 DEFINE_OPERATOR(String, ValueData)
 
 Value &Value::operator=(const Exception::Error &value) {
-  Value val = value.value_;
+  value_ = value.value_.value_;
+  empty_ = value.value_.empty_;
+  ctx_ = value.value_.ctx_;
+  is_exception_ = value.value_.is_exception_;
+  empty_ = value.value_.empty_;
 
-  val.rooted_ = false;
-  val.fake_rooting_ = false;
+  rooted_ = false;
+  fake_rooting_ = false;
 
-  return val;
+  return *this;
 }
 
 ValueData Value::RootCopy() {
