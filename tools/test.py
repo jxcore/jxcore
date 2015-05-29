@@ -288,7 +288,7 @@ class CompactProgressIndicator(ProgressIndicator):
         print self.templates['stderr'] % stderr
       print "Command: %s" % EscapeCommand(output.command)
       if output.HasCrashed():
-        print "--- CRASHED ---"
+        print "--- CRASHED --- with exit code " + str(output.output.exit_code)
       if output.HasTimedOut():
         print "--- TIMEOUT ---"
 
