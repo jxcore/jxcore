@@ -398,10 +398,9 @@ int32_t Value::Int32Value() {
   if (empty_) return 0;
 
   if (value_.isNumber()) {
-	int32_t xv = (int32_t)value_.toNumber();
+    int32_t xv = (int32_t)value_.toNumber();
 #ifdef JS_CPU_ARM
-	if (xv == 0)
-	  xv = value_.toInt32();
+    if (xv == 0) xv = value_.toInt32();
 #endif
     return xv;
   } else if (value_.isBoolean()) {
@@ -422,8 +421,7 @@ uint32_t Value::Uint32Value() {
   if (value_.isNumber()) {
     int64_t val64 = (int64_t)value_.toNumber();
 #ifdef JS_CPU_ARM
-	if (val64 == 0)
-	  val64 = -1;
+    if (val64 == 0) val64 = -1;
 #endif
     if (val64 >= 0) return (uint32_t)val64;
 
@@ -435,10 +433,9 @@ uint32_t Value::Uint32Value() {
 
 int64_t Value::IntegerValue() {
   if (value_.isNumber()) {
-	int64_t xv = (int64_t)value_.toNumber();
+    int64_t xv = (int64_t)value_.toNumber();
 #ifdef JS_CPU_ARM
-	if (xv == 0)
-	  xv = value_.toInt32();
+    if (xv == 0) xv = value_.toInt32();
 #endif
     return xv;
   }
@@ -548,12 +545,14 @@ void Value::SetPrivate(void *data) {
   assert(object_ != nullptr &&
          "Can not set private data into none object JS variable");
 
+  JS::RootedObject ret_val(ctx_);
   if (!JS_HasReservedSlot(object_, GC_SLOT_GC_CALL) &&
       !JS_HasPrivate(object_)) {
     // perhaps this object was created on JS land
     // add a property that can trigger the event when the base
     // object is GC'ed
-    object_ = Natify(object_rt);
+    Natify(object_rt, true, &ret_val);
+    object_ = ret_val;
   }
   JS_SetPrivate(object_, data);
 }
@@ -561,13 +560,15 @@ void Value::SetPrivate(void *data) {
 void *Value::GetPointerFromInternalField(const int index) {
   INNER_VALUE_TO_OBJECT(object_, false);
 
+  JS::RootedObject ret_val(ctx_);
   if (object_ != nullptr) {
     if (!JS_HasReservedSlot(object_, GC_SLOT_GC_CALL) &&
         !JS_HasPrivate(object_)) {
       // perhaps this object was created on JS land
       // add a property that can trigger the event when the base
       // object is GC'ed
-      object_ = Natify(object_rt, false);
+      Natify(object_rt, false, &ret_val);
+      object_ = ret_val;
     }
   }
 
@@ -603,7 +604,9 @@ void Value::SetInternalFieldCount(int count) {
     // perhaps this object was created on JS land
     // add a property that can trigger the event when the base
     // object is GC'ed
-    Natify(object_);
+
+    JS::RootedObject dummy_ret_val(ctx_);
+    Natify(object_, true, &dummy_ret_val);
   }
 }
 
@@ -635,7 +638,7 @@ Value Value::FromUnsigned(JSContext *ctx, const uint32_t n) {
   if (tmp != tmp64)
     val = JS::DoubleValue(n);
   else
-	val = JS::PrivateUint32Value(n);
+    val = JS::PrivateUint32Value(n);
 
   return Value(val, ctx);
 }
@@ -696,18 +699,14 @@ static JSClass empty_natified_definition = {
     Value::empty_finalize, 0, 0, 0, 0};
 
 static JSClass empty_reserved_definition = {
-    "JXReserved",          JSCLASS_HAS_PRIVATE, JS_PropertyStub,
-    JS_DeletePropertyStub, JS_PropertyStub,     JS_StrictPropertyStub,
-    JS_EnumerateStub,      JS_ResolveStub,      JS_ConvertStub,
-    0,                     0,                   0,
-    0,                     0};
+    "JXReserved", JSCLASS_HAS_PRIVATE, JS_PropertyStub, JS_DeletePropertyStub,
+    JS_PropertyStub, JS_StrictPropertyStub, JS_EnumerateStub, JS_ResolveStub,
+    JS_ConvertStub, 0, 0, 0, 0, 0};
 
 static JSClass index_reserved_definition = {
-    "QJXIndexed",          JSCLASS_HAS_PRIVATE, JS_PropertyStub,
-    JS_DeletePropertyStub, JS_PropertyStub,     JS_StrictPropertyStub,
-    JS_EnumerateStub,      JS_ResolveStub,      JS_ConvertStub,
-    indexed_finalize,      0,                   0,
-    0,                     0};
+    "QJXIndexed", JSCLASS_HAS_PRIVATE, JS_PropertyStub, JS_DeletePropertyStub,
+    JS_PropertyStub, JS_StrictPropertyStub, JS_EnumerateStub, JS_ResolveStub,
+    JS_ConvertStub, indexed_finalize, 0, 0, 0, 0};
 
 static JSClass empty_prop_definition = {
     "JXPropObject",
@@ -718,11 +717,9 @@ static JSClass empty_prop_definition = {
     Value::empty_finalize, 0, 0, 0, 0};
 
 static JSClass constructor_class_definition = {
-    "NativeFunction",      JSCLASS_HAS_PRIVATE, JS_PropertyStub,
-    JS_DeletePropertyStub, JS_PropertyStub,     JS_StrictPropertyStub,
-    JS_EnumerateStub,      JS_ResolveStub,      JS_ConvertStub,
-    NULL,                  0,                   0,
-    0,                     0};
+    "NativeFunction", JSCLASS_HAS_PRIVATE, JS_PropertyStub,
+    JS_DeletePropertyStub, JS_PropertyStub, JS_StrictPropertyStub,
+    JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, NULL, 0, 0, 0, 0};
 
 void Value::SetIndexedPropertiesToExternalArrayData(void *data,
                                                     const int data_type,
@@ -1047,9 +1044,11 @@ void Value::empty_finalize(JSFreeOp *fop, JSObject *obj) {
   }
 }
 
+// Silly trick to track an SM object
 const char *natifier_name_ =
     "                                                                ";
-JSObject *Value::Natify(JS::HandleObject object_rt, const bool force_create) {
+void Value::Natify(JS::HandleObject object_rt, const bool force_create,
+                   JS::MutableHandleObject out_val) {
   JS::RootedValue ret_val(ctx_);
 
   bool op = JS_GetProperty(ctx_, object_rt, natifier_name_, &ret_val);
@@ -1059,24 +1058,26 @@ JSObject *Value::Natify(JS::HandleObject object_rt, const bool force_create) {
     jsval val = JS::ObjectOrNullValue(obj);
     JS::RootedValue rt_val(ctx_, val);
     JS_SetProperty(ctx_, object_rt, natifier_name_, rt_val);
-    return obj;
+    out_val.set(obj);
   } else if (!force_create) {
-    return nullptr;
+    out_val.set(nullptr);
+  } else {
+    out_val.set(ret_val.toObjectOrNull());
   }
-
-  return ret_val.toObjectOrNull();
 }
 
 void Value::SetFinalizer(JS_FINALIZER_METHOD method) {
   if (!value_.isObject()) return;
   INNER_VALUE_TO_OBJECT(object_, false);
 
-  assert(object_ != nullptr);
+  JS::RootedObject ret_val(ctx_);
   if (!JS_HasReservedSlot(object_, GC_SLOT_GC_CALL)) {
     // perhaps this object was created on JS land
     // add a property that can trigger the event when the base
     // object is GC'ed
-    object_ = Natify(object_rt);
+    Natify(object_rt, true, &ret_val);
+    object_ = ret_val;
+    assert(object_ != nullptr);
   }
 
   jsval slot_val = JS_GetReservedSlot(object_, GC_SLOT_GC_CALL);
@@ -1166,12 +1167,14 @@ void Value::SetReserved(const int index, const Value &value) {
 
   INNER_VALUE_TO_OBJECT(object_, false);
 
+  JS::RootedObject ret_val(ctx_);
   if (object_ != nullptr) {
     if (!JS_HasReservedSlot(object_, GC_SLOT_GC_CALL)) {
       // perhaps this object was created on JS land
       // add a property that can trigger the event when the base
       // object is GC'ed
-      object_ = Natify(object_rt);
+      Natify(object_rt, true, &ret_val);
+      object_ = ret_val;
     }
   }
 
@@ -1184,6 +1187,7 @@ Value Value::GetReserved(const int index) {
 
   INNER_VALUE_TO_OBJECT(object_, false);
 
+  JS::RootedObject ret_val(ctx_);
   if (object_ == nullptr) {
     return Value();
   } else {
@@ -1191,7 +1195,9 @@ Value Value::GetReserved(const int index) {
       // perhaps this object was created on JS land
       // add a property that can trigger the event when the base
       // object is GC'ed
-      object_ = Natify(object_rt);
+      Natify(object_rt, true, &ret_val);
+      if (ret_val.get() == nullptr) return Value();
+      object_ = ret_val;
     }
   }
 
@@ -1594,9 +1600,8 @@ unsigned Value::ArrayLength() const {
 }
 
 Value Value::NewEmptyFunction(JSContext *cx) {
-  String scr = String::FromSTD(cx,
-			       "(function(){ return (function(){}); })()",
-			       0);
+  String scr =
+      String::FromSTD(cx, "(function(){ return (function(){}); })()", 0);
   String name = String::FromSTD(cx, "Value_NewEmptyFunction", 0);
   return Value::CompileAndRun(cx, scr, name);
 }

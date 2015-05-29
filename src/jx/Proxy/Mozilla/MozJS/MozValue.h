@@ -107,7 +107,8 @@ class Value : protected MozRoot {
   friend class Script;
   friend class String;
 
-  JSObject *Natify(JS::HandleObject obj, const bool force_create = true);
+  void Natify(JS::HandleObject object_rt, const bool force_create,
+              JS::MutableHandleObject out_val);
 
  protected:
   bool rooted_;
