@@ -4,6 +4,7 @@ NORMAL_COLOR='\033[0m'
 RED_COLOR='\033[0;31m'
 GREEN_COLOR='\033[0;32m'
 GRAY_COLOR='\033[0;37m'
+MAGENTA_COLOR='\033[0;35m'
 
 UNZIP_INSTALL=""
 LOG() {
@@ -86,14 +87,20 @@ find_os() {
       echo "jx_rasp"
       return
     fi
-    
+
     if [[ "$rasp_check" =~ 'FreeBSD' ]]
     then
     	if [[ "$rasp_check" =~ '64' ]]
     	then
-        echo "jx_bsd64"
-        return
-      fi
+            if [[ "$rasp_check" =~ '9.' ]]
+                then
+                    echo "jx_bsd964"
+                else
+                    echo "jx_bsd1064"
+            fi
+
+            return
+        fi
     fi
 
     echo "This OS is not supported - $1"
@@ -105,7 +112,7 @@ find_latest() {
     LOG $GREEN_COLOR "Downloading latest version info"
     latest_str=$(curl -k -s -S "https://jxcore.s3.amazonaws.com/latest.txt")
 
-    if [[ $latest_str != *"|"* || $latest_str == *"Error"* ]]
+    if [[ "$latest_str" != *"|"* || "$latest_str" == *"Error"* ]]
     then
       LOG $RED_COLOR "Could not fetch"
       exit
@@ -117,10 +124,21 @@ find_latest() {
 
     current_ver=$(jx -jxv 2>/dev/null)
 
-    if [[ $current_ver != "" && $current_ver == *"$latest_ver"* ]]
+    if [[ $current_ver != "" ]] && [[ $current_ver == *"$latest_ver"* ]]
     then
-      LOG $NORMAL_COLOR "You already have the latest version installed."
-      exit
+
+      if [[ $1 != "force" ]] && [[ $1 != "--force" ]]; then
+        LOG $MAGENTA_COLOR "You already have the latest version installed. You can use 'force' switch, e.g.:"
+        if [[ "$BASH_SOURCE" == "" ]]; then
+          LOG $GRAYORMAL_COLOR "   $ curl http://jxcore.com/xil.sh | bash -s force\n"
+        else
+          LOG $GRAY_COLOR "   $ ./$BASH_SOURCE --force\n"
+        fi
+        exit
+      fi
+
+      LOG $GREEN_COLOR "You already have the latest version installed."
+      LOG $MAGENTA_COLOR "The $1 switch is used."
     fi
 }
 
@@ -150,7 +168,7 @@ fi
 
 zip_file="$zip_file""v8"
 
-find_latest
+find_latest $1
 
 link="$latest_url/""$zip_file.zip"
 LOG $GREEN_COLOR "Downloading $link"
@@ -160,20 +178,10 @@ LOG $GREEN_COLOR "Download completed. Testing for unzip command."
 
 if [ -f "/usr/bin/unzip" ]
 then
-    LOG $GRAY_COLOR "$(unzip -u "$zip_file.zip")"
+    LOG $GRAY_COLOR "$(unzip -u "$zip_file.zip" -d "$zip_file")"
     rasp_check=$(uname -msrn)
 
-    if [[ "$rasp_check" =~ 'FreeBSD' ]]
-    then
-      if [[ "$rasp_check" =~ '10.' ]]
-      then
-        cp "$zip_file/bsd10/jx" "/usr/local/bin/jx"
-      else
-        cp "$zip_file/bsd9/jx" "/usr/local/bin/jx"
-      fi
-    else
-      cp "$zip_file/jx" "/usr/local/bin/jx"
-    fi
+    mv "$zip_file/jx" "/usr/local/bin/jx"
 
     LOG $GRAY_COLOR "$(/usr/local/bin/jx -jxv)"
 else
