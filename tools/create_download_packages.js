@@ -23,6 +23,8 @@ if (single_jxpath) {
   }
 }
 
+process.chdir(__dirname);
+
 var getVersions = function(jxpath) {
 
   var ret1 = jxcore.utils.cmdSync(jxpath + ' -e "console.log(JSON.stringify(process.versions))"');
@@ -42,12 +44,13 @@ var packFile = function(jxpath) {
 
   var json = getVersions(jxpath);
   var engine = json.versions.sm ? "sm" : "v8";
-  var zip_basename = "jx_" + json.OSInfo.OS_STR + engine + ".zip";
+  var dir_basename = "jx_" + json.OSInfo.OS_STR + engine;
+  var zip_basename = dir_basename + ".zip";
 
   if (done[zip_basename])
     return;
 
-  var tmp = path.join(__dirname, "package_tmp");
+  var tmp = path.join(__dirname, dir_basename);
   if (fs.existsSync(tmp))
     jxtools.rmdirSync(tmp);
 
@@ -57,16 +60,13 @@ var packFile = function(jxpath) {
   jxtools.copyFileSync(path.join(repoPath, "JXCORE_LICENSE"), path.join(tmp, "JXCORE_LICENSE"));
   jxtools.copyFileSync(path.join(repoPath, "releaseLogs.txt"), path.join(tmp, "releaseLogs.txt"));
 
-  process.chdir(tmp);
-
-  var cmd = "zip -9 " + zip_basename + " *";
+  var cmd = "zip -9 -r " + zip_basename + " " + dir_basename;
   if (process.platform !== "win32")
     cmd = "chmod +x " + newjx + "; " + cmd;
   jxcore.utils.console.write("Preparing download package", json.OSInfo.OS_STR + engine, "... ", "magenta");
   var ret = jxcore.utils.cmdSync(cmd);
-  process.chdir(__dirname);
 
-  var zip = path.join(tmp, zip_basename);
+  var zip = path.join(__dirname, zip_basename);
   if (ret.exitCode) {
     jxcore.utils.console.log("Zip file not created:", ret.out, "red");
     jxtools.rmdirSync(tmp);

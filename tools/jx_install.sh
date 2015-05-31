@@ -178,7 +178,7 @@ LOG $GREEN_COLOR "Download completed. Testing for unzip command."
 
 if [ -f "/usr/bin/unzip" ]
 then
-    LOG $GRAY_COLOR "$(unzip -u "$zip_file.zip" -d "$zip_file")"
+    LOG $GRAY_COLOR "$(unzip -u "$zip_file.zip")"
     rasp_check=$(uname -msrn)
 
     mv "$zip_file/jx" "/usr/local/bin/jx"
