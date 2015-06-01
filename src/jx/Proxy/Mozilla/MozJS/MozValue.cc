@@ -59,7 +59,7 @@ void StringTools::JS_ConvertToJSChar(JSContext *cx, JSString *source,
   out->ctx_ = cx;
   size_t out_length;
   out->str_ = JS_GetTwoByteString(cx, source, out_length);
-  out->length_ = (int32_t) out_length;
+  out->length_ = (int32_t)out_length;
 
   // not two bytes
   if (out->length_ == -1 && out->str_ == NULL) {
@@ -221,6 +221,18 @@ Value::Value() {
   empty_ = true;
   fake_rooting_ = false;
   is_exception_ = false;
+}
+
+Value::Value(JSContext *ctx) {
+  assert(ctx != NULL && "Context can not be NULL");
+  ctx_ = ctx;
+  rooted_ = false;
+  JS::RootedObject robj(ctx);
+  NewEmptyObject(ctx, &robj);
+  value_ = JS::ObjectOrNullValue(robj);
+  fake_rooting_ = false;
+  is_exception_ = false;
+  empty_ = false;
 }
 
 Value::Value(const JS::Value &value, JSContext *ctx, bool rooted) {
@@ -735,9 +747,12 @@ void Value::SetIndexedPropertiesToExternalArrayData(void *data,
   assert(object_ != nullptr);
 
   ObjectStore *store = nullptr;
+  JS::RootedObject r_jsobj(ctx_);
   if (!this->Has(JXCORE_INDEXED_NAME)) {
     JSObject *jsobj = JS_NewObject(ctx_, &index_reserved_definition,
                                    JS::NullPtr(), JS::NullPtr());
+
+    r_jsobj.set(jsobj);
     MozJS::Value index_ref(jsobj, ctx_);
 
     store = new ObjectStore();
@@ -1058,9 +1073,12 @@ void Value::Natify(JS::HandleObject object_rt, const bool force_create,
   JS::RootedValue ret_val(ctx_);
 
   bool op = JS_GetProperty(ctx_, object_rt, natifier_name_, &ret_val);
+  JS::RootedObject r_obj(ctx_);
   if (force_create && (!op || ret_val.isUndefined())) {
     JSObject *obj = JS_NewObject(ctx_, &empty_natified_definition,
                                  JS::NullPtr(), JS::NullPtr());
+
+    r_obj.set(obj);
     jsval val = JS::ObjectOrNullValue(obj);
     JS::RootedValue rt_val(ctx_, val);
     JS_SetProperty(ctx_, object_rt, natifier_name_, rt_val);
@@ -1096,9 +1114,11 @@ void Value::SetFinalizer(JS_FINALIZER_METHOD method) {
     }
   }
 
+  JS::RootedObject r_reserved(ctx_);
   JSObject *reserved_obj = JS_NewObject(ctx_, &empty_reserved_definition,
                                         JS::NullPtr(), JS::NullPtr());
 
+  r_reserved.set(reserved_obj);
   ObjectFinalizer *objectFinalizer = new ObjectFinalizer;
   objectFinalizer->target = method;
   JS_SetPrivate(reserved_obj, objectFinalizer);
@@ -1114,9 +1134,9 @@ void Value::SetGlobalFinalizer(JSFinalizeOp method) {
   object_finalizer = method;
 }
 
-JSObject *Value::NewEmptyObject(JSContext *ctx) {
-  return JS_NewObject(ctx, &empty_class_definition, JS::NullPtr(),
-                      JS::NullPtr());
+void Value::NewEmptyObject(JSContext *ctx, JS::MutableHandleObject out) {
+  out.set(
+      JS_NewObject(ctx, &empty_class_definition, JS::NullPtr(), JS::NullPtr()));
 }
 
 JSObject *Value::NewEmptyPropertyObject(JSContext *ctx, JSPropertyOp add_get,
@@ -1614,8 +1634,8 @@ Value Value::NewEmptyFunction(JSContext *cx) {
 
 Value::Value(JSNative native, bool instance, JSContext *cx) {
   ctx_ = cx;
-  JSObject *local_new = Value::NewEmptyObject(cx);
-  JS::RootedObject lnob(ctx_, local_new);
+  JS::RootedObject lnob(cx);
+  Value::NewEmptyObject(cx, &lnob);
 
   if (!instance) {
     JSFunction *fun =
@@ -1633,6 +1653,8 @@ Value::Value(JSNative native, bool instance, JSContext *cx) {
 
   empty_ = false;
   rooted_ = false;
+  fake_rooting_ = false;
+  is_exception_ = false;
 }
 
 Value::~Value() { value_ = JS::UndefinedValue(); }

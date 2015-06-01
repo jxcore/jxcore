@@ -305,7 +305,8 @@ class commons {
   JS_PERSISTENT_FUNCTION JSObjectNew_;
   MozJS::Value CreateJSObject(const char *type_name_);
   MozJS::Value GetPropertyNames(MozJS::Value *obj);
-  void CreateNewNonCallableInstance(MozJS::Value *obj, JS::MutableHandleValue val);
+  void CreateNewNonCallableInstance(MozJS::Value *obj,
+                                    JS::MutableHandleValue val);
 #endif
 
   JS_PERSISTENT_FUNCTION fast_buffer_constructor;
@@ -323,15 +324,15 @@ class commons {
 
   inline JXCORE_EXTERN(JS_HANDLE_OBJECT) getProcess() { return process_; }
 
-  static JXCORE_EXTERN(commons*) getInstance();
-  static JXCORE_EXTERN(commons*) getInstanceIso(JS_ENGINE_MARKER iso);
-  static JXCORE_EXTERN(commons*) newInstance(const int tid);
-  static JXCORE_EXTERN(commons*) getInstanceByThreadId(const int id);
+  static JXCORE_EXTERN(commons *) getInstance();
+  static JXCORE_EXTERN(commons *) getInstanceIso(JS_ENGINE_MARKER iso);
+  static JXCORE_EXTERN(commons *) newInstance(const int tid);
+  static JXCORE_EXTERN(commons *) getInstanceByThreadId(const int id);
   static JXCORE_EXTERN(int) getCurrentThreadId();
   static JXCORE_EXTERN(int) threadIdFromThreadPrivate();
   static JXCORE_EXTERN(int) getAvailableThreadId(bool multi_threaded_);
 
-  static JXCORE_EXTERN(uv_loop_t*) getThreadLoop();
+  static JXCORE_EXTERN(uv_loop_t *) getThreadLoop();
 
   void Dispose();
   void setMainIsolate();

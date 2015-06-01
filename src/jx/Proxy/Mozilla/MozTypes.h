@@ -28,12 +28,9 @@
 #define JS_NULL() MOZ_T_VALUE::Null(JS_GET_STATE_MARKER())
 
 #define JS_NEW_ERROR_VALUE(x) ENGINE_NS::Exception::Error(x).GetErrorObject()
-#define JS_NEW_EMPTY_OBJECT()                                       \
-  MOZ_T_OBJECT(MOZ_T_OBJECT::NewEmptyObject(JS_GET_STATE_MARKER()), \
-               JS_GET_STATE_MARKER())
+#define JS_NEW_EMPTY_OBJECT() MOZ_T_OBJECT(JS_GET_STATE_MARKER())
 
 #define JS_NEW_OBJECT_TEMPLATE() JS_NEW_EMPTY_OBJECT()
-#define JS_NEW_OBJECT(x) JS_NewObject(JS_GET_STATE_MARKER(), x.cs, x.obj, 0L)
 
 #define JS_NEW_ARRAY()                                      \
   MOZ_T_OBJECT(JS_NewArrayObject(JS_GET_STATE_MARKER(), 0), \
@@ -123,9 +120,8 @@
   MOZ_T_OBJECT(JS_NewArrayObject(JS_GET_STATE_MARKER(), 0), \
                JS_GET_STATE_MARKER()).RootCopy()
 
-#define JS_NEW_EMPTY_PERSISTENT_OBJECT()                            \
-  MOZ_T_OBJECT(MOZ_T_OBJECT::NewEmptyObject(JS_GET_STATE_MARKER()), \
-               JS_GET_STATE_MARKER()).RootCopy()
+#define JS_NEW_EMPTY_PERSISTENT_OBJECT() \
+  MOZ_T_OBJECT(JS_GET_STATE_MARKER()).RootCopy()
 
 #define JS_NEW_PERSISTENT_STRING(x) MOZ_T_STRING(x).RootCopy()
 #define JS_NEW_PERSISTENT_FUNCTION(x) (x).RootCopy()
@@ -277,7 +273,7 @@
 #define JS_COMPARE_BY_CONSTRUCTOR(obj, cons) \
   (obj).GetConstructor().StrictEquals(cons)
 
-#define JS_STRICT_EQUALS(a,b) a.StrictEquals(b)
+#define JS_STRICT_EQUALS(a, b) a.StrictEquals(b)
 
 #define JS_HAS_INSTANCE(obj, to_check) (obj).HasInstance(to_check)
 #define JS_METHOD_CALL(obj, method, argc, args) (obj).Call(method, argc, args)

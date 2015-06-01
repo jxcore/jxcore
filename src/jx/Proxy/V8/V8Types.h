@@ -30,7 +30,6 @@
 #define JS_NULL() V8_T_LOCAL(V8_T_VALUE)::New(V8_T_NULL(JS_GET_STATE_MARKER()))
 
 #define JS_NEW_ERROR_VALUE(x) ENGINE_NS::Exception::Error(x)
-#define JS_NEW_OBJECT(x) V8_T_OBJECT::New(JS_GET_STATE_MARKER(), x)
 #define JS_NEW_OBJECT_TEMPLATE() V8_T_OBJECT_TEMPLATE::New()
 
 #define JS_NEW_EMPTY_OBJECT() V8_T_OBJECT::New()
@@ -229,7 +228,7 @@
   obj->GetConstructor()->StrictEquals(cons)
 #define JS_HAS_INSTANCE(obj, to_check) obj->HasInstance(to_check)
 
-#define JS_STRICT_EQUALS(a,b) a->StrictEquals(b)
+#define JS_STRICT_EQUALS(a, b) a->StrictEquals(b)
 
 #define JS_METHOD_CALL(obj, method, argc, args) obj->Call(method, argc, args)
 #define JS_METHOD_CALL_NO_PARAM(obj, method) obj->Call(method, 0, NULL)

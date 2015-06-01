@@ -123,6 +123,13 @@ class Value : protected MozRoot {
   Value(const Value &value, bool rooted);
   Value(const Value &value);
   Value(const Exception::Error &value);
+  Value(JSObject *obj, JSContext *ctx, bool rooted = false);
+
+  // creates an empty object
+  Value(JSContext *ctx);
+
+  Value(JSNative native, bool instance, JSContext *ctx);
+
   Value &operator=(const Value &value);
   Value &operator=(const ValueData &value);
   Value &operator=(const Exception::Error &value);
@@ -216,10 +223,6 @@ class Value : protected MozRoot {
   bool StrictEquals(const Value &val);
   void ToSTDString(auto_str *out) const;
 
-  // Object
-  Value(JSObject *obj, JSContext *ctx, bool rooted = false);
-  Value(JSNative native, bool instance, JSContext *ctx);
-
   unsigned ArrayLength() const;
 
   bool Has(const String &name) const;
@@ -267,7 +270,7 @@ class Value : protected MozRoot {
   Value GetConstructor();
 
   static Value NewEmptyFunction(JSContext *ctx);
-  static JSObject *NewEmptyObject(JSContext *ctx);
+  static void NewEmptyObject(JSContext *ctx, JS::MutableHandleObject out);
   static JSObject *NewEmptyPropertyObject(JSContext *ctx, JSPropertyOp add_get,
                                           JSStrictPropertyOp set,
                                           JSResolveOp resolve = NULL,
