@@ -45,9 +45,12 @@ int CreateThread(void (*entry)(void *arg), void *param) {
 }
 #elif defined(JS_ENGINE_MOZJS)
 void *CreateThread(void (*entry)(void *arg), void *param) {
-  return (void *)PR_CreateThread(PR_USER_THREAD, entry, param,
+  void * PR_thread = (void *)PR_CreateThread(PR_USER_THREAD, entry, param,
                                  PR_PRIORITY_NORMAL, PR_GLOBAL_THREAD,
-                                 PR_JOINABLE_THREAD, 512 * 1024);
+                                 PR_JOINABLE_THREAD, 0);
+
+  assert(PR_thread != NULL && "couldn't create the thread");
+  return PR_thread;
 }
 
 bool JoinThread(void *pth) {
