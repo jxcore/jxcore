@@ -69,8 +69,8 @@ JitOptions::JitOptions()
     // Force how many invocation or loop iterations are needed before compiling
     // a function with the highest ionmonkey optimization level.
     // (i.e. OptimizationLevel_Normal)
-    forceDefaultIonUsesBeforeCompile = true; //false;
-    forcedDefaultIonUsesBeforeCompile = 50; //1000;
+    forceDefaultIonUsesBeforeCompile = false;
+    forcedDefaultIonUsesBeforeCompile = 1000;
 
     // Force the used register allocator instead of letting the
     // optimization pass decide.
@@ -85,7 +85,7 @@ JitOptions::JitOptions()
 
     // How many invocations or loop iterations are needed before functions
     // are compiled with the baseline compiler.
-    baselineUsesBeforeCompile = 10; //10;
+    baselineUsesBeforeCompile = 10;
 
     // Number of exception bailouts (resuming into catch/finally block) before
     // we invalidate and forbid Ion compilation.

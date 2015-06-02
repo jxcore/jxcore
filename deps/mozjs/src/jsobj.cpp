@@ -13,7 +13,7 @@
 #include "mozilla/ArrayUtils.h"
 #include "mozilla/CheckedInt.h"
 #include "mozilla/MathAlgorithms.h"
-#include "mozilla/MemoryReporting.h" 
+#include "mozilla/MemoryReporting.h"
 #include "mozilla/TemplateLib.h"
 
 #include <string.h>
@@ -4487,10 +4487,9 @@ inline ObjectStore* JXGetProperty(JSContext *cx, JS::Handle<JSObject*> obj) {
   bool foundp = false;
   JSAtom *atom = Atomize(cx, JXCORE_INDEXED_NAME, 24);
   if (!atom)
-	  return nullptr;
+    return nullptr;
 
   RootedId idn(cx, AtomToId(atom));
-
 
   if (Shape *shape = obj->nativeLookup(cx, idn))
   {
@@ -4508,7 +4507,7 @@ inline ObjectStore* JXGetProperty(JSContext *cx, JS::Handle<JSObject*> obj) {
 
     const char* cs_name = o->getClass()->name; // QJXIndexed
     if(cs_name == 0 || cs_name[0] != 'Q' || cs_name[1] != 'J') {
-	  return nullptr;
+      return nullptr;
     }
 
     void *data = JS_GetPrivate(o);
@@ -4524,7 +4523,7 @@ bool jxcore_buffer_setter(JSContext *cx, JS::Handle<JSObject*> obj, JS::Handle<j
   if (!JSID_IS_INT(id)) {
     return true;
   }
-  
+
   ObjectStore *store = JXGetProperty(cx, obj);
   if (store == nullptr) return true;
 

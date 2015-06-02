@@ -117,7 +117,7 @@ void GCOnMozJS(JSRuntime *rt, JSGCStatus status, void *data) {
 bool JSEngineInterrupt(JSContext *ctx) {
   int tid = JS_GetThreadId(ctx);
   node::commons *com = node::commons::getInstanceByThreadId(tid);
-  if (com->should_interrupt_) {
+  if (com != NULL && com->should_interrupt_) {
     com->should_interrupt_ = false;
     return false;
   }
