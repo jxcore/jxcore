@@ -76,7 +76,9 @@ JS_LOCAL_METHOD(extensionCallback) {
            "Return value was corrupted");
 
     if (results[len].type_ == RT_Error) {
-      std::string msg = JX_GetString(&results[len]);
+      char *cmsg = JX_GetString(&results[len]);
+      std::string msg = cmsg;
+      free(cmsg);
       JX_Free(&results[len]);
       THROW_EXCEPTION(msg.c_str());
     } else if (results[len].type_ == RT_Function) {
@@ -95,6 +97,8 @@ JS_LOCAL_METHOD(extensionCallback) {
     JX_Free(&results[len]);
     RETURN_PARAM(ret_val);
   }
+
+  free(results);
 }
 JS_METHOD_END
 
