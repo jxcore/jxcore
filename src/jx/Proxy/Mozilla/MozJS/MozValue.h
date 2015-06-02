@@ -359,10 +359,9 @@ class Script {
   static Script Compile(JSContext *ctx, const String &source,
                         const String &filename);
   static Script Compile(JSContext *ctx, const Value &host, const String &source,
-                        const String &filename, bool for_asm_js = false);
+                        const String &filename);
   static Script Compile(JSContext *ctx, const Value &host,
-                        const auto_jschar &source, const char *filename,
-                        bool for_asm_js = false);
+                        const auto_jschar &source, const char *filename);
   static Script Compile(JSContext *ctx, const Value &host,
                         const auto_str &source, const char *filename);
 

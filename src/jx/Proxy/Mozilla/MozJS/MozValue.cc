@@ -102,8 +102,7 @@ void Script::RemoveRoot() {
 }
 
 Script Script::Compile(JSContext *cx, const Value &hst,
-                       const auto_jschar &source, const char *filename,
-                       bool for_asm_js) {
+                       const auto_jschar &source, const char *filename) {
   Script script;
   script.ctx_ = cx;
 
@@ -119,7 +118,7 @@ Script Script::Compile(JSContext *cx, const Value &hst,
   JS::MutableHandle<JSScript *> mrs(&rs);
 
   if (!JS_CompileUCScriptJX(cx, host, source.str_, source.length_, filename, 1,
-                            for_asm_js, mrs)) {
+                            false, mrs)) {
     return script;
   }
 
@@ -160,14 +159,14 @@ Script Script::Compile(JSContext *cx, const Value &hst, const auto_str &source,
 }
 
 Script Script::Compile(JSContext *ctx, const Value &hst, const String &source,
-                       const String &filename, bool for_asm_js) {
+                       const String &filename) {
   auto_jschar _source;
   StringTools::JS_ConvertToJSChar(ctx, source.value_.toString(), &_source);
 
   auto_str _filename;
   filename.ToSTDString(&_filename);
 
-  return Compile(ctx, hst, _source, _filename.str_, for_asm_js);
+  return Compile(ctx, hst, _source, _filename.str_);
 }
 
 Script Script::Compile(JSContext *ctx, const String &source,
@@ -1432,7 +1431,7 @@ Value Value::CompileAndRun(JSContext *ctx_, String script, String filename,
   filename.ToSTDString(&str_filename);
 
   Script scr =
-      Script::Compile(ctx_, global, str_script, str_filename.str_, false);
+      Script::Compile(ctx_, global, str_script, str_filename.str_);
   if (scr.IsEmpty())
     obj.value_ = JSVAL_NULL;
   else

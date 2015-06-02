@@ -4614,11 +4614,14 @@ JS_CompileUCScriptJX(JSContext *cx, JS::HandleObject obj, const jschar *chars,
                    size_t length, const char *filename, int line_no, bool for_asm_js, MutableHandleScript script)
 {
     JSAutoCompartment ac(cx, obj);
-	JS::CompileOptions compile_options(cx);
-	compile_options.setFileAndLine(filename, line_no);
-	compile_options.setCompileAndGo(for_asm_js);
+    {
+      JS::CompileOptions compile_options(cx);
+      compile_options.setUTF8(true);
+      compile_options.setFileAndLine(filename, line_no);
+      compile_options.setCompileAndGo(for_asm_js);
 
-	return Compile(cx, obj, compile_options, chars, length, script);
+      return Compile(cx, obj, compile_options, chars, length, script);
+    }
 }
 
 JS_PUBLIC_API(bool)

@@ -505,6 +505,7 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(
 
   JS_HANDLE_VALUE result;
   jxcore::MemoryScript mscript;
+  JS_HANDLE_SCRIPT script;
 
   if (input_flag == compileCode) {
     // well, here WrappedScript::New would suffice in all cases, but maybe
@@ -516,7 +517,7 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(
       globals = jxcore::getGlobal(com->threadId);
     }
 
-    JS_HANDLE_SCRIPT script =
+    script =
         MozJS::Script::Compile(__contextORisolate, globals, code, filename);
 
     if (JS_IS_EMPTY(script)) {
@@ -577,7 +578,8 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(
 
       JS_FORCE_GC();
     } else {
-      MozJS::Script script(jxcore::GetScript(context, mscript), context);
+      if (script.IsEmpty())
+	script = MozJS::Script(jxcore::GetScript(context, mscript), context);
       result = script.Run();
     }
 
