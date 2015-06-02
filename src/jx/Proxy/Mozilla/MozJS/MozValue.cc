@@ -186,26 +186,22 @@ Value Script::Run(const Value &host_object_) {
   JSObject *hst = host_object_.GetRawObjectPointer();
   JS::RootedObject host(ctx_, hst);
 
-  JSCompartment *jsco = JS_EnterCompartment(ctx_, hst);
-
   Value result;
   result.ctx_ = ctx_;
 
   JS::RootedScript rs_scr(ctx_, value_);
-  JS::RootedValue rv_res(ctx_, result.value_);
-  JS::MutableHandle<JS::Value> mt_res(&rv_res);
+  JS::RootedValue rv_res(ctx_);
 
-  if (!JS_ExecuteScript(ctx_, host, rs_scr, mt_res)) {
-    result.value_ = mt_res.get();
+  if (!JS_ExecuteScript(ctx_, host, rs_scr, &rv_res)) {
+    result.value_ = rv_res;
     result.empty_ = true;
     goto ret_urn;
   }
 
   result.empty_ = false;
-  result.value_ = mt_res.get();
+  result.value_ = rv_res;
 
 ret_urn:
-  JS_LeaveCompartment(ctx_, jsco);
   return result;
 }
 
