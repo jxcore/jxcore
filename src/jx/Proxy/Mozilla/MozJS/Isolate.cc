@@ -5,6 +5,44 @@
 #include "../EngineHelper.h"
 
 namespace MozJS {
+
+// Dummy ShellPrincipals from SM Shell
+class ShellPrincipals : public JSPrincipals {
+  uint32_t bits;
+
+  static uint32_t getBits(JSPrincipals* p) {
+    if (!p) return 0xffff;
+    return static_cast<ShellPrincipals*>(p)->bits;
+  }
+
+ public:
+  explicit ShellPrincipals(uint32_t bits, int32_t refcount = 0) : bits(bits) {
+    this->refcount = refcount;
+  }
+
+  static void destroy(JSPrincipals* principals) {
+    js_free(static_cast<ShellPrincipals*>(principals));
+  }
+
+  static bool subsumes(JSPrincipals* first, JSPrincipals* second) {
+    uint32_t firstBits = getBits(first);
+    uint32_t secondBits = getBits(second);
+    return (firstBits | secondBits) == firstBits;
+  }
+
+  static JSSecurityCallbacks securityCallbacks;
+
+  // Fully-trusted principals singleton.
+  static ShellPrincipals fullyTrusted;
+};
+
+JSSecurityCallbacks ShellPrincipals::securityCallbacks = {
+    nullptr,  // contentSecurityPolicyAllows
+    subsumes};
+
+// The fully-trusted principal subsumes all other principals.
+ShellPrincipals ShellPrincipals::fullyTrusted(-1, 1);
+
 #define JXCORE_MAX_THREAD_COUNT 65  // +1 for main thread
 Isolate* Isolates[JXCORE_MAX_THREAD_COUNT] = {NULL};
 JSRuntime* runtimes[JXCORE_MAX_THREAD_COUNT] = {NULL};
@@ -45,10 +83,10 @@ Isolate* Isolate::New(int threadId) {
 
     if (threadId == 0)
       runtimes[threadId] =
-          JS_NewRuntime(64L * 1024L * 1024L, 2L * 1024L * 1024L);
+          JS_NewRuntime(JS::DefaultHeapMaxBytes, 2L * 1024L * 1024L);
     else
-      runtimes[threadId] =
-          JS_NewRuntime(64L * 1024L * 1024L, 2L * 1024L * 1024L, runtimes[0]);
+      runtimes[threadId] = JS_NewRuntime(JS::DefaultHeapMaxBytes,
+                                         2L * 1024L * 1024L, runtimes[0]);
 
     rt = runtimes[threadId];
     assert(rt != NULL && "couldn't initialize a new runtime. Out of memory?");
@@ -60,6 +98,10 @@ Isolate* Isolate::New(int threadId) {
     JS_SetNativeStackQuota(rt, 128 * sizeof(size_t) * 1024);
     JS_SetGCParameter(rt, JSGC_MODE, JSGC_MODE_INCREMENTAL);
     JS_SetDefaultLocale(rt, "UTF-8");
+
+    JS_SetTrustedPrincipals(rt, &ShellPrincipals::fullyTrusted);
+    JS_SetSecurityCallbacks(rt, &ShellPrincipals::securityCallbacks);
+    JS_InitDestroyPrincipalsCallback(rt, ShellPrincipals::destroy);
 
 #ifdef JS_CPU_MIPS
     // force use incremental GC in case of low resources.
