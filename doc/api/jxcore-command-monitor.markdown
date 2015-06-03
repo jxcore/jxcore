@@ -66,10 +66,15 @@ After that it starts new and fresh monitor's process.
 
 ## Web access
 
-While the monitor is running, you can access its http server, e.g. by a browser for the following usage:
+While the monitor is running, you can access its http server for the following usage:
 
 * http://127.0.0.1:port/json - gets information (json string format) about currently monitored processes.
 * http://127.0.0.1:port/logs - gets contents of a log file (See `log_path` in [Config file](#config-file) section).
+
+Adding `html` variable to the url makes the output formatted for html display (e.g. `<br` instead of `\n`) which is more readable from a browser, e.g.:
+
+* http://127.0.0.1:port/json?html
+* http://127.0.0.1:port/logs?html
 
 ## Subscribing application for being monitored
 
