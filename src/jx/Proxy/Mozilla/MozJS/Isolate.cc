@@ -83,7 +83,7 @@ Isolate* Isolate::New(int threadId) {
 
     if (threadId == 0)
       runtimes[threadId] =
-          JS_NewRuntime(JS::DefaultHeapMaxBytes, 2L * 1024L * 1024L);
+          JS_NewRuntime(JS::DefaultHeapMaxBytes, JS::DefaultNurseryBytes);
     else
       runtimes[threadId] = JS_NewRuntime(JS::DefaultHeapMaxBytes,
                                          2L * 1024L * 1024L, runtimes[0]);
@@ -93,10 +93,10 @@ Isolate* Isolate::New(int threadId) {
 
     JS_SetRuntimePrivate(rt, &threadIds[threadId]);
 
+    JS_SetGCParameter(rt, JSGC_MODE, JSGC_MODE_INCREMENTAL);
     JS_SetGCParameter(rt, JSGC_MAX_BYTES, 0xffffffff);
     // 256 * ... value seems like only applicable for DEBUG builds
     JS_SetNativeStackQuota(rt, 128 * sizeof(size_t) * 1024);
-    JS_SetGCParameter(rt, JSGC_MODE, JSGC_MODE_INCREMENTAL);
     JS_SetDefaultLocale(rt, "UTF-8");
 
     JS_SetTrustedPrincipals(rt, &ShellPrincipals::fullyTrusted);
