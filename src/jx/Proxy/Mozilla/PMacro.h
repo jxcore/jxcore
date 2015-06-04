@@ -40,7 +40,6 @@
 #define JS_METHOD(class_name, method_name)                                     \
   bool class_name::method_name(JSContext *__contextORisolate, unsigned __argc, \
                                JS::Value *__jsval) {                           \
-    MozJS::SuppressGC __gc__(__contextORisolate);                              \
     ENGINE_LOG_THIS(#class_name, #method_name);                                \
   __JS_METHOD_BEGIN_COM()
 
@@ -64,7 +63,6 @@
 #define JS_LOCAL_METHOD(method_name)                               \
   bool method_name(JSContext *__contextORisolate, unsigned __argc, \
                    JS::Value *__jsval) {                           \
-    MozJS::SuppressGC __gc__(__contextORisolate);                  \
     ENGINE_LOG_THIS("LOCAL", #method_name);                        \
   __JS_METHOD_BEGIN_COM()
 
@@ -72,14 +70,12 @@
 #define JS_METHOD_NO_COM(class_name, method_name)                              \
   bool class_name::method_name(JSContext *__contextORisolate, unsigned __argc, \
                                JS::Value *__jsval) {                           \
-    MozJS::SuppressGC __gc__(__contextORisolate);                              \
     ENGINE_LOG_THIS(#class_name, #method_name);                                \
   __JS_METHOD_BEGIN_NO_COM()
 
 #define JS_LOCAL_METHOD_NO_COM(method_name)                        \
   bool method_name(JSContext *__contextORisolate, unsigned __argc, \
                    JS::Value *__jsval) {                           \
-    MozJS::SuppressGC __gc__(__contextORisolate);                  \
     ENGINE_LOG_THIS("LOCAL", #method_name);                        \
   __JS_METHOD_BEGIN_NO_COM()
 
