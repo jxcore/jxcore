@@ -28,7 +28,7 @@ function test() {
         if (i % 13 == a+147) break;
 
       return a + buffer[a];
-    }, i, function (retval) {
+    }, i, function (err, retval) {
         counter++;
       if (counter == 10) {
         counter = 0;
