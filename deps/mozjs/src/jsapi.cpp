@@ -4609,6 +4609,8 @@ JS_CompileUCScript(JSContext *cx, JS::HandleObject obj, const jschar *chars,
     return Compile(cx, obj, options, chars, length, script);
 }
 
+
+// JXCORE NO LONGER USES THIS METHOD!
 JS_PUBLIC_API(bool)
 JS_CompileUCScriptJX(JSContext *cx, JS::HandleObject obj, const jschar *chars,
                    size_t length, const char *filename, int line_no, bool for_asm_js, MutableHandleScript script)

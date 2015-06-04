@@ -115,14 +115,21 @@ Script Script::Compile(JSContext *cx, const Value &hst,
 
   JS::RootedObject host(cx, hst.value_.toObjectOrNull());
   JS::RootedScript rs(cx);
-  JS::MutableHandle<JSScript *> mrs(&rs);
 
-  if (!JS_CompileUCScriptJX(cx, host, source.str_, source.length_, filename, 1,
-                            false, mrs)) {
-    return script;
+  {
+    JS::CompileOptions compile_options(cx);
+    compile_options.setUTF8(true)
+	.setFileAndLine(filename, 1)
+	.setCompileAndGo(true)
+	.setSourceIsLazy(false)
+	.forceAsync = true;
+
+    if (!JS_CompileUCScript(cx, host, source.str_, source.length_, compile_options, &rs)) {
+      return script;
+    }
   }
 
-  script.value_ = mrs.get();
+  script.value_ = rs;
   script.empty_ = false;
 
   return script;
@@ -137,19 +144,20 @@ Script Script::Compile(JSContext *cx, const Value &hst, const auto_str &source,
 
   JS::RootedObject host(cx, hst.value_.toObjectOrNull());
   JS::RootedScript rs(cx);
-  JS::MutableHandle<JSScript *> mrs(&rs);
   {
-    JSAutoCompartment ac(cx, host);
     JS::CompileOptions compile_options(cx);
-    compile_options.setFileAndLine(filename, 1);
-    compile_options.setCompileAndGo(false);
+    compile_options.setUTF8(true)
+	.setFileAndLine(filename, 1)
+	.setCompileAndGo(true)
+	.setSourceIsLazy(false)
+	.forceAsync = true;
 
     if (!JS_CompileScript(cx, host, source.str_, source.length_,
-                          compile_options, mrs))
+                          compile_options, &rs))
       return script;
   }
 
-  script.value_ = mrs.get();
+  script.value_ = rs;
   if (!script.value_) {
     return script;
   }
@@ -1426,8 +1434,7 @@ Value Value::CompileAndRun(JSContext *ctx_, String script, String filename,
   auto_str str_filename;
   filename.ToSTDString(&str_filename);
 
-  Script scr =
-      Script::Compile(ctx_, global, str_script, str_filename.str_);
+  Script scr = Script::Compile(ctx_, global, str_script, str_filename.str_);
   if (scr.IsEmpty())
     obj.value_ = JSVAL_NULL;
   else

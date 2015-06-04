@@ -506,6 +506,7 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(
   JS_HANDLE_VALUE result;
   jxcore::MemoryScript mscript;
   JS_HANDLE_SCRIPT script;
+  JS::RootedScript rt_script(__contextORisolate);
 
   if (input_flag == compileCode) {
     // well, here WrappedScript::New would suffice in all cases, but maybe
@@ -519,6 +520,8 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(
 
     script =
         MozJS::Script::Compile(__contextORisolate, globals, code, filename);
+
+    rt_script.set(script.GetRawScriptPointer());
 
     if (JS_IS_EMPTY(script)) {
       JS_LOCAL_VALUE err_val = try_catch.Exception();
