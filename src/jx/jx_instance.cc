@@ -128,6 +128,7 @@ void JXInstance::runScript(void *x) {
       uv_run_jx(com->loop, UV_RUN_DEFAULT, node::commons::CleanPinger,
                 threadId + 1);
 
+      JS_FORCE_GC();
       if (!com->expects_reset)
         node::EmitExit(process_l);
       else
