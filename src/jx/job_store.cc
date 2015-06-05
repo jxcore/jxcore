@@ -124,7 +124,10 @@ void Job::removeTaskers() {
   ops[0] = 0;
   ops[1] = 0;
   threadTaskList.clear();
-  clearTaskDefinitions();
+  for (std::map<int, Job*>::iterator it = taskDefinitions.begin();
+       it != taskDefinitions.end(); ++it) {
+    free(it->second->script);
+  }
   taskDefinitions.clear();
 
   for (int i = 0; i < 2; i++) {
@@ -134,15 +137,6 @@ void Job::removeTaskers() {
       jobs_queue[i].pop();
     }
   }
-}
-
-// not thread safe!!
-void Job::clearTaskDefinitions() {
-  for (std::map<int, Job*>::iterator it = taskDefinitions.begin();
-       it != taskDefinitions.end(); ++it) {
-    free(it->second->script);
-  }
-  taskDefinitions.clear();
 }
 
 Job::Job(const char* scr, const int scrlen, const char* pr, const int paramlen,

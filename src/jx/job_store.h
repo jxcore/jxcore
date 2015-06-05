@@ -20,8 +20,6 @@ class Job {
 
   static void removeTaskers();
 
-  static void clearTaskDefinitions();
-
   Job(const char *scr, const int scrlen, const char *pr, const int paramlen,
       const int task_id, const int cb_id, bool notRem);
 
