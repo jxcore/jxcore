@@ -69,7 +69,9 @@ exports.createSinglePackage = function (src, native) {
   fs.mkdirSync(tmpDir);
 
   var compiled_binary = path.join(tmpDir, basename);
-  if (!native) compiled_binary += ".jx";
+  if (!native)
+    compiled_binary += ".jx";
+  else if (process.platform === "win32") compiled_binary += ".exe";
 
   var outputDir = getOutputDir(src, native);
   var outputFile = path.join(outputDir, path.basename(compiled_binary));
