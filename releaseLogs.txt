@@ -1,5 +1,12 @@
 JXcore (http://jxcore.io)
 
+----JXcore 3.0.2
+
+- General stability and performance updates
+- SpiderMonkey fixes and multiple stability improvements
+- Installation bash script FreeBSD support and --force option
+- Monitor improvements: better kill output, html formatted web access
+
 ----JXcore 3.0.1
 
 - SpiderMonkey SM BSD build support 
