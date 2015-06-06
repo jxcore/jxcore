@@ -363,7 +363,7 @@ JX_SetInt32(JXValue *value, const int32_t val) {
   value->size_ = sizeof(int32_t);
 
   RUN_IN_SCOPE(
-  { wrap->value_ = JS_NEW_PERSISTENT_VALUE(STD_TO_INTEGER(val)); });
+      { wrap->value_ = JS_NEW_PERSISTENT_VALUE(STD_TO_INTEGER(val)); });
 }
 
 JXCORE_EXTERN(void)
@@ -400,7 +400,7 @@ JX_SetBoolean(JXValue *value, const bool val) {
   value->size_ = sizeof(bool);
 
   RUN_IN_SCOPE(
-  { wrap->value_ = JS_NEW_PERSISTENT_VALUE(STD_TO_BOOLEAN(val)); });
+      { wrap->value_ = JS_NEW_PERSISTENT_VALUE(STD_TO_BOOLEAN(val)); });
 }
 
 #define SET_STRING(type, ct)                                             \
@@ -603,7 +603,7 @@ JX_CreateEmptyObject(JXValue *value) {
 
   jxcore::JXValueWrapper *wrap = new jxcore::JXValueWrapper();
   RUN_IN_SCOPE(
-  { wrap->value_ = JS_NEW_PERSISTENT_OBJECT(JS_NEW_EMPTY_OBJECT()); });
+      { wrap->value_ = JS_NEW_PERSISTENT_OBJECT(JS_NEW_EMPTY_OBJECT()); });
   value->data_ = wrap;
 
   value->size_ = 1;
@@ -680,6 +680,40 @@ JX_SetIndexedProperty(JXValue *object, const unsigned index, JXValue *prop) {
                              : JS_NULL();
     JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(wrap->value_);
     JS_INDEX_SET(obj, index, val);
+  });
+}
+
+JXCORE_EXTERN(void)
+JX_GetNamedProperty(JXValue *object, const char *name, JXValue *out) {
+  UNWRAP_COM(object);
+  UNWRAP_RESULT(object->data_);
+
+  assert(object->type_ == RT_Object && "object must be an Object");
+
+  RUN_IN_SCOPE({
+    JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(wrap->value_);
+    JS_LOCAL_VALUE sub_obj;
+    if (JS_HAS_NAME(obj, JS_STRING_ID(name)))
+      sub_obj = JS_GET_NAME(obj, JS_STRING_ID(name));
+    else
+      sub_obj = JS_NULL();
+
+    jxcore::JXEngine::ConvertToJXResult(com, sub_obj, out);
+  });
+}
+
+JXCORE_EXTERN(void)
+JX_GetIndexedProperty(JXValue *object, const int index, JXValue *out) {
+  UNWRAP_COM(object);
+  UNWRAP_RESULT(object->data_);
+
+  assert(object->type_ == RT_Object && "object must be an Object");
+
+  RUN_IN_SCOPE({
+    JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(wrap->value_);
+    JS_LOCAL_VALUE sub_obj = JS_GET_INDEX(obj, index);
+
+    jxcore::JXEngine::ConvertToJXResult(com, sub_obj, out);
   });
 }
 

@@ -187,6 +187,12 @@ JX_SetNamedProperty(JXValue *object, const char *name, JXValue *prop);
 JXCORE_EXTERN(void)
 JX_SetIndexedProperty(JXValue *object, const unsigned index, JXValue *prop);
 
+JXCORE_EXTERN(void)
+JX_GetNamedProperty(JXValue *object, const char *name, JXValue *out);
+
+JXCORE_EXTERN(void)
+JX_GetIndexedProperty(JXValue *object, const int index, JXValue *out);
+
 // if you have a JXValue around, this method brings threadId much faster
 JXCORE_EXTERN(int)
 JX_GetThreadIdByValue(JXValue *value);

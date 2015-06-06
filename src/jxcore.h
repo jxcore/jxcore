@@ -124,7 +124,7 @@ class JXEngine {
   ~JXEngine() { ENGINE_PRINT_LOGS(); }
 
   static bool ConvertToJXResult(node::commons *com, JS_HANDLE_VALUE_REF ret_val,
-                                JXResult *result);
+                                JXValue *result);
 };
 
 char *JX_Stringify(node::commons *com, JS_HANDLE_OBJECT obj,
