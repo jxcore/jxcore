@@ -8,8 +8,8 @@ void callback(JXValue *results, int argc) {
 const char compare_base[10] = {'1', '4', 't', 't', '{',
                                'A', 'u', 'n', 'E', 'n'};
 
-JXValue *fnc;
-JXValue *param1, *param2;
+JXValue fnc;
+JXValue param1, param2;
 
 // native sampleMethod
 void sampleMethod(JXValue *results, int argc) {
@@ -24,20 +24,19 @@ void sampleMethod(JXValue *results, int argc) {
 
   JXValue out;
 
-  // fnc represents the JS side function
-  fnc = &results[9];
-  param1 = results + 3;
-  param2 = results + 4;
+  // making persistent will protect below objects from garbage collection
+  JX_MakePersistent(results+9);
+  JX_MakePersistent(results+3);
+  JX_MakePersistent(results+4);
+  
+  // copy the memory since as soon as this callback returns, results mem will be free'd
+  fnc = results[9];
+  param1 = *(results + 3);
+  param2 = *(results + 4);
 
   // call JS side fnc with 2 parameters and get
   // the result to 'out'
-  JX_CallFunction(fnc, (results + 3), 2, &out);
-
-  // make fnc persistent so we can call it later again
-  // see 'int main' for second call
-  JX_MakePersistent(fnc);
-  JX_MakePersistent(param1);
-  JX_MakePersistent(param2);
+  JX_CallFunction(results+9, (results + 3), 2, &out);
 
   assert(JX_GetDataLength(&out) == 11 &&
          "Expected return value was 'test{\"a\":3}");
@@ -63,21 +62,21 @@ int main(int argc, char **args) {
 
   while (JX_LoopOnce() != 0) usleep(1);
 
-  JXValue *params[2] = {param1, param2};
+  JXValue *params[2] = {&param1, &param2};
   JXValue out;
 
   // call fnc -> JS side function
   // we had made this variable persistent inside sampleMethod
-  JX_CallFunction(fnc, *params, 2, &out);
+  JX_CallFunction(&fnc, *params, 2, &out);
 
   // we need to clear persistent and then free whenever we
   // are done with persistent values to not to leak
-  JX_ClearPersistent(fnc);
-  JX_Free(fnc);
-  JX_ClearPersistent(param1);
-  JX_Free(param1);
-  JX_ClearPersistent(param2);
-  JX_Free(param2);
+  JX_ClearPersistent(&fnc);
+  JX_Free(&fnc);
+  JX_ClearPersistent(&param1);
+  JX_Free(&param1);
+  JX_ClearPersistent(&param2);
+  JX_Free(&param2);
 
   assert(JX_GetDataLength(&out) == 11 &&
          "Expected return value was 'test{\"a\":3}");

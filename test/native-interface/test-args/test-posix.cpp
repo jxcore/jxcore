@@ -5,12 +5,13 @@ void callback(JXValue *results, int argc) {
   // do nothing
 }
 
-JXValue *fnc;
+JXValue fnc;
 void defineMethod(JXValue *params, int argc) {
   assert(JX_IsFunction(params+0));
 
-  fnc = params+0;
-  JX_MakePersistent(fnc);
+  // see persistent-call test for explanation on MakePersistent
+  JX_MakePersistent(params+0);
+  fnc = *(params+0);
 }
 
 const char *contents = "var fn = function() {\n"
@@ -38,7 +39,7 @@ int main(int argc, char **args) {
   JX_SetString(&params[2], "Hello", 5);
 
   JXValue ret_val;
-  JX_CallFunction(fnc, params, 3, &ret_val);
+  JX_CallFunction(&fnc, params, 3, &ret_val);
 
   std::string str;
   ConvertResult(&ret_val, str);
@@ -49,8 +50,8 @@ int main(int argc, char **args) {
 
   JX_Free(&ret_val);
 
-  JX_ClearPersistent(fnc);
-  JX_Free(fnc);
+  JX_ClearPersistent(&fnc);
+  JX_Free(&fnc);
 
   JX_StopEngine();
 }

@@ -5,20 +5,25 @@ void callback(JXValue *results, int argc) {
   // do nothing
 }
 
-JXValue *fnc;
-JXValue *param;
+JXValue fnc;
+JXValue param;
 
 void sampleMethod(JXValue *results, int argc) {
   assert(JX_IsFunction(results + 1) && JX_IsString(results) &&
          "Function parameters do not match");
-  fnc = results + 1;
-  param = results;
-  JX_MakePersistent(fnc);
-  JX_MakePersistent(param);
+  JXValue *fnc_ = results + 1;
+  JXValue *param_ = results;
+  JX_MakePersistent(fnc_);
+  JX_MakePersistent(param_);
+  
+  // copy memory. because results will be free'd as soon as the callback return
+  fnc = *fnc_;
+  param = *param_;
 }
 
 const char *contents =
     "function fnc(x, z){return (x + z);}\n"
+    "process.fn = fnc;\n"
     "process.natives.sampleMethod('Hello ', fnc);";
 
 int main(int argc, char **args) {
@@ -34,16 +39,17 @@ int main(int argc, char **args) {
   JXValue value;
   JX_New(&value);
   JX_SetString(&value, "World", 5);
-  JXValue params[2] = {*param, value};
+  
+  JXValue params[2] = {param, value};
   JXValue out;
-  JX_CallFunction(fnc, params, 2, &out);
+  JX_CallFunction(&fnc, params, 2, &out);
 
   JX_Free(&value);
 
-  JX_ClearPersistent(fnc);
-  JX_Free(fnc);
-  JX_ClearPersistent(param);
-  JX_Free(param);
+  JX_ClearPersistent(&fnc);
+  JX_Free(&fnc);
+  JX_ClearPersistent(&param);
+  JX_Free(&param);
 
   std::string str;
   ConvertResult(&out, str);
