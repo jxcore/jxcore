@@ -106,7 +106,7 @@ JX_IsString(JXValue *value) {
 JXCORE_EXTERN(bool)
 JX_IsJSON(JXValue *value) {
   NULL_CHECK
-  return value->size_ > 0 && value->type_ == RT_JSON;
+  return value->size_ > 0 && (value->type_ == RT_Object || value->type_ == RT_JSON);
 }
 
 JXCORE_EXTERN(bool)
@@ -136,7 +136,7 @@ JX_IsNullOrUndefined(JXValue *value) {
 JXCORE_EXTERN(bool)
 JX_IsObject(JXValue *value) {
   NULL_CHECK
-  return value->type_ == RT_Object;
+  return value->type_ == RT_Object || value->type_ == RT_JSON;
 }
 
 #define EMPTY_CHECK(x)         \
