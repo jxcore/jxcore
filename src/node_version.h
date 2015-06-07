@@ -30,7 +30,7 @@
 #endif
 
 #define NODE_VERSION "v" NODE_VERSION_STRING
-#define JXCORE_VERSION "v Beta-0.3.0.2"
+#define JXCORE_VERSION "v Beta-0.3.0.3"
 
 #ifdef JS_ENGINE_MOZJS
 #define MOZJS_VERSION 34
