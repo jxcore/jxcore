@@ -6,6 +6,23 @@ GREEN_COLOR='\033[0;32m'
 GRAY_COLOR='\033[0;37m'
 MAGENTA_COLOR='\033[0;35m'
 
+FORCE_INSTALL="no"
+LOCAL_INSTALL="no"
+
+while test $# -gt 0
+do
+    case "$1" in
+        force) FORCE_INSTALL="$1";;
+        --force) FORCE_INSTALL="$1";;
+        local) LOCAL_INSTALL="$1";;
+        --local) LOCAL_INSTALL="$1";;
+    esac
+    shift
+done
+
+INSTALL_DIR="/usr/local/bin/"
+if [[ $LOCAL_INSTALL != "no" ]]; then INSTALL_DIR=`pwd`; INSTALL_DIR+="/"; fi
+
 UNZIP_INSTALL=""
 LOG() {
   COLOR="$1"
@@ -122,17 +139,18 @@ find_latest() {
     latest_ver=$(echo "$latest_str" | cut -d "|" -f 2)
     LOG $GRAY_COLOR "Found $latest_ver"
 
-    current_ver=$(jx -jxv 2>/dev/null)
+    current_ver=$(${INSTALL_DIR}jx -jxv 2>/dev/null)
 
     if [[ $current_ver != "" ]] && [[ $current_ver == *"$latest_ver"* ]]
     then
-
-      if [[ $1 != "force" ]] && [[ $1 != "--force" ]]; then
+      if [[ $1 == "no" ]]; then
         LOG $MAGENTA_COLOR "You already have the latest version installed. You can use 'force' switch, e.g.:"
         if [[ "$BASH_SOURCE" == "" ]]; then
-          LOG $GRAYORMAL_COLOR "   $ curl http://jxcore.com/xil.sh | bash -s force\n"
+          if [[ $2 != "no" ]]; then local="local"; fi
+          LOG $GRAYORMAL_COLOR "   $ curl http://jxcore.com/xil.sh | bash -s force ${local}\n"
         else
-          LOG $GRAY_COLOR "   $ ./$BASH_SOURCE --force\n"
+          if [[ $2 != "no" ]]; then local="--local"; fi
+          LOG $GRAY_COLOR "   $ ./$BASH_SOURCE --force ${local}\n"
         fi
         exit
       fi
@@ -145,13 +163,13 @@ find_latest() {
 LOG $GREEN_COLOR "JXcore Installation Script for X systems\n"
 
 # testing permission
-trial=$(mkdir /usr/local/bin/jxcore_install_test 2>&1)
+trial=$(mkdir ${INSTALL_DIR}jxcore_install_test 2>&1)
 if [[ "$trial" =~ "denied" ]]
 then
   echo "Permission denied. You need admin/root rights to make this installation. Try sudo/su ?"
   exit
 fi
-trial=$(rm -rf /usr/local/bin/jxcore_install_test)
+trial=$(rm -rf ${INSTALL_DIR}jxcore_install_test)
 
 linux_version="/proc/version"
 zip_file=""
@@ -168,7 +186,7 @@ fi
 
 zip_file="$zip_file""v8"
 
-find_latest $1
+find_latest $FORCE_INSTALL $LOCAL_INSTALL
 
 link="$latest_url/""$zip_file.zip"
 LOG $GREEN_COLOR "Downloading $link"
@@ -178,15 +196,19 @@ LOG $GREEN_COLOR "Download completed. Testing for unzip command."
 
 if [ -f "/usr/bin/unzip" ]
 then
-    LOG $GRAY_COLOR "$(unzip -u "$zip_file.zip")"
+    LOG $GRAY_COLOR "$(unzip -qq -u "$zip_file.zip")"
     rasp_check=$(uname -msrn)
 
-    mv "$zip_file/jx" "/usr/local/bin/jx"
-
-    LOG $GRAY_COLOR "$(/usr/local/bin/jx -jxv)"
+    mv "$zip_file/jx" "${INSTALL_DIR}jx"
+    LOG $GRAY_COLOR "$(${INSTALL_DIR}jx -jxv)"
+    if [[ $LOCAL_INSTALL == "no" ]]; then
+        LOG $MAGENTA_COLOR "JXcore installed globally in: ${INSTALL_DIR}jx"
+    else
+        LOG $MAGENTA_COLOR "JXcore installed locally in current folder."
+    fi
 else
-    LOG $RED_COLOR "unzip not found, please install unzip command and then run this script again.."
+    LOG $RED_COLOR "unzip not found, please install unzip command and then run this script again..."
 fi
-LOG $GREEN_COLOR "Cleaning up.."
+LOG $GREEN_COLOR "Cleaning up..."
 LOG $GRAY_COLOR "$(rm "$zip_file.zip")"
 LOG $GRAY_COLOR "$(rm -rf "$zip_file")"
