@@ -21,13 +21,12 @@ enum _JXType {
   RT_Double = 2,
   RT_Boolean = 3,
   RT_String = 4,
-  RT_JSON = 5,
+  RT_Object = 5,
   RT_Buffer = 6,
   RT_Undefined = 7,
   RT_Null = 8,
   RT_Error = 9,
-  RT_Function = 10,
-  RT_Object = 11
+  RT_Function = 10
 };
 
 typedef enum _JXType JXResultType;

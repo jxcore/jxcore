@@ -105,8 +105,7 @@ JX_IsString(JXValue *value) {
 
 JXCORE_EXTERN(bool)
 JX_IsJSON(JXValue *value) {
-  NULL_CHECK
-  return value->size_ > 0 && (value->type_ == RT_Object || value->type_ == RT_JSON);
+  return JX_IsObject(value);
 }
 
 JXCORE_EXTERN(bool)
@@ -136,7 +135,7 @@ JX_IsNullOrUndefined(JXValue *value) {
 JXCORE_EXTERN(bool)
 JX_IsObject(JXValue *value) {
   NULL_CHECK
-  return value->type_ == RT_Object || value->type_ == RT_JSON;
+  return value->type_ == RT_Object;
 }
 
 #define EMPTY_CHECK(x)         \
@@ -217,7 +216,7 @@ JX_GetString(JXValue *value) {
       case RT_String: {
         ret = strdup(STRING_TO_STD(wrap->value_));
       } break;
-      case RT_JSON: {
+      case RT_Object: {
         JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(wrap->value_);
 
         {
@@ -321,7 +320,7 @@ JX_CallFunction(JXValue *fnc, JXValue *params, const int argc, JXValue *out) {
   for (int i = 0; i < argc; i++) {
     if (params[i].type_ == RT_Undefined || params[i].type_ == RT_Null ||
         params[i].data_ == NULL) {
-      arr[i] = JS_NULL();
+      arr[i] = params[i].type_ == RT_Undefined ? JS_UNDEFINED() : JS_NULL();
     } else {
       jxcore::JXValueWrapper *wrap = (jxcore::JXValueWrapper *)params[i].data_;
       arr[i] = wrap->value_;
@@ -483,7 +482,7 @@ JX_SetJSON(JXValue *value, const char *val, const int32_t length) {
     JS_CLEAR_PERSISTENT(wrap->value_);
   }
 
-  value->type_ = RT_JSON;
+  value->type_ = RT_Object;
   value->size_ = length == 0 ? strlen(val) : length;
 
   RUN_IN_SCOPE({

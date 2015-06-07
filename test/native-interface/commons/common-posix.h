@@ -40,7 +40,7 @@ void ConvertResult(JXValue *result, std::string &to_result) {
       to_result = ss.str();
     } break;
     case RT_Buffer:
-    case RT_JSON:
+    case RT_Object:
     case RT_Error:
     case RT_String: {
       char *_ = JX_GetString(result);

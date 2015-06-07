@@ -1153,7 +1153,7 @@ bool JXEngine::ConvertToJXResult(node::commons *com,
     return true;
   }
 
-  result->type_ = RT_Null;
+  result->type_ = RT_Undefined;
 
   if (JS_IS_BOOLEAN(ret_val)) {
     result->type_ = RT_Boolean;
@@ -1181,7 +1181,7 @@ bool JXEngine::ConvertToJXResult(node::commons *com,
     result->size_ = JS_GET_STRING_LENGTH(str);
   }
 
-  if (result->type_ != RT_Null) {
+  if (result->type_ != RT_Undefined) {
     JXValueWrapper *pr_wrap = new JXValueWrapper(ret_val);
     result->data_ = (void *)pr_wrap;
     return true;
@@ -1207,7 +1207,7 @@ bool JXEngine::ConvertToJXResult(node::commons *com,
     return false;
   }
 
-  result->type_ = RT_JSON;
+  result->type_ = RT_Object;
   JXValueWrapper *wrap = new JXValueWrapper(ret_val);
   result->data_ = (void *)wrap;
   result->size_ = 1;
