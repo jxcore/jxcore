@@ -8,6 +8,7 @@ MAGENTA_COLOR='\033[0;35m'
 
 FORCE_INSTALL="no"
 LOCAL_INSTALL="no"
+ENGINE="v8"
 
 while test $# -gt 0
 do
@@ -16,6 +17,7 @@ do
         --force) FORCE_INSTALL="$1";;
         local) LOCAL_INSTALL="$1";;
         --local) LOCAL_INSTALL="$1";;
+        sm) ENGINE="sm";;
     esac
     shift
 done
@@ -140,23 +142,24 @@ find_latest() {
     LOG $GRAY_COLOR "Found $latest_ver"
 
     current_ver=$(${INSTALL_DIR}jx -jxv 2>/dev/null)
+    current_engine=$(${INSTALL_DIR}jx -p "process.versions.sm ? 'sm' : 'v8'" 2>/dev/null)
 
     if [[ $current_ver != "" ]] && [[ $current_ver == *"$latest_ver"* ]]
     then
-      if [[ $1 == "no" ]]; then
-        LOG $MAGENTA_COLOR "You already have the latest version installed. You can use 'force' switch, e.g.:"
+      if [[ $FORCE_INSTALL == "no" ]]; then
+        LOG $MAGENTA_COLOR "You already have the latest version installed ($current_engine). You can use 'force' switch, e.g.:"
         if [[ "$BASH_SOURCE" == "" ]]; then
-          if [[ $2 != "no" ]]; then local="local"; fi
-          LOG $GRAYORMAL_COLOR "   $ curl http://jxcore.com/xil.sh | bash -s force ${local}\n"
+          if [[ $LOCAL_INSTALL != "no" ]]; then local="local"; fi
+          LOG $GRAYORMAL_COLOR "   $ curl http://jxcore.com/xil.sh | bash -s force ${ENGINE} ${local}\n"
         else
-          if [[ $2 != "no" ]]; then local="--local"; fi
-          LOG $GRAY_COLOR "   $ ./$BASH_SOURCE --force ${local}\n"
+          if [[ $LOCAL_INSTALL != "no" ]]; then local="--local"; fi
+          LOG $GRAY_COLOR "   $ ./$BASH_SOURCE --force ${ENGINE} ${local}\n"
         fi
         exit
       fi
 
       LOG $GREEN_COLOR "You already have the latest version installed."
-      LOG $MAGENTA_COLOR "The $1 switch is used."
+      LOG $MAGENTA_COLOR "The $FORCE_INSTALL switch is used."
     fi
 }
 
@@ -184,9 +187,9 @@ else
 	zip_file=$(find_os "$output")
 fi
 
-zip_file="$zip_file""v8"
+zip_file="$zip_file""$ENGINE"
 
-find_latest $FORCE_INSTALL $LOCAL_INSTALL
+find_latest
 
 link="$latest_url/""$zip_file.zip"
 LOG $GREEN_COLOR "Downloading $link"
@@ -200,12 +203,13 @@ then
     rasp_check=$(uname -msrn)
 
     mv "$zip_file/jx" "${INSTALL_DIR}jx"
-    LOG $GRAY_COLOR "$(${INSTALL_DIR}jx -jxv)"
     if [[ $LOCAL_INSTALL == "no" ]]; then
         LOG $MAGENTA_COLOR "JXcore installed globally in: ${INSTALL_DIR}jx"
     else
         LOG $MAGENTA_COLOR "JXcore installed locally in current folder."
     fi
+    LOG $GRAY_COLOR "$(${INSTALL_DIR}jx -jxv)"
+    LOG $GRAY_COLOR "$(${INSTALL_DIR}jx -jsv)"
 else
     LOG $RED_COLOR "unzip not found, please install unzip command and then run this script again..."
 fi
