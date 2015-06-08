@@ -60,6 +60,10 @@ See [Roadmap](doc/ROADMAP.md) document.
 
 See [How to Compile](doc/HOW_TO_COMPILE.md) document.
 
+### To install:
+
+If you don't want to build JXcore by yourself, you can use pre-compiled binaries. See [Installation](doc/INSTALLATION.md) document.
+
 ### Start hacking the native core:
 
 Macro API is available from [here](doc/native)
