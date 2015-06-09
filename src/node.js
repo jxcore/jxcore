@@ -125,7 +125,7 @@
 
     startup.resolveArgv0();
 
-    if (!process.subThread) {
+    if (!process.subThread && !process.isEmbedded) {
       var __exitCode = 0;
       var __pstart = Date.now();
       var __kill = function (code) {
@@ -244,7 +244,7 @@
       packagetojx: false
     };
 
-    if (!process._EmbeddedSource && !process.subThread) {
+    if (!process.isEmbedded && !process._EmbeddedSource && !process.subThread) {
       for (var o in __ops) {
         if (process.argv[1] === o) {
           var sep = getActiveFolder();
@@ -298,7 +298,7 @@
       }
 
       var __debug = false;
-      if (!process._EmbeddedSource) {
+      if (!process.isEmbedded && !process._EmbeddedSource) {
         __debug = global.v8debug && process.execArgv.some(function (arg) {
           return arg.match(/^--debug-brk(=[0-9]*)?$/);
         });
@@ -364,6 +364,8 @@
             delete process.env.NODE_UNIQUE_ID;
           }
         }
+      } else {
+        NativeModule.require('_jx_config');
       }
 
       var Module = NativeModule.require('module');
