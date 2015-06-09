@@ -24,4 +24,13 @@ var mod = require(name);
 console.log("loaded module:", util.inspect(mod, {showHidden: true, depth: 99}));
 
 assert.ok(mod, "Cannot load node file " + name);
-assert.strictEqual(mod.test, undefined, "Loaded incorrect module");
+assert.strictEqual(mod.test, undefined, "Loaded incorrect module " + name);
+
+
+// requiring itself (without extension)
+var name = "./test-require-name-conflict-fs";
+var mod = require(name);
+console.log("loaded module:", util.inspect(mod, {showHidden: true, depth: 99}));
+
+assert.ok(mod, "Cannot load node file (without extension) " + name);
+assert.strictEqual(mod.test, undefined, "Loaded incorrect module (without extension)" + name);
