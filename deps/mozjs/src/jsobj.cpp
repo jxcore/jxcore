@@ -5602,8 +5602,8 @@ baseops::SetPropertyHelper(typename ExecutionModeTraits<mode>::ContextType cxArg
                     return !strict;
 
                 JSContext *cx = cxArg->asJSContext();
-                if (strict)
-                    return JSObject::reportReadOnly(cx, id, JSREPORT_ERROR);
+//                if (strict)
+//                    return JSObject::reportReadOnly(cx, id, JSREPORT_ERROR);
                 if (cx->compartment()->options().extraWarnings(cx))
                     return JSObject::reportReadOnly(cx, id, JSREPORT_STRICT | JSREPORT_WARNING);
                 return true;
