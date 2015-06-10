@@ -14,7 +14,7 @@
 
 namespace node {
 
-static uint64_t unique_id = 0;
+static unsigned long unique_id = 0;
 static int loops[MAX_JX_THREADS];
 
 void JXUtilsWrap::exec(const char *cmd, int *ec, std::string &result) {
@@ -263,7 +263,7 @@ JS_METHOD_END
 
 JS_METHOD(JXUtilsWrap, GetUniqueNext) {
   auto_lock locker_(CSLOCK_UNIQUEID);
-  uint64_t val = unique_id++;
+  unsigned long val = unique_id++;
   unique_id %= ULONG_MAX;
 
   RETURN_PARAM(STD_TO_NUMBER(val));
