@@ -93,7 +93,10 @@ function lifecycle_ (pkg, stage, wd, env, unsafe, failOk, cb) {
 
   if (packageLifecycle) {
     // define this here so it's available to all scripts.
-    env.npm_lifecycle_script = pkg.scripts[stage]
+    var scr = pkg.scripts[stage]
+    if (typeof scr === "string" && scr.slice(0,5).toLowerCase() === "node ")
+      scr = process.execPath + " " + scr.slice(5)
+    env.npm_lifecycle_script = scr
   }
 
   if (failOk) {
