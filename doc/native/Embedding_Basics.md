@@ -183,4 +183,6 @@ Besides the architecture, if you have compiled JXcore with V8 engine, you should
 
 That's It!
 
+[JXcore native interface - API Documentation](https://github.com/jxcore/jxcore/blob/master/doc/native/Embedding_API_Details.md)
+
 Advanced sample: [managing multiple instances](https://github.com/jxcore/jxcore/blob/master/test/native-interface/multiple-instance/test-posix.cpp)
