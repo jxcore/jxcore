@@ -16,6 +16,8 @@ SlabAllocator::SlabAllocator(unsigned int size, commons* com) {
     com_ = com;
   size_ = ROUND_UP(size ? size : 1, 8192);
   initialized_ = false;
+  last_ptr_ = NULL;
+  offset_ = 0;
 }
 
 SlabAllocator::~SlabAllocator() {
