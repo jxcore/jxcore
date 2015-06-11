@@ -20,6 +20,7 @@
     'node_engine_mozilla%': 0,
     'node_shared_library%': 0,
     'library_files': [
+      'lib/jx/_jx_argv.js',
       'lib/jx/_jx_subs.js',
       'lib/jx/_jx_memStore.js',
       'lib/jx/_jx_tasks.js',
