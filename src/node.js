@@ -2161,7 +2161,7 @@
       } catch (e) {
         process.exit(1)
       }
-      ;
+
       if (!res || isNaN(res)) {
         process.exit(1);
       }
@@ -2203,16 +2203,33 @@
   };
 
   NativeModule.installer = function () {
-    var cc = NativeModule.require('console');
+    var cc = jxcore.utils.console;
     var fs = NativeModule.require('fs');
     var pathModule = NativeModule.require('path');
-    var exec = NativeModule.require('child_process').exec;
     var jxpath = NativeModule.getJXpath();
 
-    if (process.argv.length < 2) {
+    var parsedArgv = jxcore.utils.argv.parse();
+    var autoremove_err = false;
+    var autoremove = null;
+    // check for --autoremove
+    if (typeof parsedArgv.autoremove !== "undefined") {
+      if (typeof parsedArgv.autoremove !== "string" || parsedArgv.autoremove.trim() === "") {
+        autoremove_err = "Invalid --autoremove value: " + (parsedArgv.autoremove || "--empty--" ) + ".";
+      } else {
+        if (parsedArgv.g || parsedArgv.global)
+          autoremove_err = "The --autoremove option is not supported with -g or --global switch."
+      }
+
+      if (!autoremove_err)
+        autoremove = parsedArgv.autoremove.split(';');
+    }
+
+    if (process.argv.length < 2 || autoremove_err) {
+      if (autoremove_err) cc.error(autoremove_err);
       cc.log("usage: install [package name]");
       cc.log("optional: install [package name]@[version]");
       cc.log("optional: install -g [package name]");
+      cc.log("optional: install [package name] --autoremove '*.gz;samples'");
       cc.log('');
       process.exit();
       return;
@@ -2274,6 +2291,13 @@
     };
 
     var args = process.argv;
+    if (autoremove) {
+      // it is already verified at this point, that id!=-1 and id+1 has a value
+      var id = args.indexOf("--autoremove");
+      // we need to remove it before passing argv to npm
+      args.splice(id, 2);
+    }
+
     var download = function (url, target, cb) {
 
       if (download_through_proxy(url, target, cb))
@@ -2312,22 +2336,22 @@
       }
       if (name.indexOf("-") === 0 && name.indexOf("--") < 0
         && name.trim() != "-g") {
-        process.argv[2] = process.argv[2].substr(1);
+        args[2] = args[2].substr(1);
         arr.push(targetBin);
         cmd = true;
       } else
-      if (process.argv[1] === "npm") {
+      if (args[1] === "npm") {
         arr.push(targetBin);
         cmd = true;
       } else {
         if (name.trim() == "-g" && jxpath) {
-          process.argv[process.argv.length] = "--prefix=" + jxpath;
+          args[args.length] = "--prefix=" + jxpath;
         }
         arr.push(targetBin);
         arr.push("install");
       }
 
-      arr = arr.concat(process.argv.slice(2));
+      arr = arr.concat(args.slice(2));
       var found = false;
 
       // copying npm settings, if available
@@ -2351,29 +2375,115 @@
       }
 
       // spawn allows to pass formatted output (colors)
-      NativeModule.require('child_process').spawn(process.execPath, arr, { stdio: "inherit" });
+      var child = NativeModule.require('child_process').spawn(process.execPath, arr, { stdio: "inherit" });
+      if (autoremove) {
+        child.on("close", function(code) {
+
+          var modules = parsedArgv["_"];
+          for(var o in modules) {
+            if (!modules.hasOwnProperty(o))
+              continue;
+
+            // determine the folder, where module was installed
+            var ret = jxcore.utils.cmdSync(process.execPath + " npm ls --depth=0 " + o);
+            if (ret.exitCode) {
+              cc.warn("Cannot determine path of installed module:", o);
+              continue;
+            }
+            var _arr = ret.out.trim().split("\n");
+            var _path = _arr[0];
+            if (_path.slice(0,1) === "│")
+              _path = _path.slice(1).trim();
+
+            var _path = pathModule.join(_path, "node_modules", o);
+            if (!fs.existsSync(_path)) {
+              cc.warn("Cannot find expected folder of installed module:", o);
+              continue;
+            }
+
+            // makes decision, whether remove file/folder or not
+            var checkRemove = function (folder, file, path, isDir) {
+
+              var specials = ["\\", "^", "$", ".", "|", "+", "(", ")", "[", "]", "{", "}"];  // without '*' and '?'
+
+              for (var o in autoremove) {
+                if (!autoremove.hasOwnProperty(o))
+                  continue;
+
+                var mask = autoremove[o];
+                var isPath = mask.indexOf(pathModule.sep) !== -1;
+
+                // entire file/folder basename compare
+                if (mask === file)
+                  return true;
+
+                // compare against entire path (without process.cwd)
+                if (isPath && path.replace(process.cwd(), "").indexOf(mask) !== -1)
+                  return true;
+
+                // regexp check against * and ?
+                var r = mask;
+                for (var i in specials) {
+                  if (specials.hasOwnProperty(i))
+                    r = r.replace(new RegExp("\\" + specials[i], "g"), "\\" + specials[i]);
+                }
+
+                var r = r.replace(/\*/g, '.*').replace(/\?/g, '.{1,1}');
+                var rg1 = new RegExp('^' + r + '$');
+                var rg2 = new RegExp('^' + pathModule.join(folder, r) + '$');
+                if (rg1.test(file) || rg2.test(path))
+                  return true;
+              }
+
+              return false;
+            };
+
+            // removes files/folders defined with --autoremove
+            delTree(_path, checkRemove);
+          }
+        });
+      }
     }
 
-    var delTree = function (loc) {
+    var delTree = function (loc, checkRemove) {
       if (fs.existsSync(loc)) {
         var _files = fs.readdirSync(loc);
+        var _removed = 0;
         for (var o in _files) {
+          if (!_files.hasOwnProperty(o))
+            continue;
+
           var file = _files[o];
           var _path = loc + pathModule.sep + file;
           if (!fs.lstatSync(_path).isDirectory()) {
             try {
-              fs.unlinkSync(_path);
+              var removeFile = checkRemove && checkRemove(loc, file, _path, false);
+              if (!checkRemove || removeFile) {
+                fs.unlinkSync(_path);
+                _removed++;
+                if (removeFile)
+                  cc.log("--autoremove:", _path.replace(process.cwd(), '.'), "yellow");
+              }
             } catch (e) {
-              jxcore.utils.console.write("Permission denied ", "red");
-              jxcore.utils.console.write(loc, "yellow");
-              jxcore.utils.console
-                .log(" (do you have a write access to this location?)");
+              cc.write("Permission denied ", "red");
+              cc.write(loc, "yellow");
+              cc.log(" (do you have a write access to this location?)");
             }
             continue;
           }
-          delTree(_path);
+          // folders
+          var removeDir = checkRemove && checkRemove(loc, file, _path, true);
+          if (!checkRemove || removeDir) {
+            delTree(_path);
+            if (removeDir)
+              cc.log("--autoremove:", _path.replace(process.cwd(), '.'), "yellow");
+          } else {
+            delTree(_path, checkRemove);
+          }
         }
-        fs.rmdirSync(loc);
+
+        if (!checkRemove || _removed == _files.length)
+          fs.rmdirSync(loc);
       }
     };
 
@@ -2389,8 +2499,7 @@
         return;
       }
 
-      jxcore.utils.console.log("Preparing NPM for JXcore (" + process.jxversion
-      + ") for the first run", "yellow");
+      cc.log("Preparing NPM for JXcore (" + process.jxversion + ") for the first run", "yellow");
 
       if (!fs.existsSync(jxFolder)) {
         var ec = jxcore.utils.cmdSync("mkdir  " + (isWindows ? "" : "-p ")
