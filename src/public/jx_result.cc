@@ -695,7 +695,7 @@ JX_GetNamedProperty(JXValue *object, const char *name, JXValue *out) {
     if (JS_HAS_NAME(obj, JS_STRING_ID(name)))
       sub_obj = JS_GET_NAME(obj, JS_STRING_ID(name));
     else
-      sub_obj = JS_NULL();
+      sub_obj = JS_UNDEFINED();
 
     jxcore::JXEngine::ConvertToJXResult(com, sub_obj, out);
   });
