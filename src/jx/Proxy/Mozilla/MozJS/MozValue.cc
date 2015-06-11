@@ -301,10 +301,7 @@ bool Value::IsBoolean() const {
 }
 
 bool Value::IsBooleanObject() const {
-  EMPTY_RETURN();
-
-  // TODO(obastemur) fix this!
-  return value_.isBoolean() && value_.isObject();
+  return IsBoolean();
 }
 
 bool Value::IsDate() const {
