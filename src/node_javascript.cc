@@ -42,7 +42,7 @@ void JXDefineJavaScript() {
   }
 
   std::string name = "jxcore";
-  std::string value = "throw 'jxcore is a global variable';";
+  std::string value = "throw new Error('jxcore is a global variable');";
 
   externalData *data = new externalData;
   data->type = EXTERNAL_DATA_STRING;
