@@ -43,6 +43,13 @@ then
   NO_STRIP=1
 fi
 
+CONF_EXTRAS=
+
+if [ $# -eq 1 ]
+then
+  CONF_EXTRAS=$1
+fi
+
 
 MAKE_INSTALL() {
   TARGET_DIR="out_$1_ios"

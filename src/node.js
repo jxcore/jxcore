@@ -551,6 +551,9 @@
       obj.__defineGetter__('monitor', function () {
         return NativeModule.require('_jx_monitor');
       });
+      obj.__defineGetter__('embeddedModule', function () {
+        return NativeModule.require('_jx_loadEmbedded');
+      });
       return obj;
     });
   };

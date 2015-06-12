@@ -19,6 +19,7 @@
     'node_shared_sqlite%': 'false',
     'node_engine_mozilla%': 0,
     'node_shared_library%': 0,
+    'node_embed_leveldown%': 0,
     'library_files': [
       'lib/jx/_jx_argv.js',
       'lib/jx/_jx_subs.js',
@@ -381,6 +382,11 @@
           'deps/sqlite/sqlite3.h',
         ],
         'dependencies': ['deps/sqlite/sqlite.gyp:sqlite'],
+      }],
+      ['node_embed_leveldown==1',
+      {
+        'defines': [ 'JXCORE_EMBEDS_LEVELDOWN' ],
+        'dependencies': ['deps/leveldown/leveldown_embedded.gyp:leveldown'],
       }],
       ['node_shared_zlib=="false"',
       {

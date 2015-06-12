@@ -1,0 +1,19 @@
+## DNT config file
+## see https://github.com/rvagg/dnt
+
+NODE_VERSIONS="\
+  v0.10.31     \
+  v0.11.13     \
+"
+IOJS_VERSIONS="\
+  v1.0.1-release \
+"
+OUTPUT_PREFIX="leveldown-"
+TEST_CMD="\
+  cd /dnt/ &&                                                    \
+  npm install &&                                                 \
+  node /usr/local/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js \
+      --nodedir /usr/src/node/ rebuild &&                        \
+  node_modules/.bin/tap test/*-test.js;                          \
+"
+

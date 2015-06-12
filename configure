@@ -296,6 +296,11 @@ parser.add_option("--engine-mozilla",
     action="store_true",
     dest="engine_mozilla",
     help="compile using mozilla spider monkey")
+
+parser.add_option("--embed-leveldown",
+    action="store_true",
+    dest="embed_leveldown",
+    help="embed leveldown")
     
 parser.add_option("--compress-internals",
     action="store_true",
@@ -512,6 +517,7 @@ def configure_node(o):
     o['variables']['SHARED_OS'] = sys.platform
     
   o['variables']['node_engine_mozilla'] = 1 if options.engine_mozilla else 0
+  o['variables']['node_embed_leveldown'] = 1 if options.embed_leveldown else 0
   o['variables']['v8_enable_gdbjit'] = 1 if options.gdb else 0
   o['variables']['v8_no_strict_aliasing'] = 1 # work around compiler bugs
   o['variables']['node_prefix'] = os.path.expanduser(options.prefix or '')

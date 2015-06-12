@@ -14,6 +14,9 @@
 #include <unistd.h>
 #define Sleep(x) usleep((x) * 1000)
 #endif
+#ifdef JXCORE_EMBEDS_LEVELDOWN
+#include "../../deps/leveldown/src/leveldown_public.h"
+#endif
 
 namespace node {
 
@@ -27,20 +30,26 @@ class ModuleWrap {
 };
 
 JS_METHOD(ModuleWrap, LoadInternal) {
-  if (args.Length() < 2) {
-    THROW_EXCEPTION("loadInternals takes exactly 2 arguments.");
+  if (args.Length() < 2 || !args.IsString(1) || !args.IsObject(0)) {
+    THROW_EXCEPTION("loadInternals takes exactly 2 arguments. (object, string)");
   }
 
   JS_LOCAL_OBJECT module = JS_VALUE_TO_OBJECT(args.GetItem(0));
   jxcore::JXString filename;
   args.GetString(1, &filename);
 
-  JS_LOCAL_OBJECT exports =
-      JS_VALUE_TO_OBJECT(JS_GET_NAME(module, JS_STRING_ID("exports")));
-
   if (!strcmp(*filename, "sqlite3")) {
-    node_sqlite3::RegisterModule(exports);
+    node_sqlite3::RegisterModule(module);
+    RETURN();
   }
+#ifdef JXCORE_EMBEDS_LEVELDOWN
+  if (!strcmp(*filename, "leveldown")) {
+    leveldown::RegisterModule(module);
+    RETURN();
+  }
+#endif
+
+  THROW_EXCEPTION("Requested native module wasn't embedded.");
 }
 JS_METHOD_END
 

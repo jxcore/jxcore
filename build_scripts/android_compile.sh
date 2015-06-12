@@ -33,13 +33,22 @@ ERROR_ABORT_MOVE() {
 if [ $# -eq 0 ]
 then
   LOG $RED_COLOR "no argument provided."
-  LOG $GREEN_COLOR "usage: android_compile <ndk_path>\n"
+  LOG $GREEN_COLOR "usage: android_compile <ndk_path> <optionally --embed-leveldown>\n"
   exit
 fi
 
 export ANDROID_NDK=$1
 
-MIPS=out_android/mipsel
+CONF_EXTRAS=
+MIPS=0
+
+if [ $# -eq 2 ]
+then
+  CONF_EXTRAS=$2
+else
+  MIPS=out_android/mipsel
+fi
+
 ARM7=out_android/arm
 INTEL64=out_android/x64
 INTEL32=out_android/ia32
@@ -49,7 +58,7 @@ MAKE_INSTALL() {
   TARGET_DIR="out_$1_droid"
   PREFIX_DIR="out_android/$1"
   mv $TARGET_DIR out
-  ./configure --prefix=$PREFIX_DIR --static-library --dest-os=android --dest-cpu=$1 --engine-mozilla
+  ./configure --prefix=$PREFIX_DIR --static-library --dest-os=android --dest-cpu=$1 --engine-mozilla $CONF_EXTRAS
   ERROR_ABORT_MOVE "mv out $TARGET_DIR" $1
   rm -rf $PREFIX_DIR/bin
   make install
@@ -83,14 +92,21 @@ MAKE_INSTALL() {
 }
 
 COMBINE() {
+if [ $MIPS != 0 ]
+then
   cp "$MIPS/bin/$1_mipsel.a" "$FATBIN/bin/"
+fi
   cp "$ARM7/bin/$1_arm.a" "$FATBIN/bin/"
   cp "$INTEL64/bin/$1_x64.a" "$FATBIN/bin/"
   cp "$INTEL32/bin/$1_ia32.a" "$FATBIN/bin/"
   ERROR_ABORT
 }
 
-mkdir out_mipsel_droid
+if [ $MIPS != 0 ]
+then
+  mkdir out_mipsel_droid
+fi
+
 mkdir out_arm_droid
 mkdir out_x64_droid
 mkdir out_ia32_droid
@@ -99,16 +115,19 @@ mkdir out_android
 rm -rf out
 
 OLD_PATH=$PATH
-export TOOLCHAIN=$PWD/android-toolchain-mipsel
-export PATH=$TOOLCHAIN/bin:$OLD_PATH
-export AR=mipsel-linux-android-ar
-export CC=mipsel-linux-android-gcc
-export CXX=mipsel-linux-android-g++
-export LINK=mipsel-linux-android-g++
-export STRIP=mipsel-linux-android-strip
+if [ $MIPS != 0 ]
+then
+  export TOOLCHAIN=$PWD/android-toolchain-mipsel
+  export PATH=$TOOLCHAIN/bin:$OLD_PATH
+  export AR=mipsel-linux-android-ar
+  export CC=mipsel-linux-android-gcc
+  export CXX=mipsel-linux-android-g++
+  export LINK=mipsel-linux-android-g++
+  export STRIP=mipsel-linux-android-strip
 
-LOG $GREEN_COLOR "Compiling Android MIPS\n"
-MAKE_INSTALL mipsel
+  LOG $GREEN_COLOR "Compiling Android MIPS\n"
+  MAKE_INSTALL mipsel
+fi
 
 export TOOLCHAIN=$PWD/android-toolchain-arm
 export PATH=$TOOLCHAIN/bin:$OLD_PATH
@@ -161,7 +180,11 @@ COMBINE "libsqlite3"
 
 cp src/public/*.h $FATBIN/bin
 
-rm -rf $MIPS
+if [ $MIPS != 0 ]
+then
+  rm -rf $MIPS
+fi
+
 rm -rf $ARM7
 rm -rf $INTEL32
 rm -rf $INTEL64
