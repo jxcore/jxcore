@@ -2392,7 +2392,9 @@
             }
             var _arr = ret.out.trim().split("\n");
             var _path = _arr[0];
-            if (_path.slice(0,1) === "|")
+            // vertical bar - not a pipe sign
+            var verticalBar = String.fromCharCode.apply(null, [ 9474 ]);
+            if (_path.slice(0,1) === verticalBar)
               _path = _path.slice(1).trim();
 
             var _path = pathModule.join(_path, "node_modules", o);
