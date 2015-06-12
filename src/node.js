@@ -1383,7 +1383,7 @@
 
     var specials = [ "\\", "^", "$", ".", "|", "+", "(", ")", "[", "]", "{", "}" ];  // without '*' and '?'
 
-    parms = parms.split(',');
+    parms = parms.split(jxcore.utils.argv.sep);
     for (var o in parms) {
       if (!parms.hasOwnProperty(o))
         continue;
@@ -2221,7 +2221,7 @@
       }
 
       if (!autoremove_err)
-        autoremove = parsedArgv.autoremove.split(';');
+        autoremove = parsedArgv.autoremove.split(jxcore.utils.argv.sep);
     }
 
     if (process.argv.length < 2 || autoremove_err) {
