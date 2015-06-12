@@ -22,8 +22,6 @@ namespace node {
 
 #define TYPE_ERROR(msg) THROW_TYPE_EXCEPTION(msg)
 
-#define THROW_BAD_ARGS TYPE_ERROR("Bad argument")
-
 JS_LOCAL_OBJECT BuildStatsObject(commons* com, const uv_statbuf_t* s);
 
 class FSReqWrap : public ReqWrap<uv_fs_t> {
@@ -133,7 +131,8 @@ static void After(uv_fs_t* req) {
       case UV_FS_STAT:
       case UV_FS_LSTAT:
       case UV_FS_FSTAT:
-        argv[1] = BuildStatsObject(com, static_cast<const uv_statbuf_t*>(req->ptr));
+        argv[1] =
+            BuildStatsObject(com, static_cast<const uv_statbuf_t*>(req->ptr));
         break;
 
       case UV_FS_READLINK:
@@ -236,7 +235,7 @@ struct fs_req_wrap {
 
 JS_METHOD(File, Close) {
   if (args.Length() < 1 || !args.IsInteger(0)) {
-    THROW_BAD_ARGS;
+    THROW_EXCEPTION("Bad argument. Expects integer.");
   }
 
   int fd = args.GetInt32(0);
@@ -257,9 +256,11 @@ JS_LOCAL_OBJECT BuildStatsObject(commons* com, const uv_statbuf_t* s) {
   JS_DEFINE_STATE_MARKER(com);
 
 #ifdef JS_ENGINE_MOZJS
-  // create non Callable Stat. V8 alternative creates the new instance non-callable
+  // create non Callable Stat. V8 alternative creates the new instance
+  // non-callable
   JS::RootedValue rt_stat(__contextORisolate);
-  com->CreateNewNonCallableInstance(&com->nf_stats_constructor_template, &rt_stat);
+  com->CreateNewNonCallableInstance(&com->nf_stats_constructor_template,
+                                    &rt_stat);
   JS_LOCAL_OBJECT stats(rt_stat.get(), __contextORisolate);
 #elif defined(JS_ENGINE_V8)
   JS_LOCAL_OBJECT stats = JS_NEW_DEFAULT_INSTANCE(
@@ -289,13 +290,15 @@ JS_LOCAL_OBJECT BuildStatsObject(commons* com, const uv_statbuf_t* s) {
   temp_arr[0] = s->st_ino;
   temp_arr[1] = s->st_gid;
   temp_arr[2] = s->st_uid;
-  memcpy(temp_arr + 3, &s->st_rdev, std::min(sizeof(_dev_t), sizeof(unsigned short) * 2));
+  memcpy(temp_arr + 3, &s->st_rdev,
+         std::min(sizeof(_dev_t), sizeof(unsigned short) * 2));
 
   DWORD temp_number[2];
-  memcpy(temp_number, temp_arr, std::min(sizeof(unsigned short) * 5, sizeof(DWORD) * 2));
+  memcpy(temp_number, temp_arr,
+         std::min(sizeof(unsigned short) * 5, sizeof(DWORD) * 2));
 
   JS_NAME_SET(stats, JS_STRING_ID("ino"), STD_TO_NUMBER(temp_number[0]));
-  
+
   // squenceId holds the value from GetFileInformationByHandle:::nFileIndexHigh
   JS_NAME_SET(stats, JS_STRING_ID("sequenceId"), STD_TO_NUMBER(temp_number[1]));
 
@@ -477,7 +480,7 @@ JS_METHOD_END
 
 JS_METHOD(File, FTruncate) {
   if (args.Length() < 2 || !args.IsInteger(0)) {
-    THROW_BAD_ARGS;
+    THROW_EXCEPTION("Bad argument. Expects integer.");
   }
 
   int fd = args.GetInt32(0);
@@ -499,7 +502,7 @@ JS_METHOD_END
 
 JS_METHOD(File, Fdatasync) {
   if (args.Length() < 1 || !args.IsInteger(0)) {
-    THROW_BAD_ARGS;
+    THROW_EXCEPTION("Bad argument. Expects integer.");
   }
 
   int fd = args.GetInt32(0);
@@ -516,7 +519,7 @@ JS_METHOD_END
 
 JS_METHOD(File, Fsync) {
   if (args.Length() < 1 || !args.IsInteger(0)) {
-    THROW_BAD_ARGS;
+    THROW_EXCEPTION("Bad argument. Expects integer.");
   }
 
   int fd = args.GetInt32(0);
@@ -567,7 +570,7 @@ JS_METHOD_END
 
 JS_METHOD(File, MKDir) {
   if (args.Length() < 2 || !args.IsString(0) || !args.IsInteger(1)) {
-    THROW_BAD_ARGS;
+    THROW_EXCEPTION("Bad argument. Expects string, integer.");
   }
 
   JS_LOCAL_VALUE arg0 = GET_ARG(0);
@@ -713,7 +716,7 @@ JS_METHOD_END
  */
 JS_METHOD(File, Read) {
   if (args.Length() < 2 || !args.IsInteger(0)) {
-    THROW_BAD_ARGS;
+    THROW_EXCEPTION("Bad argument. Expects integer.");
   }
 
   int fd = args.GetInt32(0);
@@ -765,7 +768,7 @@ JS_METHOD_END
  */
 JS_METHOD(File, Chmod) {
   if (args.Length() < 2 || !args.IsString(0) || !args.IsInteger(1)) {
-    THROW_BAD_ARGS;
+    THROW_EXCEPTION("Bad argument. Expects string, integer.");
   }
 
   JS_LOCAL_VALUE arg0 = GET_ARG(0);
@@ -787,7 +790,7 @@ JS_METHOD_END
  */
 JS_METHOD(File, FChmod) {
   if (args.Length() < 2 || !args.IsInteger(0) || !args.IsInteger(1)) {
-    THROW_BAD_ARGS;
+    THROW_EXCEPTION("Bad argument. Expects integer, integer.");
   }
   int fd = args.GetInt32(0);
   int mode = static_cast<int>(args.GetInt32(1));

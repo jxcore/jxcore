@@ -49,7 +49,7 @@ bool PArguments::IsInteger(const unsigned index) const {
   }
 
   jsval val = args_[index];
-  if (val.isNullOrUndefined() || !val.isInt32()) {
+  if (val.isNullOrUndefined() || !val.isNumber()) {
     return false;
   }
 
