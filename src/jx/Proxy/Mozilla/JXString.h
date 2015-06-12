@@ -33,7 +33,7 @@ class JXString {
   void GetASCII();
 
  public:
-  void SetFromSTD(const char *other, JSContext *ctx = NULL);
+  void SetFromSTD(const char *other, const int lenght, JSContext *ctx = NULL);
   void SetFromHandle(const JS_HANDLE_VALUE_REF str, bool get_ascii = false);
   void SetFromHandle(JSString *str, JSContext *ctx);
 

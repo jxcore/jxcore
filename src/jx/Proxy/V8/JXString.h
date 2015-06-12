@@ -26,7 +26,7 @@ class JXString {
   bool autogc_;
 
  public:
-  void SetFromSTD(const char* other, void* _ = NULL);
+  void SetFromSTD(const char* other, const int lenght,  void* _ = NULL);
   void SetFromHandle(JS_HANDLE_VALUE value, bool get_ascii = false);
 
   JXString();

@@ -73,7 +73,7 @@ JXString::JXString(JSString *str, JSContext *ctx, bool autogc, bool get_ascii) {
     GetASCII();
 }
 
-void JXString::SetFromSTD(const char *other, JSContext *iso) {
+void JXString::SetFromSTD(const char *other, const int length, JSContext *iso) {
   if (ctx_ == NULL) {
     assert(iso != NULL);
     ctx_ = iso;
@@ -84,7 +84,7 @@ void JXString::SetFromSTD(const char *other, JSContext *iso) {
     str_ = NULL;
   }
 
-  length_ = strlen(other);
+  length_ = length;
   if (length_ != 0) {
     str_ = cpystr(ctx_, other, length_);
   } else {

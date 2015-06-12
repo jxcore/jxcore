@@ -339,7 +339,7 @@ unsigned PArguments::GetUInteger(const unsigned index) {
 
 int PArguments::GetString(const unsigned index, jxcore::JXString *jxs) {
   if (index >= argc_) {
-    jxs->SetFromSTD("", ctx_);
+    jxs->SetFromSTD("", 0, ctx_);
     return 0;
   }
 
@@ -349,9 +349,9 @@ int PArguments::GetString(const unsigned index, jxcore::JXString *jxs) {
     jxs->SetFromHandle(str, ctx_);
   } else {
     if (args_[index].isUndefined())
-      jxs->SetFromSTD("undefined", ctx_);
+      jxs->SetFromSTD("undefined", 9, ctx_);
     else
-      jxs->SetFromSTD("null", ctx_);
+      jxs->SetFromSTD("null", 4, ctx_);
   }
 
   return jxs->Utf8Length();

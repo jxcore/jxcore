@@ -78,13 +78,12 @@ JXString::JXString(JS_HANDLE_VALUE value, void *_) {
   COSTRUCT_ME(value);
 }
 
-void JXString::SetFromSTD(const char *other, void *_) {
+void JXString::SetFromSTD(const char *other, const int length, void *_) {
   if (str_ != NULL) {
     free(str_);
   }
 
-  // TODO(obastemur) make this utf-16 compatible
-  length_ = strlen(other);
+  length_ = length;
   str_ = cpystr(other, length_);
 }
 

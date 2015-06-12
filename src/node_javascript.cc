@@ -24,10 +24,11 @@ void MainSource(node::commons *com, jxcore::JXString *str) {
 #ifdef JXCORE_SOURCES_MINIFIED
   jxcore::mz_uint8 *_str = jxcore::UncompressNative(
       jxcore::node_native, sizeof(jxcore::node_native) - 1);
-  str->SetFromSTD(reinterpret_cast<const char *>(_str), JS_GET_STATE_MARKER());
+  const char *cstr = reinterpret_cast<const char *>(_str);
+  str->SetFromSTD(cstr, strlen(cstr), JS_GET_STATE_MARKER());
   free(_str);
 #else
-  str->SetFromSTD(jxcore::node_native, JS_GET_STATE_MARKER());
+  str->SetFromSTD(jxcore::node_native, strlen(jxcore::node_native), JS_GET_STATE_MARKER());
 #endif
 }
 
