@@ -46,59 +46,70 @@ if [ $# -eq 2 ]
 then
   CONF_EXTRAS=$2
 else
-  MIPS=out_android/mipsel
+  MIPS=out_mipsel_droid
 fi
 
-ARM7=out_android/arm
-INTEL64=out_android/x64
-INTEL32=out_android/ia32
+ARM7=out_arm_droid
+INTEL64=out_x64_droid
+INTEL32=out_ia32_droid
 FATBIN=out_android/android
     
 MAKE_INSTALL() {
   TARGET_DIR="out_$1_droid"
-  PREFIX_DIR="out_android/$1"
   mv $TARGET_DIR out
-  ./configure --prefix=$PREFIX_DIR --static-library --dest-os=android --dest-cpu=$1 --engine-mozilla $CONF_EXTRAS
+  ./configure --static-library --dest-os=android --dest-cpu=$1 --engine-mozilla $CONF_EXTRAS
   ERROR_ABORT_MOVE "mv out $TARGET_DIR" $1
-  rm -rf $PREFIX_DIR/bin
-  make install
+  make -j 2
   ERROR_ABORT_MOVE "mv out $TARGET_DIR" $1
-  rm out/Release/*.a
+  
+  PREFIX_DIR="out/Release"
+  $STRIP -d $PREFIX_DIR/libcares.a
+  mv $PREFIX_DIR/libcares.a "$PREFIX_DIR/libcares_$1.a"
+  
+  $STRIP -d $PREFIX_DIR/libchrome_zlib.a
+  mv $PREFIX_DIR/libchrome_zlib.a "$PREFIX_DIR/libchrome_zlib_$1.a"
+  
+  $STRIP -d $PREFIX_DIR/libhttp_parser.a
+  mv $PREFIX_DIR/libhttp_parser.a "$PREFIX_DIR/libhttp_parser_$1.a"
+  
+  $STRIP -d $PREFIX_DIR/libjx.a
+  mv $PREFIX_DIR/libjx.a "$PREFIX_DIR/libjx_$1.a"
+  
+  $STRIP -d $PREFIX_DIR/libmozjs.a
+  mv $PREFIX_DIR/libmozjs.a "$PREFIX_DIR/libmozjs_$1.a"
+  
+  $STRIP -d $PREFIX_DIR/libopenssl.a
+  mv $PREFIX_DIR/libopenssl.a "$PREFIX_DIR/libopenssl_$1.a"
+  
+  $STRIP -d $PREFIX_DIR/libuv.a
+  mv $PREFIX_DIR/libuv.a "$PREFIX_DIR/libuv_$1.a"
+  
+  $STRIP -d $PREFIX_DIR/libsqlite3.a
+  mv $PREFIX_DIR/libsqlite3.a "$PREFIX_DIR/libsqlite3_$1.a"
+  
+if [ $CONF_EXTRAS == "--embed-leveldown" ]
+then
+  $STRIP -d $PREFIX_DIR/libleveldown.a
+  mv $PREFIX_DIR/libleveldown.a "$PREFIX_DIR/libleveldown_$1.a"
+  
+  $STRIP -d $PREFIX_DIR/libsnappy.a
+  mv $PREFIX_DIR/libsnappy.a "$PREFIX_DIR/libsnappy_$1.a"
+  
+  $STRIP -d $PREFIX_DIR/libleveldb.a
+  mv $PREFIX_DIR/libleveldb.a "$PREFIX_DIR/libleveldb_$1.a"
+fi
+  
   mv out $TARGET_DIR
-  
-  $STRIP -d $PREFIX_DIR/bin/libcares.a
-  mv $PREFIX_DIR/bin/libcares.a "$PREFIX_DIR/bin/libcares_$1.a"
-  
-  $STRIP -d $PREFIX_DIR/bin/libchrome_zlib.a
-  mv $PREFIX_DIR/bin/libchrome_zlib.a "$PREFIX_DIR/bin/libchrome_zlib_$1.a"
-  
-  $STRIP -d $PREFIX_DIR/bin/libhttp_parser.a
-  mv $PREFIX_DIR/bin/libhttp_parser.a "$PREFIX_DIR/bin/libhttp_parser_$1.a"
-  
-  $STRIP -d $PREFIX_DIR/bin/libjx.a
-  mv $PREFIX_DIR/bin/libjx.a "$PREFIX_DIR/bin/libjx_$1.a"
-  
-  $STRIP -d $PREFIX_DIR/bin/libmozjs.a
-  mv $PREFIX_DIR/bin/libmozjs.a "$PREFIX_DIR/bin/libmozjs_$1.a"
-  
-  $STRIP -d $PREFIX_DIR/bin/libopenssl.a
-  mv $PREFIX_DIR/bin/libopenssl.a "$PREFIX_DIR/bin/libopenssl_$1.a"
-  
-  $STRIP -d $PREFIX_DIR/bin/libuv.a
-  mv $PREFIX_DIR/bin/libuv.a "$PREFIX_DIR/bin/libuv_$1.a"
-  
-  $STRIP -d $PREFIX_DIR/bin/libsqlite3.a
-  mv $PREFIX_DIR/bin/libsqlite3.a "$PREFIX_DIR/bin/libsqlite3_$1.a"
 }
 
 COMBINE() {
 if [ $MIPS != 0 ]
 then
-  cp "$MIPS/bin/$1_mipsel.a" "$FATBIN/bin/"
+  mv "$MIPS/Release/$1_mipsel.a" "$FATBIN/bin/"
 fi
-  cp "$ARM7/bin/$1_arm.a" "$FATBIN/bin/"
-  cp "$INTEL64/bin/$1_x64.a" "$FATBIN/bin/"
-  cp "$INTEL32/bin/$1_ia32.a" "$FATBIN/bin/"
+  mv "$ARM7/Release/$1_arm.a" "$FATBIN/bin/"
+  mv "$INTEL64/Release/$1_x64.a" "$FATBIN/bin/"
+  mv "$INTEL32/Release/$1_ia32.a" "$FATBIN/bin/"
   ERROR_ABORT
 }
 
@@ -165,9 +176,6 @@ MAKE_INSTALL ia32
 LOG $GREEN_COLOR "Preparing FAT binaries\n"
 rm -rf $FATBIN
 mkdir -p $FATBIN/bin
-mv $ARM7/include $FATBIN/
-
-cp deps/mozjs/src/js.msg $FATBIN/include/node/
 
 COMBINE "libcares"
 COMBINE "libchrome_zlib"
@@ -177,6 +185,13 @@ COMBINE "libmozjs"
 COMBINE "libopenssl"
 COMBINE "libuv"
 COMBINE "libsqlite3"
+
+if [ $CONF_EXTRAS == "--embed-leveldown" ]
+then
+  COMBINE "libleveldown"
+  COMBINE "libsnappy"
+  COMBINE "libleveldb"
+fi
 
 cp src/public/*.h $FATBIN/bin
 
