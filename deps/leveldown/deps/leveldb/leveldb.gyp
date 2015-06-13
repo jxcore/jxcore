@@ -109,18 +109,20 @@
                 '-pthread'
             ]
         }]
-      , ['OS == "mac"', {
+      , ['OS in "mac ios"', {
             'defines': [
                 'OS_MACOSX=1'
             ]
           , 'libraries': []
           , 'ccflags': []
           , 'xcode_settings': {
-                'WARNING_CFLAGS': [
-                    '-Wno-sign-compare'
-                  , '-Wno-unused-variable'
-                  , '-Wno-unused-function'
-                ]
+              'WARNING_CFLAGS': [
+                '-Wno-sign-compare'
+              , '-Wno-unused-variable'
+              , '-Wno-unused-function'
+              ],
+              'OTHER_CPLUSPLUSFLAGS' : ['-std=c++11', '-stdlib=libstdc++'],
+              'OTHER_CFLAGS' : ['-std=gnu99'],
             }
         }]
     ]

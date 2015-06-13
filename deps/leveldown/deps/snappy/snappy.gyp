@@ -57,12 +57,14 @@
               , '-Wno-unused-function'
             ]
         }]
-      , ['OS == "mac"', {
+      , ['OS in "mac ios"', {
             'xcode_settings': {
-                'WARNING_CFLAGS': [
-                    '-Wno-sign-compare'
-                  , '-Wno-unused-function'
-                ]
+              'WARNING_CFLAGS': [
+                  '-Wno-sign-compare'
+                , '-Wno-unused-function'
+              ],
+              'OTHER_CPLUSPLUSFLAGS' : ['-std=c++11', '-stdlib=libstdc++'],
+              'OTHER_CFLAGS' : ['-std=gnu99'],
             }
         }]
     ]
