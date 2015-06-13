@@ -1951,17 +1951,17 @@ void SetupProcessObject(const int threadId) {
   JS_NAME_SET(versions, JS_STRING_ID("sm"), STD_TO_INTEGER(MOZJS_VERSION));
 #endif
 
-#ifdef JXCORE_EMBEDS_LEVELDOWN
-  // TODO(obastemur) use process.versions.embedded for other embedded modules (i.e. sqlite)
   JS_LOCAL_OBJECT embedded = JS_NEW_EMPTY_OBJECT();
   JS_NAME_SET(versions, JS_STRING_ID("embedded"), embedded);
+#ifdef JXCORE_EMBEDS_LEVELDOWN
   JS_NAME_SET(embedded, JS_STRING_ID("leveldown"), STD_TO_STRING("1.0.6"));
 #endif
+
+  JS_NAME_SET(embedded, JS_STRING_ID("sqlite"), STD_TO_STRING(SQLITE_VERSION));
 
   JS_NAME_SET(versions, JS_STRING_ID("ares"), STD_TO_STRING(ARES_VERSION_STR));
   JS_NAME_SET(versions, JS_STRING_ID("uv"), STD_TO_STRING(uv_version_string()));
   JS_NAME_SET(versions, JS_STRING_ID("zlib"), STD_TO_STRING(ZLIB_VERSION));
-  JS_NAME_SET(versions, JS_STRING_ID("sqlite"), STD_TO_STRING(SQLITE_VERSION));
   JS_NAME_SET(versions, JS_STRING_ID("modules"),
               STD_TO_STRING(NODE_STRINGIFY(NODE_MODULE_VERSION)));
 #if HAVE_OPENSSL
