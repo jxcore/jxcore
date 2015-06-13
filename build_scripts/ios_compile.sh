@@ -60,7 +60,6 @@ MAKE_INSTALL() {
   rm -rf $PREFIX_DIR/bin
   make -j 2 install
   ERROR_ABORT_MOVE "mv out $TARGET_DIR" $1
-  rm out/Release/*.a
   mv out $TARGET_DIR
 	
   mv $PREFIX_DIR/bin/libcares.a "$PREFIX_DIR/bin/libcares_$1.a"
@@ -72,12 +71,13 @@ MAKE_INSTALL() {
   mv $PREFIX_DIR/bin/libuv.a "$PREFIX_DIR/bin/libuv_$1.a"
   mv $PREFIX_DIR/bin/libsqlite3.a "$PREFIX_DIR/bin/libsqlite3_$1.a"
   
-if [ $CONF_EXTRAS == "--embed-leveldown" ]
-then
-  mv $PREFIX_DIR/bin/libleveldown.a "$PREFIX_DIR/bin/libleveldown_$1.a"
-  mv $PREFIX_DIR/bin/libsnappy.a "$PREFIX_DIR/bin/libsnappy_$1.a"
-  mv $PREFIX_DIR/bin/libleveldb.a "$PREFIX_DIR/bin/libleveldb_$1.a"
-fi
+  if [ $CONF_EXTRAS == "--embed-leveldown" ]
+  then
+    mv $TARGET_DIR/Release/libleveldown.a "$PREFIX_DIR/bin/libleveldown_$1.a"
+    mv $TARGET_DIR/Release/libsnappy.a "$PREFIX_DIR/bin/libsnappy_$1.a"
+    mv $TARGET_DIR/Release/libleveldb.a "$PREFIX_DIR/bin/libleveldb_$1.a"
+  fi
+  rm $TARGET_DIR/Release/*.a
 }
 
 
