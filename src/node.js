@@ -125,7 +125,7 @@
 
     startup.resolveArgv0();
 
-    if (!process.subThread && !process.isEmbedded) {
+    if (!process.subThread) {
       var __exitCode = 0;
       var __pstart = Date.now();
       var __kill = function (code) {
@@ -258,6 +258,8 @@
         }
       }
     }
+    
+    var Module = NativeModule.require('module');
 
     if (__ops.compile) {
       if (!process.argv[2]) {
@@ -298,7 +300,7 @@
       }
 
       var __debug = false;
-      if (!process.isEmbedded && !process._EmbeddedSource) {
+      if (!process._EmbeddedSource) {
         __debug = global.v8debug && process.execArgv.some(function (arg) {
           return arg.match(/^--debug-brk(=[0-9]*)?$/);
         });
@@ -368,8 +370,6 @@
         NativeModule.require('_jx_config');
       }
 
-      var Module = NativeModule.require('module');
-
       if (__debug) {
         var debugTimeout = +process.env.NODE_DEBUG_TIMEOUT || 50;
         setTimeout(Module.runMain, debugTimeout);
@@ -383,8 +383,6 @@
         }
       }
     } else {
-      var Module = NativeModule.require('module');
-
       // If -i or --interactive were passed, or stdin is a TTY.
       if (process._forceRepl || NativeModule.require('tty').isatty(0)) {
         // REPL
