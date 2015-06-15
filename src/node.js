@@ -2211,18 +2211,16 @@
 
     var parsedArgv = jxcore.utils.argv.parse();
     var autoremove_err = false;
-    var autoremove = null;
+    var autoremove_arr = null;
     // check for --autoremove
-    if (typeof parsedArgv.autoremove !== "undefined") {
-      if (typeof parsedArgv.autoremove !== "string" || parsedArgv.autoremove.trim() === "") {
-        autoremove_err = "Invalid --autoremove value: " + (parsedArgv.autoremove || "--empty--" ) + ".";
+    if (parsedArgv.autoremove) {
+      autoremove_arr = parsedArgv.autoremove.splitBySep();
+      if (!autoremove_arr) {
+        autoremove_err = "Invalid --autoremove value: " + (parsedArgv.autoremove.value || "--empty--" ) + ".";
       } else {
         if (parsedArgv.g || parsedArgv.global)
           autoremove_err = "The --autoremove option is not supported with -g or --global switch."
       }
-
-      if (!autoremove_err)
-        autoremove = parsedArgv.autoremove.split(jxcore.utils.argv.sep);
     }
 
     if (process.argv.length < 2 || autoremove_err) {
@@ -2291,13 +2289,9 @@
       return true;
     };
 
+    // we need to remove it before passing argv to npm
+    jxcore.utils.argv.remove("--autoremove", true);
     var args = process.argv;
-    if (autoremove) {
-      // it is already verified at this point, that id!=-1 and id+1 has a value
-      var id = args.indexOf("--autoremove");
-      // we need to remove it before passing argv to npm
-      args.splice(id, 2);
-    }
 
     var download = function (url, target, cb) {
 
@@ -2377,18 +2371,17 @@
 
       // spawn allows to pass formatted output (colors)
       var child = NativeModule.require('child_process').spawn(process.execPath, arr, { stdio: "inherit" });
-      if (autoremove) {
+      if (autoremove_arr) {
         child.on("close", function(code) {
 
-          var modules = parsedArgv["_"];
-          for(var o in modules) {
-            if (!modules.hasOwnProperty(o))
-              continue;
+          var modules = parsedArgv["_"].withoutPrefix || [];
+          for(var a = 0, len = modules.length; a < len; a++) {
+            var _module = modules[a];
 
             // determine the folder, where module was installed
-            var ret = jxcore.utils.cmdSync(process.execPath + " npm ls --depth=0 " + o);
+            var ret = jxcore.utils.cmdSync(process.execPath + " npm ls --depth=0 " + _module);
             if (ret.exitCode) {
-              cc.warn("Cannot determine path of installed module:", o);
+              cc.warn("Cannot determine path of installed module:", _module);
               continue;
             }
             var _arr = ret.out.trim().split("\n");
@@ -2398,9 +2391,9 @@
             if (_path.slice(0,1) === verticalBar)
               _path = _path.slice(1).trim();
 
-            var _path = pathModule.join(_path, "node_modules", o);
+            var _path = pathModule.join(_path, "node_modules", _module);
             if (!fs.existsSync(_path)) {
-              cc.warn("Cannot find expected folder of installed module:", o);
+              cc.warn("Cannot find expected folder of installed module:", _module);
               continue;
             }
 
@@ -2409,11 +2402,11 @@
 
               var specials = ["\\", "^", "$", ".", "|", "+", "(", ")", "[", "]", "{", "}"];  // without '*' and '?'
 
-              for (var o in autoremove) {
-                if (!autoremove.hasOwnProperty(o))
+              for (var o in autoremove_arr) {
+                if (!autoremove_arr.hasOwnProperty(o))
                   continue;
 
-                var mask = autoremove[o];
+                var mask = autoremove_arr[o];
                 var isPath = mask.indexOf(pathModule.sep) !== -1;
 
                 // entire file/folder basename compare
