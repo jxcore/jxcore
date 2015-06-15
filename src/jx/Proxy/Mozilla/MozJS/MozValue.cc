@@ -119,12 +119,13 @@ Script Script::Compile(JSContext *cx, const Value &hst,
   {
     JS::CompileOptions compile_options(cx);
     compile_options.setUTF8(true)
-	.setFileAndLine(filename, 1)
-	.setCompileAndGo(true)
-	.setSourceIsLazy(false)
-	.forceAsync = true;
+        .setFileAndLine(filename, 1)
+        .setCompileAndGo(true)
+        .setSourceIsLazy(false)
+        .forceAsync = true;
 
-    if (!JS_CompileUCScript(cx, host, source.str_, source.length_, compile_options, &rs)) {
+    if (!JS_CompileUCScript(cx, host, source.str_, source.length_,
+                            compile_options, &rs)) {
       return script;
     }
   }
@@ -147,10 +148,10 @@ Script Script::Compile(JSContext *cx, const Value &hst, const auto_str &source,
   {
     JS::CompileOptions compile_options(cx);
     compile_options.setUTF8(true)
-	.setFileAndLine(filename, 1)
-	.setCompileAndGo(true)
-	.setSourceIsLazy(false)
-	.forceAsync = true;
+        .setFileAndLine(filename, 1)
+        .setCompileAndGo(true)
+        .setSourceIsLazy(false)
+        .forceAsync = true;
 
     if (!JS_CompileScript(cx, host, source.str_, source.length_,
                           compile_options, &rs))
@@ -300,9 +301,7 @@ bool Value::IsBoolean() const {
   return value_.isBoolean();
 }
 
-bool Value::IsBooleanObject() const {
-  return IsBoolean();
-}
+bool Value::IsBooleanObject() const { return IsBoolean(); }
 
 bool Value::IsDate() const {
   EMPTY_RETURN();
@@ -735,9 +734,12 @@ static JSClass empty_prop_definition = {
     Value::empty_finalize, 0, 0, 0, 0};
 
 static JSClass constructor_class_definition = {
-    "NativeFunction", JSCLASS_HAS_PRIVATE, JS_PropertyStub,
-    JS_DeletePropertyStub, JS_PropertyStub, JS_StrictPropertyStub,
-    JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, NULL, 0, 0, 0, 0};
+    "NativeFunction",
+    JSCLASS_HAS_PRIVATE | JSCLASS_HAS_RESERVED_SLOTS(JS_OBJECT_SLOT_COUNT) |
+        JSCLASS_NEW_RESOLVE,
+    JS_PropertyStub, JS_DeletePropertyStub, JS_PropertyStub,
+    JS_StrictPropertyStub, JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub,
+    NULL, 0, 0, 0, 0};
 
 void Value::SetIndexedPropertiesToExternalArrayData(void *data,
                                                     const int data_type,
@@ -1636,19 +1638,22 @@ Value::Value(JSNative native, bool instance, JSContext *cx) {
   JS::RootedObject lnob(cx);
   Value::NewEmptyObject(cx, &lnob);
 
+  JS::RootedObject rb_result(cx);
   if (!instance) {
     JSFunction *fun =
         JS_DefineFunction(cx, lnob, "nativefunc", native, 0, JSPROP_ENUMERATE);
     JSObject *fun_ob = JS_GetFunctionObject(fun);
 
-    value_ = JS::ObjectOrNullValue(fun_ob);
+    rb_result.set(fun_ob);
   } else {
     JSObject *inited =
         JS_InitClass(cx, lnob, JS::NullPtr(), &constructor_class_definition,
                      native, 0, NULL, NULL, NULL, NULL);
 
-    value_ = JS::ObjectOrNullValue(inited);
+    rb_result.set(inited);
   }
+
+  value_ = JS::ObjectOrNullValue(rb_result);
 
   empty_ = false;
   rooted_ = false;
