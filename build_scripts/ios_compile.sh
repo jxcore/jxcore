@@ -71,7 +71,7 @@ MAKE_INSTALL() {
   mv $PREFIX_DIR/bin/libuv.a "$PREFIX_DIR/bin/libuv_$1.a"
   mv $PREFIX_DIR/bin/libsqlite3.a "$PREFIX_DIR/bin/libsqlite3_$1.a"
   
-  if [ $CONF_EXTRAS == "--embed-leveldown" ]
+  if [ "$CONF_EXTRAS" == "--embed-leveldown" ]
   then
     mv $TARGET_DIR/Release/libleveldown.a "$PREFIX_DIR/bin/libleveldown_$1.a"
     mv $TARGET_DIR/Release/libsnappy.a "$PREFIX_DIR/bin/libsnappy_$1.a"
@@ -136,7 +136,7 @@ MAKE_FAT "libmozjs"
 MAKE_FAT "libopenssl"
 MAKE_FAT "libuv"
 MAKE_FAT "libsqlite3"
-if [ $CONF_EXTRAS == "--embed-leveldown" ]
+if [ "$CONF_EXTRAS" == "--embed-leveldown" ]
 then
   MAKE_FAT "libleveldown"
   MAKE_FAT "libleveldb"
