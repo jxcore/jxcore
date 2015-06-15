@@ -2379,7 +2379,7 @@
             var _module = modules[a];
 
             // determine the folder, where module was installed
-            var ret = jxcore.utils.cmdSync(process.execPath + " npm ls --depth=0 " + _module);
+            var ret = jxcore.utils.cmdSync(process.execPath + " npm ls --depth=0 -s " + _module);
             if (ret.exitCode) {
               cc.warn("Cannot determine path of installed module:", _module);
               continue;
