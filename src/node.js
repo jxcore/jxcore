@@ -197,11 +197,8 @@
       process.argv = arr;
     }
 
-    var process_restarted = false;
-    if (process.argv[process.argv.length - 1] == "$JX$CORE_APP_RESET") {
-      process_restarted = true;
-      process.argv = process.argv.slice(0, process.argv.length - 1);
-    }
+    var process_restarted = jxcore.utils.argv.remove("$JX$CORE_APP_RESET");
+    var parsedArgv = jxcore.utils.argv.parse();
 
     // There are various modes that Node can run in. The most common two
     // are running from a script and running the REPL - but there are a few
@@ -305,31 +302,9 @@
           return arg.match(/^--debug-brk(=[0-9]*)?$/);
         });
 
-        var mterCount = 0;
-        var mter = process.argv.length > 1
-          && (process.argv[1] == 'mt' || process.argv[1] == 'mt-keep');
-
-        if (!mter) {
-          if (process.argv.length < 2)
-            mterCount = -1;
-          else {
-            mter = process.argv[1].indexOf('mt:') === 0
-            || process.argv[1].indexOf('mt-keep:') === 0;
-            if (mter) {
-              var number = process.argv[1].split(':')[1];
-              try {
-                mterCount = parseInt(number);
-              } catch (e) {
-                mterCount = -1;
-              }
-            }
-          }
-        } else {
-          mterCount = 2;
-        }
-
-        var fo;
+        var mter = parsedArgv.mt || parsedArgv["mt-keep"];
         if (mter) {
+          var mterCount = mter.isInt ? mter.asInt : -1;
           if (mterCount >= 2 && mterCount <= 16)
             process._MTED = true;
           else {
