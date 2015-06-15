@@ -1,0 +1,3 @@
+[submodule "deps/leveldown"]
+	path = deps/leveldown
+	url = https://github.com/thaliproject/leveldown
