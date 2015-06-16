@@ -187,16 +187,6 @@
     }
 
     var co = NativeModule.require('console');
-    if (process.subThread) {
-      var arr = new Array();
-      for (var o in process.argv) {
-        if ((process.argv[o].indexOf("--") !== 0)) {
-          arr.push(process.argv[o]);
-        }
-      }
-      process.argv = arr;
-    }
-
     var process_restarted = jxcore.utils.argv.remove("$JX$CORE_APP_RESET");
     var parsedArgv = jxcore.utils.argv.parse();
 

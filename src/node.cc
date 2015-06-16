@@ -1983,6 +1983,11 @@ void SetupProcessObject(const int threadId) {
               STD_TO_STRING_WITH_LENGTH(OPENSSL_VERSION_TEXT + i, j - i));
 #endif
 
+  if (threadId > 0) {
+    node::commons* mainNode = node::commons::getInstanceByThreadId(0);
+    com->option_end_index = mainNode->option_end_index;
+  }
+
   // process.arch
   JS_NAME_SET(process, JS_STRING_ID("arch"), STD_TO_STRING(ARCH));
 
@@ -2000,16 +2005,8 @@ void SetupProcessObject(const int threadId) {
 
   JS_INDEX_SET(arguments, 0, UTF8_TO_STRING(active_engine->argv_[0]));
 
-  // skip the duplicate exec path for secondary threads
-  // TODO(obastemur) fix this!
-  int ndiff = 0;
-  if (threadId > 0)
-    ndiff = 1;
-  else
-    ndiff = 0;
-
   for (j = 1, i = com->option_end_index; i < active_engine->argc_; j++, i++) {
-    JS_INDEX_SET(arguments, j - ndiff, UTF8_TO_STRING(active_engine->argv_[i]));
+    JS_INDEX_SET(arguments, j, UTF8_TO_STRING(active_engine->argv_[i]));
   }
 
   // assign it
