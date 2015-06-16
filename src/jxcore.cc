@@ -79,14 +79,15 @@ static void WaitThreadExit(uv_loop_t *ev_loop) {
   if (getThreadCount() > 0) Sleep(5);
 
   bool busy = getThreadCount() > 0;
-  int cc = 0;
+  int counter = 0;
 
   for (int i = 0; i < 20; i++) {  // ~2sec max thread cleanup wait (embedded)
-    while (busy && cc < 100) {
+    int sleep_counter = 0;
+    while (busy && counter < 100 && sleep_counter++ < 100) {
       busy = getThreadCount() > 0;
-      cc++;
+      counter++;
       if (ev_loop)
-        cc -= uv_run_jx(ev_loop, UV_RUN_NOWAIT, node::commons::CleanPinger, 0);
+        counter -= uv_run_jx(ev_loop, UV_RUN_NOWAIT, node::commons::CleanPinger, 0);
 
       if (!busy) break;
 
@@ -95,7 +96,7 @@ static void WaitThreadExit(uv_loop_t *ev_loop) {
 
     if (!busy) break;
 
-    cc = 0;
+    counter = 0;
   }
 }
 
