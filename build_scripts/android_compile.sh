@@ -87,7 +87,7 @@ MAKE_INSTALL() {
   $STRIP -d $PREFIX_DIR/libsqlite3.a
   mv $PREFIX_DIR/libsqlite3.a "$PREFIX_DIR/libsqlite3_$1.a"
   
-if [ $CONF_EXTRAS == "--embed-leveldown" ]
+if [ "$CONF_EXTRAS" == "--embed-leveldown" ]
 then
   $STRIP -d $PREFIX_DIR/libleveldown.a
   mv $PREFIX_DIR/libleveldown.a "$PREFIX_DIR/libleveldown_$1.a"
@@ -186,7 +186,7 @@ COMBINE "libopenssl"
 COMBINE "libuv"
 COMBINE "libsqlite3"
 
-if [ $CONF_EXTRAS == "--embed-leveldown" ]
+if [ "$CONF_EXTRAS" == "--embed-leveldown" ]
 then
   COMBINE "libleveldown"
   COMBINE "libsnappy"
