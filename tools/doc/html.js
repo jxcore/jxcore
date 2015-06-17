@@ -32,7 +32,16 @@ function render(lexed, filename, template, cb) {
     template = template.replace(/__SECTION__/g, section);
     template = template.replace(/__VERSION__/g, process.version);
     template = template.replace(/__JXVERSION__/g, process.jxversion);
-    template = template.replace(/__TOC__/g, toc);
+    template = template.replace(/__YEAR__/g, new Date().getFullYear());
+
+    if (filename === "index") {
+      // hide TOC for index.html
+      template = template.replace(/__TOC__/g, "");
+      template = template.replace('div id="toc"', 'div id="toc" style="display: none;"');
+    } else {
+      template = template.replace(/__TOC__/g, toc);
+    }
+
 
     // content has to be the last thing we do with
     // the lexed tokens, because it's destructive.
