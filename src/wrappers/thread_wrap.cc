@@ -10,7 +10,7 @@
 #include <windows.h>
 #else
 #include <unistd.h>
-#define Sleep(x) usleep((x) * 1000)
+#define Sleep(x) usleep((x)*1000)
 #endif
 
 #include <string>
@@ -145,12 +145,12 @@ JS_METHOD(ThreadWrap, AddTask) {
     }
     openThreads = 1;
   } else {
-	// if you are looking for the place where we cleanup the memory
-	// check the source codes where jxcore destroys the main instance
-	// jxcore does not store the same function definition again and again
-	// that's why it doesn't clean up right after running the job.
-	// the very same function can be executed in the future, as long as the main
-	// instance is alive.
+    // if you are looking for the place where we cleanup the memory
+    // check the source codes where jxcore destroys the main instance
+    // jxcore does not store the same function definition again and again
+    // that's why it doesn't clean up right after running the job.
+    // the very same function can be executed in the future, as long as the main
+    // instance is alive.
     jxcore::Job *j = new jxcore::Job(*strMethod, mlen, *strParam, plen, taskId,
                                      cbId, notRemember);
 
@@ -208,23 +208,21 @@ JS_METHOD(ThreadWrap, SendToThreads) {
         "Missing parameters (sendToAll) expects (int, string, int).");
   }
 
-  if (args.Length() == 3) {
-    int targetThreadId = args.GetInteger(0);
-    int myThreadId = args.GetInteger(2) + 1;  // js side starts from -1
+  int targetThreadId = args.GetInteger(0);
+  int myThreadId = args.GetInteger(2) + 1;  // js side starts from -1
 
-    jxcore::JXString str;
-    int str_len = args.GetString(1, &str);
+  jxcore::JXString str;
+  int str_len = args.GetString(1, &str);
 
-    if (str_len > 0) {
-      if (targetThreadId > -2) {
-        targetThreadId++;  // js side starts from -1
-        jxcore::SendMessage(targetThreadId, *str, str_len,
-                            myThreadId == targetThreadId);
-      } else {
-        for (int i = 1; i <= node::commons::threadPoolCount;
-             i++) {  // +1 for main
-          jxcore::SendMessage(i, *str, str_len, myThreadId == i);
-        }
+  if (str_len > 0) {
+    if (targetThreadId > -2) {
+      targetThreadId++;  // js side starts from -1
+      jxcore::SendMessage(targetThreadId, *str, str_len,
+                          myThreadId == targetThreadId);
+    } else {
+      for (int i = 1; i <= node::commons::threadPoolCount;
+           i++) {  // +1 for main
+        jxcore::SendMessage(i, *str, str_len, myThreadId == i);
       }
     }
   }
