@@ -2248,7 +2248,7 @@
       req.end();
     };
     var name = "";
-    var npm_basename = "npmjxv1_5.jx";
+    var npm_basename = "npmjxv1_6.jx";
     var npm_str = "https://s3.amazonaws.com/nodejx/" + npm_basename;
     var isWindows = process.platform === 'win32';
     var homeFolder = process.__npmjxpath || process.env.HOME

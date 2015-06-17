@@ -1,5 +1,6 @@
-tar -zcvf npmjx300.tar.gz npm
-mv npmjx300.tar.gz ~/.jx/
+#!/bin/sh
+tar -zcvf npmjx303.tar.gz npm
+cp npmjx303.tar.gz ~/.jx/
 cd ~/.jx/
 rm -rf npm
-tar -xvf npmjx300.tar.gz
+tar -xvf npmjx303.tar.gz
