@@ -236,6 +236,169 @@ For a MAC x64 it would return:
   OS_STR: 'osx64' }
 ```
 
+## argv Parsing
+
+### parse([argv], [options])
+
+* `argv` {Array} [optional]
+* `options` {Object} [optional]
+    * `force` {Boolean} - forces reparsing the `process.argv`
+
+If `argv` is omitted, then `process.argv` will be parsed. Otherwise the method expects `argv` to be an array.
+
+The `jxcore.utils.argv.parse()` method (without `argv` provided) parses `process.argv` and is doing that only once - at first call.
+Any subsequent `parse()` invocation will just return previously parsed result.
+If you need to parse `process.argv` again, you may pass `force` option, or provide `process.argv` as na argument:
+
+```js
+// forcing
+var parsed = jxcore.utils.argv.parse({ force : true });
+
+// passing as an arg
+var parsed = jxcore.utils.argv.parse(process.argv);
+```
+
+The function returns an object with parsed arguments. For example:
+
+**test.js**
+
+```js
+var parsed = jxcore.utils.argv.parse();
+console.log(JSON.stringify(parsed));
+```
+
+```bash
+$ jx test.js --one=1 --two 2 --three -abc -d 1 str1 str2 str3
+{
+    "_": {
+        "mainModule": "test.js",
+        "withoutPrefix": [
+            "str1",
+            "str2",
+            "str3"
+        ]
+    },
+    "one": {
+        "index": 2,
+        "type": "string",
+        "asBool": true,
+        "prefix": "--",
+        "name": "one",
+        "valueSep": "=",
+        "value": "1",
+        "isInt": true,
+        "asInt": 1,
+        "hasValue": true
+    },
+    "two": {
+        "index": 3,
+        "type": "string",
+        "asBool": true,
+        "prefix": "--",
+        "name": "two",
+        "value": "2",
+        "isInt": true,
+        "asInt": 2,
+        "hasValue": true,
+        "valueSep": " "
+    },
+    "three": {
+        "index": 5,
+        "asBool": true,
+        "prefix": "--",
+        "name": "three"
+    },
+    "abc": {
+        "index": 6,
+        "asBool": true,
+        "prefix": "-",
+        "name": "abc"
+    },
+    "d": {
+        "index": 7,
+        "type": "string",
+        "asBool": true,
+        "prefix": "-",
+        "name": "d",
+        "value": "1",
+        "isInt": true,
+        "asInt": 1,
+        "hasValue": true,
+        "valueSep": " "
+    },
+    "str1": {
+        "index": 9,
+        "type": "string",
+        "asBool": true,
+        "name": "str1",
+        "value": "str1",
+        "hasValue": false
+    },
+    "str2": {
+        "index": 10,
+        "type": "string",
+        "asBool": true,
+        "name": "str2",
+        "value": "str2",
+        "hasValue": false
+    },
+    "str3": {
+        "index": 11,
+        "type": "string",
+        "asBool": true,
+        "name": "str3",
+        "value": "str3",
+        "hasValue": false
+    }
+}
+```
+
+Each of the parsed arguments has the following members:
+
+* `index` {Number} - position of an argument in `argv`
+* `name` {String} - name of an arg stripped of value and leading prefixes, e.g. `--arg1=str1`  (name = "arg1")
+* `hasValue` {Boolean} - indicates if an argument has a value provided.
+For example `--arg1` has no value, while the following has: `--arg str1`.
+* `value` - value of an argument. It may be present in `argv` in multiple ways:
+    * `--arg1=str1` or `-b=1`
+    * `--add:no` or `-c:3`
+    * `--library false  or `-l 0`
+* `valueSep` {String} - a separator used in an argument to provide a value: `=`, `:` or space, e.g.: `--arg1=str1`, `-c:3`, `-l 0`
+* `prefix` {String} - this may be one of the following: `--`, `-` or `/` on Windows platforms
+* `type` {String} - this is evaluated `typeof value`
+* `isInt` {Boolean} - `true` if value can be parsed into a Number, e.g. `--count=3`
+* `asInt` {Number} - if `isInt` is `true`, than `asInt` contains a parsed Number.
+Beware, that it may be `0`, so it should not be always checked with negation: `if (!arg.asInt) {}`.
+* `asBool` {Boolean} - it will be `false` only in few cases, when val equals to `no`, `false` or `0` (e.g. `--library false`).
+Otherwise it is always `true`, even if there is no value provided, e.g. `-add`.
+* `splitBySep(sep)` {Function} - if argument's value contains a separator defined by [jxcore.utils.argv.sep](#sep)
+or [JX_ARG_SEP](jxcore-utils.html#jxargsep) this function returns an array with separated parts (split).
+It also ignores empty or whitespaced strings. If the result is an empty array or the argument's value does not contain a separator - the function returns `null`.
+    * `sep` {String} [optional] - if provided, then will be used instead of [jxcore.utils.argv.sep](#sep)
+
+There is also one special value `_` (`parsed["_"]` in example above), which holds the following fields:
+
+* `withoutPrefix` {Array} - it contains an array of all values passed without any prefix.
+This field is introduced mostly for user's convenience/performance (no need to search by iterating through arguments) and is used for example by `jx install` command:
+
+```bash
+$ jx install jxm express mongoose
+```
+
+In this case `parsed["_"].withoutPrefix` would contain:
+
+```js
+    "withoutPrefix": [
+        "jxm",
+        "express",
+        "mongoose"
+    ]
+```
+
+### sep
+
+Holds a separator value used for argv parsing. Returns a comma sign or an environment variable [JX_ARG_SEP](jxcore-utils.html#jxargsep) if it is set.
+
 ## Others
 
 ### cmdSync(command)
