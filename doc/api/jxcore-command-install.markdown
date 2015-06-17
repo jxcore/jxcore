@@ -9,11 +9,18 @@ and the npm manager does not have to be installed in the system.
 
 ### install
 
-    > jx install [-g] name_of_the_package[@version]
+    > jx install [-g] name_of_the_package[@version] [--autoremove "*.txt,dir1,dir2/file2.txt"]
 
 Downloads npm package specified by `name_of_the_package`.
 
-`-g` - enables global installation, the same as npm tool does.
+* `-g` - enables global installation, the same as npm tool does.
+
+* `--autoremove` - allows to perform post-install files/dirs removal.
+It searches the given names/masks recursively within installed module's directory and removes them.
+This is particularly useful for apps which target mobile devices as it may result in significantly smaller package sizes.
+
+    This option receives one or multiple values separated with comma. However you may use any other character by setting special environment variable [JX_ARG_SEP](jxcore-utils.html#jxargsep).
+
 
 Let’s see the following example: we would like to install the [express](https://github.com/visionmedia/express) module.
 
