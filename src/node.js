@@ -187,16 +187,6 @@
     }
 
     var co = NativeModule.require('console');
-    if (process.subThread) {
-      var arr = new Array();
-      for (var o in process.argv) {
-        if ((process.argv[o].indexOf("--") !== 0)) {
-          arr.push(process.argv[o]);
-        }
-      }
-      process.argv = arr;
-    }
-
     var process_restarted = jxcore.utils.argv.remove("$JX$CORE_APP_RESET");
     var parsedArgv = jxcore.utils.argv.parse();
 
@@ -1186,7 +1176,7 @@
       cp._forkChild(fd);
       assert(process.send);
     }
-  }
+  };
 
   startup.resolveArgv0 = function () {
     var cwd;
@@ -1306,46 +1296,13 @@
     return content;
   }
 
-  var getOptions = function (name, defaultValue) {
-    for (var o = 0; o < process.argv.length; o++) {
-      if (process.argv[o].toLowerCase() == name.toLowerCase()) {
-        if (process.argv.length > o + 1 && typeof process.argv[o + 1] === "string" && process.argv[o + 1].slice(0,1) !== "-")
-          return process.argv[o + 1];
-        else
-          return (typeof defaultValue === "undefined" ? true : defaultValue);
-      }
-    }
-    return (typeof defaultValue === "undefined" ? false : defaultValue);
-  };
-
-  var getBoolOption = function(name, defaultValue) {
-    var _val = getOptions(name, "not_found");
-    if (_val === true || _val === false) return _val;
-    if (_val === "not_found" && process.argv.indexOf(name) === -1)
-      return defaultValue;
-    var _str = _val.toString().toLowerCase();
-    return (_str === "no" || _str === "false" || _str === "0") ? false : true;
-  };
-
-  var getArrayOption = function(name, defaultValue) {
-    var _val = getOptions(name, defaultValue);
-    var arr = null;
-    try {
-      arr = _val.split(",");
-      if (!arr.length) arr = null;
-    } catch (ex) { }
-
-    if (!arr)
-      return null
-
-    for(var o in arr)
-      arr[o] = arr[o].trim();
-
-    return arr;
-  };
-
   var parseValues = function(name) {
-    var parms = getOptions(name);
+    var parsedArgv = jxcore.utils.argv.parse();
+    var parms = jxcore.utils.argv.getValue(name);
+
+    // allow -add without a value
+    if (name === "add" && !parms && parsedArgv[name])
+      parms = true;
 
     if (!parms)
       return null;
@@ -1430,10 +1387,10 @@
       startup_path = path.join(mainPath, startup_path);
 
     if (checkOff === undefined)
-      checkOff = parseValues("-slim");
+      checkOff = parseValues("slim");
 
     if (add === undefined)
-      add = parseValues("-add");
+      add = parseValues("add");
 
     var dest_bin = path.join(process.cwd(), jxp.name);
     var dest_bin_native = dest_bin + (process.platform === "win32" ? ".exe" : "");
@@ -1550,30 +1507,31 @@
       process.exit(1);
     }
 
+    var parsedArgv = jxcore.utils.argv.parse();
+    var preinstall = parsedArgv["preInstall"] || parsedArgv["preinstall"];
     var jxp = {
       "name": getPackageName(argv),
-      "version": getOptions("-version", "1.0"),
-      "author": getOptions("-author", ""),
-      "description": getOptions("-description", ""),
-      "company": getOptions("-company", ""),
-      "website": getOptions("-website", ""),
+      "version": jxcore.utils.argv.getValue("version", "1.0"),
+      "author": jxcore.utils.argv.getValue("author", ""),
+      "description": jxcore.utils.argv.getValue("description", ""),
+      "company": jxcore.utils.argv.getValue("company" ,""),
+      "website": jxcore.utils.argv.getValue("website", ""),
       "package": null,
       "startup": fol,
       "execute": executer,
-      "extract": getBoolOption("-extract", false),
+      "extract": jxcore.utils.argv.getBoolValue("extract", false),
       "output": null,
       "files": [],
       "assets": [],
-      "preInstall": getArrayOption("-preInstall", null),
-      "library": getBoolOption("-library", true),
+      "preInstall": preinstall ? preinstall.splitBySep() || null : null,
+      "library": jxcore.utils.argv.getBoolValue("library", true),
       "license_file": null,
       "readme_file": null,
-      "fs_reach_sources": getBoolOption("-fs_reach_sources", true)
+      "fs_reach_sources": jxcore.utils.argv.getBoolValue("fs_reach_sources", true)
     };
 
-    if (getOptions('-native')) {
+    if (parsedArgv.native)
       jxp.native = true;
-    }
 
     try {
       var fs = NativeModule.require('fs');
@@ -1641,7 +1599,7 @@
       return;
     }
 
-    if (getOptions('-native')) {
+    if (jxcore.utils.argv.getValue('native')) {
       proj.native = true;
     }
 
@@ -2215,7 +2173,7 @@
       var url_module = NativeModule.require('url');
       var parsed_url = url_module.parse(url);
 
-      var proxy_url = parsed_url.protocol.toLowerCase() === "https:" ? getOptions("--https-proxy") : getOptions("--proxy");
+      var proxy_url = parsed_url.protocol.toLowerCase() === "https:" ? jxcore.utils.argv.getValue("https-proxy") : jxcore.utils.argv.getValue("proxy");
       if (!proxy_url)
         return false;
 
@@ -2290,7 +2248,7 @@
       req.end();
     };
     var name = "";
-    var npm_basename = "npmjxv1_5.jx";
+    var npm_basename = "npmjxv1_6.jx";
     var npm_str = "https://s3.amazonaws.com/nodejx/" + npm_basename;
     var isWindows = process.platform === 'win32';
     var homeFolder = process.__npmjxpath || process.env.HOME

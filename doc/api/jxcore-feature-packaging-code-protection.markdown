@@ -45,6 +45,8 @@ Description of the switches:
 This optional parameter followed by file and/or folder names separated with commas - **explicitly adds** those files/folders into the final JX package.
 For example, you may want to package only certain files/folders located at current directory - not the whole its contents.
 
+The default separator is a comma sign. However you may use any other separator by setting a value of special environment variable [JX_ARG_SEP](jxcore-utils.html#jxargsep).
+
 If you want to pack just one file (e.g. *helloworld.js*) you can provide an `-add` option without a file name.
 Thus the following two commands are equivalent:
 
@@ -60,6 +62,8 @@ Yu can still combine `-add` and `-slim` together, e.g. to add a folder, but excl
 
 This optional parameter followed by file and/or folder names separated with commas - **prevents adding** those files/folders into the final JX package.
 
+The default separator is a comma sign. However you may use any other character by setting special environment variable [JX_ARG_SEP](jxcore-utils.html#jxargsep).
+
 ##### wildcards
 
 For both `-add` and `-slim` you can also use wildcards (`*` and `?`) for each file/folder entry.
@@ -70,7 +74,7 @@ However if you do so, you'd better wrap them in double quotes, like below:
 Otherwise the wildcard expression would be evaluated by shell (before invoking the command) and `-add` option
 would receive only first of the matched entries.
 
-Comma separated entries are also valid:
+Separated entries are also valid:
 
     > jx package helloworld.js "Hello World" -add "file*.txt,*.jpg" -slim "node?modules,dir*"
 
@@ -154,7 +158,8 @@ Boolean value. Default is `true`. See also notes above.
 
 #### -preInstall or -preinstall
 
-This parameter receives commands separated with commas.
+This parameter receives commands separated with commas. However you may use any other character by setting special environment variable [JX_ARG_SEP](jxcore-utils.html#jxargsep).
+
 
 For example, the following command line:
 
