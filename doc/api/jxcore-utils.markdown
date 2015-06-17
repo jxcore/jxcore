@@ -6,6 +6,28 @@ Api methods described in this section are accessible any time within JXcore appl
 var utils = jxcore.utils;
 ```
 
+## Environment Variables
+
+### JX_ARG_SEP
+
+This variable is used to define a custom character/string used as separator for parsing strings which holds multiple separated values.
+
+For example `-add`, `-slim` and `-preInstall` options in [`jx package`](jxcore-feature-packaging-code-protection.html#package) command or `--autoremove` in [`jx install`](jxcore-command-install.html#install) are using this feature.
+
+The default value (if variable is not set) is a comma sign (`,`). This is how you can change the value:
+
+Unix platforms:
+
+```bash
+export JX_ARG_SEP=";"
+```
+
+Windows:
+
+```bash
+set JX_ARG_SEP=";"
+```
+
 ## Flow Control
 
 JXcore exposes few methods to provide enhanced control over the application - pausing and resuming execution of the code.
