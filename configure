@@ -368,15 +368,48 @@ def cc_macros():
       val = lst[2]
       k[key] = val
   return k
+  
+def uname_output():
+  """Checks predefined macros using the CC command."""
+
+  if os.name == 'nt':
+    k = {}
+    k['__ARM_ARCH_7__'] = True
+    k['__ARM_NEON__'] = True
+    return k
+
+  try:
+    p = subprocess.Popen(['uname', '-msrn'],
+                         stdin=subprocess.PIPE,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
+  except OSError:
+    return "ERROR"
+
+  p.stdin.write('\n')
+  out = p.communicate()[0]
+
+  out = str(out)
+  
+  return out
 
 
 def is_arch_armv7():
   """Check for ARMv7 instructions"""
   cc_macros_cache = cc_macros()
-  return ('__ARM_ARCH_7__' in cc_macros_cache or
+  isarm7 = ('__ARM_ARCH_7__' in cc_macros_cache or
           '__ARM_ARCH_7A__' in cc_macros_cache or
           '__ARM_ARCH_7R__' in cc_macros_cache or
           '__ARM_ARCH_7M__' in cc_macros_cache)
+          
+  if isarm7 == False:
+    out = uname_output();
+    isarm7 = ('armv7' in out or
+             'armv7l' in out or
+             'armv7s' in out or
+             'armv7a' in out)
+    
+  return isarm7
 
 
 def is_arm_neon():
