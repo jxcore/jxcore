@@ -85,7 +85,7 @@ $ make jslint test
 $ git push origin my-feature-branch
 ```
 
-Go to https://github.com/username/node and select your feature branch.  Click
+Go to https://github.com/username/jxcore and select your feature branch.  Click
 the 'Pull Request' button and fill out the form.
 
 Pull requests are usually reviewed within a few days.  If there are comments
