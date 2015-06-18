@@ -1599,7 +1599,7 @@
       return;
     }
 
-    if (jxcore.utils.argv.getValue('native')) {
+    if (jxcore.utils.argv.getBoolValue('native')) {
       proj.native = true;
     }
 
