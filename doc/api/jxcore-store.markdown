@@ -39,8 +39,7 @@ But all of the tasks running inside a particular sub-instance have shared access
 * `key` {String}
 * `element` {String}
 
-Sets the element's value for specific key in the store.
-If the key already exists, the current element's value will overwrite the previous one.
+Returns boolean value: `true` if the element's value exists for specific key in the store and `false` otherwise.
 
 ```js
 var store = jxcore.store;
