@@ -291,6 +291,10 @@ void JXEngine::ParseArgs(int argc, char **argv) {
         main_node_->force_repl = true;
         argv[i] = const_cast<char *>("");
       } else if (strcmp(arg, "--v8-options") == 0) {
+#ifndef JS_ENGINE_V8
+        error_console("--v8-options are not available for non-V8 build\n");
+        exit(0);
+#endif
         argv[i] = const_cast<char *>("--help");
       } else if (strcmp(arg, "--no-deprecation") == 0) {
         argv[i] = const_cast<char *>("");
