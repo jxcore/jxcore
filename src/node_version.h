@@ -5,7 +5,7 @@
 
 #define NODE_MAJOR_VERSION 0
 #define NODE_MINOR_VERSION 10
-#define NODE_PATCH_VERSION 38
+#define NODE_PATCH_VERSION 39
 
 #define NODE_VERSION_IS_RELEASE 1
 
@@ -30,10 +30,12 @@
 #endif
 
 #define NODE_VERSION "v" NODE_VERSION_STRING
-#define JXCORE_VERSION "v Beta-0.3.0.3"
 
 #ifdef JS_ENGINE_MOZJS
 #define MOZJS_VERSION 34
+#define JXCORE_VERSION "v Beta-0.3.0.4"
+#else
+#define JXCORE_VERSION "v 0.3.0.4"
 #endif
 
 #define NODE_VERSION_AT_LEAST(major, minor, patch)                  \
