@@ -1,5 +1,13 @@
 JXcore (http://jxcore.io)
 
+----JXcore 3.0.3
+
+- optional embedding leveldown on compile time
+- IOS leveldb support
+- --autoremove option for cleanup after `jx install`
+- jxcore.utils.argv namespace for parsing argv
+- jx_install.sh enhancements: SM engine + local installation
+
 ----JXcore 3.0.2
 
 - General stability and performance updates
