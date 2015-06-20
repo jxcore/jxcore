@@ -44,7 +44,16 @@ var packFile = function(jxpath) {
 
   var json = getVersions(jxpath);
   var engine = json.versions.sm ? "sm" : "v8";
-  var dir_basename = "jx_" + json.OSInfo.OS_STR + engine;
+
+  var sid = json.OSInfo.OS_STR;
+  if (json.OSInfo.isBSD) {
+    var ret = jxcore.utils.cmdSync('uname -msrn');
+    if (!ret.exitCode) {
+      if (ret.out.indexOf("9.") !== -1) sid = sid.replace("bsd", "bsd9");
+      if (ret.out.indexOf("10.") !== -1) sid = sid.replace("bsd", "bsd10")
+    }
+  }
+  var dir_basename = "jx_" + sid + engine;
   var zip_basename = dir_basename + ".zip";
 
   if (done[zip_basename])
@@ -86,6 +95,7 @@ var packFile = function(jxpath) {
   jxtools.copyFileSync(zip, dest);
   jxcore.utils.console.log("OK. Saved at", dest.replace(repoPath, "."), "green");
 
+  fs.unlinkSync(zip);
   jxtools.rmdirSync(tmp);
   done[zip_basename] = true;
 };
