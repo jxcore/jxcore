@@ -1,0 +1,3 @@
+[submodule "leveldown"]
+	path = deps/leveldown-mobile
+	url = https://github.com/Level/leveldown-mobile.git

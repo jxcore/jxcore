@@ -15,7 +15,7 @@
 #define Sleep(x) usleep((x) * 1000)
 #endif
 #ifdef JXCORE_EMBEDS_LEVELDOWN
-#include "../../deps/leveldown/src/leveldown_public.h"
+#include "../../deps/leveldown-mobile/src/leveldown_public.h"
 #endif
 
 namespace node {

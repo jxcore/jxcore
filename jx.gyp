@@ -386,7 +386,7 @@
       ['node_embed_leveldown==1',
       {
         'defines': [ 'JXCORE_EMBEDS_LEVELDOWN' ],
-        'dependencies': ['deps/leveldown/leveldown_embedded.gyp:leveldown'],
+        'dependencies': ['deps/leveldown-mobile/leveldown_embedded.gyp:leveldown'],
       }],
       ['node_shared_zlib=="false"',
       {
