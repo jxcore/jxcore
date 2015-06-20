@@ -262,7 +262,7 @@ exports.checkJSON = function (src, outputDir, native) {
     // excluding test file from native packaging, as it spawns process.execPath
     var str = fs.readFileSync(src).toString();
     if (str.indexOf("process.execPath") !== -1) {
-      if (str.indexOf(".exec(") !== -1 || str.indexOf(".spawn") !== -1) {
+      if (str.indexOf(".exec(") !== -1 || str.indexOf(".spawn") !== -1 || str.indexOf(".cmdSync") !== -1) {
         obj.native = false;
         jxcore.utils.console.log("Excluded", path.basename(src),
           "from native packaging, as it spawns process.execPath.",
