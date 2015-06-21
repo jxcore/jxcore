@@ -10,9 +10,10 @@
 
 var fs = require("fs");
 var path = require("path");
-var jxtools = require(path.join(__dirname, "../test/node_modules/jxtools"));
 
-var repoPath = path.join(__dirname, "..");
+var repoPath = path.join(__dirname, "../../");
+var jxtools = require(path.join(repoPath,  "test/node_modules/jxtools"));
+
 var done = {};
 
 var single_jxpath = process.argv.length === 3 ? process.argv[2] : null;
