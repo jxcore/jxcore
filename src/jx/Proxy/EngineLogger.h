@@ -36,12 +36,6 @@
 #define JXCORE_PRINT_NATIVE_CALLS_MIN_TIME 1000.0
 #endif
 
-#ifdef DEBUG
-#include "debugbreak.h"
-#else
-#define debug_break()
-#endif
-
 #ifdef JXCORE_PRINT_NATIVE_CALLS
 #include "uv.h"
 
