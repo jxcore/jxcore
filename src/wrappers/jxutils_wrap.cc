@@ -2,14 +2,14 @@
 
 #include "jxutils_wrap.h"
 #include "thread_wrap.h"
-#include "jx/memory_store.h"
+#include "jx/extend.h"
 #include "jx/jxp_compress.h"
 #include <climits>
 #if defined(_MSC_VER)
 #include <windows.h>
 #else
 #include <unistd.h>
-#define Sleep(x) usleep((x) * 1000)
+#define Sleep(x) usleep((x)*1000)
 #endif
 
 namespace node {
@@ -24,21 +24,21 @@ void JXUtilsWrap::exec(const char *cmd, int *ec, std::string &result) {
   FILE *pipe = popen(cmd, "r");
 #endif
   if (!pipe) {
-	result = "execSync could not create the pipe";
-	*ec = 1; // TODO(obastemur) put the correct exit code
-	return;
+    result = "execSync could not create the pipe";
+    *ec = 1;  // TODO(obastemur) put the correct exit code
+    return;
   }
   char buffer[256];
   while (fgets(buffer, 256, pipe)) {
     result += buffer;
   }
-  // need checking ferror ?
-  #if defined(_WIN32)
-    *ec = _pclose(pipe);
-  #else
-    *ec = pclose(pipe);
-    *ec = (*ec) >> 8;
-  #endif
+// need checking ferror ?
+#if defined(_WIN32)
+  *ec = _pclose(pipe);
+#else
+  *ec = pclose(pipe);
+  *ec = (*ec) >> 8;
+#endif
 }
 
 JS_METHOD(JXUtilsWrap, ExecSystem) {
@@ -254,7 +254,8 @@ JS_METHOD_END
 
 JS_METHOD(JXUtilsWrap, SetMaxHeaderLength) {
   if (!args.IsUnsigned(0)) {
-    THROW_EXCEPTION("Missing parameters (setMaxHeaderLength) expects (unsigned).");
+    THROW_EXCEPTION(
+        "Missing parameters (setMaxHeaderLength) expects (unsigned).");
   }
 
   commons::max_header_size = args.GetInteger(0);
@@ -328,7 +329,7 @@ JS_METHOD(JXUtilsWrap, SetSourceExpiration) {
   int64_t tmo = args.GetInteger(1);
 
   XSpace::LOCKTIMERS();
-  _timerStore *timers = XSpace::Timers();
+  _TimerStore *timers = XSpace::Timers();
   if (timers != NULL) {
     timers->erase(jxss);
     ttlTimer timer;

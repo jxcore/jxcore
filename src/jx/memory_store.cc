@@ -1,10 +1,11 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
+#include "extend.h"
 #include "memory_store.h"
 
 static uv_mutex_t orstoreLocks, ortimerLocks;
 static _StringStore *StringStore;
-static _timerStore *TimerStore;
+static _TimerStore *TimerStore;
 static bool store_init = false;
 static bool exiting = false;
 static bool hasKey = false;
@@ -21,7 +22,7 @@ void XSpace::INITSTORE() {
   if (exiting) return;
   uv_mutex_init(&orstoreLocks);
   StringStore = new _StringStore;
-  TimerStore = new _timerStore;
+  TimerStore = new _TimerStore;
   uv_mutex_init(&ortimerLocks);
 }
 
@@ -67,7 +68,7 @@ void XSpace::ClearStore() {
 
 _StringStore *XSpace::Store() { return StringStore; }
 
-_timerStore *XSpace::Timers() { return TimerStore; }
+_TimerStore *XSpace::Timers() { return TimerStore; }
 
 void XSpace::SetHasKey(bool hasIt) { hasKey = hasIt; }
 
@@ -79,7 +80,7 @@ void XSpace::ExpirationKick(const char *ckey) {
 
     if (TimerStore != NULL) {
       std::string key(ckey);
-      _timerStore::const_iterator it = TimerStore->find(key);
+      _TimerStore::const_iterator it = TimerStore->find(key);
       if (it != TimerStore->end()) {
         ttlTimer timer = it->second;
         TimerStore->erase(key);
@@ -98,7 +99,7 @@ void XSpace::ExpirationRemove(const char *ckey) {
 
     if (TimerStore != NULL) {
       std::string key(ckey);
-      _timerStore::const_iterator it = TimerStore->find(key);
+      _TimerStore::const_iterator it = TimerStore->find(key);
       if (it != TimerStore->end()) {
         TimerStore->erase(key);
       }

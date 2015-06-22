@@ -1,7 +1,7 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
 #include "jxtimers_wrap.h"
-#include "jx/commons.h"
+#include "jx/extend.h"
 #include "jx/memory_store.h"
 
 #include <stdio.h>
@@ -11,7 +11,7 @@
 #include <windows.h>
 #else
 #include <unistd.h>
-#define Sleep(x) usleep((x) * 1000)
+#define Sleep(x) usleep((x)*1000)
 #endif
 #include "jx/jxp_compress.h"
 #include "node_buffer.h"
@@ -26,9 +26,9 @@ void JXTimersWrap::checkKeys() {
   if (XSpace::Timers() == NULL) return;
 
   XSpace::LOCKTIMERS();
-  _timerStore *timers = XSpace::Timers();
+  _TimerStore *timers = XSpace::Timers();
   if (timers != NULL) {
-    _timerStore::iterator it = timers->begin();
+    _TimerStore::iterator it = timers->begin();
     uint64_t total = uv_hrtime();
     long counter = 0;
 
@@ -43,7 +43,7 @@ void JXTimersWrap::checkKeys() {
 #else
         timers->erase(it++);
 #endif
-      }else{
+      } else {
         ++it;
         counter++;
       }
@@ -54,9 +54,9 @@ void JXTimersWrap::checkKeys() {
     }
   }
   XSpace::UNLOCKTIMERS();
-  if(!todelete.empty()) {
+  if (!todelete.empty()) {
     XSpace::LOCKSTORE();
-    while(!todelete.empty()) {
+    while (!todelete.empty()) {
       XSpace::Store()->erase(todelete.front());
       todelete.pop();
     }

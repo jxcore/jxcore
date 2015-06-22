@@ -2,7 +2,23 @@
 
 #ifndef SRC_JX_MEMORY_STORE_H_
 #define SRC_JX_MEMORY_STORE_H_
-#include "extend.h"
+
+#include <stdlib.h>
+#include <string.h>
+#if !defined(_MSC_VER)
+#include <strings.h>
+#else
+#define strcasecmp _stricmp
+#endif
+
+#ifndef __IOS__
+#include "btree_map.h"
+#define MAP_HOST btree::btree_map
+#define HAS_BTREE_MAP
+#else
+#include <map>
+#define MAP_HOST std::map
+#endif
 
 struct ttlTimer {
   uint64_t slice;
@@ -20,7 +36,7 @@ struct externalData {
 };
 
 typedef MAP_HOST<std::string, externalData*> _StringStore;
-typedef MAP_HOST<std::string, ttlTimer> _timerStore;
+typedef MAP_HOST<std::string, ttlTimer> _TimerStore;
 
 class XSpace {
  public:
@@ -33,7 +49,7 @@ class XSpace {
   static void DESTROYSTORE();
   static void ClearStore();
   static _StringStore* Store();
-  static _timerStore* Timers();
+  static _TimerStore* Timers();
   static void ExpirationKick(const char* key);
   static void ExpirationRemove(const char* key);
   static void SetHasKey(bool hasIt);

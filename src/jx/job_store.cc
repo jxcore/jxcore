@@ -4,8 +4,6 @@
 #include "job_store.h"
 #include "extend.h"
 #include <stdint.h>
-#include <map>
-#include <queue>
 
 namespace jxcore {
 

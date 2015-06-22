@@ -12,8 +12,6 @@
 #include <unistd.h>
 #define Sleep(x) usleep((x)*1000)
 #endif
-
-#include <string>
 #include <iostream>
 
 namespace node {

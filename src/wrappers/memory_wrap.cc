@@ -1,10 +1,8 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
 #include "memory_wrap.h"
-#include "jx/commons.h"
+#include "jx/extend.h"
 #include "jx/memory_store.h"
-#include <stdio.h>
-#include <string>
 #include <iostream>
 
 namespace node {
