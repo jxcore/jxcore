@@ -83,7 +83,10 @@ See `followMe()` and `leaveMe()` on [Process Monitor API](jxcore-monitor.markdow
 ## Config file
 
 Process Monitor can be configured with a *jx.config* file. If you want to use it, you should save it in the same folder,
-where the *jx* executable file is located. Below is an example of a *jx.config* file.
+where the *jx* executable file is located. If the *jx* executable is a symbolic link, then the path of target file is considered.
+In general this is a dirname of `process.execPath`.
+
+Below is an example of a *jx.config* file.
 
 *jx.config*
 
