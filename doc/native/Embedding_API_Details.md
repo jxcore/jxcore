@@ -184,3 +184,6 @@ Get and remove stored value. Unless you remove the stored value, it will be cons
 ##### int JX_GetThreadIdByValue(JXValue *value)
 If you have a JXValue around, this method brings threadId much faster
 
+##### void JX_GetGlobalObject(JXValue *out)
+Get global object from actual thread's main context
+

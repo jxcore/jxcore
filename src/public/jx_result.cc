@@ -104,9 +104,7 @@ JX_IsString(JXValue *value) {
 }
 
 JXCORE_EXTERN(bool)
-JX_IsJSON(JXValue *value) {
-  return JX_IsObject(value);
-}
+JX_IsJSON(JXValue *value) { return JX_IsObject(value); }
 
 JXCORE_EXTERN(bool)
 JX_IsBuffer(JXValue *value) {
@@ -697,7 +695,12 @@ JX_GetNamedProperty(JXValue *object, const char *name, JXValue *out) {
     else
       sub_obj = JS_UNDEFINED();
 
+    out->data_ = NULL;
+    out->size_ = 0;
     jxcore::JXEngine::ConvertToJXResult(com, sub_obj, out);
+    out->com_ = com;
+    out->was_stored_ = false;
+    out->persistent_ = false;
   });
 }
 
@@ -712,7 +715,12 @@ JX_GetIndexedProperty(JXValue *object, const int index, JXValue *out) {
     JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(wrap->value_);
     JS_LOCAL_VALUE sub_obj = JS_GET_INDEX(obj, index);
 
+    out->data_ = NULL;
+    out->size_ = 0;
     jxcore::JXEngine::ConvertToJXResult(com, sub_obj, out);
+    out->com_ = com;
+    out->was_stored_ = false;
+    out->persistent_ = false;
   });
 }
 
@@ -722,4 +730,24 @@ JX_GetThreadIdByValue(JXValue *value) {
          "You should not call JX_GetThreadIdByValue for an undefined JXValue "
          "variable");
   return ((node::commons *)value->com_)->threadId;
+}
+
+JXCORE_EXTERN(void)
+JX_GetGlobalObject(JXValue *out) {
+  JS_ENTER_SCOPE_COM();
+  JS_DEFINE_STATE_MARKER(com);
+
+  jxcore::JXEngine *engine =
+      jxcore::JXEngine::GetInstanceByThreadId(com->threadId);
+
+  RUN_IN_SCOPE({
+    JS_LOCAL_OBJECT obj = JS_GET_GLOBAL();
+
+    out->data_ = NULL;
+    out->size_ = 0;
+    jxcore::JXEngine::ConvertToJXResult(com, obj, out);
+    out->com_ = com;
+    out->was_stored_ = false;
+    out->persistent_ = false;
+  });
 }
