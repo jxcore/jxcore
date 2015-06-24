@@ -11,6 +11,10 @@
 
 namespace MozJS {
 
+// Silly trick to track an SM object
+const char *natifier_name_ =
+    "                                                                ";
+
 MozRoot::MozRoot() {}
 MozRoot::~MozRoot() {}
 
@@ -607,8 +611,16 @@ void *Value::GetSelfPrivate() {
 int Value::InternalFieldCount() const {
   if (!value_.isObject() || value_.isNullOrUndefined()) return 0;
 
-  JS::RootedObject object_(ctx_, value_.toObjectOrNull());
-  return JS_HasReservedSlot(object_, 1);
+  JS::RootedObject object_rt(ctx_, value_.toObjectOrNull());
+  bool has_reserved = JS_HasReservedSlot(object_rt, 1);
+
+  if (!has_reserved) {
+    if (!JS_HasProperty(ctx_, object_rt, natifier_name_, &has_reserved)) {
+      has_reserved = false;
+    }
+  }
+
+  return has_reserved;
 }
 
 void Value::SetInternalFieldCount(int count) {
@@ -1067,9 +1079,6 @@ void Value::empty_finalize(JSFreeOp *fop, JSObject *obj) {
   }
 }
 
-// Silly trick to track an SM object
-const char *natifier_name_ =
-    "                                                                ";
 void Value::Natify(JS::HandleObject object_rt, const bool force_create,
                    JS::MutableHandleObject out_val) {
   JS::RootedValue ret_val(ctx_);
@@ -1085,7 +1094,7 @@ void Value::Natify(JS::HandleObject object_rt, const bool force_create,
     JS::RootedValue rt_val(ctx_, val);
     JS_SetProperty(ctx_, object_rt, natifier_name_, rt_val);
     out_val.set(obj);
-  } else if (!force_create) {
+  } else if (!force_create && !op) {
     out_val.set(nullptr);
   } else {
     out_val.set(ret_val.toObjectOrNull());
