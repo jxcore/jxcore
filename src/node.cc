@@ -1902,13 +1902,17 @@ void SetupProcessObject(const int threadId) {
 
   int i, j;
 
+  // TODO(obastemur) why we need function template ?
+  // change made in order to get typeof process === 'object' compatibility
+#ifdef JS_ENGINE_V8
   JS_LOCAL_FUNCTION_TEMPLATE process_template =
       JS_NEW_EMPTY_FUNCTION_TEMPLATE();
-
   JS_CLASSNAME_SET(process_template, STD_TO_STRING("process"));
-
   JS_HANDLE_OBJECT process =
       JS_NEW_DEFAULT_INSTANCE(JS_GET_FUNCTION(process_template));
+#else
+  JS_HANDLE_OBJECT process = JS_NEW_EMPTY_OBJECT();
+#endif
 
   JS_ACCESSOR_SET(process, STD_TO_STRING("title"), ProcessTitleGetter,
                   ProcessTitleSetter);
