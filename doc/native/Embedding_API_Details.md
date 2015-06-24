@@ -187,3 +187,8 @@ If you have a JXValue around, this method brings threadId much faster
 ##### void JX_GetGlobalObject(JXValue *out)
 Get global object from actual thread's main context
 
+##### void JX_WrapObject(JXValue *object, void *ptr)
+Wrap a pointer into a JS object
+
+##### void JX_UnwrapObject(JXValue *object)
+Unwrap the pointer from a JS object (doesn't remove it)

@@ -751,3 +751,34 @@ JX_GetGlobalObject(JXValue *out) {
     out->persistent_ = false;
   });
 }
+
+JXCORE_EXTERN(void)
+JX_WrapObject(JXValue *object, void *ptr) {
+  UNWRAP_COM(object);
+  UNWRAP_RESULT(object->data_);
+
+  assert(object->type_ == RT_Object && "object must be an Object");
+
+  RUN_IN_SCOPE({
+    JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(wrap->value_);
+
+    JS_SET_POINTER_DATA(obj, ptr);
+  });
+}
+
+JXCORE_EXTERN(void*)
+JX_UnwrapObject(JXValue *object) {
+  UNWRAP_COM(object);
+  UNWRAP_RESULT(object->data_);
+
+  assert(object->type_ == RT_Object && "object must be an Object");
+
+  RUN_IN_SCOPE({
+    JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(wrap->value_);
+
+    return JS_GET_POINTER_DATA(obj);
+  });
+
+  // make compiler happy
+  return NULL;
+}
