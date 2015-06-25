@@ -101,6 +101,9 @@ On Windows:
 
     > helloworld.exe
 
+Additionally on Windows platforms certain file description details are written into the package's header information.
+Those are: `-company`, `-copyright`, `-description`, `-name` and `-version`.
+
 #### -name
 
 String value.
@@ -118,6 +121,10 @@ String value.
 String value.
 
 #### -company
+
+String value.
+
+#### -copyright
 
 String value.
 
@@ -239,6 +246,7 @@ The JXP project file is a simple text file that contains package description wri
     "author": "",
     "description": "",
     "company": "",
+    "copyright": "",
     "website" : "",
     "package": null,
     "startup": "helloworld.js",
@@ -276,7 +284,7 @@ var name = obj.name;
 
 Below you can find explanation for all supported fields:
 
-* **name**, **version**, **author**, **description**, **company**, **website**
+* **name**, **version**, **author**, **description**, **company**, **copyright**, **website**
 These are all string values.
 * **startup**
 Name of the main project file. If execute parameter is not defined, this file will be executed first when you run the package.

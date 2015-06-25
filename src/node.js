@@ -1515,6 +1515,7 @@
       "author": jxcore.utils.argv.getValue("author", ""),
       "description": jxcore.utils.argv.getValue("description", ""),
       "company": jxcore.utils.argv.getValue("company" ,""),
+      "copyright": jxcore.utils.argv.getValue("copyright" ,""),
       "website": jxcore.utils.argv.getValue("website", ""),
       "package": null,
       "startup": fol,
@@ -2039,34 +2040,76 @@
         fss.closeSync(fd);
       }
       if (os_info.isWindows) {
-        op_str = copy + ' "' + process.execPath + '.ver" "' + file_name
-        + '._.exe"';
-        jxcore.utils.cmdSync(op_str);
-        var run_win = '' + 'copy "' + file_name + '" "' + file_name + copy_ext
-          + '" \n' + 'del "' + file_name + '"\n' + 'set JX_VERSION="'
-          + contents.project.version + ' (%date%)"\n'
-          + 'set FILEDESCR=/s desc "' + contents.project.description
-          + '"\n' + 'set BUILDINFO=/s pb "Powered by JXcore"\n'
-          + 'set COMPINFO=/s company "' + contents.project.company
-          + '" /s (c) "(c)"\n' + 'set PRODINFO=/s product "'
-          + contents.project.name + '" /pv "' + contents.project.version
-          + '"\n'
+        var verpatch_name = "jx.exe.ver";
+        var verpatch = process.execPath + ".ver";
+        if (!fss.existsSync(verpatch))
+          verpatch = path.join(path.dirname(process.execPath), verpatch_name);
 
-        run_win += '"'
-        + file_name
-        + '._.exe" /va "'
-        + file_name
-        + copy_ext
-        + '" %JX_VERSION% %FILEDESCR% %COMPINFO% %PRODINFO% %BUILDINFO%';
+        if (!fss.existsSync(verpatch))
+          verpatch = path.join(process.cwd(), verpatch_name);
 
-        fss.writeFileSync(file_name + '_jx_mark.bat', run_win);
+        if (!fss.existsSync(verpatch)) {
+          // search in the path
+          var _where = jxcore.utils.cmdSync("where " + verpatch_name);
+          if (!_where.exitCode) {
+            // there can be multiple files. take the first one
+            var _arr = _where.out.trim().split("\n");
+            verpatch = null;
+            for (var o = 0, len = _arr.length; o < len; o++) {
+              var _test = _arr[o].trim();
+              if (_test && fss.existsSync(_test)) {
+                verpatch = _test;
+                break;
+              }
+            }
+          } else {
+            verpatch = null;
+          }
+        }
 
-        jxcore.utils.cmdSync('"' + file_name + '_jx_mark.bat"');
-        jxcore.utils.cmdSync('del "' + file_name + '_jx_mark.bat"');
-        jxcore.utils.cmdSync('del "' + file_name + '._.exe"');
+        var quote = function (str) {
+          return '"' + str + '"';
+        };
+
+        fss.renameSync(file_name, file_name + copy_ext);
+
+        var error = false;
+        if (verpatch) {
+          // copy file
+          var verpatch_local = file_name + '._.exe';
+          fss.writeFileSync(verpatch_local, fss.readFileSync(verpatch));
+
+          if (fss.existsSync(verpatch_local)) {
+            var run_win = quote(verpatch_local) + ' /va ' + quote(file_name + copy_ext)
+              + ' ' + quote(contents.project.version + ' (%date%)')
+              + ' /s desc ' + quote(contents.project.description)
+              + ' /s pb "Powered by JXcore"'
+              + ' /s company ' + quote(contents.project.company)
+              + ' /s product ' + quote(contents.project.name)
+              + ' /s (c) ' + quote(contents.project.copyright || contents.project.company)
+              + ' /pv ' + quote(contents.project.version);
+
+            var batch_name = file_name + '_jx_mark.bat';
+            fss.writeFileSync(batch_name, run_win);
+            var ret = jxcore.utils.cmdSync(batch_name);
+            if (ret.exitCode)
+              error = "Error while executing command. " + ret.out;
+
+            jxcore.utils.cmdSync('del ' + quote(batch_name));
+            jxcore.utils.cmdSync('del ' + quote(verpatch_local));
+          } else {
+            error = "The `.ver` file could not be copied";
+          }
+        }
+
+        if (!verpatch || error) {
+          cc("");
+          if (!verpatch) cc("Cannot apply file description information. The '.ver' file not found.", "magenta");
+          if (error) cc("Cannot apply file description information.", error, "magenta");
+        }
       }
-      cc("\n[OK] compiled file is ready (" + file_name + copy_ext + ")",
-        !warn_node ? "green" : "");
+
+      cc("\n[OK] compiled file is ready (" + file_name + copy_ext + ")", !warn_node ? "green" : "");
     } else {
       // var str = cmped.toString('base64');
       fss.writeFileSync(op + ".jx", cmped);
