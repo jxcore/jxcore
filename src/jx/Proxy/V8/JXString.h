@@ -26,22 +26,25 @@ class JXString {
   bool autogc_;
 
  public:
-  void SetFromSTD(const char* other, const int lenght,  void* _ = NULL);
-  void SetFromHandle(JS_HANDLE_VALUE value, bool get_ascii = false);
+  JXCORE_EXTERN(void)
+  SetFromSTD(const char* other, const int lenght,  void* _ = NULL);
 
-  JXString();
-  explicit JXString(const char* str, void* _ = NULL);
-  explicit JXString(JS_HANDLE_VALUE value, void* _iso = NULL);
-  ~JXString();
+  JXCORE_EXTERN(void)
+  SetFromHandle(JS_HANDLE_VALUE value, bool get_ascii = false);
 
-  char* operator*();
-  const char* operator*() const;
+  JXCORE_PUBLIC JXString();
+  JXCORE_PUBLIC explicit JXString(const char* str, void* _ = NULL);
+  JXCORE_PUBLIC explicit JXString(JS_HANDLE_VALUE value, void* _iso = NULL);
+  JXCORE_PUBLIC ~JXString();
 
-  void Dispose();
-  void DisableAutoGC() { autogc_ = false; }
+  JXCORE_PUBLIC char* operator*();
+  JXCORE_PUBLIC const char* operator*() const;
 
-  inline size_t Utf8Length() const { return length_; }
-  inline size_t length() const { return length_; }
+  JXCORE_PUBLIC void Dispose();
+  JXCORE_PUBLIC void DisableAutoGC() { autogc_ = false; }
+
+  JXCORE_PUBLIC inline size_t Utf8Length() const { return length_; }
+  JXCORE_PUBLIC inline size_t length() const { return length_; }
 };
 }  // namespace jxcore
 #endif

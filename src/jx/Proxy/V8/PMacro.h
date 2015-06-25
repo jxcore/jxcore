@@ -6,6 +6,16 @@
 #include "V8Types.h"
 #include "V8Environment.h"
 
+#ifdef _WIN32
+#define JXCORE_EXTERN(x) __declspec(dllexport) x
+
+// for constructors
+#define JXCORE_PUBLIC __declspec(dllexport)
+#else
+#define JXCORE_EXTERN(x) x
+#define JXCORE_PUBLIC
+#endif
+
 #define JS_CLASS_NEW_INSTANCE(obj_name, js_name) \
   assert(args.IsConstructCall());                \
   JS_LOCAL_OBJECT obj_name = args.This()->ToObject()

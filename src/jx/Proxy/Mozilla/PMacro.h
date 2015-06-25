@@ -6,6 +6,16 @@
 #include "MozTypes.h"
 #include "MozEnvironment.h"
 
+#ifdef _WIN32
+#define JXCORE_EXTERN(x) __declspec(dllexport) x
+
+// for constructors
+#define JXCORE_PUBLIC __declspec(dllexport)
+#else
+#define JXCORE_EXTERN(x) x
+#define JXCORE_PUBLIC
+#endif
+
 #define JS_CLASS_NEW_INSTANCE(obj_name, js_name)                             \
   JSObject *_##obj_name = JS_NewObjectForConstructorOLD(                     \
       JS_GET_STATE_MARKER(), js_name##_class_definition(), __argc, __jsval); \
