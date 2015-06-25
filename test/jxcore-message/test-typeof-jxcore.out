@@ -1,0 +1,58 @@
+
+namespace: jxcore
+	typeof embeddedModule = object
+	typeof monitor = object
+	typeof store = object
+	typeof tasks = object
+	typeof utils = object
+
+namespace: jxcore.monitor
+	typeof checkMonitorExists = function
+	typeof followMe = function
+	typeof leaveMe = function
+	typeof releasePath = function
+	typeof restartMonitor = function
+	typeof startIfNotExists = function
+	typeof startMonitor = function
+	typeof stopMonitor = function
+
+namespace: jxcore.store
+	typeof exists = function
+	typeof get = function
+	typeof read = function
+	typeof remove = function
+	typeof set = function
+	typeof shared = object
+
+namespace: jxcore.tasks
+	typeof _addTask = function
+	typeof _runOnThread = function
+	typeof _runOnce = function
+	typeof addTask = function
+	typeof begin = function
+	typeof emit = function
+	typeof forceGC = function
+	typeof getThreadCount = function
+	typeof jobCount = function
+	typeof killThread = function
+	typeof on = function
+	typeof register = function
+	typeof runOnThread = function
+	typeof runOnce = function
+	typeof setThreadCount = function
+	typeof unloadThreads = function
+
+namespace: jxcore.utils
+	typeof OSInfo = function
+	typeof argv = object
+	typeof bufferID = function
+	typeof cmdSync = function
+	typeof console = object
+	typeof continue = function
+	typeof getCPU = function
+	typeof getOS = function
+	typeof isFunction = function
+	typeof jump = function
+	typeof pause = function
+	typeof smartRequire = function
+	typeof uniqueId = function

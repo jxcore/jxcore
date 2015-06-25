@@ -1,0 +1,16 @@
+
+namespace: types
+	`some string` toString() = str
+	`empty string` toString() = [empty string]
+	`number 0` toString() = 0
+	`number 1` toString() = 1
+	`number 2.7` toString() = 2.7
+	`boolean true` toString() = true
+	`boolean false` toString() = false
+	`empty array` toString() = [empty string]
+	`non empty array` toString() = 1,two
+	`empty object` toString() = [object Object]
+	`non empty object` toString() = [object Object]
+	`null` toString() = [null]
+	`undefined` toString() = [undefined]
+	`function` toString() = function () {}

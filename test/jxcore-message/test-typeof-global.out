@@ -1,0 +1,14 @@
+
+namespace: globals
+	typeof Buffer = function
+	typeof GLOBAL = object
+	typeof clearInterval = function
+	typeof clearTimeout = function
+	typeof console = object
+	typeof global = object
+	typeof jxcore = object
+	typeof process = object
+	typeof root = object
+	typeof setImmediate = function
+	typeof setInterval = function
+	typeof setTimeout = function

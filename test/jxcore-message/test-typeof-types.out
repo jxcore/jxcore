@@ -1,0 +1,16 @@
+
+namespace: types
+	typeof some string = string
+	typeof empty string = string
+	typeof number 0 = number
+	typeof number 1 = number
+	typeof number 2.7 = number
+	typeof boolean true = boolean
+	typeof boolean false = boolean
+	typeof empty array = object
+	typeof non empty array = object
+	typeof empty object = object
+	typeof non empty object = object
+	typeof null = object
+	typeof undefined = undefined
+	typeof function = function
