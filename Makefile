@@ -130,6 +130,12 @@ test-npm-publish: jx
 test-jxcore: all
 	./jx test/run.js jxcore -flags $(flags)
 
+test-jxcore-npm: all
+	./jx test/run.js jxcore-npm -flags $(flags)
+
+test-jxcore-message: all
+	./jx test/run.js jxcore-message -flags $(flags)
+
 apidoc_sources = $(wildcard doc/api/*.markdown)
 apidocs = $(addprefix out/,$(apidoc_sources:.markdown=.html)) \
           $(addprefix out/,$(apidoc_sources:.markdown=.json))

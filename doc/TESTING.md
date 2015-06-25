@@ -19,19 +19,19 @@ The following command is for testing *jxcore* tests as plain .js files:
 
 or
 
-    make test test-jxcore flags j
+    make test test-jxcore flags=j
 
 As packages:
 
-    make test test-jxcore flags p
+    make test test-jxcore flags=p
 
 As native packages:
 
-    make test test-jxcore flags n
+    make test test-jxcore flags=n
 
 All at once:
 
-    make test test-jxcore flags a
+    make test test-jxcore flags=a
 
 ## Windows:
 
