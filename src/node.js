@@ -2107,6 +2107,30 @@
           if (!verpatch) cc("Cannot apply file description information. The '.ver' file not found.", "magenta");
           if (error) cc("Cannot apply file description information.", error, "magenta");
         }
+
+        // signing
+        if (contents.project.sign) {
+          var _cmd = "";
+          var lc = contents.project.sign.toString().toLowerCase();
+          if (lc === "true") {
+            _cmd = "/a"
+          } else if (fss.existsSync(contents.project.sign)) {
+            _cmd = "/f " + quote(contents.project.sign);
+          } else {
+            _cmd = contents.project.sign;
+          }
+
+          if (_cmd) {
+            _cmd = "signtool sign " + _cmd.trim() + " " +quote(finalName);
+            var ret = jxcore.utils.cmdSync(_cmd);
+            if (ret.exitCode) {
+              cc("\nUnable to sign the native package:", "magenta");
+              cc(ret.out, "red");
+            } else {
+              cc("\nThe package was successfully signed.", "yellow");
+            }
+          }
+        }
       }
 
       cc("\n[OK] compiled file is ready (" + file_name + copy_ext + ")", !warn_node ? "green" : "");
