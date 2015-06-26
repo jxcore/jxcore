@@ -1,4 +1,4 @@
-# Packaging & Code Protection
+# Packaging
 
 JXcore introduces a unique feature for packaging of source files and other assets into JX packages.
 
