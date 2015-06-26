@@ -13,5 +13,5 @@ you can find the 'fat' binaries and include files for ARM, ARM64, INTEL32, and I
 
 Coming Soon -> We are preparing the samples for mobile applications. 
 
-What is next :  
+What is next:  
 [Embedding JXcore](https://github.com/jxcore/jxcore/blob/master/doc/native/Embedding_Basics.md)
