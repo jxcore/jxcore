@@ -101,6 +101,7 @@ class commons {
   bool should_interrupt_;
 #endif
 
+  static bool ssl_initialized_;
   static bool self_hosted_process_;
   static bool embedded_multithreading_;
 

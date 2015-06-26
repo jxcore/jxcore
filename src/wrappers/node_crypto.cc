@@ -3841,14 +3841,13 @@ JS_LOCAL_METHOD(GetHashes) {
 }
 JS_METHOD_END
 
-static bool ssl_initialized;
 DECLARE_CLASS_INITIALIZER(InitCrypto) {
   JS_ENTER_SCOPE_COM();
   JS_DEFINE_STATE_MARKER(com);
 
   customLock(CSLOCK_CRYPTO);
-  if (!ssl_initialized) {
-    ssl_initialized = true;
+  if (!commons::ssl_initialized_) {
+    commons::ssl_initialized_ = true;
     SSL_library_init();
     OpenSSL_add_all_algorithms();
     OpenSSL_add_all_digests();

@@ -22,6 +22,7 @@ typedef int mode_t;
 
 namespace node {
 
+bool commons::ssl_initialized_ = false;
 char *commons::embedded_source_ = NULL;
 jxcore_instance_status commons::process_status_ = JXCORE_INSTANCE_NONE;
 int32_t commons::max_header_size = 0;  // disabled
