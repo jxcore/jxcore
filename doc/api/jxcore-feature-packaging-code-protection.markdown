@@ -20,8 +20,8 @@ instead of:
 
 You may specify none, one or more of the following options:
 
-* -add [file||folder, file||folder2, ...]
-* -slim file||folder, file||folder2, ...
+* -add [ file||folder [, file2||folder2, ... ]]
+* -slim file||folder [, file2||folder2, ... ]
 * JXP fields may be also provided here. See below for their description.
 
 The `jx package` command recursively scans the current folder and generates a `JXP` package information file based on all files in that directory.
@@ -39,6 +39,34 @@ initially, the tool generates `JXP` project file (*helloworld.jxp*). Then it is 
 which will create the output JX package *helloworld.jx*.
 
 Description of the switches:
+
+#### boolean values
+
+Some of the switches may be provided as boolean values. Below is description of their usage.
+
+- if not provided, uses the default value. Each of the boolean switches described below has its own mentioned default value.
+
+- if provided, but not followed by any value, it acts as `true`:
+
+```bash
+> jx package helloworld.js -extract
+```
+
+- if provided, and followed by `0` or `no` or `false`, it acts as `false`:
+
+```bash
+> jx package helloworld.js -extract 0
+> jx package helloworld.js -extract no
+> jx package helloworld.js -extract false
+```
+
+- if provided, and followed by anything else than `0` or `no` or `false`, it acts as `true`:
+
+```bash
+> jx package helloworld.js -extract 1
+> jx package helloworld.js -extract yes
+> jx package helloworld.js -extract something
+```
 
 #### -add
 
@@ -87,7 +115,11 @@ Below example defines for the `-slim` option the same path in 3 ways (2 relative
 
 #### -native
 
-This parameter is optional. When provided, the package will be compiled as a self-executable.
+Boolean value. Default is `false`. See also [boolean values](#boolean-values).
+
+     > jx package helloworld.js "Hello World" -native
+
+When it's set to `true`, the compilation process creates standalone, self-executable binary rather than a package.
 It means, that you can run it directly without `jx` binary.
 
 Also, the output file name will be changed. It will no longer contain *.jx* extension.
@@ -134,39 +166,26 @@ String value.
 
 #### -extract
 
-Boolean value. Default is `false`.
+Boolean value. Default is `false`. See also [boolean values](#boolean-values).
 
-- if not provided, uses the default value.
-- if provided, but not followed by any value, it acts as `true`:
-
-```bash
-> jx package helloworld.js -extract
-```
-
-- if provided, and followed by `0` or `no` or `false`, it acts as `false`:
-
-```bash
-> jx package helloworld.js -extract 0
-```
-
-- if provided, and followed by anything else than `0` or `no` or `false`, it acts as `true`:
-
-```bash
-> jx package helloworld.js -extract 1
-```
+When it's set to `true`, all package contents will be extracted at first run of the compiled package.
+There will be a new folder created with the name parameter.
+All files and assets embedded inside the package will be saved with full directory structure preserved.
 
 #### -library
 
-Boolean value. Default is `true`. See also notes above.
+Boolean value. Default is `true`. See also [boolean values](#boolean-values).
+
+Value set to `true` means that JX package can be treated as a library and it can be used from inside another JX package (with `require()` method).
+Setting this value to `false` is a good way of preventing its usage as an external module (and then `require()` will not be possible).
 
 #### -fs_reach_sources
 
-Boolean value. Default is `true`. See also notes above.
+Boolean value. Default is `true`. See also [boolean values](#boolean-values).
 
 #### -preInstall or -preinstall
 
 This parameter receives commands separated with commas. However you may use any other character by setting special environment variable [JX_ARG_SEP](jxcore-utils.html#jxargsep).
-
 
 For example, the following command line:
 
@@ -182,6 +201,53 @@ will get converted to the following array and embedded into JXP project file:
 	],
 	...
 ```
+
+See also `preinstall` in [File structure](#file-structure).
+
+#### -sign
+
+String value. It it used only when [-native](#-native) switch is set to `true`.
+It can be used for signing the native executable with user's certificate after the package is created.
+
+This can work only if [Sign Tool](https://msdn.microsoft.com/en-us/library/8s9b9yaz%28v=vs.110%29.aspx) is installed in the system (it is s automatically installed with Visual Studio).
+
+The `-sign` switch may receive few variations of values:
+
+* **no value** (which means `true`)
+
+For example:
+
+    > jx package helloworld.js "HelloWorld" --native -sign
+
+This internally invokes the following command:
+
+    > signtool sign /a HelloWorld.exe
+
+which automatically selects the best signing certificate. Please refer to `signtool sign /?` help.
+
+* **file path of user's certificate**
+
+For example:
+
+    > jx package helloworld.js "HelloWorld" --native -sign "c:\mycert.pfx"
+
+This internally invokes the following command:
+
+    > signtool sign /f "c:\mycert.pfx" HelloWorld.exe
+
+Signs the native package with provided certificate file.
+However this will not work if the certificate requires a password, because it needs to be specified explicitly.
+In this case you can use the next approach.
+
+* **signtool's command line parameters**:
+
+For example:
+
+    > jx package helloworld.js "HelloWorld" --native -sign "/f 'c:\mycert.pfx' /p password"
+
+This internally invokes the following command:
+
+    > signtool sign /f "c:\mycert.pfx" /p password HelloWorld.exe
 
 ### compile
 
@@ -266,7 +332,8 @@ The JXP project file is a simple text file that contains package description wri
         "mkdir new_folder"
     ],
     "fs_reach_sources": true,
-    "native" : true
+    "native" : true,
+    "sign" : ""
 }
 ```
 
@@ -294,7 +361,7 @@ This parameter has different meaning depending on the library value.
 When the package is compiled with `library` = `false`, and you run the compiled package, this execute file will be executed first.
 If `library` is `true`, and the package is called with `require()` method, the execute file will be returned by the latter.
 * **extract**
-This is a boolean value: true or false. When it's set to true, all package contents will be extracted at first run of the compiled package. There will be a new folder created with the name parameter. All files and assets embedded inside the package will be saved with full directory structure preserved.
+See the [-extract](#-extract) command line switch.
 * **output**
 Name of the output JX package.
 * **files**
@@ -302,8 +369,7 @@ This is an array, where you can define, which script files from your project wil
 * **assets**
 This is the array with static resource files. You can embed any asset file into the `jx` package.
 * **library**
-It is a boolean value: true or false. Value set to true means that JX package can be treated as a library and it can be used from inside another JX package (with `require()` method).
-Setting this value to false is a good way of preventing its usage as an external module (and then `require()` will not be possible).
+See the [-library](#-library) command line switch.
 * **licence_file**
 Name of the file containing the licensing information – it is generally a simple text file. If this parameter is omitted or null and if a file named “LICENSE” exists in the directory from where you compile the package – it will be embedded automatically.
 * **readme_file**
@@ -391,8 +457,10 @@ However, `files` members are not accessible from exports.$JXP.
 Normally, `fs` can not reach the JavaScript files inside the package. If you need to access all the JavaScript files using `fs` module, you should set this parameter to 'true'. Otherwise you can either set it to 'false' or give the list of files expected to be reachable by 'fs' module. (i.e. { "lib/testfile.js":true, "lib/test2.js":true } )
 
 * **native**
-When this parameter is set to 'true', the compilation process creates standalone, self-executable binary rather than a package.
-It acts exactly as `jx package` command called with [`-native`](jxcore-feature-packaging-code-protection.markdown#-native) switch.
+See the [-native](#-native) command line switch.
+
+* **sign**
+Ability to sign the native executable package. See the [`-sign`](#-sign) switch.
 
 ### Supported file types
 
