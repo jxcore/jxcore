@@ -2,7 +2,7 @@
 
 #### Types
 
-Supported types are given below;
+Supported types are listed below;
 ```c
 enum JXType {
   RT_Int32 = 1,
