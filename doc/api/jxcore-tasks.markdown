@@ -1,7 +1,7 @@
 # Multi-instanced Javascript Tasks
 
-JXcore, in addition to running multi-instanced applications with `mt`/`mt-keep` command, offers Multi-instanced Javascript Tasks feature,
-which allows you from the code running in the main instance to add tasks for execution in a sub-instances.
+In addition to running multi-instanced applications with `mt`/`mt-keep` command, JXcore offers Multi-instanced Javascript Tasks feature,
+which allows you from running the code in the main instance to add tasks for execution in a sub-instances.
 
 The main idea in this approach is to define the tasks, which you will then add to the thread pool for execution.
 For this, you can use any of the methods described in the API section.
