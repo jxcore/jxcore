@@ -16,7 +16,7 @@
     'node_use_openssl%': 'true',
     'node_use_systemtap%': 'false',
     'node_shared_openssl%': 'false',
-    'node_shared_sqlite%': 'false',
+    'node_no_sqlite%': 'false',
     'node_engine_mozilla%': 0,
     'node_shared_library%': 0,
     'node_embed_leveldown%': 0,
@@ -37,8 +37,6 @@
       'lib/jx/_jx_timers.js',
       'lib/jx/_jx_source.js',
       'lib/jx/_jx_marker.js',
-
-      'lib/external/sqlite3.js',
 
       'src/node.js',
       'lib/_debugger.js',
@@ -82,6 +80,11 @@
       'lib/vm.js',
       'lib/zlib.js',
     ],
+    'conditions':[
+      ['node_no_sqlite == 0', {
+        'library_files':[ 'lib/external/sqlite3.js' ],
+      }],
+    ]
   },
 
   'targets': [
@@ -129,9 +132,6 @@
       'src/wrappers/node_zlib.cc',
 
       'src/external/module_wrap.cc',
-      'src/external/sqlite3/database.cc',
-      'src/external/sqlite3/statement.cc',
-      'src/external/sqlite3/node_sqlite3.cc',
 
       'src/node_constants.cc',
       'src/node_extensions.cc',
@@ -376,10 +376,14 @@
         ],
         'dependencies': ['deps/mozjs/mozjs.gyp:mozjs']
       }],
-      ['node_shared_sqlite=="false"',
-      {
+      ['node_no_sqlite==0',
+      {        
+        'defines': [ 'JXCORE_EMBEDS_SQLITE' ],
         'sources': [
           'deps/sqlite/sqlite3.h',
+          'src/external/sqlite3/database.cc',
+          'src/external/sqlite3/statement.cc',
+          'src/external/sqlite3/node_sqlite3.cc',
         ],
         'dependencies': ['deps/sqlite/sqlite.gyp:sqlite'],
       }],

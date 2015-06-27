@@ -302,6 +302,11 @@ parser.add_option("--embed-leveldown",
     dest="embed_leveldown",
     help="embed leveldown")
     
+parser.add_option("--no-sqlite",
+    action="store_true",
+    dest="node_no_sqlite",
+    help="disable embedded sqlite")
+    
 parser.add_option("--compress-internals",
     action="store_true",
     dest="compress_internals",
@@ -550,6 +555,7 @@ def configure_node(o):
     o['variables']['SHARED_OS'] = sys.platform
     
   o['variables']['node_engine_mozilla'] = 1 if options.engine_mozilla else 0
+  o['variables']['node_no_sqlite'] = 1 if options.node_no_sqlite else 0
   o['variables']['node_embed_leveldown'] = 1 if options.embed_leveldown else 0
   o['variables']['v8_enable_gdbjit'] = 1 if options.gdb else 0
   o['variables']['v8_no_strict_aliasing'] = 1 # work around compiler bugs

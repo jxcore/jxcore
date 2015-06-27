@@ -1,7 +1,5 @@
 #include "node.h"
 #include "node_buffer.h"
-#include "../module_externs.h"
-
 #include <stdint.h>
 #include <sstream>
 #include <cstring>
@@ -10,6 +8,7 @@
 
 #include "macros.h"
 #include "database.h"
+#include "module_externs.h"
 #include "statement.h"
 
 namespace node_sqlite3 {

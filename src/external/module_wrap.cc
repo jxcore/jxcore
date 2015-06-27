@@ -1,12 +1,14 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-#include "module_externs.h"
 #include "handle_wrap.h"
 #include "jx/commons.h"
 
 #include <stdio.h>
 #include <string>
 #include <iostream>
+#ifdef JXCORE_EMBEDS_SQLITE
+#include "sqlite3/module_externs.h"
+#endif
 
 #if defined(_MSC_VER)
 #include <windows.h>
@@ -38,10 +40,13 @@ JS_METHOD(ModuleWrap, LoadInternal) {
   jxcore::JXString filename;
   args.GetString(1, &filename);
 
+#ifdef JXCORE_EMBEDS_SQLITE
   if (!strcmp(*filename, "sqlite3")) {
     node_sqlite3::RegisterModule(module);
     RETURN();
   }
+#endif
+
 #ifdef JXCORE_EMBEDS_LEVELDOWN
   if (!strcmp(*filename, "leveldown")) {
     leveldown::RegisterModule(module);

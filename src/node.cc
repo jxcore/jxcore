@@ -9,7 +9,10 @@
 #include "wrappers/thread_wrap.h"
 #include "string_bytes.h"
 #include "ares.h"
+
+#ifdef JXCORE_EMBEDS_SQLITE
 #include "sqlite3.h"
+#endif
 
 #include <limits.h> /* PATH_MAX */
 #include <assert.h>
@@ -1961,7 +1964,9 @@ void SetupProcessObject(const int threadId) {
   JS_NAME_SET(embedded, JS_STRING_ID("leveldown"), STD_TO_STRING("1.0.6"));
 #endif
 
+#ifdef JXCORE_EMBEDS_SQLITE
   JS_NAME_SET(embedded, JS_STRING_ID("sqlite"), STD_TO_STRING(SQLITE_VERSION));
+#endif
 
   JS_NAME_SET(versions, JS_STRING_ID("ares"), STD_TO_STRING(ARES_VERSION_STR));
   JS_NAME_SET(versions, JS_STRING_ID("uv"), STD_TO_STRING(uv_version_string()));
