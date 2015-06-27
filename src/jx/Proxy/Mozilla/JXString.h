@@ -32,16 +32,20 @@ class JXString {
   void SetFromHandle();
   void GetASCII();
 
+  // MOZJS Specific
+  JSContext *ctx_;
+
  public:
-  JXCORE_PUBLIC void SetFromSTD(const char *other, const int lenght, JSContext *ctx = NULL);
-  JXCORE_PUBLIC void SetFromHandle(const JS_HANDLE_VALUE_REF str, bool get_ascii = false);
-  JXCORE_PUBLIC void SetFromHandle(JSString *str, JSContext *ctx);
+  JXCORE_PUBLIC void SetFromSTD(const char *other, const int lenght,
+                                JSContext *ctx = NULL);
+  JXCORE_PUBLIC void SetFromHandle(const JS_HANDLE_VALUE_REF str,
+                                   bool get_ascii = false);
 
   JXCORE_PUBLIC JXString();
   JXCORE_PUBLIC JXString(const char *str, JSContext *ctx);
-  JXCORE_PUBLIC JXString(JSString *str, JSContext *ctx, bool autogc = true,
-           bool get_ascii = false);
-  JXCORE_PUBLIC explicit JXString(const JS_HANDLE_VALUE_REF str, void *ctx = NULL);
+
+  JXCORE_PUBLIC explicit JXString(const JS_HANDLE_VALUE_REF str,
+                                  void *ctx = NULL);
   JXCORE_PUBLIC ~JXString();
 
   JXCORE_PUBLIC char *operator*();
@@ -53,12 +57,17 @@ class JXString {
   JXCORE_PUBLIC size_t Utf8Length() const;
   JXCORE_PUBLIC size_t length() const;
 
-  // MOZJS Specific
-  JXCORE_PUBLIC JSContext *ctx_;
+  // MozJS specific
+  JXCORE_PUBLIC JXString(JSString *str, JSContext *ctx, bool autogc = true,
+                         bool get_ascii = false);
+
+  JXCORE_PUBLIC void SetFromHandle(JSString *str, JSContext *ctx);
 
   // TODO(obastemur) v8 like (move this into MozJS::Value)
-  JXCORE_PUBLIC size_t WriteUtf8(char *buf, const size_t buflen, int *chars_written);
-  JXCORE_PUBLIC void GetUTF8LetterAt(const size_t index, MozJS::auto_str *chars);
+  JXCORE_PUBLIC size_t
+      WriteUtf8(char *buf, const size_t buflen, int *chars_written);
+  JXCORE_PUBLIC void GetUTF8LetterAt(const size_t index,
+                                     MozJS::auto_str *chars);
 };
 
 }  // namespace jxcore

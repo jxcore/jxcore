@@ -209,10 +209,9 @@ bool PArguments::IsUnsigned(const unsigned index) const {
 
   int64_t xv = val.toNumber();
 
-  // TODO(obastemur) find an efficient way
+// TODO(obastemur) find an efficient way
 #ifdef JS_CPU_ARM
-  if (xv == 0)
-    return val.toInt32() >= 0;
+  if (xv == 0) return val.toInt32() >= 0;
 #endif
 
   return xv >= 0;
@@ -269,12 +268,11 @@ int64_t PArguments::GetInteger(const unsigned index) {
   }
 
   if (args_[index].isNumber()) {
-	int64_t xv = (int64_t)args_[index].toNumber();
+    int64_t xv = (int64_t)args_[index].toNumber();
 #ifdef JS_CPU_ARM
-	if (xv == 0)
-	  xv = args_[index].toInt32();
+    if (xv == 0) xv = args_[index].toInt32();
 #endif
-	return xv;
+    return xv;
   }
 
   if (args_[index].isBoolean()) return args_[index].toBoolean() ? 1 : 0;
@@ -326,8 +324,7 @@ unsigned PArguments::GetUInteger(const unsigned index) {
   if (args_[index].isNumber()) {
     int64_t val64 = (int64_t)args_[index].toNumber();
 #ifdef JS_CPU_ARM
-	if (val64 == 0)
-	  val64 = -1;
+    if (val64 == 0) val64 = -1;
 #endif
     if (val64 >= 0) return (uint32_t)val64;
 

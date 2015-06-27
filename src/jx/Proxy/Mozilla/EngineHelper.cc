@@ -23,11 +23,11 @@ bool EngineHelper::IsInstanceAlive(JSContext *ctx) {
   const int tid_ctx = JS_GetThreadId(ctx);
   node::commons *com;
   if (tid_ctx < 0 || tid_ctx > 64) {
-	return false;
+    return false;
   } else {
-	com = node::commons::getInstanceByThreadId(tid_ctx);
-	if (!com) return false;
-	if (com->instance_status_ == node::JXCORE_INSTANCE_EXITED) return false;
+    com = node::commons::getInstanceByThreadId(tid_ctx);
+    if (!com) return false;
+    if (com->instance_status_ == node::JXCORE_INSTANCE_EXITED) return false;
   }
 
   JSRuntime *rt = JS_GetRuntime(ctx);

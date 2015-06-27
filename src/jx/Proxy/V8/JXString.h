@@ -27,7 +27,7 @@ class JXString {
 
  public:
   JXCORE_EXTERN(void)
-  SetFromSTD(const char* other, const int lenght,  void* _ = NULL);
+  SetFromSTD(const char* other, const int length, void* _ = NULL);
 
   JXCORE_EXTERN(void)
   SetFromHandle(JS_HANDLE_VALUE value, bool get_ascii = false);
