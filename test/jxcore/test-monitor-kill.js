@@ -12,11 +12,9 @@ var http = require("http"),
 
 jxtools.listenForSignals();
 
-var port = 17777;
 var finished = false;
 var subscribed = false;
 var killed = false;
-
 
 // neutralize old tmp file
 var oldLog = path.join(__dirname, "test-monitor-run-app-tmp.js");
@@ -27,9 +25,10 @@ if (fs.existsSync(oldLog))
 var baseFileName = "__test-monitor-run-app-tmp.js";
 var logFileName = "__test-monitor-run-app-tmp-monitor.log";
 var appFileName = __dirname + path.sep + baseFileName;
+jxtools.addFilesForDeletion(appFileName);
 
 var str = 'require("http").createServer().listen(8587, "localhost");\n';
-str += 'setTimeout(process.exit, 10000);';  // let it end after 10 secs
+str += 'setTimeout(process.exit, 100000);';  // let it end after 10 secs
 fs.writeFileSync(appFileName, str);
 
 var cmd = '"' + process.execPath + '" monitor ';
@@ -40,8 +39,6 @@ jxcore.utils.cmdSync(cmd + "stop");
 process.on('exit', function (code) {
   jxcore.utils.cmdSync(cmd + 'stop');
   jxtools.rmfilesSync("*monitor*.log");
-  if (fs.existsSync(appFileName))
-    fs.unlinkSync(appFileName);
 
   if (!jxtools.gotSignal) {
     assert.ok(finished, "Test unit did not finish.");
@@ -50,64 +47,48 @@ process.on('exit', function (code) {
   }
 });
 
-// calls monitor and gets json: http://localhost:17777/json
-var getJSON = function (cb) {
-  var options = {
-    host: 'localhost',
-    port: port,
-    path: '/json'
-  };
-
-  http.get(options, function (res) {
-    res.setEncoding('utf8');
-    res.on('data', function (chunk) {
-      cb(false, chunk.toString());
-    });
-  })
-    .on("error", function (err) {
-      cb(true, err);
-    });
-};
-
-
-// we use setTimeout() here, because we cannot be sure on Windows,
-// that cmdSync will not exit sooner that jx monitor cmd will completejx monit
-// so after it completes we wait for another 1 second
-
 // ########################## jx monitor start
 var ret = jxcore.utils.cmdSync(cmd + "start");
 assert.ok(ret.exitCode <= 0, "Monitor did not start after `start` command. \n", JSON.stringify(ret));
 
 // ########################## jx monitor run test-monitor-run-app.js
 
+var batchName = jxtools.saveBatchFile(process.execPath + " monitor run " + appFileName);
+
 // this should be launched in background. & at the end of cmd does not work proper on windows
 var out = fs.openSync(logFileName, 'a');
 var err = fs.openSync(logFileName, 'a');
-var child = childprocess.spawn(process.execPath, [ "monitor", "run", appFileName ] , { detached: true, stdio: [ 'ignore', out, err ] });
+var child = childprocess.spawn(batchName, { detached: true, stdio: [ 'ignore', out, err ] });
 child.unref();
 
 var start = Date.now();
 
 var check = function() {
-  getJSON(function (err, txt) {
+  jxtools.getMonitorLog(function (err, txt) {
 
-    // should be no error and json should be returned with subscribed application data
-    // including "pid" number
-    if (!err && txt && txt.length && txt.indexOf(baseFileName) > -1) {
-      subscribed = true;
-      console.log("subscribed");
-      // app subscribed to the monitor
-      jxcore.utils.cmdSync(cmd + "kill " + appFileName);
+    if (!err && txt) {
+      var arr = txt.split("\n");
 
-      getJSON(function (err, txt) {
-        // should be no error and json should be returned with only []
-        if (!err && txt === "[]") {
-          console.log("killed");
-          killed = true;
+      // checking monitor's log
+      for(var a = 0, len = arr.length; a < len; a++) {
+        var line = arr[a];
+        var hasFile = line.indexOf(path.basename(appFileName)) > -1;
+
+        if (hasFile) {
+          if (!subscribed && line.indexOf("Received data from process.") > -1) {
+            subscribed = true;
+            jxcore.utils.cmdSync(cmd + "kill " + appFileName);
+            break;
+          }
+
+          if (subscribed && line.indexOf("CLOSED") === 0)
+            killed = true;
         }
-        finished = true;
-      });
+      }
+    }
 
+    if (subscribed && killed) {
+      finished = true;
       return;
     }
 
@@ -118,5 +99,6 @@ var check = function() {
   });
 };
 
-check();
+process.nextTick(check);
+
 
