@@ -537,6 +537,7 @@ def configure_node(o):
     o['variables']['uclibc_defined'] = 1
     options.dest_os = 'linux';
   else:
+    o['variables']['uclibc_defined'] = 0
     if options.dest_os == 'android':
       o['variables']['OS'] = 'android'
       if os.environ.get('ANDROID_NDK') == None:
