@@ -11,6 +11,7 @@
     'chromeos%': '1',
     'clang%': 1,
     'python%': 'python',
+    'uclibc_defined%': 0,
 
     # Turn on optimizations that may trigger compiler bugs.
     # Use at your own risk. Do *NOT* report bugs if this option is enabled.
@@ -18,6 +19,9 @@
 
     # Enable V8's post-mortem debugging only on unix flavors.
     'conditions': [
+      ['uclibc_defined == 1', {
+        'defines':['POSIX_UCLIBC_DEFINED'],
+      }], 
       ['OS != "win" and node_engine_mozilla!=1', {
         'v8_postmortem_support': 'true'
       }],

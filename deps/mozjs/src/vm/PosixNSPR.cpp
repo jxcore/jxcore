@@ -155,8 +155,10 @@ PR_SetCurrentThreadName(const char *name)
     result = 0;
 #elif defined(__NetBSD__)
     result = pthread_setname_np(pthread_self(), "%s", (void *)name);
-#else
+#elif !defined(POSIX_UCLIBC_DEFINED)
     result = pthread_setname_np(pthread_self(), name);
+#else
+    result = 0;
 #endif
     if (result)
         return PR_FAILURE;

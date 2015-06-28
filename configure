@@ -532,20 +532,25 @@ def configure_mips(o):
 
 
 def configure_node(o):
-  if options.dest_os == 'android':
-    o['variables']['OS'] = 'android'
-    if os.environ.get('ANDROID_NDK') == None:
-      print "Environment Variable (ANDROID_NDK) was not defined"
-      sys.exit()
-    else:     
-      o['variables']['android_ndk_root'] = os.environ.get('ANDROID_NDK')
-      o['variables']['use_system_icu%'] = 1
+  if options.dest_os == 'openwrt':
+    o['variables']['OS'] = 'linux'
+    o['variables']['uclibc_defined'] = 1
+    options.dest_os = 'linux';
   else:
+    if options.dest_os == 'android':
+      o['variables']['OS'] = 'android'
+      if os.environ.get('ANDROID_NDK') == None:
+        print "Environment Variable (ANDROID_NDK) was not defined"
+        sys.exit()
+      else:     
+        o['variables']['android_ndk_root'] = os.environ.get('ANDROID_NDK')
+        o['variables']['use_system_icu%'] = 1
+    else:
       o['variables']['use_system_icu%'] = 0
   
-  if options.dest_os == 'ios':
-    o['variables']['OS'] = 'ios'
-    o['variables']['use_system_icu%'] = 1
+    if options.dest_os == 'ios':
+      o['variables']['OS'] = 'ios'
+      o['variables']['use_system_icu%'] = 1
   
   o['variables']['openssl_no_asm'] = 1 if options.dest_cpu == "arm" and os.name == "nt" else 0
   o['variables']['node_compress_internals'] = 1 if options.compress_internals else 0 

@@ -19,7 +19,7 @@
       ],
       
       'sources': [ 
-	   'incs/mozilla/Char16.h',
+       'incs/mozilla/Char16.h',
        'incs/mozilla/double-conversion/bignum.cc',
        'incs/mozilla/double-conversion/bignum-dtoa.cc',
        'incs/mozilla/double-conversion/cached-powers.cc',
@@ -243,6 +243,9 @@
       'dependencies': [ '../zlib/zlib.gyp:zlib' ],
       'conditions': 
       [ 
+        ['uclibc_defined == 1', {
+          'defines':['POSIX_UCLIBC_DEFINED'],
+        }], 
         ['target_arch in "arm armv7 armv7s"', {
           'defines': [ 'WTF_CPU_ARM_TRADITIONAL', 'JS_NUNBOX32', 'JS_CPU_ARM=1' ],
         }],

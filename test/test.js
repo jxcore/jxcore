@@ -4,13 +4,9 @@
 // It's useful on platforms, where python is not installed/available, e.g. android.
 // jxcore$ jx test/test.js jxcore
 
-var fs = require('fs'),
-  path = require("path"),
-  cp = require("child_process"),
-  util = require("util");
+var fs = require('fs'), path = require("path"), cp = require("child_process"), util = require("util");
 
-
-var folders = [ ]; //'simple', 'pummel', 'internet' 'jxcore'
+var folders = []; // 'simple', 'pummel', 'internet' 'jxcore'
 
 for (var i = 2, len = process.argv.length; i < len; i++) {
   var p = path.join(__dirname, process.argv[i]);
@@ -28,13 +24,17 @@ if (!folders.length) {
 // we need one empty line at start
 console.log("\n");
 
-var allFiles = [],
-  cwd = process.cwd() + path.sep,
-  dir = cwd + "test" + path.sep,
-  cursorUp = "\033[1A",
-  clearLine = "\033[K",
-  stats = { total: 0, done: 0, percent: 0, passed: 0, failed: 0, time_started: null, minutes_ellapsed: null, seconds_ellapsed: null };
-
+var allFiles = [], cwd = process.cwd() + path.sep, dir = cwd + "test"
+    + path.sep, cursorUp = "\033[1A", clearLine = "\033[K", stats = {
+  total : 0,
+  done : 0,
+  percent : 0,
+  passed : 0,
+  failed : 0,
+  time_started : null,
+  minutes_ellapsed : null,
+  seconds_ellapsed : null
+};
 
 var add = function(jsFile, json_arg) {
 
@@ -50,7 +50,6 @@ var add = function(jsFile, json_arg) {
   allFiles.push(obj);
 };
 
-
 for (var a = 0, len = folders.length; a < len; a++) {
 
   var fullDir = dir + folders[a] + path.sep;
@@ -64,7 +63,7 @@ for (var a = 0, len = folders.length; a < len; a++) {
       var json = fs.readFileSync(fullDir + files[b] + ".json");
       json = JSON.parse(json.toString());
 
-      for (var o in json.args)
+      for ( var o in json.args)
         add(fullDir + files[b], json.args[o]);
 
       continue;
@@ -76,8 +75,7 @@ for (var a = 0, len = folders.length; a < len; a++) {
 
 stats.time_started = Date.now();
 
-
-var pad = function (str, cnt, char) {
+var pad = function(str, cnt, char) {
   str = str + "";
   while (str.length < cnt) {
     str = char + str;
@@ -85,31 +83,30 @@ var pad = function (str, cnt, char) {
   return str;
 };
 
-
-// writes this in the last line: [00:03|%   3|+  21|-   3]
-var writeStats = function (obj) {
+// writes this in the last line: [00:03|% 3|+ 21|- 3]
+var writeStats = function(obj) {
 
   var fname = obj.fname || obj;
   var time = "%s:%s";
   var percent = jxcore.utils.console.setColor("%% %s", "blue");
   var success = jxcore.utils.console.setColor("+ %s", "green");
   var failures = jxcore.utils.console.setColor("- %s", "red");
-  var s = util.format("[" + [time, percent, success, failures].join("|") +  "] " + fname.replace(cwd, ""),
-    pad(stats.minutes_ellapsed, 2, '0'),
-    pad(stats.seconds_ellapsed, 2, '0'),
-    pad(stats.percent, 3, ' '),
-    pad(stats.passed, 3, ' '),
-    pad(stats.failed, 3, ' '));
+  var s = util.format("[" + [ time, percent, success, failures ].join("|")
+      + "] " + fname.replace(cwd, ""), pad(stats.minutes_ellapsed, 2, '0'),
+      pad(stats.seconds_ellapsed, 2, '0'), pad(stats.percent, 3, ' '), pad(
+          stats.passed, 3, ' '), pad(stats.failed, 3, ' '));
 
   console.log(cursorUp + clearLine + s);
 };
 
-var addStat = function (ret) {
+var addStat = function(ret) {
 
   if (ret.exitCode) {
     stats.failed++;
-    jxcore.utils.console.log(cursorUp + clearLine + "=== " + ret.fname.replace(cwd, "") + " ===", "cyan");
-    jxcore.utils.console.log("Failure no " + stats.failed + ", exit code: " + ret.exitCode, "magenta");
+    jxcore.utils.console.log(cursorUp + clearLine + "=== "
+        + ret.fname.replace(cwd, "") + " ===", "cyan");
+    jxcore.utils.console.log("Failure no " + stats.failed + ", exit code: "
+        + ret.exitCode, "magenta");
     jxcore.utils.console.log(ret.out.toString().trim());
     jxcore.utils.console.log("Command:", ret.cmd, "yellow");
     jxcore.utils.console.log("\n");
@@ -119,25 +116,31 @@ var addStat = function (ret) {
 
   var seconds_delta = (Date.now() - stats.time_started) / 1000;
   stats.minutes_ellapsed = Math.floor(seconds_delta / 60);
-  stats.seconds_ellapsed = Math.round(seconds_delta - stats.minutes_ellapsed * 60);
+  stats.seconds_ellapsed = Math.round(seconds_delta - stats.minutes_ellapsed
+      * 60);
   stats.done++;
   stats.percent = Math.round(stats.done * 100 / stats.total);
 
 };
 
-
-var runNextTest = function () {
+var runNextTest = function() {
   if (!allFiles.length) {
     writeStats("Finished.");
     return;
   }
-  var rec = allFiles.shift(),
-    ret = { fname: rec.fname, exitCode: 0, timeouted: false, cmd : rec.cmd };
+  var rec = allFiles.shift(), ret = {
+    fname : rec.fname,
+    exitCode : 0,
+    timeouted : false,
+    cmd : rec.cmd
+  };
 
   var debug = false;
 
   writeStats(ret);
-  var child = cp.exec(rec.cmd, { timeout: 20000 }, function (error, stdout, stderr) {
+  var child = cp.exec(rec.cmd, {
+    timeout : 20000
+  }, function(error, stdout, stderr) {
     ret.out = stdout.toString() + stderr.toString();
     ret.err = stderr.toString();
     ret.error = error;
@@ -148,17 +151,15 @@ var runNextTest = function () {
     setTimeout(runNextTest, 10);
   });
 
-  child.on('exit', function (code) {
+  child.on('exit', function(code) {
     if (debug) {
       jxcore.utils.console.log("on exit, code " + code, "yellow");
     }
     ret.exitCode = code;
-    ret.timeouted = code == 143;  // SIGTERM is called when timeout occurs
+    ret.timeouted = code == 143; // SIGTERM is called when timeout occurs
     child.kill();
     child = null;
   });
 };
 
 runNextTest();
-
-
