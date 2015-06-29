@@ -72,7 +72,14 @@ On Windows;
 --no-sqlite : do not embed sqlite3 (by default JXcore embeds sqlite)
 
 --embed-leveldown : embed leveldown engine into JXcore (by default JXcore doesn't embed leveldown)
-> See https://github.com/Level/leveldown-mobile for usage
+
+> You need to init git submodule to compile JXcore with leveldown embedded
+```
+git submodule init
+git submodule update
+```
+
+> For leveldown-mobile API, see [https://github.com/Level/leveldown-mobile](https://github.com/Level/leveldown-mobile)
 
 
 ##### Notes
