@@ -181,6 +181,18 @@ var yellow = jxcore.utils.console.setColor("The yellow is here", "and here", "ye
 console.log(yellow);
 ```
 
+### removeColors(txt)
+
+Removes from the `txt` string all formatting control codes and returns a new plain string.
+
+```js
+// [31mformatted with red[39m
+var formatted = jxcore.utils.console.setColor("formatted with red", "red");
+
+// formatted with red
+var plain = jxcore.utils.console.removeColors(formatted);
+```
+
 ## System Info
 
 ### getCPU(cb, timeout)
