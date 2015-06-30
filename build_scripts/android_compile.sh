@@ -195,13 +195,4 @@ fi
 
 cp src/public/*.h $FATBIN/bin
 
-if [ $MIPS != 0 ]
-then
-  rm $MIPS/Release/*.a
-fi
-
-rm $ARM7/Release/*.a
-rm $INTEL32/Release/*.a
-rm $INTEL64/Release/*.a
-
 LOG $GREEN_COLOR "JXcore Android binaries are ready under $FATBIN\n"
