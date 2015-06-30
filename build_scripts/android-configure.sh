@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# Copyright & License details are available under JXCORE_LICENSE file
+
 if [ $# -eq 0 ]
 then
   echo "no argument provided."

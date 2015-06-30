@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Copyright & License details are available under JXCORE_LICENSE file
+
 NORMAL_COLOR='\033[0m'
 RED_COLOR='\033[0;31m'
 GREEN_COLOR='\033[0;32m'

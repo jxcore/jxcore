@@ -1,4 +1,5 @@
 #!/usr/bin/env jx
+// Copyright & License details are available under JXCORE_LICENSE file
 
 if (typeof jxcore === 'undefined') {
   console.error("This script requires JXcore to run. " +
