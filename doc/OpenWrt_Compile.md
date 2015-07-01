@@ -3,8 +3,8 @@
 OpenWrt is a GNU/Linux based firmware program for embedded devices such as residential gateways and routers.
 
 In order to run a Node.JS application on OpenWrt targets, you need to create your own 
-package for the target device. We made package creation steps are very easy, however you 
-need a Ubuntu machine or VM for it. OpenWrt SDK is compatible with Ubuntu OS. 
+package for the target device. We made package creation steps are very easy, **however you 
+need a Ubuntu machine or VM for it. OpenWrt SDK is compatible with Ubuntu OS.**
 
 Copy and paste the script below into terminal;
 ```bash
