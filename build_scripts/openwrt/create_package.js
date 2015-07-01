@@ -2,7 +2,7 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
 if (typeof jxcore === 'undefined') {
-  console.error("This script requires JXcore to run. " +
+  console.error("This script requires JXcore to run. \n" +
   "Please visit http://jxcore.com/downloads to download JXcore for your platform");
   process.exit(1);
 }
@@ -69,7 +69,7 @@ jxcore.utils.cmdSync('rm -rf OpenWrt-SDK*');
 color.log("Downloading SDK file", "green");
 run("wget  " + image_lnk);
 
-var files = fs.readdirSync(__dirname);
+var files = fs.readdirSync(process.cwd());
 
 var filename;
 for (var o in files) {
@@ -88,7 +88,7 @@ if (!filename) {
 color.log("Unpacking OpenWRT", "green");
 run("tar jxf " + filename);
 
-files = fs.readdirSync(__dirname);
+files = fs.readdirSync(process.cwd());
 filename = null;
 for (var o in files) {
   if (!files.hasOwnProperty(o)) continue;
