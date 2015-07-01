@@ -209,7 +209,8 @@ See also `preinstall` in [File structure](#file-structure).
 String value. It it used only when [-native](#-native) switch is set to `true`.
 It can be used for signing the native executable with user's certificate after the package is created.
 
-This can work only if [Sign Tool](https://msdn.microsoft.com/en-us/library/8s9b9yaz%28v=vs.110%29.aspx) is installed in the system (it is s automatically installed with Visual Studio).
+This applies only for Windows platforms and can work only if [Sign Tool](https://msdn.microsoft.com/en-us/library/8s9b9yaz%28v=vs.110%29.aspx) is installed in the system
+(it is s automatically installed with Visual Studio).
 
 The `-sign` switch may receive few variations of values:
 
