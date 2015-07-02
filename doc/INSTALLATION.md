@@ -1,10 +1,12 @@
 
-There are pre-compiled binaries of JXcore available from [jxcore.com/downloads](http://jxcore.com/downloads).
-Those are zip files that can be downloaded manually, or you can use bash script (for Unix platforms), that can do the installation for you.
+The pre-compiled binaries of JXcore available from [jxcore.com/downloads](http://jxcore.com/downloads).
+You can also use bash script (for Unix platforms), or setup (for Windows) that can do the installation 
+for you.
 
 # For Linux/OSX:
 
-The [jx_install.sh](https://github.com/jxcore/jxcore/blob/master/tools/jx_install.sh) script always downloads the latest release.
+The [jx_install.sh](https://github.com/jxcore/jxcore/blob/master/tools/jx_install.sh) script always 
+downloads the latest release.
 
 ```bash
 $ curl https://github.com/jxcore/jxcore/blob/master/tools/jx_install.sh | bash
@@ -18,7 +20,9 @@ $ curl http://jxcore.com/xil.sh | bash
 
 ## Script options
 
-Several options are available for customizing the installation process. Example of usage:
+Several options are available for customizing the installation process. 
+
+Example usages given below:
 
 ```bash
 # with curl:
@@ -29,7 +33,7 @@ $ ./jx_install.sh force sm local
 
 ### sm
 
-Allows to install SpiderMonkey build instead of default V8.
+Installs SpiderMonkey build instead of default V8.
 
 ```bash
 $ curl http://jxcore.com/xil.sh | bash -s sm
@@ -37,7 +41,8 @@ $ curl http://jxcore.com/xil.sh | bash -s sm
 
 ### v8
 
-Specifying the engine for V8 is not necessary (as this is the default engine), but still acceptable. Thus both of the following calls are equivalent:
+Specifying the engine for V8 is not necessary (as this is the default engine), but still acceptable. 
+Thus both of the following calls are equivalent:
 
 ```bash
 $ curl http://jxcore.com/xil.sh | bash
@@ -46,7 +51,8 @@ $ curl http://jxcore.com/xil.sh | bash -s v8
 
 ### local
 
-Installs jx binary into the current directory `./` rather than into global path (by default JXcore is installed into global `/usr/local/bin/jx`).
+Installs jx binary into the current directory `./` rather than into global path (by default 
+JXcore is installed into global `/usr/local/bin/jx`).
 
 ```bash
 $ curl http://jxcore.com/xil.sh | bash -s local
@@ -54,7 +60,8 @@ $ curl http://jxcore.com/xil.sh | bash -s local
 
 ### force
 
-Forces to overwrite the jx if there is already the same version at target path installed. This may be useful in case when you want to switch from one engine to another:
+If there is already the same version at target path installed, forces to overwrite the jx file.  
+This may be useful in case when you want to switch from one engine to another:
 
 ```bash
 # installs v8:
@@ -65,8 +72,9 @@ $ curl http://jxcore.com/xil.sh | bash -s force sm
 
 ## Notes:
 
-* FreeBSD requires bash, and unzip installed in order for the script to work.
-* If you have `permission denied` message, make sure the user has root access. Try executing the command as `su`, or `sudo`:
+* FreeBSD requires bash, and unzip installed
+* If you have `permission denied` message, make sure the user has root access. 
+Try executing the command as `su`, or `sudo`:
 
     ```bash
     $ curl http://jxcore.com/xil.sh | sudo bash
@@ -74,9 +82,10 @@ $ curl http://jxcore.com/xil.sh | bash -s force sm
 
 # For Windows:
 
-Apart from separate zip files per each engine/architecture (32sm/64sm/32v8/64v8), there is also an installer available, which allows to chose one of the variations.
+Apart from separate zip files per each engine/architecture (32sm/64sm/32v8/64v8), there is 
+also an installer available.
 
-For example on **Windows x32** you may choose one of two options:
+For example on **Windows x32** you may choose one of the two options:
 
 * V8 x32
 * SpiderMonkey x32

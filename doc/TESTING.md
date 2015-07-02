@@ -10,8 +10,9 @@ However, you can also run tests for specified folders, like:
 
     make test test-simple test-message
 
-Other category of tests resides in *jxcore* subfolder. They can be run as plain *.js* files, packaged or native packaged.
-Extra flags can be provided as parameters - see [test/README.md](../test/README.md) for more details.
+Other category of tests resides in *jxcore* subfolder. They can be run as plain *.js* files, 
+packaged or native packaged. Extra flags can be provided as parameters 
+- see [test/README.md](../test/README.md) for more details.
 
 The following command is for testing *jxcore* tests as plain .js files:
 
@@ -39,14 +40,16 @@ All at once:
 
 ## Non-python platforms
 
-On some platforms, where python is not installed/available (e.g. android) the tests can be launched by JXcore itself with the following command:
+On some platforms, where python is not installed/available (e.g. android) the tests can be launched by 
+JXcore itself with the following command:
 
     jx test/test.js jxcore
 
 ### Android standalone binaries
 
 The steps below can be useful for testing standalone jx binaries on android with script mentioned above.
-Basically it is about copying the test folder and standalone jx to the device and then running the test through `adb shell` command.
+Basically it is about copying the test folder and standalone jx to the device and then running the 
+test through `adb shell` command.
 
 Sample preparation script:
 
@@ -83,11 +86,15 @@ shell@android:/data/local/tmp/jxcore $ ./jx test/test.js jxcore
     
 ## Native Interface
 
-Currently native interface tests are *nix only. (We would appreciate if somebody would add Windows support for the tests. This is indeed not necessary. JXcore native interface 'jx-ni' works also for Windows applications.)
+Currently native interface tests are *nix only. (We would appreciate if somebody would add Windows 
+support for the tests. This is indeed not necessary. JXcore native interface 'jx-ni' works also 
+for Windows applications.)
 
-In order to run JX-ni tests you need JXcore is installed on your system. Either compile from the sources or download it from [here](http://jxcore.com/Downloads) 
+In order to run JX-ni tests you need JXcore is installed on your system. Either compile from the 
+sources or download it from [here](http://jxcore.com/Downloads) 
 
-Assuming you are under the root folder of the project; first you should compile the project as a static library. Let's say you want to do it for SpiderMonkey build. 
+Assuming you are under the root folder of the project; first you should compile the project as a 
+static library. Let's say you want to do it for SpiderMonkey build. 
 ```
 > sudo ./configure --prefix=/testBin --engine-mozilla --static-library
 > sudo make install
@@ -99,7 +106,9 @@ Now you can test the native interface;
 > ./run-tests.js /testBin sm 50
 ```
 
-Number 50 at the end of the second command line corresponds to the number of runs per each test case. It's a bad but helpful hack! For your own sake, you may put 1 instead. If you are planning to contribute on native interface please make sure the test cases are passing 50 runs for both sm and v8.
+Number 50 at the end of the second command line corresponds to the number of runs per each test case. 
+It's a bad but helpful hack! For your own sake, you may put 1 instead. If you are planning to contribute 
+on native interface please make sure the test cases are passing 50 runs for both sm and v8.
 
 
 
