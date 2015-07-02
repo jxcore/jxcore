@@ -26,6 +26,7 @@
       'lib/jx/_jx_memStore.js',
       'lib/jx/_jx_tasks.js',
       'lib/jx/_jx_utils.js',
+      'lib/jx/_jx_install.js',
       'lib/jx/_jx_multiplier.js',
       'lib/jx/_jx_monitor.js',
       'lib/jx/_jx_monitorHelper.js',
