@@ -200,6 +200,9 @@ JXCORE_EXTERN(void)
 JX_GetGlobalObject(JXValue *out);
 
 JXCORE_EXTERN(void)
+JX_GetProcessObject(JXValue *out);
+
+JXCORE_EXTERN(void)
 JX_WrapObject(JXValue *object, void *ptr);
 
 JXCORE_EXTERN(void *)

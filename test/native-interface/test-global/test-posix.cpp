@@ -19,6 +19,11 @@ void sampleMethod(JXValue *results, int argc) {
 
     JX_SetNamedProperty(&testObject, "sub", &value);
 
+    JXValue process;
+    JX_GetProcessObject(&process);
+
+    JX_SetNamedProperty(&process, "sub", &value);
+
     JX_Free(&value);
   } else {
     assert(0 && "Something went wrong!");
@@ -28,7 +33,8 @@ void sampleMethod(JXValue *results, int argc) {
 const char *contents =
     "testObject = {};\n"
     "process.natives.sampleMethod(true);\n"
-    "if (!testObject.hasOwnProperty('sub'))\n"
+    "if (!testObject.hasOwnProperty('sub') ||\n"
+    "      testObject.sub !== process.sub)"
     "  process.natives.sampleMethod(false);";
 
 int main(int argc, char **args) {

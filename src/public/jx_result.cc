@@ -753,6 +753,26 @@ JX_GetGlobalObject(JXValue *out) {
 }
 
 JXCORE_EXTERN(void)
+JX_GetProcessObject(JXValue *out) {
+  JS_ENTER_SCOPE_COM();
+  JS_DEFINE_STATE_MARKER(com);
+
+  jxcore::JXEngine *engine =
+      jxcore::JXEngine::GetInstanceByThreadId(com->threadId);
+
+  RUN_IN_SCOPE({
+    JS_HANDLE_OBJECT obj = com->getProcess();
+
+    out->data_ = NULL;
+    out->size_ = 0;
+    jxcore::JXEngine::ConvertToJXResult(com, obj, out);
+    out->com_ = com;
+    out->was_stored_ = false;
+    out->persistent_ = false;
+  });
+}
+
+JXCORE_EXTERN(void)
 JX_WrapObject(JXValue *object, void *ptr) {
   UNWRAP_COM(object);
   UNWRAP_RESULT(object->data_);
