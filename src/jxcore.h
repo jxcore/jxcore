@@ -33,9 +33,7 @@ class JXEngine {
  public:
   JS_PERSISTENT_CONTEXT context_;
 
-  inline void ExitIsolate() {
-	main_node_->node_isolate->Exit();
-  }
+  inline void ExitIsolate() { main_node_->node_isolate->Exit(); }
 #endif
 
  public:

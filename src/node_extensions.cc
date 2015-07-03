@@ -24,8 +24,7 @@
 #define NODE_EXT_LIST_ITEM NODE_EXT_STRING
 #define NODE_EXT_LIST_END \
   NULL                    \
-  }                       \
-  ;
+  };
 
 #include "node_extensions.h"
 
