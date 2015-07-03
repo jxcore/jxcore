@@ -1,6 +1,6 @@
 #!/bin/sh
-tar -zcvf npmjx303.tar.gz npm
-cp npmjx303.tar.gz ~/.jx/
+tar -zcvf npmjx304.tar.gz npm
+cp npmjx304.tar.gz ~/.jx/
 cd ~/.jx/
 rm -rf npm
-tar -xvf npmjx303.tar.gz
+tar -xvf npmjx304.tar.gz
