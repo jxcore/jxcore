@@ -218,7 +218,7 @@
       {
         'v8_use_snapshot%': 'false',
         'defines': [
-          'JS_ENGINE_MOZJS=1'
+          'JS_ENGINE_MOZJS=1', 'EXPORT_JS_API'
         ],
         'sources': [
           'src/jx/Proxy/Mozilla/MozJS/Isolate.cc',

@@ -226,7 +226,7 @@
       
       'defines': [
         'DISABLE_SHARED_JS=1',
-        'STATIC_JS_API=1',
+        'EXPORT_JS_API=1',
         'JS_DEFAULT_JITREPORT_GRANULARITY=3',   # JITREPORT_GRANULARITY_OP
         'JSGC_INCREMENTAL=1',
         'IMPL_MFBT=1',
