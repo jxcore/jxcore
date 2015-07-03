@@ -6,6 +6,14 @@
 #define EXPORT_JS_API
 #endif
 
+#ifndef JXCORE_PUBLIC
+#ifdef _WIN32
+#define JXCORE_PUBLIC __declspec(dllexport)
+#else
+#define JXCORE_PUBLIC
+#endif
+#endif
+
 #include "jsapi.h"
 #include "jsfriendapi.h"
 
@@ -45,27 +53,27 @@ namespace MozJS {
 class Isolate {
   bool disposable_;
   int threadId_;
-
- public:
   JSContext* ctx_;
 
-  Isolate();
+ public:
 
-  Isolate(JSContext* ctx, int threadId, bool disposable);
+  JXCORE_PUBLIC Isolate();
 
-  static Isolate* New(int threadId = -1);
+  JXCORE_PUBLIC Isolate(JSContext* ctx, int threadId, bool disposable);
 
-  static Isolate* GetCurrent();
+  JXCORE_PUBLIC static Isolate* New(int threadId = -1);
 
-  static Isolate* GetByThreadId(const int threadId);
+  JXCORE_PUBLIC static Isolate* GetCurrent();
 
-  inline JSContext* GetRaw() { return ctx_; }
+  JXCORE_PUBLIC static Isolate* GetByThreadId(const int threadId);
 
-  void* GetData();
+  JXCORE_PUBLIC inline JSContext* GetRaw() { return ctx_; }
 
-  void SetData(void* data);
+  JXCORE_PUBLIC void* GetData();
 
-  void Dispose();
+  JXCORE_PUBLIC void SetData(void* data);
+
+  JXCORE_PUBLIC void Dispose();
 };
 
 int* getThreadIdsMemRef();

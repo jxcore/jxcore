@@ -65,7 +65,7 @@ void JXInstance::runScript(void *x) {
     v8::Isolate *isolate = com->node_isolate;
 #elif defined(JS_ENGINE_MOZJS)
   ENGINE_NS::Isolate *isolate = com->node_isolate;
-  JSContext *ctx = isolate->ctx_;
+  JSContext *ctx = isolate->GetRaw();
   JSRuntime *rt = JS_GetRuntime(ctx);
   do {
 

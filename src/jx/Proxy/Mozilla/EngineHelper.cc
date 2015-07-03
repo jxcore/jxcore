@@ -1,6 +1,7 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
 #include "../JSEngine.h"
+#include "EngineHelper.h"
 #include "JXString.h"
 
 // Keeping for internal engine replacement template

@@ -114,89 +114,90 @@ class Value : protected MozRoot {
   bool rooted_;
   bool empty_;
   bool fake_rooting_;
-
- public:
   bool is_exception_;
 
-  Value();
-  Value(const JS::Value &value, JSContext *ctx, bool rooted = false);
-  Value(const Value &value, bool rooted);
-  Value(const Value &value);
-  Value(const Exception::Error &value);
-  Value(JSObject *obj, JSContext *ctx, bool rooted = false);
+ public:
+
+  JXCORE_PUBLIC Value();
+  JXCORE_PUBLIC Value(const JS::Value &value, JSContext *ctx, bool rooted = false);
+  JXCORE_PUBLIC Value(const Value &value, bool rooted);
+  JXCORE_PUBLIC Value(const Value &value);
+  JXCORE_PUBLIC Value(const Exception::Error &value);
+  JXCORE_PUBLIC Value(JSObject *obj, JSContext *ctx, bool rooted = false);
 
   // creates an empty object
-  Value(JSContext *ctx);
+  JXCORE_PUBLIC Value(JSContext *ctx);
 
-  Value(JSNative native, bool instance, JSContext *ctx);
+  JXCORE_PUBLIC Value(JSNative native, bool instance, JSContext *ctx);
 
-  Value &operator=(const Value &value);
-  Value &operator=(const ValueData &value);
-  Value &operator=(const Exception::Error &value);
+  JXCORE_PUBLIC Value &operator=(const Value &value);
+  JXCORE_PUBLIC Value &operator=(const ValueData &value);
+  JXCORE_PUBLIC Value &operator=(const Exception::Error &value);
 
-  ~Value();
+  JXCORE_PUBLIC ~Value();
 
-  inline bool IsRooted() { return rooted_; }
-  inline Value *operator->() { return this; }
-  inline Value *operator->() const { return const_cast<Value *>(this); }
+  JXCORE_PUBLIC inline bool IsNativeException() { return is_exception_;  }
+  JXCORE_PUBLIC inline bool IsRooted() { return rooted_; }
+  JXCORE_PUBLIC inline Value *operator->() { return this; }
+  JXCORE_PUBLIC inline Value *operator->() const { return const_cast<Value *>(this); }
 
-  inline bool IsNearDeath() const { return !rooted_; }
+  JXCORE_PUBLIC inline bool IsNearDeath() const { return !rooted_; }
 
-  void AddRoot();
-  void RemoveRoot();
-  ValueData RootCopy();
-  void MakeWeak(void *_ = NULL, JS_FINALIZER_METHOD method = NULL);
-  void ClearWeak();
-  void Clear();
-  void Dispose();
+  JXCORE_PUBLIC void AddRoot();
+  JXCORE_PUBLIC void RemoveRoot();
+  JXCORE_PUBLIC ValueData RootCopy();
+  JXCORE_PUBLIC void MakeWeak(void *_ = NULL, JS_FINALIZER_METHOD method = NULL);
+  JXCORE_PUBLIC void ClearWeak();
+  JXCORE_PUBLIC void Clear();
+  JXCORE_PUBLIC void Dispose();
 
-  bool IsArray() const;
-  bool IsBoolean() const;
-  bool IsBooleanObject() const;
-  bool IsDate() const;
-  bool IsExternal() const;
-  bool IsFalse() const;
-  bool IsTrue() const;
-  bool IsFunction() const;
-  bool IsInt32() const;
-  bool IsUint32() const;
-  bool IsNativeError() const;
-  bool IsNull() const;
-  bool IsUndefined() const;
-  bool IsNumber() const;
-  bool IsNumberObject() const;
-  bool IsObject() const;
-  bool IsRegExp() const;
-  bool IsString() const;
-  bool IsEmpty() const;
+  JXCORE_PUBLIC bool IsArray() const;
+  JXCORE_PUBLIC bool IsBoolean() const;
+  JXCORE_PUBLIC bool IsBooleanObject() const;
+  JXCORE_PUBLIC bool IsDate() const;
+  JXCORE_PUBLIC bool IsExternal() const;
+  JXCORE_PUBLIC bool IsFalse() const;
+  JXCORE_PUBLIC bool IsTrue() const;
+  JXCORE_PUBLIC bool IsFunction() const;
+  JXCORE_PUBLIC bool IsInt32() const;
+  JXCORE_PUBLIC bool IsUint32() const;
+  JXCORE_PUBLIC bool IsNativeError() const;
+  JXCORE_PUBLIC bool IsNull() const;
+  JXCORE_PUBLIC bool IsUndefined() const;
+  JXCORE_PUBLIC bool IsNumber() const;
+  JXCORE_PUBLIC bool IsNumberObject() const;
+  JXCORE_PUBLIC bool IsObject() const;
+  JXCORE_PUBLIC bool IsRegExp() const;
+  JXCORE_PUBLIC bool IsString() const;
+  JXCORE_PUBLIC bool IsEmpty() const;
 
-  bool IsStringObject() const;
-  bool Equals(Value *that) const;
-  int32_t Int32Value();
-  uint32_t Uint32Value();
-  int64_t IntegerValue();
-  bool BooleanValue();
-  double NumberValue();
+  JXCORE_PUBLIC bool IsStringObject() const;
+  JXCORE_PUBLIC bool Equals(Value *that) const;
+  JXCORE_PUBLIC int32_t Int32Value();
+  JXCORE_PUBLIC uint32_t Uint32Value();
+  JXCORE_PUBLIC int64_t IntegerValue();
+  JXCORE_PUBLIC bool BooleanValue();
+  JXCORE_PUBLIC double NumberValue();
 
-  static void empty_finalize(JSFreeOp *fop, JSObject *obj);
+  JXCORE_PUBLIC static void empty_finalize(JSFreeOp *fop, JSObject *obj);
 
-  void SetPrivate(void *data);
-  void *GetSelfPrivate();
-  void *GetPointerFromInternalField(const int index = 0);
-  int InternalFieldCount() const;  // JS_HasPrivate
-  void SetInternalFieldCount(int count = 0);
+  JXCORE_PUBLIC void SetPrivate(void *data);
+  JXCORE_PUBLIC void *GetSelfPrivate();
+  JXCORE_PUBLIC void *GetPointerFromInternalField(const int index = 0);
+  JXCORE_PUBLIC int InternalFieldCount() const;  // JS_HasPrivate
+  JXCORE_PUBLIC void SetInternalFieldCount(int count = 0);
 
-  static Value FromInteger(JSContext *ctx, const int64_t n);
-  static Value FromBoolean(JSContext *ctx, const bool n);
-  static Value FromUnsigned(JSContext *ctx, const uint32_t n);
-  static Value FromDouble(JSContext *ctx, const double n);
+  JXCORE_PUBLIC static Value FromInteger(JSContext *ctx, const int64_t n);
+  JXCORE_PUBLIC static Value FromBoolean(JSContext *ctx, const bool n);
+  JXCORE_PUBLIC static Value FromUnsigned(JSContext *ctx, const uint32_t n);
+  JXCORE_PUBLIC static Value FromDouble(JSContext *ctx, const double n);
 
-  static Value Undefined(JSContext *ctx);
-  static Value Null(JSContext *ctx);
+  JXCORE_PUBLIC static Value Undefined(JSContext *ctx);
+  JXCORE_PUBLIC static Value Null(JSContext *ctx);
 
-  inline JS::Value GetRawValue() { return value_; }
+  JXCORE_PUBLIC inline JS::Value GetRawValue() { return value_; }
 
-  inline JSObject *GetRawObjectPointer() const {
+  JXCORE_PUBLIC inline JSObject *GetRawObjectPointer() const {
     if (empty_) return nullptr;
     if (value_.isObject())
       return value_.toObjectOrNull();
@@ -204,111 +205,111 @@ class Value : protected MozRoot {
       return nullptr;
   }
 
-  inline JSString *GetRawStringPointer() const {
+  JXCORE_PUBLIC inline JSString *GetRawStringPointer() const {
     if (empty_) return nullptr;
     JS::RootedValue rv(ctx_, value_);
     return JS::ToString(ctx_, rv);
   }
 
-  inline JSContext *GetContext() const { return ctx_; }
+  JXCORE_PUBLIC inline JSContext *GetContext() const { return ctx_; }
 
-  void SetIndexedPropertiesToExternalArrayData(void *data, const int data_type,
+  JXCORE_PUBLIC void SetIndexedPropertiesToExternalArrayData(void *data, const int data_type,
                                                const int32_t length);
-  void *GetIndexedPropertiesExternalArrayData();
-  int32_t GetIndexedPropertiesExternalArrayDataLength();
-  int GetIndexedPropertiesExternalArrayDataType();
-  bool HasBufferSignature() const;
+  JXCORE_PUBLIC void *GetIndexedPropertiesExternalArrayData();
+  JXCORE_PUBLIC int32_t GetIndexedPropertiesExternalArrayDataLength();
+  JXCORE_PUBLIC int GetIndexedPropertiesExternalArrayDataType();
+  JXCORE_PUBLIC bool HasBufferSignature() const;
 
-  bool HasInstance(const Value &val);
-  bool StrictEquals(const Value &val);
-  void ToSTDString(auto_str *out) const;
+  JXCORE_PUBLIC bool HasInstance(const Value &val);
+  JXCORE_PUBLIC bool StrictEquals(const Value &val);
+  JXCORE_PUBLIC void ToSTDString(auto_str *out) const;
 
-  unsigned ArrayLength() const;
+  JXCORE_PUBLIC unsigned ArrayLength() const;
 
-  bool Has(const String &name) const;
-  bool Has(const char *name) const;
+  JXCORE_PUBLIC bool Has(const String &name) const;
+  JXCORE_PUBLIC bool Has(const char *name) const;
 
-  Value Get(const String &name) const;
-  Value Get(const char *name) const;
-  Value GetIndex(const int index);
+  JXCORE_PUBLIC Value Get(const String &name) const;
+  JXCORE_PUBLIC Value Get(const char *name) const;
+  JXCORE_PUBLIC Value GetIndex(const int index);
 
-  Value GetPropertyNames();
+  JXCORE_PUBLIC Value GetPropertyNames();
 
-  bool SetProperty(const String &name, const Value &val);
-  bool SetProperty(const String &name, JS::HandleValue val);
-  bool SetProperty(const char *name, JS::HandleValue val);
-  bool SetProperty(const String &name, JSNative method,
+  JXCORE_PUBLIC bool SetProperty(const String &name, const Value &val);
+  JXCORE_PUBLIC bool SetProperty(const String &name, JS::HandleValue val);
+  JXCORE_PUBLIC bool SetProperty(const char *name, JS::HandleValue val);
+  JXCORE_PUBLIC bool SetProperty(const String &name, JSNative method,
                    const uint16_t parameter_count = 0);
-  bool SetProperty(const char *name, JSNative method,
+  JXCORE_PUBLIC bool SetProperty(const char *name, JSNative method,
                    const uint16_t parameter_count = 0);
 
-  bool SetStaticFunction(const String &_name, JSNative method,
+  JXCORE_PUBLIC bool SetStaticFunction(const String &_name, JSNative method,
                          const uint16_t parameter_count = 0);
-  bool SetStaticFunction(const char *name, JSNative method,
+  JXCORE_PUBLIC bool SetStaticFunction(const char *name, JSNative method,
                          const uint16_t parameter_count = 0);
-  bool SetIndex(const int index, const Value &val);
-  bool SetIndex(const int index, JS::HandleValue val);
+  JXCORE_PUBLIC bool SetIndex(const int index, const Value &val);
+  JXCORE_PUBLIC bool SetIndex(const int index, JS::HandleValue val);
 
-  bool DefineGetterSetter(const String &_name, JSPropertyOp getter,
+  JXCORE_PUBLIC bool DefineGetterSetter(const String &_name, JSPropertyOp getter,
                           JSStrictPropertyOp setter,
                           const Value &initial_value);
 
-  bool DeleteProperty(const String &_name);
-  bool DeleteProperty(const char *name);
+  JXCORE_PUBLIC bool DeleteProperty(const String &_name);
+  JXCORE_PUBLIC bool DeleteProperty(const char *name);
 
-  Value Call(const Value &host, int argc = 0, jsval *args = NULL) const;
-  Value Call(const String &name, const int argc, Value *args) const;
-  Value Call(const Value &host, const int argc, Value *args) const;
-  bool Call(const char *name, int argc, JS::Value *args,
+  JXCORE_PUBLIC Value Call(const Value &host, int argc = 0, jsval *args = NULL) const;
+  JXCORE_PUBLIC Value Call(const String &name, const int argc, Value *args) const;
+  JXCORE_PUBLIC Value Call(const Value &host, const int argc, Value *args) const;
+  JXCORE_PUBLIC bool Call(const char *name, int argc, JS::Value *args,
             JS::MutableHandleValue rov) const;
-  Value Call(const char *name, int argc, Value *_args) const;
-  Value Call(const char *name, int argc = 0, jsval *args = NULL) const;
+  JXCORE_PUBLIC Value Call(const char *name, int argc, Value *_args) const;
+  JXCORE_PUBLIC Value Call(const char *name, int argc = 0, jsval *args = NULL) const;
 
-  JSObject *NewInstance(int argc, jsval *args);
-  Value NewInstance(int argc, Value *args = NULL);
+  JXCORE_PUBLIC JSObject *NewInstance(int argc, jsval *args);
+  JXCORE_PUBLIC Value NewInstance(int argc, Value *args = NULL);
 
-  Value GetConstructor();
+  JXCORE_PUBLIC Value GetConstructor();
 
-  static Value NewEmptyFunction(JSContext *ctx);
-  static void NewEmptyObject(JSContext *ctx, JS::MutableHandleObject out);
-  static JSObject *NewEmptyPropertyObject(JSContext *ctx, JSPropertyOp add_get,
+  JXCORE_PUBLIC static Value NewEmptyFunction(JSContext *ctx);
+  JXCORE_PUBLIC static void NewEmptyObject(JSContext *ctx, JS::MutableHandleObject out);
+  JXCORE_PUBLIC static JSObject *NewEmptyPropertyObject(JSContext *ctx, JSPropertyOp add_get,
                                           JSStrictPropertyOp set,
                                           JSResolveOp resolve = NULL,
                                           JSEnumerateOp enumerate = NULL,
                                           JSDeletePropertyOp del = NULL);
 
-  static Value CompileAndRun(JSContext *ctx_, String script, String filename,
+  JXCORE_PUBLIC static Value CompileAndRun(JSContext *ctx_, String script, String filename,
                              MozJS::Value *_global = NULL);
 
-  void SetFinalizer(JS_FINALIZER_METHOD method);
-  static void SetGlobalFinalizer(JSFinalizeOp method);
+  JXCORE_PUBLIC void SetFinalizer(JS_FINALIZER_METHOD method);
+  JXCORE_PUBLIC static void SetGlobalFinalizer(JSFinalizeOp method);
 
-  void SetReserved(const int index, const Value &value);
-  Value GetReserved(const int index);
+  JXCORE_PUBLIC void SetReserved(const int index, const Value &value);
+  JXCORE_PUBLIC Value GetReserved(const int index);
 
-  String ToString();
+  JXCORE_PUBLIC String ToString();
 };
 
 class String : public Value {
  public:
-  String() : Value() {}
-  explicit String(const Value &val);
-  String(const String &val);
-  String(JSString *obj, JSContext *ctx, bool rooted = false);
-  String(const JS::Value &obj, JSContext *ctx, bool rooted = false);
-  String(JSContext *ctx, const char *str, const int len, bool rooted = false);
+  JXCORE_PUBLIC String() : Value() {}
+  JXCORE_PUBLIC explicit String(const Value &val);
+  JXCORE_PUBLIC String(const String &val);
+  JXCORE_PUBLIC String(JSString *obj, JSContext *ctx, bool rooted = false);
+  JXCORE_PUBLIC String(const JS::Value &obj, JSContext *ctx, bool rooted = false);
+  JXCORE_PUBLIC String(JSContext *ctx, const char *str, const int len, bool rooted = false);
 
-  int StringLength() const;
-  int Utf8Length() const;
+  JXCORE_PUBLIC int StringLength() const;
+  JXCORE_PUBLIC int Utf8Length() const;
 
-  inline String *operator->() { return this; }
+  JXCORE_PUBLIC inline String *operator->() { return this; }
 
-  static String FromSTD(JSContext *ctx, const char *str, const int len);
-  static String FromUTF8(JSContext *ctx, const char *str, const int len);
-  static String FromUTF8(JSContext *ctx, const uint16_t *str, const int len);
+  JXCORE_PUBLIC static String FromSTD(JSContext *ctx, const char *str, const int len);
+  JXCORE_PUBLIC static String FromUTF8(JSContext *ctx, const char *str, const int len);
+  JXCORE_PUBLIC static String FromUTF8(JSContext *ctx, const uint16_t *str, const int len);
 
-  String &operator=(const String &value);
-  String &operator=(const ValueData &value);
+  JXCORE_PUBLIC String &operator=(const String &value);
+  JXCORE_PUBLIC String &operator=(const ValueData &value);
 };
 
 class Script {
@@ -316,11 +317,10 @@ class Script {
   bool rooted_;
   bool empty_;
   bool fake_rooting_;
-
- public:
   JSContext *ctx_;
 
-  Script() {
+ public:
+  JXCORE_PUBLIC Script() {
     value_ = NULL;
     ctx_ = NULL;
     rooted_ = false;
@@ -328,64 +328,64 @@ class Script {
     fake_rooting_ = false;
   }
 
-  Script(JSScript *script, JSContext *ctx)
+  JXCORE_PUBLIC Script(JSScript *script, JSContext *ctx)
       : value_(script),
         rooted_(false),
         empty_(false),
         fake_rooting_(false),
         ctx_(ctx) {}
 
-  explicit Script(Script *script)
+  JXCORE_PUBLIC explicit Script(Script *script)
       : value_(script->value_),
         rooted_(false),
         empty_(false),
         fake_rooting_(false),
         ctx_(script->ctx_) {}
 
-  Script &operator=(const Script &value);
+  JXCORE_PUBLIC Script &operator=(const Script &value);
 
-  inline bool IsRooted() { return rooted_; }
+  JXCORE_PUBLIC inline bool IsRooted() { return rooted_; }
 
-  inline Script *operator->() { return this; }
+  JXCORE_PUBLIC inline Script *operator->() { return this; }
 
-  JSScript *GetRawScriptPointer() { return value_; }
+  JXCORE_PUBLIC JSScript *GetRawScriptPointer() { return value_; }
 
-  Script RootCopy() {
+  JXCORE_PUBLIC Script RootCopy() {
     Script scr = *this;
     scr.fake_rooting_ = true;
     return scr;
   }
 
-  static Script Compile(JSContext *ctx, const String &source,
+  JXCORE_PUBLIC static Script Compile(JSContext *ctx, const String &source,
                         const String &filename);
-  static Script Compile(JSContext *ctx, const Value &host, const String &source,
+  JXCORE_PUBLIC static Script Compile(JSContext *ctx, const Value &host, const String &source,
                         const String &filename);
-  static Script Compile(JSContext *ctx, const Value &host,
+  JXCORE_PUBLIC static Script Compile(JSContext *ctx, const Value &host,
                         const auto_jschar &source, const char *filename);
-  static Script Compile(JSContext *ctx, const Value &host,
+  JXCORE_PUBLIC static Script Compile(JSContext *ctx, const Value &host,
                         const auto_str &source, const char *filename);
 
-  Value Run(const Value &host);
+  JXCORE_PUBLIC Value Run(const Value &host);
 
-  Value Run();
+  JXCORE_PUBLIC Value Run();
 
-  void AddRoot();
+  JXCORE_PUBLIC void AddRoot();
 
-  void RemoveRoot();
+  JXCORE_PUBLIC void RemoveRoot();
 
-  bool IsEmpty() const { return empty_; }
+  JXCORE_PUBLIC bool IsEmpty() const { return empty_; }
 
-  void MakeWeak() { RemoveRoot(); }
+  JXCORE_PUBLIC void MakeWeak() { RemoveRoot(); }
 
-  void ClearWeak() { AddRoot(); }
+  JXCORE_PUBLIC void ClearWeak() { AddRoot(); }
 
-  void Clear() {
+  JXCORE_PUBLIC void Clear() {
     if (empty_) return;
     value_ = NULL;
     empty_ = true;
   }
 
-  void Dispose() { RemoveRoot(); }
+  JXCORE_PUBLIC void Dispose() { RemoveRoot(); }
 };
 }  // namespace MozJS
 

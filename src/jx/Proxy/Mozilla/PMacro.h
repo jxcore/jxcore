@@ -7,12 +7,8 @@
 #include "MozEnvironment.h"
 
 #ifdef _WIN32
-#define JXCORE_EXTERN(x) __declspec(dllexport) x
-
-// for constructors
 #define JXCORE_PUBLIC __declspec(dllexport)
 #else
-#define JXCORE_EXTERN(x) x
 #define JXCORE_PUBLIC
 #endif
 
@@ -58,16 +54,16 @@
 
 #define GET_ARG(x) args.GetItem(x)
 
-#define RETURN_PARAM(param) \
-  do {                      \
-    args.close(param);      \
-    return args.ret_val_;   \
+#define RETURN_PARAM(param)       \
+  do {                            \
+    args.close(param);            \
+    return args.get_ret_val_();   \
   } while (0)
 
-#define RETURN_POINTER(param) \
-  do {                        \
-    args.close(&param);       \
-    return args.ret_val_;     \
+#define RETURN_POINTER(param)       \
+  do {                              \
+    args.close(&param);             \
+    return args.get_ret_val_();     \
   } while (0)
 
 #define JS_LOCAL_METHOD(method_name)                               \
@@ -102,15 +98,15 @@
     return false;                 \
   } while (0)
 
-#define RETURN()          \
-  do {                    \
-    args.close();         \
-    return args.ret_val_; \
+#define RETURN()                \
+  do {                          \
+    args.close();               \
+    return args.get_ret_val_(); \
   } while (0)
 
-#define JS_METHOD_END   \
-  args.close();         \
-  return args.ret_val_; \
+#define JS_METHOD_END         \
+  args.close();               \
+  return args.get_ret_val_(); \
   }
 
 #define JS_THROW_EXCEPTION_TYPE(x) MozJS::ThrowException(x)

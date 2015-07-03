@@ -9,24 +9,24 @@ namespace MozJS {
 
 class EngineHelper {
  public:
-  static void CreateObject(JSContext *ctx, const char *type_name,
+  JXCORE_PUBLIC static void CreateObject(JSContext *ctx, const char *type_name,
                            MozJS::Value *ret_val);
 
-  static void GetPropertyNames(JSContext *ctx, MozJS::Value *from,
+  JXCORE_PUBLIC static void GetPropertyNames(JSContext *ctx, MozJS::Value *from,
                                MozJS::Value *to);
 
-  static void FromJSString(const String &str, auto_str *out,
+  JXCORE_PUBLIC static void FromJSString(const String &str, auto_str *out,
                            bool get_ascii = false);
 
-  static void FromJSString(const Value &str, auto_str *out,
+  JXCORE_PUBLIC static void FromJSString(const Value &str, auto_str *out,
                              bool get_ascii = false);
 
-  static void FromJSString(JSString *str, JSContext *ctx, auto_str *out,
+  JXCORE_PUBLIC static void FromJSString(JSString *str, JSContext *ctx, auto_str *out,
                            bool get_ascii = false);
 
-  static int GetThreadId();
+  JXCORE_PUBLIC static int GetThreadId();
 
-  static bool IsInstanceAlive(JSContext *ctx);
+  JXCORE_PUBLIC static bool IsInstanceAlive(JSContext *ctx);
 };
 }  // namespace MozJS
 

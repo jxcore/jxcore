@@ -387,7 +387,7 @@ char **JXEngine::Init(int argc, char *argv[], bool engine_inited_already) {
 #if defined(JS_ENGINE_V8)
   if (!engine_inited_already) v8::V8::SetFatalErrorHandler(node::OnFatalError);
 #elif defined(JS_ENGINE_MOZJS)
-  JS_SetErrorReporter(main_node_->node_isolate->ctx_, node::OnFatalError);
+  JS_SetErrorReporter(main_node_->node_isolate->GetRaw(), node::OnFatalError);
 #endif
 
   if (!engine_inited_already) {
@@ -577,7 +577,7 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
     main_iso_ = *main_node_->node_isolate;
   }
 
-  JSContext *ctx = main_iso_.ctx_;
+  JSContext *ctx = main_iso_.GetRaw();
   JSRuntime *rt = JS_GetRuntime(ctx);
   do {
     JS_SetInterruptCallback(rt, JSEngineInterrupt);
@@ -774,7 +774,7 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
     main_iso_ = *main_node_->node_isolate;
   }
 
-  JSContext *ctx = main_iso_.ctx_;
+  JSContext *ctx = main_iso_.GetRaw();
   JSRuntime *rt = JS_GetRuntime(ctx);
 
   JS_SetInterruptCallback(rt, JSEngineInterrupt);
@@ -813,7 +813,7 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
 }
 
 void JXEngine::Destroy() {
-  JSContext *ctx = main_iso_.ctx_;
+  JSContext *ctx = main_iso_.GetRaw();
   JSRuntime *rt = JS_GetRuntime(ctx);
   {
     customLock(CSLOCK_JOBS);

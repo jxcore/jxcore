@@ -9,7 +9,7 @@
 
 #define ERROR_CLASSES(type)                                  \
  public:                                                     \
-  type(MozJS::String err_msg) {                              \
+  JXCORE_PUBLIC type(MozJS::String err_msg) {                \
     assert(!err_msg.IsEmpty());                              \
     ctx_ = err_msg.GetContext();                             \
     MozJS::Value ret_val;                                    \
@@ -36,41 +36,41 @@ class Error {
   Error() { ctx_ = NULL; }
 
  public:
-  explicit Error(MozJS::Value err_msg) {
+  JXCORE_PUBLIC explicit Error(MozJS::Value err_msg) {
     value_ = err_msg;
     ctx_ = err_msg.GetContext();
   }
 
-  inline MozJS::Value GetErrorObject() { return value_; }
+  JXCORE_PUBLIC inline MozJS::Value GetErrorObject() { return value_; }
 
-  jsval GetRawValue() {
+  JXCORE_PUBLIC jsval GetRawValue() {
     assert(!value_.IsEmpty());
     return value_.GetRawValue();
   }
 
-  inline JSContext* GetContext() { return ctx_; }
+  JXCORE_PUBLIC inline JSContext* GetContext() { return ctx_; }
   ERROR_CLASSES(Error)
 };
 
 class RangeError : public Error {
  public:
-  explicit RangeError(MozJS::Value err_msg) : Error(err_msg) {}
+  JXCORE_PUBLIC explicit RangeError(MozJS::Value err_msg) : Error(err_msg) {}
   ERROR_CLASSES(RangeError)
 };
 
 class TypeError : public Error {
  public:
-  explicit TypeError(MozJS::Value err_msg) : Error(err_msg) {}
+  JXCORE_PUBLIC explicit TypeError(MozJS::Value err_msg) : Error(err_msg) {}
   ERROR_CLASSES(TypeError)
 };
 }  // namespace Exception
 
 class ThrowException : public Value {
  public:
-  explicit ThrowException(Exception::Error err);
-  explicit ThrowException(Exception::TypeError err);
-  explicit ThrowException(Exception::RangeError err);
-  explicit ThrowException(MozJS::Value err);
+  JXCORE_PUBLIC explicit ThrowException(Exception::Error err);
+  JXCORE_PUBLIC explicit ThrowException(Exception::TypeError err);
+  JXCORE_PUBLIC explicit ThrowException(Exception::RangeError err);
+  JXCORE_PUBLIC explicit ThrowException(MozJS::Value err);
 };
 }  // namespace MozJS
 

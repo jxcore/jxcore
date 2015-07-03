@@ -359,7 +359,7 @@ void PArguments::close(MozJS::Value val) { close(&val); }
 void PArguments::close(MozJS::Value *val) {
   close_called_ = true;
 
-  if (val->is_exception_) {
+  if (val->IsNativeException()) {
     MozJS::ThrowException(*val);
     ret_val_ = false;
   } else {
