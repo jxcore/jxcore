@@ -34,6 +34,7 @@
       'lib/jx/_jx_http_helper.js',
       'lib/jx/_jx_config.js',
       'lib/jx/_jx_incoming.js',
+      'lib/jx/_jx_package.js',
       'lib/jx/_jx_parsers.js',
       'lib/jx/_jx_timers.js',
       'lib/jx/_jx_source.js',
