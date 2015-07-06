@@ -103,13 +103,6 @@ Isolate* Isolate::New(int threadId) {
     JS_SetSecurityCallbacks(rt, &ShellPrincipals::securityCallbacks);
     JS_InitDestroyPrincipalsCallback(rt, ShellPrincipals::destroy);
 
-#ifdef JS_CPU_MIPS
-    // force use incremental GC in case of low resources.
-    JS_SetGCParameter(rt, JSGC_DYNAMIC_HEAP_GROWTH, 1);
-    JS_SetGCParameter(rt, JSGC_DYNAMIC_MARK_SLICE, 1);
-    JS_SetGCParameter(rt, JSGC_SLICE_TIME_BUDGET, 10);
-#endif
-
 #if defined(DEBUG) && !defined(__POSIX__)
 // _WIN32
 // TODO(obastemur) investigate how to debug JIT SM on Win

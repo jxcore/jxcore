@@ -56,7 +56,6 @@ class Isolate {
   JSContext* ctx_;
 
  public:
-
   JXCORE_PUBLIC Isolate();
 
   JXCORE_PUBLIC Isolate(JSContext* ctx, int threadId, bool disposable);
