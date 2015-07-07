@@ -124,6 +124,7 @@
       'src/wrappers/tcp_wrap.cc',
       'src/wrappers/udp_wrap.cc',
       'src/wrappers/jxutils_wrap.cc',
+      'src/wrappers/crypto_extension.cc',
       'src/wrappers/process_wrap.cc',
       'src/wrappers/signal_wrap.cc',
       'src/wrappers/node_file.cc',
