@@ -151,13 +151,13 @@
 
         var fs = NativeModule.require('fs');
         var path = NativeModule.require('path');
-        var fname = "./jxcore." + path.basename(process.mainModule.filename)
-          + ".log";
+        var fname = "./jxcore." + path.basename(process.mainModule.filename) + ".log";
 
         if (fs.existsSync(fname)) fs.unlinkSync(fname);
 
-        var spawn = NativeModule.require('child_process').spawn, out = fs
-          .openSync(fname, 'a'), err = fs.openSync(fname, 'a');
+        var spawn = NativeModule.require('child_process').spawn,
+          out = fs.openSync(fname, 'a'),
+          err = fs.openSync(fname, 'a');
 
         var cmd = process.argv[0];
         var params = process.argv.slice(1);
@@ -347,6 +347,13 @@
           Module.runMain();
         }
       }
+
+      if (process.isPackaged && process.env.JX_MONITOR_RUN) {
+        var monHelper = NativeModule.require("_jx_monitorHelper");
+        // if app dies before start_delay, that's ok: following will not take place
+        monHelper.tryToFollowMeOrExit();
+      }
+
     } else {
       // If -i or --interactive were passed, or stdin is a TTY.
       if (process._forceRepl || NativeModule.require('tty').isatty(0)) {
