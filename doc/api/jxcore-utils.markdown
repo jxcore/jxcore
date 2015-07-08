@@ -109,6 +109,9 @@ Value of this parameter may be one of the following:
     * underline
     * inverse
 
+* Other
+    * clear
+
 ```js
 var clog = jxcore.utils.console.log;
 
@@ -125,6 +128,14 @@ var clog = jxcore.utils.console.log;
 clog("test", "green+bgYellow+bold");
 // bolded underline:
 clog("test", "underline+bold");
+```
+
+Please note, that you can also use the `clear` attribute when printing the output.
+When combining with other attributes, the `clear` attribute should go first.
+The following example clears the screen and prints formatted text (red in this case).
+
+```js
+jxcore.utils.console.log("my red color", "clear+red");
 ```
 
 If environment variable `NODE_DISABLE_COLORS` is set to 1, which disables colors in the REPL (see `jx -h`),
@@ -170,6 +181,32 @@ Displays:
 
 > **bolded**normal**bolded again**
 
+
+### console.clear([data [, ...], color])
+
+This is a special method which clears the current console's output and places the cursor at the top-left corner.
+Can be called with or without any arguments.
+If the arguments are provided, they are written into stdout with `console.log()` right after the screen is cleared.
+
+For example the following calls are equivalent:
+
+```js
+jxcore.utils.console.clear();
+jxcore.utils.console.log("my red color", "red");
+```
+
+and
+
+```js
+jxcore.utils.console.clear("my red color", "red");
+```
+
+and
+
+```js
+// clear attribute should go first
+jxcore.utils.console.log("my red color", "clear+red");
+```
 
 ### setColor(data [, ...], color)
 
