@@ -45,6 +45,14 @@ curl http://jxcore.com/xil.sh | sudo bash -s force v8
 ERROR_ABORT
 
 LOG $GREEN_COLOR "Installing System Dependencies"
-sudo ./create_package.js configure
+sudo apt-get update -y
+sudo apt-get install -y git-core libssl-dev libncurses5-dev unzip
+sudo apt-get install -y subversion mercurial
+sudo apt-get install -y gawk
+sudo apt-get install -y git
+sudo apt-get install -y build-essential
+sudo apt-get install -y ccache
+sudo apt-get install -y curl
+sudo apt-get install -y wget
 
 LOG $GREEN_COLOR "\nUse 'wrt-jx/create_package.js <link to OpenWrt SDK> <arm or mipsel>'"

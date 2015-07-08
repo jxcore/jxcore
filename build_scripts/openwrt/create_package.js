@@ -36,24 +36,6 @@ function run(cmd) {
   color.log("Done: [" + cmd + "]", "green");
 }
 
-if (image_lnk == "configure") {
-  var installers = ['update',
-    'install -y git-core libssl-dev libncurses5-dev unzip',
-    'install -y subversion mercurial',
-    'install -y gawk',
-    'install -y git',
-    'install -y build-essential',
-    'install -y ccache',
-    'install -y curl',
-    'install -y wget'];
-
-  for (var i = 0, ln = installers.length; i < ln; i++) {
-    var cmd = "apt-get " + installers[i];
-    run(cmd);
-  }
-  process.exit(0);
-}
-
 if (process.getuid() == 0) {
   color.log("Do not use root user for this operation.", "red");
   process.exit(1);
