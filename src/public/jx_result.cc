@@ -786,7 +786,7 @@ JX_WrapObject(JXValue *object, void *ptr) {
   });
 }
 
-JXCORE_EXTERN(void*)
+JXCORE_EXTERN(void *)
 JX_UnwrapObject(JXValue *object) {
   UNWRAP_COM(object);
   UNWRAP_RESULT(object->data_);

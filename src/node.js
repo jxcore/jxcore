@@ -1,10 +1,10 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-(function (process) {
+(function(process) {
   this.global = this;
-  
+
   if (!Error.captureStackTrace) {
-    var _stackProto = function (msg, fileName, lineNumber, columnNumber) {
+    var _stackProto = function(msg, fileName, lineNumber, columnNumber) {
       if (fileName.indexOf('@') >= 0) {
         var spl = fileName.split('@');
         this._fileName = spl[1];
@@ -19,27 +19,27 @@
       this._msg = msg;
     };
 
-    _stackProto.prototype.getFileName = function () {
+    _stackProto.prototype.getFileName = function() {
       return this._fileName;
     };
-    _stackProto.prototype.getColumnNumber = function () {
+    _stackProto.prototype.getColumnNumber = function() {
       return this._columnNumber;
     };
-    _stackProto.prototype.getLineNumber = function () {
+    _stackProto.prototype.getLineNumber = function() {
       return this._lineNumber;
     };
-    _stackProto.prototype.toString = function () {
+    _stackProto.prototype.toString = function() {
       return this._msg
     };
-    _stackProto.prototype.isEval = function () {
+    _stackProto.prototype.isEval = function() {
       // TODO(obastemur) fix this!
       return false;
     };
-    _stackProto.prototype.getFunctionName = function () {
+    _stackProto.prototype.getFunctionName = function() {
       return this._functionName;
     };
 
-    Error.captureStackTrace = function (err, __) {
+    Error.captureStackTrace = function(err, __) {
       var st;
       if (!err.stack) {
         // TODO(obastemur) there must be a better way to do this
@@ -55,11 +55,13 @@
         st = err.stack.split('\n');
         st.shift();
       } else {
-        if (!Array.isArray(err.stack)) st = err.stack.split('\n');
+        if (!Array.isArray(err.stack))
+          st = err.stack.split('\n');
       }
 
       if (Array.isArray(err.stack) && err.stack[0] && err.stack[0]._msg) {
-        // TODO(obastemur) bug ? app gives back an object that was already processed
+        // TODO(obastemur) bug ? app gives back an object that was already
+        // processed
       } else {
         err.stack = new Array();
         var stackLimit = Error.stackTraceLimit ? Error.stackTraceLimit : 9;
@@ -71,7 +73,7 @@
             err.stack[i] = new _stackProto(msg, arr[0], arr[1], arr[2]);
           } else {
             err.stack[i] = new _stackProto(msg, err.fileName, err.lineNumber,
-                    err.columnNumber);
+                err.columnNumber);
           }
         }
 
@@ -79,14 +81,15 @@
           var arr = err.stack.join("\n");
           if (arr.length > 4 && arr.substr(arr.length - 3, 2) == 'at')
             arr = arr.substr(0, arr.length - 3);
-          if (!err.name) err.name = "Error";
+          if (!err.name)
+            err.name = "Error";
           return err.name + ": " + err.message + "\n" + arr;
         }
       }
     };
 
     if (!global.gc) {
-      global.gc = function () {
+      global.gc = function() {
         jxcore.tasks.forceGC();
       }
     }
@@ -98,8 +101,8 @@
     var EventEmitter = NativeModule.require('events').EventEmitter;
 
     process.__proto__ = Object.create(EventEmitter.prototype, {
-      constructor: {
-        value: process.constructor
+      constructor : {
+        value : process.constructor
       }
     });
     EventEmitter.call(process);
@@ -128,7 +131,7 @@
     if (!process.subThread) {
       var __exitCode = 0;
       var __pstart = Date.now();
-      var __kill = function (code) {
+      var __kill = function(code) {
         try {// previously skipped (process.FatalException)
           process.emit('exit', code);
         } catch (er) {
@@ -139,11 +142,11 @@
         else
           process.exit(code);
       };
-      var resetBody = function (code) {
+      var resetBody = function(code) {
         if (Date.now() - __pstart < 5000) {
           var diff = Date.now() - __pstart;
           console
-            .error("Automatic reset feature is only applicable to applications active for at least 5000 milliseconds");
+              .error("Automatic reset feature is only applicable to applications active for at least 5000 milliseconds");
           console.error("The application was alive for ", diff, "ms");
           __kill(code);
           return;
@@ -151,28 +154,29 @@
 
         var fs = NativeModule.require('fs');
         var path = NativeModule.require('path');
-        var fname = "./jxcore." + path.basename(process.mainModule.filename) + ".log";
+        var fname = "./jxcore." + path.basename(process.mainModule.filename)
+            + ".log";
 
-        if (fs.existsSync(fname)) fs.unlinkSync(fname);
+        if (fs.existsSync(fname))
+          fs.unlinkSync(fname);
 
-        var spawn = NativeModule.require('child_process').spawn,
-          out = fs.openSync(fname, 'a'),
-          err = fs.openSync(fname, 'a');
+        var spawn = NativeModule.require('child_process').spawn, out = fs
+            .openSync(fname, 'a'), err = fs.openSync(fname, 'a');
 
         var cmd = process.argv[0];
         var params = process.argv.slice(1);
         params.push("$JX$CORE_APP_RESET");
 
         var child = spawn(cmd, params, {
-          detached: true,
-          stdio: ['ignore', out, err]
+          detached : true,
+          stdio : [ 'ignore', out, err ]
         });
 
         child.unref();
         __kill(code);
       };
 
-      process.on('$$restart', function (code) {
+      process.on('$$restart', function(code) {
         try {
           __exitCode = code;
           if (startup.hasResetCB())
@@ -195,13 +199,13 @@
     // others like the debugger or running --eval arguments. Here we decide
     // which mode we run in.
 
-    var getActiveFolder = function () {
+    var getActiveFolder = function() {
       var sep;
       try {
         sep = process.cwd() + NativeModule.require('path').sep;
       } catch (e) {
         co.error("Perhaps the path you are running on is not "
-        + "exist any more. Please revisit the path and try again.");
+            + "exist any more. Please revisit the path and try again.");
         process.exit(1);
       }
       return sep;
@@ -224,28 +228,28 @@
     }
 
     var __ops = {
-      install: false,
-      npm: false,
-      compile: false,
-      package: false,
-      packagetojx: false
+      install : false,
+      npm : false,
+      compile : false,
+      package : false,
+      packagetojx : false
     };
 
     if (!process.isEmbedded && !process._EmbeddedSource && !process.subThread) {
-      for (var o in __ops) {
+      for ( var o in __ops) {
         if (process.argv[1] === o) {
           var sep = getActiveFolder();
           __ops[o] = !NativeModule.require('fs').existsSync(sep + o + ".js");
           if (!__ops[o]) {
             co.error("while [jx " + o
-            + "] is a special command, the current folder has " + o
-            + ".js, running that instead.\n");
+                + "] is a special command, the current folder has " + o
+                + ".js, running that instead.\n");
           }
           break;
         }
       }
     }
-    
+
     var Module = NativeModule.require('module');
 
     if (__ops.compile) {
@@ -288,7 +292,7 @@
 
       var __debug = false;
       if (!process._EmbeddedSource) {
-        __debug = global.v8debug && process.execArgv.some(function (arg) {
+        __debug = global.v8debug && process.execArgv.some(function(arg) {
           return arg.match(/^--debug-brk(=[0-9]*)?$/);
         });
 
@@ -306,7 +310,7 @@
             return;
           }
         } else if (!process.subThread
-          && process.argv[1].toLowerCase() == 'monitor') {
+            && process.argv[1].toLowerCase() == 'monitor') {
           process._Monitor = true;
         }
 
@@ -350,7 +354,8 @@
 
       if (process.isPackaged && process.env.JX_MONITOR_RUN) {
         var monHelper = NativeModule.require("_jx_monitorHelper");
-        // if app dies before start_delay, that's ok: following will not take place
+        // if app dies before start_delay, that's ok: following will not take
+        // place
         monHelper.tryToFollowMeOrExit();
       }
 
@@ -359,8 +364,8 @@
       if (process._forceRepl || NativeModule.require('tty').isatty(0)) {
         // REPL
         var opts = {
-          useGlobal: true,
-          ignoreUndefined: false
+          useGlobal : true,
+          ignoreUndefined : false
         };
         if (parseInt(process.env['NODE_NO_READLINE'], 10)) {
           opts.terminal = false;
@@ -369,7 +374,7 @@
           opts.useColors = false;
         }
         var repl = Module.requireRepl().start(opts);
-        repl.on('exit', function () {
+        repl.on('exit', function() {
           process.exit();
         });
 
@@ -378,11 +383,11 @@
         process.stdin.setEncoding('utf8');
 
         var code = '';
-        process.stdin.on('data', function (d) {
+        process.stdin.on('data', function(d) {
           code += d;
         });
 
-        process.stdin.on('end', function () {
+        process.stdin.on('end', function() {
           process._eval = code;
           evalScript('[stdin]');
         });
@@ -390,7 +395,7 @@
     }
   }
 
-  startup.globalVariables = function () {
+  startup.globalVariables = function() {
     global.process = process;
     global.global = global;
     global.GLOBAL = global;
@@ -401,100 +406,101 @@
     process._exiting = false;
     var tw = process.binding("thread_wrap");
 
-    process.sendToMain = function (obj) {
-      if (process.__reset) return;
+    process.sendToMain = function(obj) {
+      if (process.__reset)
+        return;
 
       if (!process.subThread)
         jxcore.tasks.emit('message', -1, obj);
       else
         tw.sendToAll(-1, JSON.stringify({
-          threadId: process.threadId,
-          params: obj
+          threadId : process.threadId,
+          params : obj
         }), process.threadId);
     };
 
-    process.sendToThread = function (threadId, obj) {
-      if (process.__reset) return;
+    process.sendToThread = function(threadId, obj) {
+      if (process.__reset)
+        return;
       if (threadId == null || threadId == undefined) {
-        throw new TypeError(
-          "threadId must be defined");
+        throw new TypeError("threadId must be defined");
       }
 
       if (threadId < -1 || threadId > 63) {
-        throw new RangeError(
-          "threadId must be between -1 and 63");
+        throw new RangeError("threadId must be between -1 and 63");
       }
       tw.sendToAll(threadId, JSON.stringify({
-        tid: process.threadId,
-        data: obj
+        tid : process.threadId,
+        data : obj
       }), process.threadId);
     };
 
-    process.sendToThreads = function (obj) {
-      if (process.__reset) return;
+    process.sendToThreads = function(obj) {
+      if (process.__reset)
+        return;
 
       tw.sendToAll(-2, JSON.stringify({
-        tid: process.threadId,
-        data: obj
+        tid : process.threadId,
+        data : obj
       }), process.threadId);
     };
 
-    process.keepAlive = function () {
+    process.keepAlive = function() {
       // DUMMY
       console.warn("process.keepAlive shouldn't be called from main thread");
     };
 
-    process.release = function () {
+    process.release = function() {
       // DUMMY
       console.warn("process.release shouldn't be called from main thread");
     };
 
-    process.unloadThread = function () {
+    process.unloadThread = function() {
       // DUMMY
       console.warn("process.unloadThread shouldn't be called from main thread");
     };
   };
 
-  startup.globalTimeouts = function () {
-    global.setTimeout = function () {
+  startup.globalTimeouts = function() {
+    global.setTimeout = function() {
       var t = NativeModule.require('timers');
       return t.setTimeout.apply(this, arguments);
     };
 
-    global.setInterval = function () {
+    global.setInterval = function() {
       var t = NativeModule.require('timers');
       return t.setInterval.apply(this, arguments);
     };
 
-    global.clearTimeout = function () {
+    global.clearTimeout = function() {
       var t = NativeModule.require('timers');
       return t.clearTimeout.apply(this, arguments);
     };
 
-    global.clearInterval = function () {
+    global.clearInterval = function() {
       var t = NativeModule.require('timers');
       return t.clearInterval.apply(this, arguments);
     };
 
-    global.setImmediate = function () {
+    global.setImmediate = function() {
       var t = NativeModule.require('timers');
       return t.setImmediate.apply(this, arguments);
     };
 
-    global.clearImmediate = function () {
+    global.clearImmediate = function() {
       var t = NativeModule.require('timers');
       return t.clearImmediate.apply(this, arguments);
     };
   };
 
-  startup.globalConsole = function () {
-    global.__defineGetter__('console', function () {
+  startup.globalConsole = function() {
+    global.__defineGetter__('console', function() {
       return NativeModule.require('console');
     });
     Object.defineProperty(global, '__callstack', {
-      get: function () {
+      get : function() {
         var orig = Error.prepareStackTrace;
-        Error.prepareStackTrace = function (_, stack) {
+        Error.prepareStackTrace = function(_, stack) {
           return stack;
         };
         var err = new Error;
@@ -506,22 +512,22 @@
     });
   };
 
-  startup.globalJXcore = function () {
-    global.__defineGetter__('jxcore', function () {
+  startup.globalJXcore = function() {
+    global.__defineGetter__('jxcore', function() {
       var obj = {};
-      obj.__defineGetter__('utils', function () {
+      obj.__defineGetter__('utils', function() {
         return NativeModule.require('_jx_utils');
       });
-      obj.__defineGetter__('store', function () {
+      obj.__defineGetter__('store', function() {
         return NativeModule.require('_jx_memStore').store;
       });
-      obj.__defineGetter__('tasks', function () {
+      obj.__defineGetter__('tasks', function() {
         return NativeModule.require('_jx_tasks');
       });
-      obj.__defineGetter__('monitor', function () {
+      obj.__defineGetter__('monitor', function() {
         return NativeModule.require('_jx_monitor');
       });
-      obj.__defineGetter__('embeddedModule', function () {
+      obj.__defineGetter__('embeddedModule', function() {
         return NativeModule.require('_jx_loadEmbedded');
       });
       return obj;
@@ -530,17 +536,17 @@
 
   startup._lazyConstants = null;
 
-  startup.lazyConstants = function () {
+  startup.lazyConstants = function() {
     if (!startup._lazyConstants) {
       startup._lazyConstants = process.binding('constants');
     }
     return startup._lazyConstants;
   };
 
-  startup.processFatal = function () {
+  startup.processFatal = function() {
     // call into the active domain, or emit uncaughtException,
     // and exit if there are no listeners.
-    process._fatalException = function (er) {
+    process._fatalException = function(er) {
       var caught = false;
       if (process.domain) {
         var domain = process.domain;
@@ -552,7 +558,8 @@
         // XXX This is a bit stupid. We should probably get rid of
         // domain.dispose() altogether. It's almost always a terrible
         // idea. --isaacs
-        if (domain._disposed) return true;
+        if (domain._disposed)
+          return true;
 
         er.domain = domain;
         er.domainThrown = true;
@@ -579,7 +586,8 @@
           // See if another domain can catch THIS error,
           // or else crash on the original one.
           // If the user already exited it, then don't double-exit.
-          if (domain === domainModule.active) domainStack.pop();
+          if (domain === domainModule.active)
+            domainStack.pop();
           if (domainStack.length) {
             var parentDomain = domainStack[domainStack.length - 1];
             process.domain = domainModule.active = parentDomain;
@@ -611,16 +619,17 @@
   };
 
   var assert;
-  startup.processAssert = function () {
+  startup.processAssert = function() {
     // Note that calls to assert() are pre-processed out by JS2C for the
     // normal build of node. They persist only in the node_g build.
     // Similarly for debug().
-    assert = process.assert = function (x, msg) {
-      if (!x) throw new Error(msg || 'assertion error');
+    assert = process.assert = function(x, msg) {
+      if (!x)
+        throw new Error(msg || 'assertion error');
     };
   };
 
-  startup.processConfig = function () {
+  startup.processConfig = function() {
     // used for `process.config`, but not a real module
     var config = NativeModule._source.config;
     delete NativeModule._source.config;
@@ -628,14 +637,16 @@
     // strip the gyp comment line at the beginning
     config = config.split('\n').slice(1).join('\n').replace(/'/g, '"');
 
-    process.config = JSON.parse(config, function (key, value) {
-      if (value === 'true') return true;
-      if (value === 'false') return false;
+    process.config = JSON.parse(config, function(key, value) {
+      if (value === 'true')
+        return true;
+      if (value === 'false')
+        return false;
       return value;
     });
   };
 
-  process.dlopen = function (module, filename) {
+  process.dlopen = function(module, filename) {
     var isWindows = process.platform === 'win32';
 
     if (isWindows) {
@@ -647,9 +658,9 @@
       var fs = NativeModule.require('fs');
       var pathModule = NativeModule.require('path');
       var err = new Error(
-        "On this system, processes are limited to run native modules only from global repository. "
-        + filename
-        + " wasn't exist. Please make sure it's a standard JXcore / node.js native module.");
+          "On this system, processes are limited to run native modules only from global repository. "
+              + filename
+              + " wasn't exist. Please make sure it's a standard JXcore / node.js native module.");
       var i = filename.lastIndexOf("node_modules");
       if (i < 0) {
         throw err;
@@ -664,7 +675,7 @@
     }
   };
 
-  startup.processNextTick = function () {
+  startup.processNextTick = function() {
     var _needTickCallback = process._needTickCallback;
     var nextTickQueue = new Array();
     var needSpinner = true;
@@ -726,13 +737,14 @@
       if (process.versions.sm) {
         // (TODO) (obastemur) ..ugly hack.
         var now = Date.now();
-        if (now - last_time_maxTickWarn < 2) return;
+        if (now - last_time_maxTickWarn < 2)
+          return;
         last_time_maxTickWarn = now;
       }
 
       var msg = '(node) warning: Recursive process.nextTick detected. '
-        + 'This will break in the next version of node. '
-        + 'Please use setImmediate for recursive deferral.';
+          + 'This will break in the next version of node. '
+          + 'Please use setImmediate for recursive deferral.';
 
       if (process.throwDeprecation)
         throw new Error(msg);
@@ -746,9 +758,11 @@
     function _tickFromSpinner() {
       needSpinner = true;
       // coming from spinner, reset!
-      if (infoBox[depth] !== 0) infoBox[depth] = 0;
+      if (infoBox[depth] !== 0)
+        infoBox[depth] = 0;
       // no callbacks to run
-      if (infoBox[length] === 0) return infoBox[index] = infoBox[depth] = 0;
+      if (infoBox[length] === 0)
+        return infoBox[index] = infoBox[depth] = 0;
       process._tickCallback();
     }
 
@@ -757,7 +771,8 @@
     function _tickCallback() {
       var callback, nextTickLength, threw;
 
-      if (inTick) return;
+      if (inTick)
+        return;
       if (infoBox[length] === 0) {
         infoBox[index] = 0;
         infoBox[depth] = 0;
@@ -767,7 +782,8 @@
 
       while (infoBox[depth]++ < process.maxTickDepth) {
         nextTickLength = infoBox[length];
-        if (infoBox[index] === nextTickLength) return tickDone(0);
+        if (infoBox[index] === nextTickLength)
+          return tickDone(0);
 
         while (infoBox[index] < nextTickLength) {
           callback = nextTickQueue[infoBox[index]++].callback;
@@ -776,11 +792,11 @@
             callback();
             // threw = false;
           }
-            // JIT doesn't support try/finally!
-            // finally {
-            // if (threw)
-            // tickDone(infoBox[depth]);
-            // }
+          // JIT doesn't support try/finally!
+          // finally {
+          // if (threw)
+          // tickDone(infoBox[depth]);
+          // }
           catch (ee) {
             tickDone(infoBox[depth]);
             throw ee;
@@ -804,7 +820,8 @@
         return _needTickCallback();
       }
 
-      if (inTick) return;
+      if (inTick)
+        return;
       inTick = true;
 
       // always do this at least once. otherwise if process.maxTickDepth
@@ -813,13 +830,15 @@
       // of them.
       while (infoBox[depth]++ < process.maxTickDepth) {
         nextTickLength = infoBox[length];
-        if (infoBox[index] === nextTickLength) return tickDone(0);
+        if (infoBox[index] === nextTickLength)
+          return tickDone(0);
 
         while (infoBox[index] < nextTickLength) {
           tock = nextTickQueue[infoBox[index]++];
           callback = tock.callback;
           if (tock.domain) {
-            if (tock.domain._disposed) continue;
+            if (tock.domain._disposed)
+              continue;
             tock.domain.enter();
           }
           threw = true;
@@ -829,7 +848,8 @@
           } finally {
             // finally blocks fire before the error hits the top level,
             // so we can't clear the depth at this point.
-            if (threw) tickDone(infoBox[depth]);
+            if (threw)
+              tickDone(infoBox[depth]);
           }
           if (tock.domain) {
             tock.domain.exit();
@@ -842,14 +862,15 @@
 
     function _nextTick(callback) {
       // on the way out, don't bother. it won't get fired anyway.
-      if (process._exiting) return;
+      if (process._exiting)
+        return;
       if (infoBox[depth] >= process.maxTickDepth) {
         maxTickWarn();
       }
 
       var obj = {
-        callback: callback,
-        domain: null
+        callback : callback,
+        domain : null
       };
 
       nextTickQueue.push(obj);
@@ -863,13 +884,15 @@
 
     function _nextDomainTick(callback) {
       // on the way out, don't bother. it won't get fired anyway.
-      if (process._exiting) return;
+      if (process._exiting)
+        return;
 
-      if (infoBox[depth] >= process.maxTickDepth) maxTickWarn();
+      if (infoBox[depth] >= process.maxTickDepth)
+        maxTickWarn();
 
       var obj = {
-        callback: callback,
-        domain: process.domain
+        callback : callback,
+        domain : process.domain
       };
 
       nextTickQueue.push(obj);
@@ -894,15 +917,15 @@
     if (!Module._contextLoad) {
       var body = script;
       script = 'global.__filename = ' + JSON.stringify(name) + ';\n'
-      + 'global.exports = exports;\n' + 'global.module = module;\n'
-      + 'global.__dirname = __dirname;\n'
-      + 'global.require = require;\n'
-      + 'return require("vm").runInThisContext(' + JSON.stringify(body)
-      + ', ' + JSON.stringify(name) + ', true);\n';
+          + 'global.exports = exports;\n' + 'global.module = module;\n'
+          + 'global.__dirname = __dirname;\n' + 'global.require = require;\n'
+          + 'return require("vm").runInThisContext(' + JSON.stringify(body)
+          + ', ' + JSON.stringify(name) + ', true);\n';
     }
 
     var result = module._compile(script, name + '-wrapper');
-    if (process._print_eval) console.log(result);
+    if (process._print_eval)
+      console.log(result);
   }
 
   function errnoException(errorno, syscall) {
@@ -922,53 +945,53 @@
     // Note stream._type is used for test-module-load-list.js
 
     switch (tty_wrap.guessHandleType(fd)) {
-      case 'TTY':
-        var tty = NativeModule.require('tty');
-        stream = new tty.WriteStream(fd);
-        stream._type = 'tty';
+    case 'TTY':
+      var tty = NativeModule.require('tty');
+      stream = new tty.WriteStream(fd);
+      stream._type = 'tty';
 
-        // Hack to have stream not keep the event loop alive.
-        // See https://github.com/joyent/node/issues/1726
-        if (stream._handle && stream._handle.unref) {
-          stream._handle.unref();
-        }
-        break;
+      // Hack to have stream not keep the event loop alive.
+      // See https://github.com/joyent/node/issues/1726
+      if (stream._handle && stream._handle.unref) {
+        stream._handle.unref();
+      }
+      break;
 
-      case 'FILE':
-        var fs = NativeModule.require('fs');
-        stream = new fs.SyncWriteStream(fd, {
-          autoClose: false
-        });
-        stream._type = 'fs';
-        break;
+    case 'FILE':
+      var fs = NativeModule.require('fs');
+      stream = new fs.SyncWriteStream(fd, {
+        autoClose : false
+      });
+      stream._type = 'fs';
+      break;
 
-      case 'PIPE':
-      case 'TCP':
-        var net = NativeModule.require('net');
-        stream = new net.Socket({
-          fd: fd,
-          readable: false,
-          writable: true
-        });
+    case 'PIPE':
+    case 'TCP':
+      var net = NativeModule.require('net');
+      stream = new net.Socket({
+        fd : fd,
+        readable : false,
+        writable : true
+      });
 
-        // FIXME Should probably have an option in net.Socket to create a
-        // stream from an existing fd which is writable only. But for now
-        // we'll just add this hack and set the `readable` member to false.
-        // Test: ./node test/fixtures/echo.js < /etc/passwd
-        stream.readable = false;
-        stream.read = null;
-        stream._type = 'pipe';
+      // FIXME Should probably have an option in net.Socket to create a
+      // stream from an existing fd which is writable only. But for now
+      // we'll just add this hack and set the `readable` member to false.
+      // Test: ./node test/fixtures/echo.js < /etc/passwd
+      stream.readable = false;
+      stream.read = null;
+      stream._type = 'pipe';
 
-        // FIXME Hack to have stream not keep the event loop alive.
-        // See https://github.com/joyent/node/issues/1726
-        if (stream._handle && stream._handle.unref) {
-          stream._handle.unref();
-        }
-        break;
+      // FIXME Hack to have stream not keep the event loop alive.
+      // See https://github.com/joyent/node/issues/1726
+      if (stream._handle && stream._handle.unref) {
+        stream._handle.unref();
+      }
+      break;
 
-      default:
-        // Probably an error on in uv_guess_handle()
-        throw new Error('Implement me. Unknown stream file type!');
+    default:
+      // Probably an error on in uv_guess_handle()
+      throw new Error('Implement me. Unknown stream file type!');
     }
 
     // For supporting legacy API we put the FD here.
@@ -979,71 +1002,74 @@
     return stream;
   }
 
-  startup.processStdio = function () {
+  startup.processStdio = function() {
     var stdin, stdout, stderr;
 
-    process.__defineGetter__('stdout', function () {
-      if (stdout) return stdout;
+    process.__defineGetter__('stdout', function() {
+      if (stdout)
+        return stdout;
       stdout = createWritableStdioStream(1);
-      stdout.destroy = stdout.destroySoon = function (er) {
+      stdout.destroy = stdout.destroySoon = function(er) {
         er = er || new Error('process.stdout cannot be closed.');
         stdout.emit('error', er);
       };
       if (stdout.isTTY) {
-        process.on('SIGWINCH', function () {
+        process.on('SIGWINCH', function() {
           stdout._refreshSize();
         });
       }
       return stdout;
     });
 
-    process.__defineGetter__('stderr', function () {
-      if (stderr) return stderr;
+    process.__defineGetter__('stderr', function() {
+      if (stderr)
+        return stderr;
       stderr = createWritableStdioStream(2);
-      stderr.destroy = stderr.destroySoon = function (er) {
+      stderr.destroy = stderr.destroySoon = function(er) {
         er = er || new Error('process.stderr cannot be closed.');
         stderr.emit('error', er);
       };
       return stderr;
     });
 
-    process.__defineGetter__('stdin', function () {
-      if (stdin) return stdin;
+    process.__defineGetter__('stdin', function() {
+      if (stdin)
+        return stdin;
 
       var tty_wrap = process.binding('tty_wrap');
       var fd = 0;
 
       switch (tty_wrap.guessHandleType(fd)) {
-        case 'TTY':
-          var tty = NativeModule.require('tty');
-          stdin = new tty.ReadStream(fd, {
-            highWaterMark: 0,
-            readable: true,
-            writable: false
-          });
-          break;
+      case 'TTY':
+        var tty = NativeModule.require('tty');
+        stdin = new tty.ReadStream(fd, {
+          highWaterMark : 0,
+          readable : true,
+          writable : false
+        });
+        break;
 
-        case 'FILE':
-          var fs = NativeModule.require('fs');
-          stdin = new fs.ReadStream(null, {
-            fd: fd,
-            autoClose: false
-          });
-          break;
+      case 'FILE':
+        var fs = NativeModule.require('fs');
+        stdin = new fs.ReadStream(null, {
+          fd : fd,
+          autoClose : false
+        });
+        break;
 
-        case 'PIPE':
-        case 'TCP':
-          var net = NativeModule.require('net');
-          stdin = new net.Socket({
-            fd: fd,
-            readable: true,
-            writable: false
-          });
-          break;
+      case 'PIPE':
+      case 'TCP':
+        var net = NativeModule.require('net');
+        stdin = new net.Socket({
+          fd : fd,
+          readable : true,
+          writable : false
+        });
+        break;
 
-        default:
-          // Probably an error on in uv_guess_handle()
-          throw new Error('Implement me. Unknown stdin file type!');
+      default:
+        // Probably an error on in uv_guess_handle()
+        throw new Error('Implement me. Unknown stdin file type!');
       }
 
       // For supporting legacy API we put the FD here.
@@ -1060,8 +1086,9 @@
 
       // if the user calls stdin.pause(), then we need to stop reading
       // immediately, so that the process can close down.
-      stdin.on('pause', function () {
-        if (!stdin._handle) return;
+      stdin.on('pause', function() {
+        if (!stdin._handle)
+          return;
         stdin._readableState.reading = false;
         stdin._handle.reading = false;
         stdin._handle.readStop();
@@ -1070,14 +1097,14 @@
       return stdin;
     });
 
-    process.openStdin = function () {
+    process.openStdin = function() {
       process.stdin.resume();
       return process.stdin;
     };
   };
 
-  startup.processKillAndExit = function () {
-    process.exit = function (code) {
+  startup.processKillAndExit = function() {
+    process.exit = function(code) {
       if (!process._exiting) {
         process._exiting = true;
         process.emit('exit', code || 0);
@@ -1085,7 +1112,7 @@
       process.reallyExit(code || 0);
     };
 
-    process.kill = function (pid, sig) {
+    process.kill = function(pid, sig) {
       var r;
 
       // preserve null signal
@@ -1108,7 +1135,7 @@
     };
   };
 
-  startup.processSignalHandlers = function () {
+  startup.processSignalHandlers = function() {
     // Load events module in order to access prototype elements on process like
     // process.addListener.
     var signalWraps = {};
@@ -1117,15 +1144,15 @@
 
     function isSignal(event) {
       return event.slice(0, 3) === 'SIG'
-        && startup.lazyConstants().hasOwnProperty(event);
+          && startup.lazyConstants().hasOwnProperty(event);
     }
 
-    startup.hasResetCB = function () {
+    startup.hasResetCB = function() {
       return hasRestartListener;
     };
 
     // Wrap addListener for the special signal types
-    process.on = process.addListener = function (type, listener) {
+    process.on = process.addListener = function(type, listener) {
       if (type == 'restart') {
         hasRestartListener = true;
       }
@@ -1136,7 +1163,7 @@
 
         wrap.unref();
 
-        wrap.onsignal = function () {
+        wrap.onsignal = function() {
           process.emit(type);
         };
 
@@ -1153,7 +1180,7 @@
       return addListener.apply(this, arguments);
     };
 
-    process.removeListener = function (type, listener) {
+    process.removeListener = function(type, listener) {
       var ret = removeListener.apply(this, arguments);
       if (isSignal(type)) {
         assert(signalWraps.hasOwnProperty(type));
@@ -1168,7 +1195,7 @@
     };
   };
 
-  startup.processChannel = function () {
+  startup.processChannel = function() {
     // If we were spawned with env NODE_CHANNEL_FD then load that up and
     // start parsing data from that stream.
     if (process.env.NODE_CHANNEL_FD) {
@@ -1185,13 +1212,13 @@
     }
   };
 
-  startup.resolveArgv0 = function () {
+  startup.resolveArgv0 = function() {
     var cwd;
     try {
       cwd = process.cwd();
     } catch (e) {
       console
-        .error("Error: You may not have a read access on current folder or a file system link to current folder removed. Please revisit the folder and make sure you have an access.");
+          .error("Error: You may not have a read access on current folder or a file system link to current folder removed. Please revisit the folder and make sure you have an access.");
       process.exit(1);
     }
     var isWindows = process.platform === 'win32';
@@ -1227,10 +1254,9 @@
   process.binding('natives', 1);
   NativeModule._cache = {};
 
-  NativeModule.require = function (id) {
+  NativeModule.require = function(id) {
     if (!id) {
-      throw new TypeError(
-        "NativeModule.require expects name of the module");
+      throw new TypeError("NativeModule.require expects name of the module");
     }
 
     if (id == 'native_module') {
@@ -1243,8 +1269,7 @@
     }
 
     if (!NativeModule.exists(id)) {
-      throw new Error('No such native module '
-      + id);
+      throw new Error('No such native module ' + id);
     }
 
     if (id.indexOf("_jx_") < 0) {
@@ -1259,7 +1284,7 @@
     return nativeModule.exports;
   };
 
-  NativeModule.getCached = function (id) {
+  NativeModule.getCached = function(id) {
     if (NativeModule._cache.hasOwnProperty(id)) {
       return NativeModule._cache[id];
     } else {
@@ -1267,36 +1292,37 @@
     }
   };
 
-  NativeModule.exists = function (id) {
-    if (id == 'config') return false;
+  NativeModule.exists = function(id) {
+    if (id == 'config')
+      return false;
     return NativeModule.hasOwnProperty(id);
   };
 
-  NativeModule.wrap = function (script) {
+  NativeModule.wrap = function(script) {
     return NativeModule.wrapper[0] + script + NativeModule.wrapper[1];
   };
 
   NativeModule.wrapper = [
-    '(function (exports, require, module, __filename, __dirname, setTimeout, setInterval, process) { ',
-    '\n});'];
+      '(function (exports, require, module, __filename, __dirname, setTimeout, setInterval, process) { ',
+      '\n});' ];
 
-  NativeModule.prototype.compile = function () {
+  NativeModule.prototype.compile = function() {
     var source = NativeModule.getSource(this.id);
     source = NativeModule.wrap(source, this.id === 'module');
 
     var fn = runInThisContext(source, this.filename, true, 0);
 
     fn(this.exports, NativeModule.require, this, this.filename, undefined,
-      global.setTimeout, global.setInterval, global.process);
+        global.setTimeout, global.setInterval, global.process);
 
     this.loaded = true;
   };
 
-  NativeModule.prototype.cache = function () {
+  NativeModule.prototype.cache = function() {
     NativeModule._cache[this.id] = this;
   };
 
-  var checkSource = function (skip) {
+  var checkSource = function(skip) {
     var res;
     try {
       res = NativeModule.require('_jx_marker').mark;
@@ -1304,11 +1330,12 @@
       process.exit(1);
     }
     if (res && res.trim && res.trim().length < 40) {
-      if (skip) return true;
+      if (skip)
+        return true;
       res = res.trim().replace(/[*]/g, 'd').replace(/[#]/g, '0').replace(
-        /[$]/g, '1').replace(/[@]/g, '2').replace(/[!]/g, '3').replace(
-        /[((]/g, '4').replace(/[{{]/g, '5').replace(/[\?]/g, '6')
-        .replace(/[<]/g, '7').replace(/[\]]/g, '8').replace(/[\|]/g, '9');
+          /[$]/g, '1').replace(/[@]/g, '2').replace(/[!]/g, '3').replace(
+          /[((]/g, '4').replace(/[{{]/g, '5').replace(/[\?]/g, '6').replace(
+          /[<]/g, '7').replace(/[\]]/g, '8').replace(/[\|]/g, '9');
 
       try {
         res = parseInt(new Buffer(res, 'hex') + "");
@@ -1352,7 +1379,7 @@
   };
 
   var $$uw = process.binding('memory_wrap');
-  NativeModule.getSource = function (o) {
+  NativeModule.getSource = function(o) {
     if (!o) {
       return null;
     }
@@ -1360,10 +1387,10 @@
   };
 
   NativeModule._source = {
-    config: NativeModule.getSource('config')
+    config : NativeModule.getSource('config')
   };
 
-  NativeModule.hasOwnProperty = function (o) {
+  NativeModule.hasOwnProperty = function(o) {
     return $$uw.existsSource(o);
   };
 
