@@ -8,21 +8,21 @@
     'component%': 'static_library',  # NB. these names match with what V8 expects
     'msvs_multi_core_compile': '0',  # we do enable multicore compiles, but not using the V8 way
     'gcc_version%': 'unknown',
-    'chromeos%': '1',
     'clang%': 1,
     'python%': 'python',
     'uclibc_defined%': 0,
 
-    # Turn on optimizations that may trigger compiler bugs.
-    # Use at your own risk. Do *NOT* report bugs if this option is enabled.
-    'node_unsafe_optimizations%': 0,
+    # Enable disassembler for `--print-code` v8 options
+    'v8_enable_disassembler': 1,
 
     # Enable V8's post-mortem debugging only on unix flavors.
     'conditions': [
       ['uclibc_defined == 1', {
         'defines':['POSIX_UCLIBC_DEFINED'],
       }], 
-      ['OS != "win" and node_engine_mozilla!=1', {
+      ['OS == "win"', {
+        'v8_postmortem_support': 'false'
+      }, {
         'v8_postmortem_support': 'true'
       }],
       ['(GENERATOR == "ninja" or OS == "mac") and node_engine_mozilla!=1', {
@@ -60,6 +60,9 @@
     'configurations': {
       'Debug': {
         'defines': [ 'DEBUG', '_DEBUG' ],
+        'variables': {
+          'v8_enable_handle_zapping%': 1,
+        },
         'cflags': [ '-g', '-O0' ],
         'conditions': [
           ['target_arch=="x64"', {
@@ -87,6 +90,9 @@
       },
       'Release': {
       	'cflags': [ '-O3', '-ffunction-sections', '-fdata-sections' ],
+      	'variables': {
+          'v8_enable_handle_zapping%': 0,
+        },
         'conditions': [
           ['target_arch=="x64"', {
             'msvs_configuration_platform': 'x64',
@@ -94,32 +100,15 @@
           ['target_arch=="arm"', {
             'msvs_configuration_platform': 'ARM',
           }],
-          ['node_unsafe_optimizations==1', {
-            'cflags': [ '-O3', '-ffunction-sections', '-fdata-sections' ],
-            'ldflags': [ '-Wl,--gc-sections' ],
-          }, {
-            'cflags': [ '-O2', '-fno-strict-aliasing' ],
-            'cflags!': [ '-O3', '-fstrict-aliasing' ],
-            'conditions': [
-              # Required by the dtrace post-processor. Unfortunately,
-              # some gcc/binutils combos generate bad code when
-              # -ffunction-sections is enabled. Let's hope for the best.
-              ['OS=="solaris"', {
-                'cflags': [ '-ffunction-sections', '-fdata-sections' ],
-              }, {
-                'cflags!': [ '-ffunction-sections', '-fdata-sections' ],
-              }],
-              ['clang == 0 and gcc_version >= 40', {
-                'cflags': [ '-fno-tree-vrp' ],
-              }],
-              ['clang == 0 and gcc_version <= 44', {
-                'cflags': [ '-fno-tree-sink' ],
-              }],
-            ],
-          }],
           ['OS=="solaris"', {
             # pull in V8's postmortem metadata
             'ldflags': [ '-Wl,-z,allextract' ]
+          }],
+          ['clang == 0 and gcc_version >= 40', {
+            'cflags': [ '-fno-tree-vrp' ],
+          }],
+          ['clang == 0 and gcc_version <= 44', {
+            'cflags': [ '-fno-tree-sink' ],
           }],
           ['OS!="mac" and OS!="win"', {
             'cflags': [ '-fno-omit-frame-pointer' ],
@@ -180,6 +169,7 @@
         ],
       },
     },
+    'msvs_disabled_warnings': [4351, 4355, 4800],
     'conditions': [
       ['OS == "win"', {
         'msvs_cygwin_shell': 0, # prevent actions from trying to use cygwin

@@ -14,12 +14,13 @@
     'node_shared_cares%': 'false',
     'node_shared_libuv%': 'false',
     'node_use_openssl%': 'true',
-    'node_use_systemtap%': 'false',
     'node_shared_openssl%': 'false',
     'node_no_sqlite%': 'false',
     'node_engine_mozilla%': 0,
     'node_shared_library%': 0,
     'node_embed_leveldown%': 0,
+    'node_use_mdb%': 'false',
+    'node_v8_options%': '',
     'library_files': [
       'lib/jx/_jx_argv.js',
       'lib/jx/_jx_subs.js',
@@ -155,6 +156,7 @@
       'NODE_WANT_INTERNALS=1',
       'ARCH="<(target_arch)"',
       'PLATFORM="<(OS)"', #'NODE_TAG="<(node_tag)"',
+      'NODE_V8_OPTIONS="<(node_v8_options)"',
     ],
 
     'cflags!': ['-ansi'],
@@ -164,6 +166,7 @@
       {
         'dependencies': [
           'node_js2c#host',
+          'deps/debugger-agent/debugger-agent.gyp:debugger-agent',
         ],
       },
       {
@@ -215,6 +218,25 @@
         'sources': [
           'src/jx/Proxy/V8/JXString.cc',
           'src/jx/Proxy/V8/v8_typed_array.cc',
+        ],
+        'conditions': [
+	      [ 'gcc_version<=44', {
+	        # GCC versions <= 4.4 do not handle the aliasing in the queue
+	        # implementation, so disable aliasing on these platforms
+	        # to avoid subtle bugs
+	        'cflags': [ '-fno-strict-aliasing' ],
+	      }],
+	      [ 'v8_enable_i18n_support==1', {
+	        'defines': [ 'NODE_HAVE_I18N_SUPPORT=1' ],
+	        'dependencies': [
+	          '<(icu_gyp_path):icui18n',
+	          '<(icu_gyp_path):icuuc',
+	        ],
+	        'conditions': [
+	          [ 'icu_small=="true"', {
+	            'defines': [ 'NODE_HAVE_SMALL_ICU=1' ],
+	        }]],
+	      }],
         ]
       },
       {
@@ -329,15 +351,28 @@
           ]
         ]
       }],
-      ['node_use_systemtap=="true" and node_engine_mozilla!=1',
-      {
-        'defines': ['HAVE_SYSTEMTAP=1', 'STAP_SDT_V1=1'],
-        'dependencies': ['node_systemtap_header'],
-        'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
+      [ 'node_use_mdb=="true"', {
+        'dependencies': [ 'node_mdb' ],
+        'include_dirs': [ '<(SHARED_INTERMEDIATE_DIR)' ],
         'sources': [
-          'src/node_dtrace.cc',
-          '<(SHARED_INTERMEDIATE_DIR)/node_systemtap.h',
+          'src/node_mdb.cc',
         ],
+      } ],
+      [ 'v8_postmortem_support=="true"', {
+        'dependencies': [ 'deps/v8/tools/gyp/v8.gyp:postmortem-metadata' ],
+        'xcode_settings': {
+          'OTHER_LDFLAGS': [
+            '-Wl,-force_load,<(V8_BASE)',
+          ],
+        },
+      }],
+      [ 'OS=="mac" and v8_postmortem_support=="true"', {
+        # Do not let `v8dbg_` symbols slip away
+        'xcode_settings': {
+          'OTHER_LDFLAGS': [
+            '-Wl,-force_load,<(V8_BASE)',
+          ],
+        },
       }],
       ['node_use_etw=="true" and node_engine_mozilla!=1',
       {
@@ -609,22 +644,30 @@
     ]
   },
   {
-    'target_name': 'node_systemtap_header',
+    'target_name': 'node_mdb',
     'type': 'none',
     'conditions': [
-      ['node_use_systemtap=="true"',
-      {
-        'actions': [
+      [ 'node_use_mdb=="true"',
         {
-          'action_name': 'node_systemtap_header',
-          'inputs': ['src/node_systemtap.d'],
-          'outputs': ['<(SHARED_INTERMEDIATE_DIR)/node_systemtap.h'],
-          'action': ['dtrace', '-h', '-C', '-s', '<@(_inputs)',
-            '-o', '<@(_outputs)'
-          ]
-        }]
-      }]
-    ]
+          'dependencies': [ 'deps/mdb_v8/mdb_v8.gyp:mdb_v8' ],
+          'actions': [
+            {
+              'action_name': 'node_mdb',
+              'inputs': [ '<(PRODUCT_DIR)/obj.target/deps/mdb_v8/mdb_v8.so' ],
+              'outputs': [ '<(PRODUCT_DIR)/obj.target/node/src/node_mdb.o' ],
+              'conditions': [
+                [ 'target_arch=="ia32"', {
+                  'action': [ 'elfwrap', '-o', '<@(_outputs)', '<@(_inputs)' ],
+                } ],
+                [ 'target_arch=="x64"', {
+                  'action': [ 'elfwrap', '-64', '-o', '<@(_outputs)', '<@(_inputs)' ],
+                } ],
+              ],
+            },
+          ],
+        },
+      ],
+    ],
   },
   {
     'target_name': 'node_dtrace_provider',
