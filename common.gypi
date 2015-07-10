@@ -8,7 +8,6 @@
     'component%': 'static_library',  # NB. these names match with what V8 expects
     'msvs_multi_core_compile': '0',  # we do enable multicore compiles, but not using the V8 way
     'gcc_version%': 'unknown',
-    'chromeos%': '1',
     'clang%': 1,
     'python%': 'python',
     'uclibc_defined%': 0,
@@ -101,13 +100,9 @@
             'cflags': [ '-O2', '-fno-strict-aliasing' ],
             'cflags!': [ '-O3', '-fstrict-aliasing' ],
             'conditions': [
-              # Required by the dtrace post-processor. Unfortunately,
-              # some gcc/binutils combos generate bad code when
-              # -ffunction-sections is enabled. Let's hope for the best.
               ['OS=="solaris"', {
-                'cflags': [ '-ffunction-sections', '-fdata-sections' ],
-              }, {
-                'cflags!': [ '-ffunction-sections', '-fdata-sections' ],
+                # pull in V8's postmortem metadata
+                'ldflags': [ '-Wl,-z,allextract' ]
               }],
               ['clang == 0 and gcc_version >= 40', {
                 'cflags': [ '-fno-tree-vrp' ],
@@ -116,10 +111,6 @@
                 'cflags': [ '-fno-tree-sink' ],
               }],
             ],
-          }],
-          ['OS=="solaris"', {
-            # pull in V8's postmortem metadata
-            'ldflags': [ '-Wl,-z,allextract' ]
           }],
           ['OS!="mac" and OS!="win"', {
             'cflags': [ '-fno-omit-frame-pointer' ],
