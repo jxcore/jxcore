@@ -16,7 +16,7 @@ void RemoveCache();
 
 node::Buffer* UncompressString(node::commons* com, JS_HANDLE_OBJECT obj,
                                const unsigned long ub64_len);
-mz_uint8* UncompressNative(const char* str, const unsigned long ub64_len);
+mz_uint8* UncompressNative(node::commons *com, const char* str, const unsigned long ub64_len);
 }  // namespace jxcore
 
 #endif  // SRC_JX_JXP_COMPRESS_H_

@@ -683,7 +683,7 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
 void DeclareProxy(node::commons *com, JS_HANDLE_OBJECT_REF methods,
                   const char *name, int interface_id,
                   JS_NATIVE_METHOD native_method) {
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
 
   char *script = (char *)malloc(1024);
@@ -717,7 +717,7 @@ void DeclareProxy(node::commons *com, JS_HANDLE_OBJECT_REF methods,
 }
 
 void JXEngine::InitializeProxyMethods(node::commons *com) {
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
   JS_HANDLE_OBJECT process_l = com->getProcess();
 
@@ -1041,7 +1041,7 @@ void JXEngine::Destroy() {
 
 char *JX_Stringify(node::commons *com, JS_HANDLE_OBJECT obj,
                    size_t *data_length) {
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
 
   JS_LOCAL_STRING str_value;
@@ -1095,7 +1095,7 @@ char *JX_Stringify(node::commons *com, JS_HANDLE_OBJECT obj,
 
 JS_HANDLE_VALUE JX_Parse(node::commons *com, const char *str,
                          const size_t length) {
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
 
   JS_LOCAL_STRING str_value;
