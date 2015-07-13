@@ -195,7 +195,7 @@
 
 #define JS_OBJECT_FIELD_COUNT(obj) obj->InternalFieldCount()
 #define JS_SET_POINTER_DATA(host, data) host->SetPointerInInternalField(0, data)
-#define JS_GET_POINTER_DATA(host) host->GetPointerFromInternalField(0)
+#define JS_GET_POINTER_DATA(host) host->GetAlignedPointerFromInternalField(0)
 #define JS_SET_INDEXED_EXTERNAL(host, b, c, d) \
   host->SetIndexedPropertiesToExternalArrayData(b, c, d)
 #define JS_GET_EXTERNAL_ARRAY_DATA(x) \

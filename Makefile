@@ -33,19 +33,19 @@ endif
 .PHONY: jx jx_g
 
 ifeq ($(USE_NINJA),1)
-node: config.gypi
+jx: config.gypi
 	$(NINJA) -C out/Release/
 	ln -fs out/Release/jx jx
 
-node_g: config.gypi
+jx_g: config.gypi
 	$(NINJA) -C out/Debug/
 	ln -fs out/Debug/jx $@
 else
-node: config.gypi out/Makefile
+jx: config.gypi out/Makefile
 	$(MAKE) -C out BUILDTYPE=Release V=$(V)
 	ln -fs out/Release/jx jx
 
-node_g: config.gypi out/Makefile
+jx_g: config.gypi out/Makefile
 	$(MAKE) -C out BUILDTYPE=Debug V=$(V)
 	ln -fs out/Debug/jx $@
 endif

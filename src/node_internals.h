@@ -5,7 +5,6 @@
 
 #include <stdlib.h>
 #include "jx/Proxy/JSEngine.h"
-#include "jx/commons.h"
 
 namespace node {
 
@@ -87,7 +86,7 @@ void EnableDebugSignalHandler(uv_signal_t *handle, int);
   assert(!args.Holder().IsEmpty());                                       \
   assert(args.Holder()->InternalFieldCount() > 0);                        \
   type *wrap =                                                            \
-      static_cast<type *>(args.Holder()->GetPointerFromInternalField(0)); \
+      static_cast<type *>(args.Holder()->GetAlignedPointerFromInternalField(0)); \
   if (!wrap) {                                                            \
     fprintf(stderr, #type ": Aborting due to unwrap failure at %s:%d\n",  \
             __FILE__, __LINE__);                                          \

@@ -28,5 +28,6 @@
     "sources": [
       "src/agent.cc",
     ],
+    "defines": [ 'JS_ENGINE_V8' ]
   }],
 }

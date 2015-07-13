@@ -102,25 +102,11 @@ class NODE_EXTERN ObjectWrap {
 
 #ifdef JS_ENGINE_V8
  private:
-  static void WeakCallback(JS_PERSISTENT_VALUE value, void *data) {
-    JS_ENTER_SCOPE();
-    ObjectWrap *obj = static_cast<ObjectWrap *>(data);
+  static void WeakCallback(JS_PERSISTENT_VALUE value, void *data);
 #elif defined(JS_ENGINE_MOZJS)
  public:
-  static void WeakCallback(JSFreeOp *fop, JSObject *_this) {
-    if (!JS_HasPrivate(_this)) return;
-    void *__this = JS_GetPrivate(_this);
-    if (__this == NULL) return;
-    ObjectWrap *obj = static_cast<ObjectWrap *>(__this);
+  static void WeakCallback(JSFreeOp *fop, JSObject *_this);
 #endif
-
-    assert(!obj->refs_);
-#ifdef JS_ENGINE_V8
-    assert(value == obj->handle_);
-    assert(value.IsNearDeath());
-#endif
-    delete obj;
-  }
 };
 
 }  // namespace node

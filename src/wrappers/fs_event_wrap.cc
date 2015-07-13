@@ -100,14 +100,6 @@ void FSEventWrap::OnEvent(uv_fs_event_t* handle, const char* filename,
 }
 
 JS_METHOD_NO_COM(FSEventWrap, Close) {
-  // Unwrap manually here. The UNWRAP() macro asserts that wrap != NULL.
-  // That usually indicates an error but not here: double closes are possible
-  // and legal, HandleWrap::Close() deals with them the same way.
-  // assert(!args.Holder().IsEmpty());
-  // assert(args.Holder()->InternalFieldCount() > 0);
-  // void* ptr = args.Holder()->GetPointerFromInternalField(0);
-  // FSEventWrap* wrap = static_cast<FSEventWrap*>(ptr);
-
   ENGINE_UNWRAP(FSEventWrap);
 
   if (wrap == NULL || wrap->initialized_ == false) {
