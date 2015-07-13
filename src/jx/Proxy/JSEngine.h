@@ -20,6 +20,8 @@
 #include "jx/Proxy/V8/PArguments.h"
 #include "jx/Proxy/V8/v8_typed_array.h"
 
+#define NODE_OBJECT_WRAP_HEADER "jx/Proxy/V8/node_object_wrap.h"
+
 typedef JS_HANDLE_VALUE (*JS_NATIVE_METHOD)(const v8::Arguments& args);
 typedef void (*JS_FINALIZER_METHOD)(JS_HANDLE_VALUE_REF val, void* data);
 
@@ -56,6 +58,8 @@ typedef void (*JS_FINALIZER_METHOD)(JS_HANDLE_VALUE_REF val, void* data);
 #include "Mozilla/JXString.h"
 #include "Mozilla/PArguments.h"
 #include "Mozilla/EngineHelper.h"
+
+#define NODE_OBJECT_WRAP_HEADER "jx/Proxy/Mozilla/node_object_wrap.h"
 
 typedef bool (*JS_NATIVE_METHOD)(JSContext *ctx, unsigned argc, JS::Value *val);
 #endif
