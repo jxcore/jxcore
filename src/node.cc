@@ -163,7 +163,7 @@ static void IdleImmediateDummy(uv_idle_t* handle, int status) {
 // Just for the interface compatibility
 JS_HANDLE_VALUE FromConstructorTemplate(JS_PERSISTENT_FUNCTION_TEMPLATE t,
                                         const ENGINE_NS::Arguments& args) {
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(args.GetIsolate());
   JS_LOCAL_VALUE argv[32];
   unsigned argc = args.Length();
   if (argc > ARRAY_SIZE(argv)) argc = ARRAY_SIZE(argv);
@@ -174,7 +174,7 @@ JS_HANDLE_VALUE FromConstructorTemplate(JS_PERSISTENT_FUNCTION_TEMPLATE t,
 
 JS_HANDLE_VALUE FromConstructorTemplateX(JS_PERSISTENT_FUNCTION_TEMPLATE t,
                                          jxcore::PArguments& args) {
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(args.GetIsolate());
   JS_HANDLE_VALUE argv[32];
   unsigned argc = args.Length();
   if (argc > ARRAY_SIZE(argv)) argc = ARRAY_SIZE(argv);
@@ -308,7 +308,7 @@ MakeCallback(const JS_HANDLE_OBJECT_REF object,
 }
 
 void defineProcessCallbacks(node::commons* com) {
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
 
   JS_HANDLE_OBJECT prc = com->getProcess();
   JS_DEFINE_STATE_MARKER(com);
@@ -441,7 +441,7 @@ MakeCallback(const JS_HANDLE_OBJECT_REF object, const JS_HANDLE_STRING symbol,
 JS_HANDLE_VALUE
 MakeCallback(node::commons* com, const JS_HANDLE_OBJECT_REF object,
              const JS_HANDLE_STRING symbol, int argc, JS_HANDLE_VALUE argv[]) {
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
   if (com == NULL || com->expects_reset) return JS_UNDEFINED();
 

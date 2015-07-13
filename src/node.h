@@ -47,7 +47,7 @@
 #include <sys/types.h> /* struct stat */
 #include <sys/stat.h>
 #include <assert.h>
-#include "node_object_wrap.h"
+#include NODE_OBJECT_WRAP_HEADER
 
 #if NODE_WANT_INTERNALS
 #include "node_internals.h"

@@ -165,8 +165,8 @@ private:
 
     if (JS_IS_EMPTY(buffer)) return v8::Undefined();  // constructor failed
 
-    void* src = args.This()->GetPointerFromInternalField(0);
-    void* dest = buffer->GetPointerFromInternalField(0);
+    void* src = JS_GET_POINTER_DATA(args.This());
+    void* dest = JS_GET_POINTER_DATA(buffer);
     memcpy(dest, static_cast<char*>(src) + begin, slice_length);
 
     return buffer;
@@ -313,7 +313,7 @@ private:
                GetFunction()->NewInstance(1, argv);
       if (JS_IS_EMPTY(buffer)) return v8::Undefined(); // constructor failed
 
-      void* buf = buffer->GetPointerFromInternalField(0);
+      void* buf = JS_GET_POINTER_DATA(buffer);
       args.This()->SetIndexedPropertiesToExternalArrayData(
         buf, TEAType, length);
       // TODO(deanm): check for failure.
@@ -343,7 +343,7 @@ private:
                GetFunction()->NewInstance(1, argv);
       if (JS_IS_EMPTY(buffer)) return v8::Undefined(); // constructor failed
 
-      void* buf = buffer->GetPointerFromInternalField(0);
+      void* buf = JS_GET_POINTER_DATA(buffer);
       args.This()->SetIndexedPropertiesToExternalArrayData(
         buf, TEAType, length);
       // TODO(deanm): check for failure.

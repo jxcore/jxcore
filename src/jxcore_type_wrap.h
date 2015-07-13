@@ -55,7 +55,7 @@ class JXFunctionWrapper {
   JS_HANDLE_VALUE Call(const int argc, JS_HANDLE_VALUE args[], bool *success) {
     assert(com_ != NULL && "JXFunctionWrapper was already disposed.");
 
-    JS_ENTER_SCOPE();
+    JS_ENTER_SCOPE_WITH(com->node_isolate);
     JS_DEFINE_STATE_MARKER(com_);
 
     JS_TRY_CATCH(tc);

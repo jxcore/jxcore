@@ -180,7 +180,7 @@ void JXInstance::runScript(void *x) {
 
 static void handleJob(node::commons *com, Job *j,
                       const JS_HANDLE_FUNCTION &runner) {
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
 
   if (com->expects_reset) return;
@@ -216,7 +216,7 @@ static void handleJob(node::commons *com, Job *j,
 
 static void handleTasks(node::commons *com, const JS_HANDLE_FUNCTION &func,
                         const JS_HANDLE_FUNCTION &runner, const int threadId) {
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
 
   if (com->expects_reset) return;

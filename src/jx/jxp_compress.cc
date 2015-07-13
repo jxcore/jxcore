@@ -75,7 +75,7 @@ void RemoveCache() {
 
 node::Buffer *UncompressString(node::commons *com, JS_HANDLE_OBJECT obj,
                                const unsigned long ub64_len) {
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
 
   const char *str = BUFFER__DATA(obj);
 
@@ -131,8 +131,8 @@ retry:
   return buff;
 }
 
-mz_uint8 *UncompressNative(const char *str, const unsigned long ub64_len) {
-  JS_ENTER_SCOPE();
+mz_uint8 *UncompressNative(node::commons *com, const char *str, const unsigned long ub64_len) {
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
 
   mz_ulong lenf = ub64_len * (((int)str[0]) + 1);
   const uint8 *ucmp = reinterpret_cast<const uint8 *>(str);

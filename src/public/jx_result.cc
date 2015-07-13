@@ -424,7 +424,7 @@ JX_SetBoolean(JXValue *value, const bool val) {
 
 template <class t>
 JS_HANDLE_VALUE NewString_(node::commons *com, const t *val, size_t *str_len) {
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
 
   JS_LOCAL_STRING str_val = UTF8_TO_STRING(val);
@@ -435,8 +435,7 @@ JS_HANDLE_VALUE NewString_(node::commons *com, const t *val, size_t *str_len) {
 
 template <class t>
 JS_HANDLE_VALUE NewString(node::commons *com, const t *val, size_t *length) {
-
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
 
   if (*length > 0) {

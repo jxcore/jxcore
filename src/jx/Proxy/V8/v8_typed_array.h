@@ -22,7 +22,7 @@
 #ifndef V8_TYPED_ARRAY_H_
 #define V8_TYPED_ARRAY_H_
 
-#include "jx/commons.h"
+#include "../JSEngine.h"
 
 namespace v8_typed_array {
 
