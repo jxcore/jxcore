@@ -135,10 +135,17 @@ def files(action):
     'src/jxcore.h',
     'src/wrappers/node_buffer.h',
     'src/node_internals.h',
-    'src/node_object_wrap.h',
     'src/node_version.h',
   ], 'include/node/')
 
+  if variables.get('node_engine_mozilla') != 0:
+    action([
+      'src/jx/Proxy/Mozilla/node_object_wrap.h'
+    ], 'include/node/jx/Proxy/Mozilla/')
+  else:
+    action([
+      'src/jx/Proxy/V8/node_object_wrap.h'
+    ], 'include/node/jx/Proxy/V8/')
 
   subdir_files('src/', 'include/node/', action)
   
