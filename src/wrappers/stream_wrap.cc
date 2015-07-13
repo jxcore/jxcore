@@ -143,7 +143,7 @@ static JS_LOCAL_OBJECT AcceptHandle(uv_stream_t* pipe) {
   wrap_obj = WrapType::Instantiate();
   if (JS_IS_EMPTY(wrap_obj)) return JS_LOCAL_OBJECT();
 
-  wrap = static_cast<WrapType*>(wrap_obj->GetPointerFromInternalField(0));
+  wrap = static_cast<WrapType*>(JS_GET_POINTER_DATA(wrap_obj));
   handle = wrap->UVHandle();
 
   if (uv_accept(pipe, reinterpret_cast<uv_stream_t*>(handle))) {

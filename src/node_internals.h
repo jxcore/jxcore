@@ -83,16 +83,15 @@ void EnableDebugSignalHandler(uv_signal_t *handle, int);
 #define ROUND_UP(a, b) ((a) % (b) ? ((a) + (b)) - ((a) % (b)) : (a))
 #endif
 
-#define UNWRAP(type)                                                      \
-  assert(!args.Holder().IsEmpty());                                       \
-  assert(args.Holder()->InternalFieldCount() > 0);                        \
-  type *wrap =                                                            \
-      static_cast<type *>(args.Holder()->GetPointerFromInternalField(0)); \
-  if (!wrap) {                                                            \
-    fprintf(stderr, #type ": Aborting due to unwrap failure at %s:%d\n",  \
-            __FILE__, __LINE__);                                          \
-    abort();                                                              \
-  }                                                                       \
+#define UNWRAP(type)                                                     \
+  assert(!args.Holder().IsEmpty());                                      \
+  assert(args.Holder()->InternalFieldCount() > 0);                       \
+  type *wrap = static_cast<type *>(JS_GET_POINTER_DATA(args.Holder()));  \
+  if (!wrap) {                                                           \
+    fprintf(stderr, #type ": Aborting due to unwrap failure at %s:%d\n", \
+            __FILE__, __LINE__);                                         \
+    abort();                                                             \
+  }                                                                      \
   node::commons *com = wrap->com
 
 #if defined(JS_ENGINE_V8)

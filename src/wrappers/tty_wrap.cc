@@ -12,7 +12,7 @@ namespace node {
 TTYWrap* TTYWrap::Unwrap(JS_LOCAL_OBJECT obj) {
   assert(!JS_IS_EMPTY(obj));
   assert(obj->InternalFieldCount() > 0);
-  return static_cast<TTYWrap*>(obj->GetPointerFromInternalField(0));
+  return static_cast<TTYWrap*>(JS_GET_POINTER_DATA(obj));
 }
 
 uv_tty_t* TTYWrap::UVHandle() { return &handle_; }
