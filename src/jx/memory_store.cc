@@ -54,8 +54,6 @@ void XSpace::DESTROYSTORE() {
 void XSpace::ClearStore() {
   XSpace::LOCKTIMERS();
 
-  // TODO(obastemur) Clear the data allocations for StringStore ?
-
   StringStore->clear();
   TimerStore->clear();
   delete StringStore;

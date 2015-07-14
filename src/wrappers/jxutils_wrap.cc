@@ -25,7 +25,7 @@ void JXUtilsWrap::exec(const char *cmd, int *ec, std::string &result) {
 #endif
   if (!pipe) {
     result = "execSync could not create the pipe";
-    *ec = 1;  // TODO(obastemur) put the correct exit code
+    *ec = 1; // E_FAIL?
     return;
   }
   char buffer[256];
