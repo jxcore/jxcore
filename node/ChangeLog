@@ -6,6 +6,24 @@ timers related issues etc. Prior to the next release we are going to update the 
 why we did or did not take that particular update. JXcore is an open project and your comments are valuable.
 Let us know any time if you disagree. There is no explanation given for allready rollbacked updates.
 
+2015.07.09, Version 0.10.40 (Maintenance)
+
+* openssl: upgrade to 1.0.1p
+
+* V8: back-port JitCodeEvent patch from upstream (Ben Noordhuis)
+
+
+2015.06.18, Version 0.10.39 (Maintenance), 615a35ccd2cb5cba80901862aefe51a940995f44
+
+* openssl: upgrade to 1.0.1o (Addressing multiple CVEs)
+
+* install: fix source path for openssl headers (Oguz Bastemur)
+
+* install: make sure opensslconf.h is overwritten (Oguz Bastemur)
+
+* timers: fix timeout when added in timer's callback (Julien Gilli)
+
+
 2015.03.23, Version 0.10.38 (Maintenance)
 
 * openssl: upgrade to 1.0.1m (Addressing multiple CVEs)
