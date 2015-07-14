@@ -490,13 +490,6 @@ JS_METHOD_END
 
 bool Buffer::jxHasInstance(JS_HANDLE_VALUE val, commons* com) {
 #if defined(JS_ENGINE_MOZJS)
-  // TODO(obastemur) currently SM identifies ExternalArray as Buffer
-  // do we need to change it for embedders ? or they should use TypedArrays
-  // whenever they want to implement Buffer like custom proxy classes.
-  // embedders can use Buffers on native land without an issue.
-  //
-  // P.S. The below V8 implementation also works for SM but not needed.
-
   return val.HasBufferSignature();
 #elif defined(JS_ENGINE_V8)
   if (!JS_IS_OBJECT(val)) return false;
