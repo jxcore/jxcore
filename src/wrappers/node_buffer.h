@@ -4,7 +4,6 @@
 #define SRC_WRAPPERS_NODE_BUFFER_H_
 
 #include "node.h"
-#include "node_object_wrap.h"
 #include <assert.h>
 #include "jx/commons.h"
 

@@ -25,9 +25,15 @@
 
 #define JS_ENTER_SCOPE() v8::HandleScope scope
 
+#define JS_ENTER_SCOPE_WITH(x) v8::HandleScope scope
+
 #define JS_ENTER_SCOPE_COM() \
   JS_ENTER_SCOPE();          \
   node::commons *com = node::commons::getInstanceByThreadId(scope.GetThreadId())
+
+#define JS_ENTER_SCOPE_COM_WITH(x) \
+  JS_ENTER_SCOPE_WITH(x);          \
+  node::commons *com = node::commons::getInstanceIso(x)
 
 #define JS_LEAVE_SCOPE(x) scope.Close(x)
 
@@ -46,7 +52,7 @@
       (x != NULL) ? x->node_isolate : JS_CURRENT_ENGINE()
 #define JS_DEFINE_STATE_MARKER_(x) JS_ENGINE_MARKER __contextORisolate = x
 
-#define JS_DEFINE_COM_AND_MARKER()           \
+#define JS_DEFINE_COM_AND_MARKER()                   \
   node::commons *com = node::commons::getInstance(); \
   JS_DEFINE_STATE_MARKER(com)
 

@@ -23,12 +23,13 @@ void MainSource(node::commons *com, jxcore::JXString *str) {
   JS_DEFINE_STATE_MARKER(com);
 #ifdef JXCORE_SOURCES_MINIFIED
   jxcore::mz_uint8 *_str = jxcore::UncompressNative(
-      jxcore::node_native, sizeof(jxcore::node_native) - 1);
+      com, jxcore::node_native, sizeof(jxcore::node_native) - 1);
   const char *cstr = reinterpret_cast<const char *>(_str);
   str->SetFromSTD(cstr, strlen(cstr), JS_GET_STATE_MARKER());
   free(_str);
 #else
-  str->SetFromSTD(jxcore::node_native, strlen(jxcore::node_native), JS_GET_STATE_MARKER());
+  str->SetFromSTD(jxcore::node_native, strlen(jxcore::node_native),
+                  JS_GET_STATE_MARKER());
 #endif
 }
 
@@ -51,6 +52,9 @@ void JXDefineJavaScript() {
 
   XSpace::Store()->insert(std::make_pair(name, data));
   XSpace::UNLOCKSTORE();
+#ifdef JXCORE_SOURCES_MINIFIED
+  node::commons *com = node::commons::getCommons();
+#endif
 
   for (int i = 0; jxcore::natives[i].name; i++) {
     if (jxcore::natives[i].source != jxcore::node_native) {
@@ -60,7 +64,7 @@ void JXDefineJavaScript() {
 #ifdef JXCORE_SOURCES_MINIFIED
       if (jxcore::natives[i].source_len > 0) {
         jxcore::mz_uint8 *str = jxcore::UncompressNative(
-            jxcore::natives[i].source, jxcore::natives[i].source_len);
+            com, jxcore::natives[i].source, jxcore::natives[i].source_len);
         std::string bt(reinterpret_cast<const char *>(str));
         free(str);
 #else
@@ -101,7 +105,7 @@ void DefineJavaScript(JS_HANDLE_OBJECT target) {
       JS_LOCAL_STRING name = STD_TO_STRING(jxcore::natives[i].name);
 #ifdef JXCORE_SOURCES_MINIFIED
       jxcore::mz_uint8 *str = jxcore::UncompressNative(
-          jxcore::natives[i].source, jxcore::natives[i].source_len);
+          com, jxcore::natives[i].source, jxcore::natives[i].source_len);
       std::string bt(reinterpret_cast<const char *>(str));
       free(str);
 #else

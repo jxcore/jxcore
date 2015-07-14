@@ -4,7 +4,6 @@
 #define SRC_NODE_SCRIPT_H_
 
 #include "node.h"
-#include "node_object_wrap.h"
 
 namespace node {
 

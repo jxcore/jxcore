@@ -170,9 +170,9 @@ JS_LOCAL_VALUE WinapiErrnoException(int errorno, const char *syscall,
 #endif
 
 void SetCOMErrno(node::commons *com, uv_err_t err) {
-  JS_ENTER_SCOPE();
   if (com == NULL) return;
 
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
 
   if (err.code == UV_UNKNOWN) {

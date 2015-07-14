@@ -358,7 +358,7 @@ class ReqWrap {
   }
 
   void Init(node::commons *com) {
-    JS_ENTER_SCOPE();
+    JS_ENTER_SCOPE_WITH(com->node_isolate);
     JS_DEFINE_STATE_MARKER(com);
 
     object_ = JS_NEW_EMPTY_PERSISTENT_OBJECT();

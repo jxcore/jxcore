@@ -15,34 +15,6 @@
 
 namespace jxcore {
 
-#ifdef JS_ENGINE_MOZJS
-void _GCOnMozJS(JSRuntime *rt, JSGCStatus status, void *data) {
-#ifdef JXCORE_PRINT_NATIVE_CALLS
-  // TODO(obastemur) GC is happening so?
-  if (status == JSGC_BEGIN) {
-    ENGINE_LOG_THIS("MozJS", "GC_BEGIN");
-  } else if (status == JSGC_END) {
-    ENGINE_LOG_THIS("MozJS", "GC_END");
-  } else {
-	error_console("Unknown GC flag. Did you forget updating _GCOnMozJS ?\n");
-	abort();
-  }
-#endif
-}
-
-bool _JSEngineInterrupt(JSContext *ctx) {
-  int tid = JS_GetThreadId(ctx);
-  node::commons *com = node::commons::getInstanceByThreadId(tid);
-  if (com->should_interrupt_) {
-    com->should_interrupt_ = false;
-    return false;
-  }
-
-  // TODO(obastemur) This also triggers when CPU hits 100%. do anything ?
-  return true;
-}
-#endif
-
 void JXInstance::runScript(void *x) {
 
   customLock(CSLOCK_NEWINSTANCE);
@@ -69,8 +41,8 @@ void JXInstance::runScript(void *x) {
   JSRuntime *rt = JS_GetRuntime(ctx);
   do {
 
-    JS_SetInterruptCallback(rt, _JSEngineInterrupt);
-    JS_SetGCCallback(rt, _GCOnMozJS, NULL);
+    JS_SetInterruptCallback(rt, JSEngineInterrupt);
+    JS_SetGCCallback(rt, GCOnMozJS, NULL);
 #endif
     do {
 #ifdef JS_ENGINE_V8
@@ -180,7 +152,7 @@ void JXInstance::runScript(void *x) {
 
 static void handleJob(node::commons *com, Job *j,
                       const JS_HANDLE_FUNCTION &runner) {
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
 
   if (com->expects_reset) return;
@@ -216,7 +188,7 @@ static void handleJob(node::commons *com, Job *j,
 
 static void handleTasks(node::commons *com, const JS_HANDLE_FUNCTION &func,
                         const JS_HANDLE_FUNCTION &runner, const int threadId) {
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
 
   if (com->expects_reset) return;

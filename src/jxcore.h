@@ -129,6 +129,11 @@ char *JX_Stringify(node::commons *com, JS_HANDLE_OBJECT obj,
                    size_t *data_length);
 JS_HANDLE_VALUE JX_Parse(node::commons *com, const char *str,
                          const size_t length);
+
+#ifdef JS_ENGINE_MOZJS
+void GCOnMozJS(JSRuntime *rt, JSGCStatus status, void *data);
+bool JSEngineInterrupt(JSContext *ctx);
+#endif
 }  // namespace jxcore
 
 #endif  // SRC_JXCORE_H_

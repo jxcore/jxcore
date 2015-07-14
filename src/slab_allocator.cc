@@ -36,7 +36,7 @@ SlabAllocator::~SlabAllocator() {
 
 void SlabAllocator::Initialize() {
   ENGINE_LOG_THIS("SlabAllocator", "Initialize");
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(com_->node_isolate);
   JS_DEFINE_STATE_MARKER(com_);
 
   char sym[256];
@@ -61,7 +61,7 @@ void SlabAllocator::Initialize() {
 
 char* SlabAllocator::Allocate(JS_HANDLE_OBJECT_REF obj, unsigned int size) {
   ENGINE_LOG_THIS("SlabAllocator", "Allocate");
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(com_->node_isolate);
   JS_DEFINE_STATE_MARKER(com_);
 
   assert(!JS_IS_EMPTY(obj));
@@ -93,7 +93,7 @@ char* SlabAllocator::Allocate(JS_HANDLE_OBJECT_REF obj, unsigned int size) {
 JS_LOCAL_OBJECT SlabAllocator::Shrink(JS_HANDLE_OBJECT_REF obj, char* ptr,
                                       unsigned int size) {
   ENGINE_LOG_THIS("SlabAllocator", "Shrink");
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(com_->node_isolate);
   JS_DEFINE_STATE_MARKER(com_);
 
 #ifdef JS_ENGINE_V8

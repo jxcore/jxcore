@@ -31,7 +31,12 @@
 
 #define JS_ENTER_SCOPE()
 
+#define JS_ENTER_SCOPE_WITH(x)
+
 #define JS_ENTER_SCOPE_COM() node::commons* com = node::commons::getInstance()
+
+#define JS_ENTER_SCOPE_COM_WITH(x) \
+  node::commons* com = node::commons : getInstanceIso(x)
 
 #define JS_LEAVE_SCOPE(x) x
 
