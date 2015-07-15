@@ -321,7 +321,7 @@ static int dtrace_gc_done(v8::GCType type, v8::GCCallbackFlags flags) {
 struct dtabs {
   const char *name;
 #ifdef JS_ENGINE_V8
-  JS_HANDLE_VALUE (*func)(const v8::Arguments &);
+  JS_HANDLE_VALUE (*func)(const JS_V8_ARGUMENT &);
 #elif defined(JS_ENGINE_MOZJS)
   bool (*func)(JSContext *JS_GET_STATE_MARKER(), unsigned __argc,
                JS::Value *__jsval);

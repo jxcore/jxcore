@@ -22,7 +22,7 @@
 
 #define NODE_OBJECT_WRAP_HEADER "jx/Proxy/V8/node_object_wrap.h"
 
-typedef JS_HANDLE_VALUE (*JS_NATIVE_METHOD)(const v8::Arguments& args);
+typedef JS_HANDLE_VALUE (*JS_NATIVE_METHOD)(const JS_V8_ARGUMENT& args);
 typedef void (*JS_FINALIZER_METHOD)(JS_HANDLE_VALUE_REF val, void* data);
 
 #ifndef JXCORE_ALOG_TAG

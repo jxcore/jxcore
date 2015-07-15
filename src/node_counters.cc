@@ -74,7 +74,7 @@ static void counter_gc_done(v8::GCType type, v8::GCCallbackFlags flags) {
 
 struct dtabs {
   const char *name;
-  JS_HANDLE_VALUE (*func)(const v8::Arguments &);
+  JS_HANDLE_VALUE (*func)(const JS_V8_ARGUMENT &);
   JS_PERSISTENT_FUNCTION_TEMPLATE templ;
 };
 static jxcore::ThreadStore<dtabs[6]> tabs;
