@@ -5,17 +5,18 @@
 
 #include "v8.h"
 #include "JXString.h"
+#define JS_V8_ARGUMENT v8::Arguments
 
 namespace jxcore {
 
 class PArguments {
-  const v8::Arguments *args__;
+  const JS_V8_ARGUMENT *args__;
 
 #define v8__args (*args__)
   unsigned length_;
 
  public:
-  explicit PArguments(const v8::Arguments &args)
+  explicit PArguments(const JS_V8_ARGUMENT &args)
       : args__(&args), length_(args.Length()) {}
 
   inline v8::Local<v8::Context> GetContext() {
@@ -25,7 +26,7 @@ class PArguments {
 
   void *GetHolder() { return v8__args.Holder()->GetPointerFromInternalField(0); }
 
-  const v8::Arguments *GetArgs() { return args__; }
+  const JS_V8_ARGUMENT *GetArgs() { return args__; }
 
   inline bool IsConstructCall() { return v8__args.IsConstructCall(); }
 

@@ -16,6 +16,8 @@
 #define JXCORE_PUBLIC
 #endif
 
+#define JS_V8_ARGUMENT v8::Arguments
+
 #define JS_CLASS_NEW_INSTANCE(obj_name, js_name) \
   assert(args.IsConstructCall());                \
   JS_LOCAL_OBJECT obj_name = args.This()->ToObject()
@@ -49,30 +51,30 @@
   if (com->expects_reset) RETURN();
 
 #define JS_METHOD(class_name, method_name)                                 \
-  JS_HANDLE_VALUE class_name::method_name(const v8::Arguments& p___args) { \
+  JS_HANDLE_VALUE class_name::method_name(const JS_V8_ARGUMENT& p___args) { \
     ENGINE_LOG_THIS(#class_name, #method_name);                            \
   __JS_METHOD_BEGIN_COM()
 
 #define JS_LOCAL_METHOD(method_name)                           \
-  JS_HANDLE_VALUE method_name(const v8::Arguments& p___args) { \
+  JS_HANDLE_VALUE method_name(const JS_V8_ARGUMENT& p___args) { \
     ENGINE_LOG_THIS("LOCAL", #method_name);                    \
   __JS_METHOD_BEGIN_COM()
 
 // IF node::commons *com is available from wrap use below
 #define JS_METHOD_NO_COM(class_name, method_name)                          \
-  JS_HANDLE_VALUE class_name::method_name(const v8::Arguments& p___args) { \
+  JS_HANDLE_VALUE class_name::method_name(const JS_V8_ARGUMENT& p___args) { \
     ENGINE_LOG_THIS(#class_name, #method_name);                            \
   __JS_METHOD_BEGIN_NO_COM()
 
 #define JS_LOCAL_METHOD_NO_COM(method_name)                    \
-  JS_HANDLE_VALUE method_name(const v8::Arguments& p___args) { \
+  JS_HANDLE_VALUE method_name(const JS_V8_ARGUMENT& p___args) { \
     ENGINE_LOG_THIS("LOCAL", #method_name);                    \
   __JS_METHOD_BEGIN_NO_COM()
 
 #define DEFINE_JS_METHOD(name) \
-  JS_HANDLE_VALUE name(const v8::Arguments& p___args)
+  JS_HANDLE_VALUE name(const JS_V8_ARGUMENT& p___args)
 #define DEFINE_JS_CLASS_METHOD(clss, name) \
-  JS_HANDLE_VALUE clss::name(const v8::Arguments& p___args)
+  JS_HANDLE_VALUE clss::name(const JS_V8_ARGUMENT& p___args)
 
 #define RETURN_TRUE() RETURN_PARAM(STD_TO_BOOLEAN(true))
 #define RETURN_FALSE() RETURN_PARAM(STD_TO_BOOLEAN(false))

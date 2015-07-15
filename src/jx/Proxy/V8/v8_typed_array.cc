@@ -35,7 +35,7 @@ using node::ThrowError;
 
 struct BatchedMethods {
   const char* name;
-  JS_HANDLE_VALUE (*func)(const v8::Arguments& args);
+  JS_HANDLE_VALUE (*func)(const JS_V8_ARGUMENT& args);
 };
 
 class ArrayBuffer {
@@ -91,7 +91,7 @@ private:
     free(ptr);
   }
 
-  static JS_HANDLE_VALUE V8New(const v8::Arguments& args) {
+  static JS_HANDLE_VALUE V8New(const JS_V8_ARGUMENT& args) {
     if (!args.IsConstructCall())
       return node::FromConstructorTemplate(GetTemplate(), args);
 
@@ -135,7 +135,7 @@ private:
     return args.This();
   }
 
-  static JS_HANDLE_VALUE slice(const v8::Arguments& args) {
+  static JS_HANDLE_VALUE slice(const JS_V8_ARGUMENT& args) {
     if (args.Length() < 1)
       return ThrowError("Wrong number of arguments.");
 
@@ -253,7 +253,7 @@ public:
   }
 
 private:
-  static JS_HANDLE_VALUE V8New(const v8::Arguments& args) {
+  static JS_HANDLE_VALUE V8New(const JS_V8_ARGUMENT& args) {
     if (!args.IsConstructCall())
       return node::FromConstructorTemplate(GetTemplate(), args);
 
@@ -365,7 +365,7 @@ private:
     return args.This();
   }
 
-  static JS_HANDLE_VALUE get(const v8::Arguments& args) {
+  static JS_HANDLE_VALUE get(const JS_V8_ARGUMENT& args) {
     if (args.Length() < 1)
       return ThrowError("Wrong number of arguments.");
 
@@ -375,7 +375,7 @@ private:
     return v8::Undefined();
   }
 
-  static JS_HANDLE_VALUE set(const v8::Arguments& args) {
+  static JS_HANDLE_VALUE set(const JS_V8_ARGUMENT& args) {
     if (args.Length() < 1)
       return ThrowError("Wrong number of arguments.");
 
@@ -442,7 +442,7 @@ private:
     return v8::Undefined();
   }
 
-  static JS_HANDLE_VALUE subarray(const v8::Arguments& args) {
+  static JS_HANDLE_VALUE subarray(const JS_V8_ARGUMENT& args) {
     // TODO(deanm): The unsigned / signed type mixing makes me super nervous.
 
     unsigned int length =
@@ -628,7 +628,7 @@ public:
   }
 
 private:
-  static JS_HANDLE_VALUE V8New(const v8::Arguments& args) {
+  static JS_HANDLE_VALUE V8New(const JS_V8_ARGUMENT& args) {
     if (!args.IsConstructCall())
       return node::FromConstructorTemplate(GetTemplate(), args);
 
@@ -683,7 +683,7 @@ private:
   }
 
   template <typename T>
-  static JS_HANDLE_VALUE getGeneric(const v8::Arguments& args) {
+  static JS_HANDLE_VALUE getGeneric(const JS_V8_ARGUMENT& args) {
     if (args.Length() < 1)
       return ThrowError("Wrong number of arguments.");
 
@@ -721,7 +721,7 @@ private:
   }
 
   template <typename T>
-  static JS_HANDLE_VALUE setGeneric(const v8::Arguments& args) {
+  static JS_HANDLE_VALUE setGeneric(const JS_V8_ARGUMENT& args) {
     if (args.Length() < 2)
       return ThrowError("Wrong number of arguments.");
 
@@ -758,67 +758,67 @@ private:
     return v8::Undefined();
   }
 
-  static JS_HANDLE_VALUE getUint8(const v8::Arguments& args) {
+  static JS_HANDLE_VALUE getUint8(const JS_V8_ARGUMENT& args) {
     return getGeneric<unsigned char>(args);
   }
 
-  static JS_HANDLE_VALUE getInt8(const v8::Arguments& args) {
+  static JS_HANDLE_VALUE getInt8(const JS_V8_ARGUMENT& args) {
     return getGeneric<signed char>(args);
   }
 
-  static JS_HANDLE_VALUE getUint16(const v8::Arguments& args) {
+  static JS_HANDLE_VALUE getUint16(const JS_V8_ARGUMENT& args) {
     return getGeneric<unsigned short>(args);
   }
 
-  static JS_HANDLE_VALUE getInt16(const v8::Arguments& args) {
+  static JS_HANDLE_VALUE getInt16(const JS_V8_ARGUMENT& args) {
     return getGeneric<short>(args);
   }
 
-  static JS_HANDLE_VALUE getUint32(const v8::Arguments& args) {
+  static JS_HANDLE_VALUE getUint32(const JS_V8_ARGUMENT& args) {
     return getGeneric<unsigned int>(args);
   }
 
-  static JS_HANDLE_VALUE getInt32(const v8::Arguments& args) {
+  static JS_HANDLE_VALUE getInt32(const JS_V8_ARGUMENT& args) {
     return getGeneric<int>(args);
   }
 
-  static JS_HANDLE_VALUE getFloat32(const v8::Arguments& args) {
+  static JS_HANDLE_VALUE getFloat32(const JS_V8_ARGUMENT& args) {
     return getGeneric<float>(args);
   }
 
-  static JS_HANDLE_VALUE getFloat64(const v8::Arguments& args) {
+  static JS_HANDLE_VALUE getFloat64(const JS_V8_ARGUMENT& args) {
     return getGeneric<double>(args);
   }
 
-  static JS_HANDLE_VALUE setUint8(const v8::Arguments& args) {
+  static JS_HANDLE_VALUE setUint8(const JS_V8_ARGUMENT& args) {
     return setGeneric<unsigned char>(args);
   }
 
-  static JS_HANDLE_VALUE setInt8(const v8::Arguments& args) {
+  static JS_HANDLE_VALUE setInt8(const JS_V8_ARGUMENT& args) {
     return setGeneric<signed char>(args);
   }
 
-  static JS_HANDLE_VALUE setUint16(const v8::Arguments& args) {
+  static JS_HANDLE_VALUE setUint16(const JS_V8_ARGUMENT& args) {
     return setGeneric<unsigned short>(args);
   }
 
-  static JS_HANDLE_VALUE setInt16(const v8::Arguments& args) {
+  static JS_HANDLE_VALUE setInt16(const JS_V8_ARGUMENT& args) {
     return setGeneric<short>(args);
   }
 
-  static JS_HANDLE_VALUE setUint32(const v8::Arguments& args) {
+  static JS_HANDLE_VALUE setUint32(const JS_V8_ARGUMENT& args) {
     return setGeneric<unsigned int>(args);
   }
 
-  static JS_HANDLE_VALUE setInt32(const v8::Arguments& args) {
+  static JS_HANDLE_VALUE setInt32(const JS_V8_ARGUMENT& args) {
     return setGeneric<int>(args);
   }
 
-  static JS_HANDLE_VALUE setFloat32(const v8::Arguments& args) {
+  static JS_HANDLE_VALUE setFloat32(const JS_V8_ARGUMENT& args) {
     return setGeneric<float>(args);
   }
 
-  static JS_HANDLE_VALUE setFloat64(const v8::Arguments& args) {
+  static JS_HANDLE_VALUE setFloat64(const JS_V8_ARGUMENT& args) {
     return setGeneric<double>(args);
   }
 };
