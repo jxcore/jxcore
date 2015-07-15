@@ -255,7 +255,12 @@
 
 #define JS_PREDEFINED_STRING(name) #name
 
-#define JS_ADJUST_EXTERNAL_MEMORY(x)
+#define JS_REMOVE_EXTERNAL_MEMORY(data_, length_) \
+  JS_free(JS_GET_STATE_MARKER(), data_)
+
+#define JS_ADD_EXTERNAL_MEMORY(data_, length_) \
+  data_ = (char *)JS_malloc(JS_GET_STATE_MARKER(), sizeof(char) * length_)
+
 #define JS_NEW_INSTANCE(a, b, c) (a).NewInstance(b, c)
 #define JS_GET_STRING_LENGTH(a) (a).StringLength()
 #define JS_GET_ARRAY_LENGTH(a) (a).ArrayLength()

@@ -122,9 +122,7 @@ Buffer::Buffer(node::commons* com, JS_HANDLE_OBJECT_REF wrapper, size_t length)
   disposing_ = false;
   length_ = 0;
   callback_ = NULL;
-#ifdef JS_ENGINE_V8
   handle_.SetWrapperClassId(BUFFER_CLASS_ID);
-#endif
 
   Replace(NULL, length, NULL, NULL);
 }
@@ -151,12 +149,7 @@ void Buffer::Replace(char* data, size_t length, free_callback callback,
   if (callback_) {
     callback_(data_, callback_hint_);
   } else if (length_) {
-#ifdef JS_ENGINE_V8
-    delete[] data_;
-    JS_ADJUST_EXTERNAL_MEMORY(-static_cast<intptr_t>(sizeof(Buffer) + length_));
-#elif defined(JS_ENGINE_MOZJS)
-    JS_free(JS_GET_STATE_MARKER(), data_);
-#endif
+    JS_REMOVE_EXTERNAL_MEMORY(data_, length_);
   }
 
   length_ = length;
@@ -166,12 +159,7 @@ void Buffer::Replace(char* data, size_t length, free_callback callback,
   if (callback_) {
     data_ = data;
   } else if (length_) {
-#ifdef JS_ENGINE_V8
-    data_ = new char[length_];
-    JS_ADJUST_EXTERNAL_MEMORY(sizeof(Buffer) + length_);
-#elif defined(JS_ENGINE_MOZJS)
-    data_ = (char*)JS_malloc(JS_GET_STATE_MARKER(), sizeof(char) * length_);
-#endif
+    JS_ADD_EXTERNAL_MEMORY(data_, length_);
     if (data) memcpy(data_, data, length_);
   } else {
     data_ = NULL;

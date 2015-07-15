@@ -207,8 +207,15 @@
 
 #define JS_PREDEFINED_STRING(name) JS_VALUE_TO_STRING(com->pstr_##name)
 
-#define JS_ADJUST_EXTERNAL_MEMORY(x) \
-  v8::V8::AdjustAmountOfExternalAllocatedMemory(x)
+#define JS_REMOVE_EXTERNAL_MEMORY(data_, length_) \
+  delete[] data_;                                 \
+  v8::V8::AdjustAmountOfExternalAllocatedMemory(  \
+      -static_cast<intptr_t>(sizeof(Buffer) + length_))
+
+#define JS_ADD_EXTERNAL_MEMORY(data_, length_) \
+  data_ = new char[length_];                   \
+  v8::V8::AdjustAmountOfExternalAllocatedMemory(sizeof(Buffer) + length_)
+
 #define JS_NEW_INSTANCE(a, b, c) (a)->NewInstance(b, c)
 #define JS_NEW_DEFAULT_INSTANCE(x) (x)->NewInstance()
 #define JS_GET_STRING_LENGTH(a) (a)->Length()
