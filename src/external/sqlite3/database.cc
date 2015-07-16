@@ -397,7 +397,7 @@ void Database::ProfileCallback(Database* db, ProfileInfo* info) {
 
   JS_LOCAL_VALUE argv[] = {STD_TO_STRING("profile"),
                            STD_TO_STRING(info->sql.c_str()),
-                           STD_TO_INTEGER((double)info->nsecs / 1000000.0)};
+                           STD_TO_NUMBER((double)info->nsecs / 1000000.0)};
   EMIT_EVENT(db->handle_, 3, argv);
   delete info;
 }
