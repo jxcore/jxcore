@@ -3,6 +3,7 @@
 #include "node.h"
 #include "jx/memory_store.h"
 #ifdef JXCORE_SOURCES_MINIFIED
+#include "jx/commons.h"
 #include "jx/jxp_compress.h"
 #include "jx_natives.h"
 #else
@@ -53,7 +54,7 @@ void JXDefineJavaScript() {
   XSpace::Store()->insert(std::make_pair(name, data));
   XSpace::UNLOCKSTORE();
 #ifdef JXCORE_SOURCES_MINIFIED
-  node::commons *com = node::commons::getCommons();
+  node::commons *com = node::commons::getInstance();
 #endif
 
   for (int i = 0; jxcore::natives[i].name; i++) {
