@@ -1,5 +1,19 @@
 JXcore (http://jxcore.io)
 
+----JXcore 3.0.4
+
+- SpiderMonkey build now supports jxcore addons on Windows
+- new crypto API extensions: generateHKDF and pkcs12
+- multiple monitor improvements e.g. better apps respawn/kill tracking
+- `typeof process` fix for SpiderMonkey
+- jx package can sign native packages on windows
+- optional sqlite embedding (enabled by default)
+- openwrt support
+- node.js cleanup: moved out jx install/jx package
+- much faster jx compile for SM
+- monitor run for native packages
+- new api method: jxcore.utils.console.clear()
+
 ----JXcore 3.0.3
 
 - improved ARM support

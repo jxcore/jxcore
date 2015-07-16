@@ -21,7 +21,7 @@ checkEqual(process.argv[3], "--test3 val3");
 
 // arg without value
 newArgv([ "--test1=val1", "--test2", "--test3 val3" ]);
-var ret = jxcore.utils.argv.remove("--test2", true);
+var ret = jxcore.utils.argv.remove("--test2", false);
 checkEqual(ret, true);
 checkEqual(process.argv[2], "--test1=val1");
 checkEqual(process.argv[3], "--test3 val3");
@@ -29,7 +29,7 @@ checkEqual(process.argv[3], "--test3 val3");
 // arg not found
 newArgv([ "--test1=val1", "--test2", "--test3 val3" ]);
 var org = process.argv.slice(0); // copy
-var ret = jxcore.utils.argv.remove("--test7", true);
+var ret = jxcore.utils.argv.remove("--test7", false);
 checkEqual(ret, false);
 checkEqual(process.argv.toString(), org.toString());
 
