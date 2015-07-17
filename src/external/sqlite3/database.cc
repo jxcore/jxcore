@@ -11,10 +11,10 @@ using namespace node;
 jxcore::ThreadStore<JS_PERSISTENT_FUNCTION_TEMPLATE> Database::jx_persistent;
 
 void Database::Process() {
-  JS_ENTER_SCOPE_COM();
-  JS_DEFINE_STATE_MARKER(com);
-
   if (!open && locked && !queue.empty()) {
+    node::commons* com = node::commons::getInstance();
+    JS_DEFINE_STATE_MARKER(com);
+
     EXCEPTION("Database handle is closed", SQLITE_MISUSE, exception);
     JS_LOCAL_VALUE argv[] = {exception};
     bool called = false;
@@ -24,7 +24,8 @@ void Database::Process() {
       Call* call = queue.front();
       if (!JS_IS_EMPTY(call->baton->callback) &&
           JS_IS_FUNCTION(call->baton->callback)) {
-        TRY_CATCH_CALL(handle_, JS_TYPE_TO_LOCAL_FUNCTION(call->baton->callback), 1, argv);
+        TRY_CATCH_CALL(
+            handle_, JS_TYPE_TO_LOCAL_FUNCTION(call->baton->callback), 1, argv);
         called = true;
       }
       queue.pop();
@@ -61,12 +62,13 @@ void Database::Process() {
 
 void Database::Schedule(Work_Callback callback, Baton* baton, bool exclusive) {
   if (!open && locked) {
-	node::commons *com = node::commons::getInstance();
-	JS_DEFINE_STATE_MARKER(com);
+    node::commons* com = node::commons::getInstance();
+    JS_DEFINE_STATE_MARKER(com);
     EXCEPTION("Database is closed", SQLITE_MISUSE, exception);
     if (!JS_IS_EMPTY(baton->callback) && JS_IS_FUNCTION(baton->callback)) {
       JS_LOCAL_VALUE argv[] = {exception};
-      TRY_CATCH_CALL(handle_, JS_TYPE_TO_LOCAL_FUNCTION(baton->callback), 1, argv);
+      TRY_CATCH_CALL(handle_, JS_TYPE_TO_LOCAL_FUNCTION(baton->callback), 1,
+                     argv);
     } else {
       JS_LOCAL_VALUE argv[] = {STD_TO_STRING("error"), exception};
       EMIT_EVENT(handle_, 2, argv);
@@ -143,7 +145,6 @@ void Database::Work_Open(uv_work_t* req) {
 void Database::Work_AfterOpen(uv_work_t* req) {
   JS_ENTER_SCOPE_COM();
   JS_DEFINE_STATE_MARKER(com);
-
   OpenBaton* baton = static_cast<OpenBaton*>(req->data);
   Database* db = baton->db;
 
@@ -157,7 +158,8 @@ void Database::Work_AfterOpen(uv_work_t* req) {
   }
 
   if (!JS_IS_EMPTY(baton->callback) && JS_IS_FUNCTION(baton->callback)) {
-    TRY_CATCH_CALL(db->handle_, JS_TYPE_TO_LOCAL_FUNCTION(baton->callback), 1, argv);
+    TRY_CATCH_CALL(db->handle_, JS_TYPE_TO_LOCAL_FUNCTION(baton->callback), 1,
+                   argv);
   } else if (!db->open) {
     JS_LOCAL_VALUE args[] = {STD_TO_STRING("error"), argv[0]};
     EMIT_EVENT(db->handle_, 2, args);
@@ -228,7 +230,8 @@ void Database::Work_AfterClose(uv_work_t* req) {
 
   // Fire callbacks.
   if (!JS_IS_EMPTY(baton->callback) && JS_IS_FUNCTION(baton->callback)) {
-    TRY_CATCH_CALL(db->handle_, JS_TYPE_TO_LOCAL_FUNCTION(baton->callback), 1, argv);
+    TRY_CATCH_CALL(db->handle_, JS_TYPE_TO_LOCAL_FUNCTION(baton->callback), 1,
+                   argv);
   } else if (db->open) {
     JS_LOCAL_VALUE args[] = {STD_TO_STRING("error"), argv[0]};
     EMIT_EVENT(db->handle_, 2, args);
@@ -251,8 +254,8 @@ JS_METHOD(Database, Serialize) {
   db->serialize = true;
 
   if (!JS_IS_EMPTY(callback) && JS_IS_FUNCTION(callback)) {
-	JS_HANDLE_OBJECT _this = args.This();
-	TRY_CATCH_CALL_NO_PARAM(_this, JS_TYPE_TO_LOCAL_FUNCTION(callback));
+    JS_HANDLE_OBJECT _this = args.This();
+    TRY_CATCH_CALL_NO_PARAM(_this, JS_TYPE_TO_LOCAL_FUNCTION(callback));
     db->serialize = before;
   }
 
@@ -270,8 +273,8 @@ JS_METHOD(Database, Parallelize) {
   db->serialize = false;
 
   if (!JS_IS_EMPTY(callback) && JS_IS_FUNCTION(callback)) {
-	JS_HANDLE_OBJECT _this = args.This();
-	TRY_CATCH_CALL_NO_PARAM(_this, JS_TYPE_TO_LOCAL_FUNCTION(callback));
+    JS_HANDLE_OBJECT _this = args.This();
+    TRY_CATCH_CALL_NO_PARAM(_this, JS_TYPE_TO_LOCAL_FUNCTION(callback));
     db->serialize = before;
   }
 
@@ -440,7 +443,7 @@ void Database::UpdateCallback(Database* db, UpdateInfo* info) {
   JS_LOCAL_VALUE argv[] = {STD_TO_STRING(sqlite_authorizer_string(info->type)),
                            STD_TO_STRING(info->database.c_str()),
                            STD_TO_STRING(info->table.c_str()),
-                           STD_TO_INTEGER(info->rowid), };
+                           STD_TO_INTEGER(info->rowid)};
   EMIT_EVENT(db->handle_, 4, argv);
   delete info;
 }
@@ -493,15 +496,16 @@ void Database::Work_AfterExec(uv_work_t* req) {
 
     if (!JS_IS_EMPTY(baton->callback) && JS_IS_FUNCTION(baton->callback)) {
       JS_LOCAL_VALUE argv[] = {exception};
-      TRY_CATCH_CALL(db->handle_, JS_TYPE_TO_LOCAL_FUNCTION(baton->callback), 1, argv);
+      TRY_CATCH_CALL(db->handle_, JS_TYPE_TO_LOCAL_FUNCTION(baton->callback), 1,
+                     argv);
     } else {
       JS_LOCAL_VALUE args[] = {STD_TO_STRING("error"), exception};
       EMIT_EVENT(db->handle_, 2, args);
     }
-  } else if (!JS_IS_EMPTY(baton->callback) &&
-             JS_IS_FUNCTION(baton->callback)) {
+  } else if (!JS_IS_EMPTY(baton->callback) && JS_IS_FUNCTION(baton->callback)) {
     JS_LOCAL_VALUE argv[] = {JS_NULL()};
-    TRY_CATCH_CALL(db->handle_, JS_TYPE_TO_LOCAL_FUNCTION(baton->callback), 1, argv);
+    TRY_CATCH_CALL(db->handle_, JS_TYPE_TO_LOCAL_FUNCTION(baton->callback), 1,
+                   argv);
   }
 
   db->Process();
@@ -532,7 +536,8 @@ void Database::Work_Wait(Baton* baton) {
 
   if (!JS_IS_EMPTY(baton->callback) && JS_IS_FUNCTION(baton->callback)) {
     JS_LOCAL_VALUE argv[] = {JS_NULL()};
-    TRY_CATCH_CALL(baton->db->handle_, JS_TYPE_TO_LOCAL_FUNCTION(baton->callback), 1, argv);
+    TRY_CATCH_CALL(baton->db->handle_,
+                   JS_TYPE_TO_LOCAL_FUNCTION(baton->callback), 1, argv);
   }
 
   baton->db->Process();
@@ -593,15 +598,16 @@ void Database::Work_AfterLoadExtension(uv_work_t* req) {
 
     if (!JS_IS_EMPTY(baton->callback) && JS_IS_FUNCTION(baton->callback)) {
       JS_LOCAL_VALUE argv[] = {exception};
-      TRY_CATCH_CALL(db->handle_, JS_TYPE_TO_LOCAL_FUNCTION(baton->callback), 1, argv);
+      TRY_CATCH_CALL(db->handle_, JS_TYPE_TO_LOCAL_FUNCTION(baton->callback), 1,
+                     argv);
     } else {
       JS_LOCAL_VALUE args[] = {STD_TO_STRING("error"), exception};
       EMIT_EVENT(db->handle_, 2, args);
     }
-  } else if (!JS_IS_EMPTY(baton->callback) &&
-             JS_IS_FUNCTION(baton->callback)) {
+  } else if (!JS_IS_EMPTY(baton->callback) && JS_IS_FUNCTION(baton->callback)) {
     JS_LOCAL_VALUE argv[] = {JS_NULL()};
-    TRY_CATCH_CALL(db->handle_, JS_TYPE_TO_LOCAL_FUNCTION(baton->callback), 1, argv);
+    TRY_CATCH_CALL(db->handle_, JS_TYPE_TO_LOCAL_FUNCTION(baton->callback), 1,
+                   argv);
   }
 
   db->Process();

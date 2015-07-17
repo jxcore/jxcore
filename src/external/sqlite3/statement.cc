@@ -39,11 +39,11 @@ void Statement::Schedule(Work_Callback callback, Baton* baton) {
 
 template <class T>
 void Statement::Error(T* baton) {
-  JS_ENTER_SCOPE_COM();
-  JS_DEFINE_STATE_MARKER(com);
   Statement* stmt = baton->stmt;
   // Fail hard on logic errors.
   assert(stmt->status != 0);
+  node::commons* com = node::commons::getInstance();
+  JS_DEFINE_STATE_MARKER(com);
   EXCEPTION(stmt->message.c_str(), stmt->status, exception);
 
   if (!JS_IS_EMPTY(baton->callback) && JS_IS_FUNCTION(baton->callback)) {
@@ -56,7 +56,6 @@ void Statement::Error(T* baton) {
   }
 }
 
-// { Database db, String sql, Array params, Function callback }
 JS_METHOD(Statement, New) {
   if (!args.IsConstructCall()) {
     THROW_TYPE_EXCEPTION(
@@ -122,7 +121,6 @@ void Statement::Work_Prepare(uv_work_t* req) {
 void Statement::Work_AfterPrepare(uv_work_t* req) {
   JS_ENTER_SCOPE_COM();
   JS_DEFINE_STATE_MARKER(com);
-
   STATEMENT_INIT(PrepareBaton);
 
   if (stmt->status != SQLITE_OK) {
@@ -175,9 +173,8 @@ T* Statement::Bind(node::commons* com, const jxcore::PArguments& args,
     last--;
   }
 
-  T* baton = new T(this, callback);
-
   JS_HANDLE_VALUE start_val = args.GetItem(start);
+  T* baton = new T(this, callback);
 
   if (start < last) {
     if (args.IsArray(start)) {
@@ -204,7 +201,7 @@ T* Statement::Bind(node::commons* com, const jxcore::PArguments& args,
         if (JS_IS_INT32(name)) {
           int32_t idn = INT32_TO_STD(name);
           baton->parameters.push_back(
-              BindParameter(JS_GET_INDEX(object, idn), INT32_TO_STD(name)));
+              BindParameter(JS_GET_INDEX(object, idn), idn));
         } else {
           JS_LOCAL_STRING str_name = JS_VALUE_TO_STRING(name);
           baton->parameters.push_back(BindParameter(
@@ -264,11 +261,11 @@ bool Statement::Bind(const Parameters& parameters) {
           status = sqlite3_bind_null(handle, pos);
         } break;
       }
+    }
 
-      if (status != SQLITE_OK) {
-        message = std::string(sqlite3_errmsg(db->handle));
-        return false;
-      }
+    if (status != SQLITE_OK) {
+      message = std::string(sqlite3_errmsg(db->handle));
+      return false;
     }
   }
 
@@ -426,6 +423,7 @@ void Statement::Work_Run(uv_work_t* req) {
 void Statement::Work_AfterRun(uv_work_t* req) {
   JS_ENTER_SCOPE_COM();
   JS_DEFINE_STATE_MARKER(com);
+
   STATEMENT_INIT(RunBaton);
 
   if (stmt->status != SQLITE_ROW && stmt->status != SQLITE_DONE) {
@@ -491,6 +489,7 @@ void Statement::Work_All(uv_work_t* req) {
 void Statement::Work_AfterAll(uv_work_t* req) {
   JS_ENTER_SCOPE_COM();
   JS_DEFINE_STATE_MARKER(com);
+
   STATEMENT_INIT(RowsBaton);
 
   if (stmt->status != SQLITE_DONE) {
@@ -698,8 +697,9 @@ void Statement::Work_AfterReset(uv_work_t* req) {
 }
 
 JS_LOCAL_OBJECT Statement::RowToJS(Row* row) {
-  JS_ENTER_SCOPE_COM();
+  node::commons* com = node::commons::getInstance();
   JS_DEFINE_STATE_MARKER(com);
+
   JS_LOCAL_OBJECT result = JS_NEW_EMPTY_OBJECT();
 
   Row::const_iterator it = row->begin();
@@ -784,12 +784,13 @@ JS_METHOD(Statement, Finalize) {
 JS_METHOD_END
 
 void Statement::Finalize(Baton* baton) {
-  JS_ENTER_SCOPE_COM();
-  JS_DEFINE_STATE_MARKER(com);
   baton->stmt->Finalize();
 
   // Fire callback in case there was one.
   if (!JS_IS_EMPTY(baton->callback) && JS_IS_FUNCTION(baton->callback)) {
+    node::commons *com = node::commons::getInstance();
+    JS_DEFINE_STATE_MARKER(com);
+
     TRY_CATCH_CALL_NO_PARAM(baton->stmt->handle_,
                             JS_TYPE_TO_LOCAL_FUNCTION(baton->callback));
   }
@@ -809,10 +810,10 @@ void Statement::Finalize() {
 }
 
 void Statement::CleanQueue() {
-  JS_ENTER_SCOPE_COM();
-  JS_DEFINE_STATE_MARKER(com);
-
   if (prepared && !queue.empty()) {
+    node::commons* com = node::commons::getInstance();
+    JS_DEFINE_STATE_MARKER(com);
+
     // This statement has already been prepared and is now finalized.
     // Fire error for all remaining items in the queue.
     EXCEPTION("Statement is already finalized", SQLITE_MISUSE, exception);
