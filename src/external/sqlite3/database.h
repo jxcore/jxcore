@@ -24,8 +24,6 @@ class Database : public ObjectWrap {
 
   INIT_NAMED_CLASS_MEMBERS(Database, Database) {
     int id = com->threadId;
-    jx_persistent.templates[id] =
-        JS_NEW_PERSISTENT_FUNCTION_TEMPLATE(constructor);
 
     SET_INSTANCE_METHOD("close", Close, 0);
     SET_INSTANCE_METHOD("exec", Exec, 0);
@@ -44,6 +42,9 @@ class Database : public ObjectWrap {
 #elif defined(JS_ENGINE_MOZJS)
     JS_ACCESSOR_SET(constructor, STD_TO_STRING("open"), OpenGetter, NULL);
 #endif
+
+    jx_persistent.templates[id] =
+        JS_NEW_PERSISTENT_FUNCTION_TEMPLATE(constructor);
   }
   END_INIT_NAMED_MEMBERS(Database)
 
