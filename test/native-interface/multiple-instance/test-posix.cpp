@@ -85,7 +85,7 @@ create_jxcore_instance(void *_) {
 #endif
 }
 
-#define NUM_THREADS 20
+#define NUM_THREADS 10
 
 int main(int argc, char **args) {
   // Call JX_Initialize only once per app

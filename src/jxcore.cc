@@ -1046,27 +1046,20 @@ char *JX_Stringify(node::commons *com, JS_HANDLE_OBJECT obj,
 
   JS_LOCAL_STRING str_value;
   if (!JS_IS_STRING(obj)) {
-    JS_LOCAL_BOOLEAN is_function;
 
-#ifdef JS_ENGINE_V8
-    is_function = STD_TO_BOOLEAN(false);
-#elif defined(JS_ENGINE_MOZJS)
-    // SpiderMonkey JSON.stringify follows the ECMA 5 specs. exactly.
-    // (if it's_callable -> do not -> stringify)
-    is_function = STD_TO_BOOLEAN(JS_IS_FUNCTION(obj));
-#endif
-
-    JS_HANDLE_VALUE args[] = {obj, is_function};
+    JS_HANDLE_VALUE args[] = {obj};
 
     // Init
     if (JS_IS_EMPTY((com->JSONstringify))) {
       JS_LOCAL_FUNCTION _JSONstringify = JS_CAST_FUNCTION(
           JS_COMPILE_AND_RUN(STD_TO_STRING(
-                                 "(function(obj, is_function) {\n"
+                                 "(function(obj) {\n"
                                  "  try {\n"
-                                 "    if(is_function) {\n"
+                                 "    if(typeof obj === 'function') {\n"
                                  "      var b={};\n"
                                  "      for (var o in obj) {\n"
+                                 "        if (!obj.hasOwnProperty(o))\n"
+                                 "          continue;\n"
                                  "        b[o] = obj[o];\n"
                                  "      }\n"
                                  "      obj = b;\n"
@@ -1081,7 +1074,7 @@ char *JX_Stringify(node::commons *com, JS_HANDLE_OBJECT obj,
     }
 
     JS_LOCAL_VALUE result =
-        JS_METHOD_CALL(com->JSONstringify, JS_GET_GLOBAL(), 2, args);
+        JS_METHOD_CALL(com->JSONstringify, JS_GET_GLOBAL(), 1, args);
     str_value = JS_VALUE_TO_STRING(result);
   } else {
     str_value = JS_VALUE_TO_STRING(obj);
