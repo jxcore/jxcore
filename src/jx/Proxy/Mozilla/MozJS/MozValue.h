@@ -117,9 +117,9 @@ class Value : protected MozRoot {
   bool is_exception_;
 
  public:
-
   JXCORE_PUBLIC Value();
-  JXCORE_PUBLIC Value(const JS::Value &value, JSContext *ctx, bool rooted = false);
+  JXCORE_PUBLIC Value(const JS::Value &value, JSContext *ctx,
+                      bool rooted = false);
   JXCORE_PUBLIC Value(const Value &value, bool rooted);
   JXCORE_PUBLIC Value(const Value &value);
   JXCORE_PUBLIC Value(const Exception::Error &value);
@@ -136,17 +136,20 @@ class Value : protected MozRoot {
 
   JXCORE_PUBLIC ~Value();
 
-  JXCORE_PUBLIC inline bool IsNativeException() { return is_exception_;  }
+  JXCORE_PUBLIC inline bool IsNativeException() { return is_exception_; }
   JXCORE_PUBLIC inline bool IsRooted() { return rooted_; }
   JXCORE_PUBLIC inline Value *operator->() { return this; }
-  JXCORE_PUBLIC inline Value *operator->() const { return const_cast<Value *>(this); }
+  JXCORE_PUBLIC inline Value *operator->() const {
+    return const_cast<Value *>(this);
+  }
 
   JXCORE_PUBLIC inline bool IsNearDeath() const { return !rooted_; }
 
   JXCORE_PUBLIC void AddRoot();
   JXCORE_PUBLIC void RemoveRoot();
   JXCORE_PUBLIC ValueData RootCopy();
-  JXCORE_PUBLIC void MakeWeak(void *_ = NULL, JS_FINALIZER_METHOD method = NULL);
+  JXCORE_PUBLIC void MakeWeak(void *_ = NULL,
+                              JS_FINALIZER_METHOD method = NULL);
   JXCORE_PUBLIC void ClearWeak();
   JXCORE_PUBLIC void Clear();
   JXCORE_PUBLIC void Dispose();
@@ -197,6 +200,9 @@ class Value : protected MozRoot {
 
   JXCORE_PUBLIC inline JS::Value GetRawValue() { return value_; }
 
+  JXCORE_PUBLIC inline void SetWrapperClassId(int _) {
+  }  // intentionally do not do anything
+
   JXCORE_PUBLIC inline JSObject *GetRawObjectPointer() const {
     if (empty_) return nullptr;
     if (value_.isObject())
@@ -213,8 +219,8 @@ class Value : protected MozRoot {
 
   JXCORE_PUBLIC inline JSContext *GetContext() const { return ctx_; }
 
-  JXCORE_PUBLIC void SetIndexedPropertiesToExternalArrayData(void *data, const int data_type,
-                                               const int32_t length);
+  JXCORE_PUBLIC void SetIndexedPropertiesToExternalArrayData(
+      void *data, const int data_type, const int32_t length);
   JXCORE_PUBLIC void *GetIndexedPropertiesExternalArrayData();
   JXCORE_PUBLIC int32_t GetIndexedPropertiesExternalArrayDataLength();
   JXCORE_PUBLIC int GetIndexedPropertiesExternalArrayDataType();
@@ -239,31 +245,36 @@ class Value : protected MozRoot {
   JXCORE_PUBLIC bool SetProperty(const String &name, JS::HandleValue val);
   JXCORE_PUBLIC bool SetProperty(const char *name, JS::HandleValue val);
   JXCORE_PUBLIC bool SetProperty(const String &name, JSNative method,
-                   const uint16_t parameter_count = 0);
+                                 const uint16_t parameter_count = 0);
   JXCORE_PUBLIC bool SetProperty(const char *name, JSNative method,
-                   const uint16_t parameter_count = 0);
+                                 const uint16_t parameter_count = 0);
 
   JXCORE_PUBLIC bool SetStaticFunction(const String &_name, JSNative method,
-                         const uint16_t parameter_count = 0);
+                                       const uint16_t parameter_count = 0);
   JXCORE_PUBLIC bool SetStaticFunction(const char *name, JSNative method,
-                         const uint16_t parameter_count = 0);
+                                       const uint16_t parameter_count = 0);
   JXCORE_PUBLIC bool SetIndex(const int index, const Value &val);
   JXCORE_PUBLIC bool SetIndex(const int index, JS::HandleValue val);
 
-  JXCORE_PUBLIC bool DefineGetterSetter(const String &_name, JSPropertyOp getter,
-                          JSStrictPropertyOp setter,
-                          const Value &initial_value);
+  JXCORE_PUBLIC bool DefineGetterSetter(const String &_name,
+                                        JSPropertyOp getter,
+                                        JSStrictPropertyOp setter,
+                                        const Value &initial_value);
 
   JXCORE_PUBLIC bool DeleteProperty(const String &_name);
   JXCORE_PUBLIC bool DeleteProperty(const char *name);
 
-  JXCORE_PUBLIC Value Call(const Value &host, int argc = 0, jsval *args = NULL) const;
-  JXCORE_PUBLIC Value Call(const String &name, const int argc, Value *args) const;
-  JXCORE_PUBLIC Value Call(const Value &host, const int argc, Value *args) const;
+  JXCORE_PUBLIC Value
+      Call(const Value &host, int argc = 0, jsval *args = NULL) const;
+  JXCORE_PUBLIC Value
+      Call(const String &name, const int argc, Value *args) const;
+  JXCORE_PUBLIC Value
+      Call(const Value &host, const int argc, Value *args) const;
   JXCORE_PUBLIC bool Call(const char *name, int argc, JS::Value *args,
-            JS::MutableHandleValue rov) const;
+                          JS::MutableHandleValue rov) const;
   JXCORE_PUBLIC Value Call(const char *name, int argc, Value *_args) const;
-  JXCORE_PUBLIC Value Call(const char *name, int argc = 0, jsval *args = NULL) const;
+  JXCORE_PUBLIC Value
+      Call(const char *name, int argc = 0, jsval *args = NULL) const;
 
   JXCORE_PUBLIC JSObject *NewInstance(int argc, jsval *args);
   JXCORE_PUBLIC Value NewInstance(int argc, Value *args = NULL);
@@ -271,15 +282,16 @@ class Value : protected MozRoot {
   JXCORE_PUBLIC Value GetConstructor();
 
   JXCORE_PUBLIC static Value NewEmptyFunction(JSContext *ctx);
-  JXCORE_PUBLIC static void NewEmptyObject(JSContext *ctx, JS::MutableHandleObject out);
-  JXCORE_PUBLIC static JSObject *NewEmptyPropertyObject(JSContext *ctx, JSPropertyOp add_get,
-                                          JSStrictPropertyOp set,
-                                          JSResolveOp resolve = NULL,
-                                          JSEnumerateOp enumerate = NULL,
-                                          JSDeletePropertyOp del = NULL);
+  JXCORE_PUBLIC static void NewEmptyObject(JSContext *ctx,
+                                           JS::MutableHandleObject out);
+  JXCORE_PUBLIC static JSObject *NewEmptyPropertyObject(
+      JSContext *ctx, JSPropertyOp add_get, JSStrictPropertyOp set,
+      JSResolveOp resolve = NULL, JSEnumerateOp enumerate = NULL,
+      JSDeletePropertyOp del = NULL);
 
-  JXCORE_PUBLIC static Value CompileAndRun(JSContext *ctx_, String script, String filename,
-                             MozJS::Value *_global = NULL);
+  JXCORE_PUBLIC static Value CompileAndRun(JSContext *ctx_, String script,
+                                           String filename,
+                                           MozJS::Value *_global = NULL);
 
   JXCORE_PUBLIC void SetFinalizer(JS_FINALIZER_METHOD method);
   JXCORE_PUBLIC static void SetGlobalFinalizer(JSFinalizeOp method);
@@ -296,17 +308,22 @@ class String : public Value {
   JXCORE_PUBLIC explicit String(const Value &val);
   JXCORE_PUBLIC String(const String &val);
   JXCORE_PUBLIC String(JSString *obj, JSContext *ctx, bool rooted = false);
-  JXCORE_PUBLIC String(const JS::Value &obj, JSContext *ctx, bool rooted = false);
-  JXCORE_PUBLIC String(JSContext *ctx, const char *str, const int len, bool rooted = false);
+  JXCORE_PUBLIC String(const JS::Value &obj, JSContext *ctx,
+                       bool rooted = false);
+  JXCORE_PUBLIC String(JSContext *ctx, const char *str, const int len,
+                       bool rooted = false);
 
   JXCORE_PUBLIC int StringLength() const;
   JXCORE_PUBLIC int Utf8Length() const;
 
   JXCORE_PUBLIC inline String *operator->() { return this; }
 
-  JXCORE_PUBLIC static String FromSTD(JSContext *ctx, const char *str, const int len);
-  JXCORE_PUBLIC static String FromUTF8(JSContext *ctx, const char *str, const int len);
-  JXCORE_PUBLIC static String FromUTF8(JSContext *ctx, const uint16_t *str, const int len);
+  JXCORE_PUBLIC static String FromSTD(JSContext *ctx, const char *str,
+                                      const int len);
+  JXCORE_PUBLIC static String FromUTF8(JSContext *ctx, const char *str,
+                                       const int len);
+  JXCORE_PUBLIC static String FromUTF8(JSContext *ctx, const uint16_t *str,
+                                       const int len);
 
   JXCORE_PUBLIC String &operator=(const String &value);
   JXCORE_PUBLIC String &operator=(const ValueData &value);
@@ -357,13 +374,16 @@ class Script {
   }
 
   JXCORE_PUBLIC static Script Compile(JSContext *ctx, const String &source,
-                        const String &filename);
-  JXCORE_PUBLIC static Script Compile(JSContext *ctx, const Value &host, const String &source,
-                        const String &filename);
+                                      const String &filename);
   JXCORE_PUBLIC static Script Compile(JSContext *ctx, const Value &host,
-                        const auto_jschar &source, const char *filename);
+                                      const String &source,
+                                      const String &filename);
   JXCORE_PUBLIC static Script Compile(JSContext *ctx, const Value &host,
-                        const auto_str &source, const char *filename);
+                                      const auto_jschar &source,
+                                      const char *filename);
+  JXCORE_PUBLIC static Script Compile(JSContext *ctx, const Value &host,
+                                      const auto_str &source,
+                                      const char *filename);
 
   JXCORE_PUBLIC Value Run(const Value &host);
 

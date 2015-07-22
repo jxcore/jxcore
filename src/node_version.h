@@ -33,9 +33,9 @@
 
 #ifdef JS_ENGINE_MOZJS
 #define MOZJS_VERSION 34
-#define JXCORE_VERSION "v Beta-0.3.0.4"
+#define JXCORE_VERSION "v Beta-0.3.0.5"
 #else
-#define JXCORE_VERSION "v 0.3.0.4"
+#define JXCORE_VERSION "v 0.3.0.5"
 #endif
 
 #define NODE_VERSION_AT_LEAST(major, minor, patch)                  \

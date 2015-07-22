@@ -86,6 +86,12 @@
           return err.name + ": " + err.message + "\n" + arr;
         }
       }
+      
+      if(Error.prepareStackTrace) {
+        var newStack = Error.prepareStackTrace(err, __);
+        if (newStack)
+          err.stack = newStack;
+      }
     };
 
     if (!global.gc) {

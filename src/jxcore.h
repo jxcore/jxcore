@@ -29,6 +29,8 @@ class JXEngine {
   JS_PERSISTENT_OBJECT *global_;
   JSCompartment *jscomp_;
   ENGINE_NS::Isolate main_iso_;
+public:
+  inline void ExitIsolate() { }
 #elif defined(JS_ENGINE_V8)
  public:
   JS_PERSISTENT_CONTEXT context_;
@@ -36,7 +38,6 @@ class JXEngine {
   inline void ExitIsolate() { main_node_->node_isolate->Exit(); }
 #endif
 
- public:
   int argc_;
   char **argv_;
   int threadId_;
