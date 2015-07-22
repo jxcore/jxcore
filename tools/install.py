@@ -140,12 +140,12 @@ def files(action):
 
   if variables.get('node_engine_mozilla') != 0:
     action([
-      'src/jx/Proxy/Mozilla/node_object_wrap.h'
-    ], 'include/node/jx/Proxy/Mozilla/')
+      'src/jx/Proxy/Mozilla_340/node_object_wrap.h'
+    ], 'include/node/jx/Proxy/Mozilla_340/')
   else:
     action([
-      'src/jx/Proxy/V8/node_object_wrap.h'
-    ], 'include/node/jx/Proxy/V8/')
+      'src/jx/Proxy/V8_3_14/node_object_wrap.h'
+    ], 'include/node/jx/Proxy/V8_3_14/')
 
   subdir_files('src/', 'include/node/', action)
   
@@ -163,7 +163,7 @@ def files(action):
 
   if variables.get('node_engine_mozilla') == 0: #ios target
     if 'false' == variables.get('node_shared_v8'):
-      subdir_files('deps/v8/include', 'include/node/', action)
+      subdir_files('deps/v8_3_14/include', 'include/node/', action)
   else:
     subdir_files('deps/mozjs/src', 'include/node/', action)
     subdir_files('deps/mozjs/incs', 'include/node/', action)
