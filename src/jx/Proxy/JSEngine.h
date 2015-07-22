@@ -9,6 +9,15 @@
 #undef JS_ENGINE_V8  // an ugly hack for Eclipse Editor / Debugger
 #endif
 
+// TODO(obastemur) backward compatibility. remove this after updating sub modules
+#if !defined(V8_IS_3_14) && !defined(MOZJS_IS_3_40)
+#ifdef JS_ENGINE_V8
+#define V8_IS_3_14
+#else
+#define MOZJS_IS_3_40
+#endif
+#endif
+
 #ifdef V8_IS_3_14
 
 #include "v8.h"
