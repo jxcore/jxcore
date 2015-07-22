@@ -87,7 +87,8 @@ static void WaitThreadExit(uv_loop_t *ev_loop) {
       busy = getThreadCount() > 0;
       counter++;
       if (ev_loop)
-        counter -= uv_run_jx(ev_loop, UV_RUN_NOWAIT, node::commons::CleanPinger, 0);
+        counter -=
+            uv_run_jx(ev_loop, UV_RUN_NOWAIT, node::commons::CleanPinger, 0);
 
       if (!busy) break;
 
@@ -178,7 +179,8 @@ void JXEngine::PrintHelp() {
       "alive)\n\n"
       "  -jxv, --jxversion    print jxcore's version\n"
       "  -jsv, --jsversion    print underlying JS engine's name and version\n"
-      "  -a, --arch           print processor architecture, for which jx is compiled (process.arch)\n"
+      "  -a, --arch           print processor architecture, for which jx is "
+      "compiled (process.arch)\n"
       "  -v, --version        print corresponding node's version\n"
       "  -e, --eval script    evaluate script\n"
       "  -p, --print          evaluate script and print result\n"
@@ -430,11 +432,9 @@ class AutoScope {
 
   ~AutoScope() {
     engine_->LeaveScope();
-#ifdef JS_ENGINE_V8
     if (leave_isolate_ && engine_->threadId_ != 0) {
       engine_->ExitIsolate();
     }
-#endif
   }
 };
 
@@ -501,9 +501,9 @@ void JXEngine::MemoryMap(const char *filename, const char *content,
           "set %s\n",
           entry_file_name_.c_str());
 #ifndef JXCORE_EMBEDDED
-    exit(1);
+      exit(1);
 #else
-    return;
+      return;
 #endif
     }
     entry_file_name_ = filename;
@@ -512,13 +512,8 @@ void JXEngine::MemoryMap(const char *filename, const char *content,
   node::MemoryWrap::SharedSet(filename, content);
 }
 
+#ifdef JS_ENGINE_MOZJS
 void JXEngine::InitializeEngine(int argc, char **argv) {
-#ifdef JS_ENGINE_V8
-  const char *replaceInvalid = getenv("NODE_INVALID_UTF8");
-  if (replaceInvalid == NULL)
-    node::WRITE_UTF8_FLAGS |= v8::String::REPLACE_INVALID_UTF8;
-#endif
-
   char **argv_copy;
   if (argc > 0) {
     argv_ = uv_setup_args(argc, argv);
@@ -537,26 +532,6 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
 
   AutoScope _scope_(this, false);
 
-#ifdef JS_ENGINE_V8
-#if HAVE_OPENSSL
-  // V8 on Windows doesn't have a good source of entropy. Seed it from
-  // OpenSSL's pool.
-  v8::V8::SetEntropySource(node::crypto::EntropySource);
-#endif
-  if (actual_thread_id == 0) {
-    main_node_ = new node::commons(0);
-  } else {
-    main_node_ = node::commons::newInstance(actual_thread_id);
-  }
-  // This needs to run *before* V8::Initialize()
-  // Use copy here as to not modify the original argv:
-  Init(argc, argv_copy, JS_engine_inited_);
-  if (!JS_engine_inited_) {
-    JS_engine_inited_ = true;
-    v8::V8::Initialize();
-  }
-  do {
-#elif defined(JS_ENGINE_MOZJS)
   bool was_inited = JS_engine_inited_;
   if (!JS_engine_inited_) {
     assert(actual_thread_id == 0);
@@ -584,24 +559,12 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
     JS_SetGCCallback(rt, GCOnMozJS, NULL);
 
     Init(argc, argv_copy, was_inited);
-#endif
     do {
-#ifdef JS_ENGINE_V8
-      v8::Locker locker;
-      v8::HandleScope handle_scope;
-      v8::Persistent<v8::Context> context = v8::Context::New();
-      v8::Context::Scope context_scope(context);
-      if (actual_thread_id == 0) {
-        main_node_->node_isolate = v8::Isolate::GetCurrent();
-        main_node_->setMainIsolate();
-      }
-#elif defined(JS_ENGINE_MOZJS)
       JSAutoRequest ar(ctx);
       JS::RootedObject global(ctx);
       jxcore::NewGlobalObject(ctx, &global);
       assert(global != NULL);
       JSAutoCompartment ac(ctx, global);
-#endif
 
       node::SetupProcessObject(actual_thread_id);
       JS_HANDLE_OBJECT process_l = main_node_->getProcess();
@@ -611,9 +574,118 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
                     STD_TO_STRING(entry_file_name_.c_str()));
       }
 
-#ifdef JS_ENGINE_V8
-      v8_typed_array::AttachBindings(context->Global());
+      main_node_->loop->loopId = main_node_->threadId;
+
+      node::Load(process_l);
+
+      // All our arguments are loaded. We've evaluated all of the scripts. We
+      // might even have created TCP servers. Now we enter the main eventloop.
+      // If
+      // there are no watchers on the loop (except for the ones that were
+      // uv_unref'd) then this function exits. As long as there are active
+      // watchers, it blocks.
+      uv_run_jx(main_node_->loop, UV_RUN_DEFAULT, node::commons::CleanPinger,
+                main_node_->threadId);
+
+      node::EmitExit(process_l);
+
+      if (main_node_->threadId == 0 && getThreadCount() > 0)
+        WaitThreadExit(main_node_->loop);
+
+      node::RunAtExit();
+
+      if (main_node_->threadId == 0) {
+        node::MemoryWrap::MapClear(true);
+        Job::removeTaskers();
+      }
+    } while (0);
+#if defined HAVE_DTRACE || defined HAVE_ETW || defined HAVE_SYSTEMTAP
+    node::cleanUpDTrace();
 #endif
+
+    if (main_node_->threadId == 0) {
+      node::commons::process_status_ = node::JXCORE_INSTANCE_EXITED;
+    } else {
+      main_node_->instance_status_ = node::JXCORE_INSTANCE_EXITED;
+    }
+
+    if (main_node_->threadId == 0) {
+      node::commons::threadPoolCount = 0;
+    }
+
+    main_node_->Dispose();
+    node::removeCommons();
+  } while (0);
+
+  // Clean up the copy:
+  if (argc > 0) free(argv_copy);
+
+  customLock(CSLOCK_JOBS);
+  jx_engine_map::iterator it = jx_engine_instances.find(actual_thread_id);
+  if (it != jx_engine_instances.end()) jx_engine_instances.erase(it);
+  customUnlock(CSLOCK_JOBS);
+}
+#elif defined(JS_ENGINE_V8)
+void JXEngine::InitializeEngine(int argc, char **argv) {
+  const char *replaceInvalid = getenv("NODE_INVALID_UTF8");
+  if (replaceInvalid == NULL)
+    node::WRITE_UTF8_FLAGS |= v8::String::REPLACE_INVALID_UTF8;
+
+  char **argv_copy;
+  if (argc > 0) {
+    argv_ = uv_setup_args(argc, argv);
+    argv_copy = copy_argv(argc, argv_);
+  } else if (node::commons::embedded_source_) {
+    argv_copy = jx_source;
+    argv_ = uv_setup_args(1, jx_source);
+  } else {
+    error_console(
+        "missing startup parameters at JXEngine::Initialize*Engine.\n");
+    abort();
+  }
+  argc_ = argc;
+
+  const int actual_thread_id = threadId_;
+
+  AutoScope _scope_(this, false);
+
+#if HAVE_OPENSSL
+  // V8 on Windows doesn't have a good source of entropy. Seed it from
+  // OpenSSL's pool.
+  v8::V8::SetEntropySource(node::crypto::EntropySource);
+#endif
+  if (actual_thread_id == 0) {
+    main_node_ = new node::commons(0);
+  } else {
+    main_node_ = node::commons::newInstance(actual_thread_id);
+  }
+  // This needs to run *before* V8::Initialize()
+  // Use copy here as to not modify the original argv:
+  Init(argc, argv_copy, JS_engine_inited_);
+  if (!JS_engine_inited_) {
+    JS_engine_inited_ = true;
+    v8::V8::Initialize();
+  }
+  do {
+    do {
+      v8::Locker locker;
+      v8::HandleScope handle_scope;
+      v8::Persistent<v8::Context> context = v8::Context::New();
+      v8::Context::Scope context_scope(context);
+      if (actual_thread_id == 0) {
+        main_node_->node_isolate = v8::Isolate::GetCurrent();
+        main_node_->setMainIsolate();
+      }
+
+      node::SetupProcessObject(actual_thread_id);
+      JS_HANDLE_OBJECT process_l = main_node_->getProcess();
+      if (entry_file_name_.length() != 0) {
+        JS_DEFINE_STATE_MARKER(main_node_);
+        JS_NAME_SET(process_l, JS_STRING_ID("entry_file_name_"),
+                    STD_TO_STRING(entry_file_name_.c_str()));
+      }
+
+      v8_typed_array::AttachBindings(context->Global());
 
       main_node_->loop->loopId = main_node_->threadId;
 
@@ -640,10 +712,8 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
         Job::removeTaskers();
       }
 
-#ifdef JS_ENGINE_V8
 #ifndef NDEBUG
       context.Dispose();
-#endif
 #endif
     } while (0);
 #if defined HAVE_DTRACE || defined HAVE_ETW || defined HAVE_SYSTEMTAP
@@ -664,12 +734,10 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
     node::removeCommons();
   } while (0);
 
-#ifdef JS_ENGINE_V8
 #ifndef NDEBUG
   // Clean up. Not strictly necessary.
   V8::Dispose();
 #endif  // NDEBUG
-#endif
 
   // Clean up the copy:
   if (argc > 0) free(argv_copy);
@@ -679,6 +747,7 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
   if (it != jx_engine_instances.end()) jx_engine_instances.erase(it);
   customUnlock(CSLOCK_JOBS);
 }
+#endif
 
 void DeclareProxy(node::commons *com, JS_HANDLE_OBJECT_REF methods,
                   const char *name, int interface_id,

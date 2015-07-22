@@ -240,16 +240,12 @@ class Parser : public ObjectWrap {
 
     if (num_fields_) Flush();  // Flush trailing HTTP headers.
 
-#ifdef JS_ENGINE_V8
     JS_LOCAL_VALUE cb =
         JS_GET_NAME(handle_, JS_PREDEFINED_STRING(onMessageComplete));
 
     if (!JS_IS_FUNCTION(cb)) return 0;
 
     JS_LOCAL_VALUE r = JS_METHOD_CALL_NO_PARAM(JS_CAST_FUNCTION(cb), handle_);
-#else
-    JS_LOCAL_VALUE r = JS_METHOD_CALL_NO_PARAM(handle_, "onMessageComplete");
-#endif
 
     if (JS_IS_EMPTY(r)) {
       got_exception_ = true;

@@ -210,27 +210,27 @@
       ['node_engine_mozilla!=1',
       {
         'defines': [
-          'JS_ENGINE_V8=1',
+          'JS_ENGINE_V8=1', 'V8_IS_3_14=1'
         ],
         'sources': [
-          'src/jx/Proxy/V8/JXString.cc',
-          'src/jx/Proxy/V8/v8_typed_array.cc',
+          'src/jx/Proxy/V8_3_14/JXString.cc',
+          'src/jx/Proxy/V8_3_14/v8_typed_array.cc',
         ]
       },
       {
         'v8_use_snapshot%': 'false',
         'defines': [
-          'JS_ENGINE_MOZJS=1', 'EXPORT_JS_API'
+          'JS_ENGINE_MOZJS=1', 'EXPORT_JS_API', 'MOZJS_IS_3_40=1'
         ],
         'sources': [
-          'src/jx/Proxy/Mozilla/MozJS/Isolate.cc',
-          'src/jx/Proxy/Mozilla/MozJS/MozValue.cc',
-          'src/jx/Proxy/Mozilla/MozJS/Exception.cc',
-          'src/jx/Proxy/Mozilla/MozJS/utf_man.cc',
-          'src/jx/Proxy/Mozilla/EngineHelper.cc',
-          'src/jx/Proxy/Mozilla/JXString.cc',
-          'src/jx/Proxy/Mozilla/PArguments.cc',
-          'src/jx/Proxy/Mozilla/SpiderHelper.cc',
+          'src/jx/Proxy/Mozilla_340/MozJS/Isolate.cc',
+          'src/jx/Proxy/Mozilla_340/MozJS/MozValue.cc',
+          'src/jx/Proxy/Mozilla_340/MozJS/Exception.cc',
+          'src/jx/Proxy/Mozilla_340/MozJS/utf_man.cc',
+          'src/jx/Proxy/Mozilla_340/EngineHelper.cc',
+          'src/jx/Proxy/Mozilla_340/JXString.cc',
+          'src/jx/Proxy/Mozilla_340/PArguments.cc',
+          'src/jx/Proxy/Mozilla_340/SpiderHelper.cc',
         ],
         'conditions': [
           ['OS!="win"', {
