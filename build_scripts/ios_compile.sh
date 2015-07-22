@@ -43,13 +43,19 @@ NO_STRIP=0
 if [[ $1 == "--no-strip" ]]
 then
   NO_STRIP=1
+elif [[ $2 == "--no-strip" ]]
+then
+  NO_STRIP=1
 fi
 
 CONF_EXTRAS=
 
-if [ $# -eq 1 ]
+if [[ $1 == "--embed-leveldown" ]]
 then
-  CONF_EXTRAS=$1
+  CONF_EXTRAS="--embed-leveldown"
+elif [[ $2 == "--embed-leveldown" ]]
+then
+  CONF_EXTRAS="--embed-leveldown"
 fi
 
 
