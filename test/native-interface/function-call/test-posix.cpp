@@ -15,9 +15,6 @@ void sampleMethod(JXValue *results, int argc) {
   assert(JX_IsString(&results[2]) && JX_IsString(&results[3]) &&
          "both parameters supposed to be a function");
 
-  bool JX_CallFunction(JXValue * fnc, JXValue * params, const int argc,
-                       JXValue * out);
-
   JXValue out;
   assert(JX_CallFunction(&results[0], &results[2], 1, &out) &&
          "failed while calling console.log");
