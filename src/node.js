@@ -88,9 +88,13 @@
       }
       
       if(Error.prepareStackTrace) {
-        var newStack = Error.prepareStackTrace(err, __);
-        if (newStack)
-          err.stack = newStack;
+        try {
+          var newStack = Error.prepareStackTrace(err, __ || err.stack);
+          if (newStack)
+            err.stack = newStack;
+        } catch(e) {
+          // silly but do not let Error.prepareStackTrace throwing  
+        }
       }
     };
 
