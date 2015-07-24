@@ -41,6 +41,10 @@
 
     Error.captureStackTrace = function(err, __) {
       var st;
+      if (typeof err === 'undefined' || typeof err === 'string') {
+        return;
+      }
+
       if (!err.stack) {
         // TODO(obastemur) there must be a better way to do this
         try {
@@ -51,6 +55,10 @@
           err.lineNumber = e.lineNumber;
           err.columnNumber = e.columnNumber;
         }
+
+        if (!err.stack)
+          err.stack = "\n"; // silly but we don't want to throw here no matter
+                            // what
 
         st = err.stack.split('\n');
         st.shift();
@@ -84,16 +92,16 @@
           if (!err.name)
             err.name = "Error";
           return err.name + ": " + err.message + "\n" + arr;
-        }
+        };
       }
-      
-      if(Error.prepareStackTrace) {
+
+      if (Error.prepareStackTrace) {
         try {
           var newStack = Error.prepareStackTrace(err, __ || err.stack);
           if (newStack)
             err.stack = newStack;
-        } catch(e) {
-          // silly but do not let Error.prepareStackTrace throwing  
+        } catch (e) {
+          // silly but do not let Error.prepareStackTrace throwing
         }
       }
     };
