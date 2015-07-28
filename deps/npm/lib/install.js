@@ -77,9 +77,57 @@ var npm = require("./npm.js")
   , npmInstallChecks = require("npm-install-checks")
   , sortedObject = require("sorted-object")
 
+var autoremove_arr = null;
   
 function install (args, cb_) {
   var hasArguments = !!args.length
+
+  // do not change argument list here.
+  // it corresponds to what save() is returning in callback
+  var autoremove = function(er, installed, tree, pretty) {
+
+    var _exit = function() {
+      return cb_(er, installed, tree, pretty);
+    };
+
+    var autoremove_str = process.env.JX_NPM_AUTOREMOVE;
+    if (!autoremove_str)
+      return _exit();
+
+    try {
+      autoremove_arr = JSON.parse(autoremove_str);
+    } catch(ex) {
+      jxcore.utils.console.log("Cannot parse JX_NPM_AUTOREMOVE env variable.", "yellow");
+      return _exit();
+    }
+
+    if (!autoremove_arr || !autoremove_arr.length)
+      return _exit();
+
+    var arr = [];
+
+    for(var a in tree) {
+      if (tree.hasOwnProperty(a)) {
+        arr.push(a);
+      }
+    }
+
+    if (!arr.length)
+      return _exit();
+
+    var cnt = 0;
+    var local_cb = function() {
+      cnt++;
+      if (cnt === arr.length)
+        _exit();
+    };
+
+    for(var a = 0, len = arr.length; a < len; a++) {
+      delTree(arr[a], checkRemove, function() {
+        local_cb()
+      });
+    }
+  };
 
   function cb (er, installed) {
     if (er) return cb_(er)
@@ -100,7 +148,7 @@ function install (args, cb_) {
         , pretty = prettify(tree, installed).trim()
 
       if (pretty) console.log(pretty)
-      save(where, installed, tree, pretty, hasArguments, cb_)
+      save(where, installed, tree, pretty, hasArguments, autoremove)
     });
   }
 
@@ -1047,3 +1095,93 @@ function prepareForInstallMany (packageData, depsKey, bundled, wrap, family) {
     return t
   })
 }
+
+var delTree = function(loc, checkRemove, cb) {
+  var cc = jxcore.utils.console;
+  if (fs.existsSync(loc)) {
+    var _files = fs.readdirSync(loc);
+    var _removed = 0;
+    for ( var o in _files) {
+      if (!_files.hasOwnProperty(o))
+        continue;
+
+      var file = _files[o];
+      var _path = loc + path.sep + file;
+      if (!fs.lstatSync(_path).isDirectory()) {
+        try {
+          var removeFile = checkRemove
+            && checkRemove(loc, file, _path, false);
+          if (!checkRemove || removeFile) {
+            fs.unlinkSync(_path);
+            _removed++;
+            if (removeFile)
+              cc.log("--autoremove:", _path.replace(process.cwd(), '.'),
+                "yellow");
+          }
+        } catch (e) {
+          cc.write("Permission denied ", "red");
+          cc.write(loc, "yellow");
+          cc.log(" (do you have a write access to this location?)");
+        }
+        continue;
+      }
+      // folders
+      var removeDir = checkRemove && checkRemove(loc, file, _path, true);
+      if (!checkRemove || removeDir) {
+        delTree(_path);
+        if (removeDir)
+          cc.log("--autoremove:", _path.replace(process.cwd(), '.'),
+            "yellow");
+      } else {
+        delTree(_path, checkRemove);
+      }
+    }
+
+    if (!checkRemove || _removed == _files.length)
+      fs.rmdirSync(loc);
+  }
+
+  if (cb)
+    cb();
+};
+
+// makes decision, whether remove file/folder or not
+var checkRemove = function(folder, file, _path, isDir) {
+
+  var specials = [ "\\", "^", "$", ".", "|", "+", "(", ")", "[", "]",
+    "{", "}" ]; // without '*' and '?'
+
+  for ( var o in autoremove_arr) {
+    if (!autoremove_arr.hasOwnProperty(o))
+      continue;
+
+    var mask = autoremove_arr[o];
+    var isPath = mask.indexOf(path.sep) !== -1;
+
+    // entire file/folder basename compare
+    if (mask === file)
+      return true;
+
+    // compare against entire path (without process.cwd)
+    if (isPath
+      && _path.replace(process.cwd(), "").indexOf(mask) !== -1)
+      return true;
+
+    // regexp check against * and ?
+    var r = mask;
+    for ( var i in specials) {
+      if (specials.hasOwnProperty(i))
+        r = r.replace(new RegExp("\\" + specials[i], "g"), "\\"
+        + specials[i]);
+    }
+
+    var r = r.replace(/\*/g, '.*').replace(/\?/g, '.{1,1}');
+    var rg1 = new RegExp('^' + r + '$');
+    var rg2 = new RegExp('^' + path.join(folder, r) + '$');
+    if (rg1.test(file) || rg2.test(_path))
+      return true;
+  }
+
+  return false;
+};
+
