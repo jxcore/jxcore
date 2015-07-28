@@ -22,10 +22,65 @@ server.setConfig("enableClientSideSubscription", true);
 
 * {Boolean} default `true`
 
-Enables the messaging server to send multiple messages at once to the client.
+Enables the messaging server to send multiple messages at once to the client, but it applies only to ajax communication (non WebSockets).
 This increases the performance of JXM.io.
 There are some browser versions, however, that don't support this feature (for example IE below v8).
 In this case, chunked mode is internally disabled, even if the `chunked` option in server is set to `true`.
+
+On the other hand, some browsers always need to have the chunked mode enabled when not using WebSockets.
+That includes FireFox, Chrome, Safari and Opera. For those browsers chunked mode is always enabled, even if the `chunked` option in server is set to `false`.
+
+### clientNamespace
+
+* {String} default `jxcore`
+
+Defines the name of jxcore object available at JavaScript client's side.
+By default this is `jxcore` (see [API JavaScript Client](#api-javascript-client)), however you may rename it.
+This is particularly useful and even obligatory for applications using JXM.io which are build with
+[jxcore-cordova](https://github.com/jxcore/jxcore-cordova) plugin, as this plugins defines its own `jxcore` object.
+Thus renaming the client namespace is needed to avoid naming conflicts.
+
+*server-side:*
+
+```js
+server.setConfig("clientNamespace", "jxm");
+```
+
+*client-side:*
+
+```js
+<script type="text/javascript">
+
+    document.onjxready = function () {
+
+        jxm.Start(function (status) {
+        });
+
+        jxm.OnClose = function (reconnecting) {
+        };
+
+        jxm.OnError = function (err) {
+        }
+    };
+</script>
+```
+
+### clientExternal
+
+* {Boolean} default `false`
+
+Turn on this option (set to `true`) whenever you are loading the JXM.io script in your browser from a html file other then served by JXM.io server.
+In that case also your script URL is absolute rather than relative:
+
+```html
+<script src="http://127.0.0.0.1/helloworld/jx?ms=connect" type="text/javascript">
+```
+
+instead of:
+
+```html
+<script src="/helloworld/jx?ms=connect" type="text/javascript">
+```
 
 ### collectorLatency
 
@@ -41,6 +96,12 @@ This way the server stays more responsive, because it doesn't have to deal with 
 * {Boolean} default `true`
 
 When enabled, the running server displays log and error messages to the console output.
+
+### consoleErrorPrintStack
+
+* {Boolean} default `false`
+
+When this option and `console` are both enabled, the error's stack is printed right after the error's message.
 
 ### consoleInfo
 
@@ -124,8 +185,15 @@ Defines long polling request time in milliseconds. The maximum value should not 
 
 * {String}
 
-Contains version number of JXM.io server. For example "0.22".
+Contains version number of JXM.io server. For example "0.2.2".
 It is used mostly for informational purpose and is displayed for example, when server starts from the console window.
+By default it is read from JXM.io module's `package.json` file.
+
+### socketDisabled
+
+* {Boolean} default `false`
+
+When set to `true` forces ajax communication and disables WebSockets protocol.
 
 ## Error codes
 
