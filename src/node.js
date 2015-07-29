@@ -341,20 +341,22 @@
           }
 
           NativeModule.require('_jx_config');
-
-          // If this is a worker in cluster mode, start up the communication
-          // channel.
-          if (process.env.NODE_UNIQUE_ID) {
-            var cluster = NativeModule.require('cluster');
-
-            cluster._setupWorker();
-
-            // Make sure it's not accidentally inherited by child processes.
-            delete process.env.NODE_UNIQUE_ID;
-          }
         }
       } else {
         NativeModule.require('_jx_config');
+      }
+
+      if (!process.subThread && !process._Monitor) {
+        // If this is a worker in cluster mode, start up the communication
+        // channel.
+        if (process.env.NODE_UNIQUE_ID) {
+          var cluster = NativeModule.require('cluster');
+
+          cluster._setupWorker();
+
+          // Make sure it's not accidentally inherited by child processes.
+          delete process.env.NODE_UNIQUE_ID;
+        }
       }
 
       if (__debug) {
