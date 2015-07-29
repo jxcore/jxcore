@@ -176,7 +176,7 @@ if (single_test_dir) dirs.push(single_test_dir.name);
  * @param cb
  */
 var run = function (what, cb) {
-  var args = ["tools/test.py", "-p", "color", "--jxpath", process.execPath];
+  var args = ["tools/test.py", "-p", "color", "--nt", "true", "--jxpath", process.execPath];
 
   for(var o in _arr) {
     if (_arr[o] && _arr.hasOwnProperty(o))
