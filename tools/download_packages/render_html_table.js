@@ -12,7 +12,11 @@ var builds = [
   {
     header: "Android 4+",
     name: "Android",
-    files: ["jx_android32sm.zip", "jx_android32v8.zip", "jx_androidARMsm.zip", "jx_androidARMv8.zip"]
+    files: ["jx_android32sm.zip", "jx_android32v8.zip", "jx_androidARMsm.zip", "jx_androidARMv8.zip", "jx_androidFATsm.zip", "jx_androidFATv8.zip" ],
+    props: {
+      "jx_androidFATsm.zip" : { caption: "Android FAT" },
+      "jx_androidFATv8.zip" : { caption: "Android FAT" }
+    }
   },
   {
     name: "FreeBSD",
@@ -25,6 +29,13 @@ var builds = [
   {
     name: "OSX INTEL",
     files: ["jx_osx64sm.zip", "jx_osx64v8.zip",]
+  },
+  {
+    name: "iOS",
+    files: ["jx_iosFATsm.zip"],
+    props: {
+      "jx_iosFATsm.zip" : { caption: "iOS FAT" }
+    }
   },
   {
     name: "RH/Centos/Fedora",
