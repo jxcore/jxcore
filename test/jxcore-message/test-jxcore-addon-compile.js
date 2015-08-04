@@ -24,25 +24,29 @@ process.on('exit', function() {
 
 // ******** git clone
 process.chdir(__dirname);
-var ret = jxcore.utils.cmdSync("git clone https://github.com/jxcore/jxcore-addon");
-if (ret.exitCode) {
-  console.error("Cannot clone github repository:", ret.out);
-  process.exit(8);
-}
+var cp = require("child_process");
+cp.exec("git clone https://github.com/jxcore/jxcore-addon", function(err, stdout, stderr) {
 
-// ******** jx install
-process.chdir(dir);
-var ret = jxcore.utils.cmdSync('"' + process.execPath + '" install');
-if (ret.exitCode) {
-  console.error("Error while compiling the addon:\n", ret.out);
-  process.exit(8);
-}
+  if (err) {
+    console.error("Cannot clone github repository:", stdout + "", stderr + "");
+    process.exit(8);
+  }
+
+  // ******** jx install
+  process.chdir(dir);
+  var ret = jxcore.utils.cmdSync('"' + process.execPath + '" install --unsafe-perm');
+  if (ret.exitCode) {
+    console.error("Error while compiling the addon:\n", ret.out);
+    process.exit(8);
+  }
 
 // ******** addon test
-var ret = jxcore.utils.cmdSync('"' + process.execPath + '" test.js');
-if (ret.exitCode) {
-  console.error("Error while executing addon's test.js:\n", ret.out);
-  process.exit(8);
-}
+  var ret = jxcore.utils.cmdSync('"' + process.execPath + '" test.js');
+  if (ret.exitCode) {
+    console.error("Error while executing addon's test.js:\n", ret.out);
+    process.exit(8);
+  }
 
-console.log(ret.out);
+  console.log(ret.out);
+});
+
