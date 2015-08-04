@@ -186,7 +186,11 @@ var gonpm = function () {
   }
 
   // spawn allows to pass formatted output (colors)
-  cp.spawn(process.execPath, arr, { stdio: "inherit" });
+  cp.spawn(process.execPath, arr, { stdio: "inherit" })
+    .on('close', function(code) {
+      // exit with same exit code
+      process.exit(code);
+    });
 };
 
 jxcore.utils.console.log("Downloading NPM for JXcore", "yellow");
