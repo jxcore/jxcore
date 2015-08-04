@@ -5,6 +5,9 @@
 // 2. jx packages
 // 3. native packages
 
+if (process.isPackaged || exports.$JXP)
+  return;
+
 var fs = require('fs');
 var path = require('path');
 var os = require("os");

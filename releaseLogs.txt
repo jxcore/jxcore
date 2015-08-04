@@ -1,5 +1,15 @@
 JXcore (http://jxcore.io)
 
+----JXcore 3.0.5
+
+- performance fixes for sqlite
+- fixed V8 error/column number for jx packages
+- native packages fork() enabled
+- create ~/.jx on proper partition on Windows
+- --autoremove works with -g and moved into npm sources
+- SpiderMonkey performance updates
+- Windows setup: removing from PATH on uninstall
+
 ----JXcore 3.0.4
 
 - SpiderMonkey build now supports jxcore addons on Windows

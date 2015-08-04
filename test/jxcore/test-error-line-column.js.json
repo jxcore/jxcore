@@ -1,0 +1,7 @@
+{
+  "files" : [
+    "assets/test-error-line-column"
+  ],
+  "package" : false,
+  "native" : false
+}
