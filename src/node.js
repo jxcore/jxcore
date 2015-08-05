@@ -1024,37 +1024,84 @@
 
   startup.processStdio = function() {
     var stdin, stdout, stderr;
+    
+    var util = NativeModule.require('util');
+    var isAndroid = process.platform === 'android' && process.isEmbedded;
+    var $tw;
+    if (isAndroid) {
+      $tw = process.binding("jxutils_wrap");
+    }
+
+    var fake_stdout = null, fake_stderr = null; 
+
+    var Writable = NativeModule.require('stream').Writable;
+    util.inherits(StdLogCatOut, Writable);
+
+    function StdLogCatOut(opt) {
+      Writable.call(this, opt);
+    }
+
+    if (isAndroid) { // target LogCat for stdout and stderr
+      fake_stdout = new StdLogCatOut();
+      fake_stdout.write = fake_stdout._write = function(bf) {
+        $tw.print(bf + "");
+      };
+      
+      fake_stderr = new StdLogCatOut();
+      fake_stderr.write = fake_stderr._write = function(bf) {
+        $tw.print_err_warn(bf + "", true);
+      };
+    }
 
     process.__defineGetter__('stdout', function() {
       if (stdout)
         return stdout;
-      stdout = createWritableStdioStream(1);
+      if (isAndroid) {
+        stdout = fake_stdout;
+      } else {
+        stdout = createWritableStdioStream(1);
+      }
+      
       stdout.destroy = stdout.destroySoon = function(er) {
         er = er || new Error('process.stdout cannot be closed.');
         stdout.emit('error', er);
       };
+      
       if (stdout.isTTY) {
         process.on('SIGWINCH', function() {
           stdout._refreshSize();
         });
       }
+      
       return stdout;
     });
 
     process.__defineGetter__('stderr', function() {
       if (stderr)
         return stderr;
-      stderr = createWritableStdioStream(2);
+      
+      if (isAndroid) {
+        stderr = fake_stderr;
+      } else {
+        stderr = createWritableStdioStream(2);
+      }
+      
       stderr.destroy = stderr.destroySoon = function(er) {
         er = er || new Error('process.stderr cannot be closed.');
         stderr.emit('error', er);
       };
+      
       return stderr;
     });
 
     process.__defineGetter__('stdin', function() {
       if (stdin)
         return stdin;
+      
+      if (process.isEmbedded && (isAndroid || process.platform == 'ios')) {
+        console.error("stdin is not supported on embedded mobile applications");
+        // do not throw or return null
+      }
 
       var tty_wrap = process.binding('tty_wrap');
       var fd = 0;
