@@ -517,8 +517,13 @@
     global.__defineGetter__('console', function() {
       return NativeModule.require('console');
     });
-    Object.defineProperty(global, '__callstack', {
-      get : function() {
+    global.__defineGetter__('__callstack', function() {
+      if (process.versions.sm) {
+        var err = {};
+        Error.captureStackTrace(err);
+        
+        return err.stack;
+      } else {
         var orig = Error.prepareStackTrace;
         Error.prepareStackTrace = function(_, stack) {
           return stack;
