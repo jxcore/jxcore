@@ -11,6 +11,8 @@
 
 #define JS_GET_GLOBAL() jxcore::getGlobal(JS_GetThreadId(__contextORisolate))
 
+#define JS_ENGINE_WRITE_UTF8_FLAGS 1
+
 #define JS_FORCE_GC()                                                  \
   do {                                                                 \
     int x = JS_SetRTGC(__contextORisolate, false) - 1;                 \

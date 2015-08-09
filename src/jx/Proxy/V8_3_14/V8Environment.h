@@ -13,6 +13,9 @@
 
 #define JS_GET_GLOBAL() JS_CURRENT_CONTEXT()->Global()
 
+#define JS_ENGINE_WRITE_UTF8_FLAGS \
+  v8::String::HINT_MANY_WRITES_EXPECTED | v8::String::NO_NULL_TERMINATION
+
 #define JS_FORCE_GC() v8::V8::LowMemoryNotification()
 
 #define JS_TERMINATE_EXECUTION(mcom)                                      \
