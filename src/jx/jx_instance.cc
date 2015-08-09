@@ -40,9 +40,6 @@ void JXInstance::runScript(void *x) {
   JSContext *ctx = isolate->GetRaw();
   JSRuntime *rt = JS_GetRuntime(ctx);
   do {
-
-    JS_SetInterruptCallback(rt, JSEngineInterrupt);
-    JS_SetGCCallback(rt, GCOnMozJS, NULL);
 #endif
     do {
 #ifdef JS_ENGINE_V8
