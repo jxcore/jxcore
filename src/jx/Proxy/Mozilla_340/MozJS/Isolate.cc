@@ -3,8 +3,38 @@
 #include "Isolate.h"
 #include "assert.h"
 #include "../EngineHelper.h"
+#include "../../../commons.h"
 
 namespace MozJS {
+
+void GCOnMozJS(JSRuntime *rt, JSGCStatus status, void *data) {
+#ifdef JXCORE_PRINT_NATIVE_CALLS
+  // TODO(obastemur) GC is happening so?
+  if (status == JSGC_BEGIN) {
+    ENGINE_LOG_THIS("MozJS", "GC_BEGIN");
+  } else if (status == JSGC_END) {
+    ENGINE_LOG_THIS("MozJS", "GC_END");
+  } else {
+    error_console("Unknown GC flag. Did you forget updating _GCOnMozJS ?\n");
+    abort();
+  }
+#endif
+}
+
+bool JSEngineInterrupt(JSContext *ctx) {
+  int tid = JS_GetThreadId(ctx);
+  node::commons *com = node::commons::getInstanceByThreadId(tid);
+  if (com != NULL && com->should_interrupt_) {
+    ENGINE_LOG_THIS("MozJS", "JSEngineInterrupt - API Call");
+    com->should_interrupt_ = false;
+    return false;
+  }
+
+  ENGINE_LOG_THIS("MozJS", "JSEngineInterrupt - 100% CPU");
+
+  // TODO(obastemur) This also triggers when CPU hits 100%. do anything ?
+  return true;
+}
 
 // Dummy ShellPrincipals from SM Shell
 class ShellPrincipals : public JSPrincipals {
@@ -113,6 +143,9 @@ Isolate* Isolate::New(int threadId) {
         .setAsmJS(true)
         .setNativeRegExp(true);
 #endif
+
+    JS_SetInterruptCallback(rt, JSEngineInterrupt);
+    JS_SetGCCallback(rt, GCOnMozJS, NULL);
   } else {
     threadId = GetThreadId();
     rt = runtimes[threadId];

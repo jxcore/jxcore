@@ -83,12 +83,7 @@ bool no_deprecation;
 char* app_sandbox_folder = NULL;
 #endif
 
-int WRITE_UTF8_FLAGS
-#ifdef JS_ENGINE_V8
-    = v8::String::HINT_MANY_WRITES_EXPECTED | v8::String::NO_NULL_TERMINATION;
-#elif defined(JS_ENGINE_MOZJS)
-    = 1;
-#endif
+int WRITE_UTF8_FLAGS = JS_ENGINE_WRITE_UTF8_FLAGS;
 
 static void Spin(uv_idle_t* handle, int status) {
   node::commons* com = node::commons::getInstanceByThreadId(handle->threadId);

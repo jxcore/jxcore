@@ -517,24 +517,6 @@
     global.__defineGetter__('console', function() {
       return NativeModule.require('console');
     });
-    global.__defineGetter__('__callstack', function() {
-      if (process.versions.sm) {
-        var err = {};
-        Error.captureStackTrace(err);
-        
-        return err.stack;
-      } else {
-        var orig = Error.prepareStackTrace;
-        Error.prepareStackTrace = function(_, stack) {
-          return stack;
-        };
-        var err = new Error;
-        Error.captureStackTrace(err, arguments.callee);
-        var stack = err.stack;
-        Error.prepareStackTrace = orig;
-        return stack;
-      }
-    });
   };
 
   startup.globalJXcore = function() {
