@@ -414,12 +414,11 @@ For example `--arg1` has no value, while the following has: `--arg str1`.
     * `--library false  or `-l 0`
 * `valueSep` {String} - a separator used in an argument to provide a value: `=`, `:` or space, e.g.: `--arg1=str1`, `-c:3`, `-l 0`
 * `prefix` {String} - this may be one of the following: `--`, `-` or `/` on Windows platforms
-* `type` {String} - this is evaluated `typeof value`
 * `isInt` {Boolean} - `true` if value can be parsed into a Number, e.g. `--count=3`
 * `asInt` {Number} - if `isInt` is `true`, than `asInt` contains a parsed Number.
 Beware, that it may be `0`, so it should not be always checked with negation: `if (!arg.asInt) {}`.
-* `asBool` {Boolean} - it will be `false` only in few cases, when val equals to `no`, `false` or `0` (e.g. `--library false`).
-Otherwise it is always `true`, even if there is no value provided, e.g. `-add`.
+* `isBool` {Boolean} - `true` if value can be parsed as `true` ("yes", "true" or "1") or `false` ("no", "false" or "0")
+* `asBool` {Boolean} - when `isBool` is true, then `asBool` will be `true` or `false` (e.g. `--library false` or `--extract true`).
 * `splitBySep(sep)` {Function} - if argument's value contains a separator defined by [jxcore.utils.argv.sep](#sep)
 or [JX_ARG_SEP](jxcore-utils.html#jxargsep) this function returns an array with separated parts (split).
 It also ignores empty or whitespaced strings. If the result is an empty array or the argument's value does not contain a separator - the function returns `null`.
