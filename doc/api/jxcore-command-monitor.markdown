@@ -93,21 +93,10 @@ Below is an example of a *jx.config* file.
 ```js
 {
     "monitor": {
-        "ip_address" : "127.0.0.1"
         "port": 17777,
         "check_interval": 1000,
         "start_delay": 2000,
         "log_path": "monitor_[WEEKOFYEAR]_[YEAR].log",
-        "users": [ "user1" ],
-        "https" : {
-            "httpsKeyLocation" : "/path/to/server.key",
-            "httpsCertLocation" : "/path/to/server.crt"
-        },
-        "heart_beat" : {
-            "enabled" : false,
-            "dedicated" : true,
-            "pass_phrase" : "mypwd"
-        }
     }
 }
 ```
