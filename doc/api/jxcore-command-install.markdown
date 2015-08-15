@@ -19,7 +19,7 @@ Downloads npm package specified by `name_of_the_package`.
 It searches the given names/masks recursively within installed module's directory and removes them.
 This is particularly useful for apps which target mobile devices as it may result in significantly smaller package sizes.
 
-    This option receives one or multiple values separated with comma. However you may use any other character by setting special environment variable [JX_ARG_SEP](jxcore-utils.html#jxargsep).
+    This option receives one or multiple values separated with comma. However you may use any other character by setting special environment variable [JX_ARG_SEP](jxcore-utils.markdown#jxargsep).
 
 
 Let’s see the following example: we would like to install the [express](https://github.com/visionmedia/express) module.

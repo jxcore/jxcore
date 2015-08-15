@@ -76,7 +76,7 @@ Some of the switches may be provided as boolean values. Below is description of 
 This optional parameter followed by file and/or folder names separated with commas - **explicitly adds** those files/folders into the final JX package.
 For example, you may want to package only certain files/folders located at current directory - not the whole its contents.
 
-The default separator is a comma sign. However you may use any other separator by setting a value of special environment variable [JX_ARG_SEP](jxcore-utils.html#jxargsep).
+The default separator is a comma sign. However you may use any other separator by setting a value of special environment variable [JX_ARG_SEP](jxcore-utils.markdown#jxargsep).
 
 If you want to pack just one file (e.g. *helloworld.js*) you can provide an `-add` option without a file name.
 Thus the following two commands are equivalent:
@@ -93,7 +93,7 @@ Yu can still combine `-add` and `-slim` together, e.g. to add a folder, but excl
 
 This optional parameter followed by file and/or folder names separated with commas - **prevents adding** those files/folders into the final JX package.
 
-The default separator is a comma sign. However you may use any other character by setting special environment variable [JX_ARG_SEP](jxcore-utils.html#jxargsep).
+The default separator is a comma sign. However you may use any other character by setting special environment variable [JX_ARG_SEP](jxcore-utils.markdown#jxargsep).
 
 ##### wildcards
 
@@ -186,7 +186,7 @@ enables partial extraction and in the same time defines which assets should be e
 
     > jx package helloworld.js --extract-what "*.node,*.txt"
 
-The default separator is a comma sign. However you may use any other character by setting special environment variable [JX_ARG_SEP](jxcore-utils.html#jxargsep).
+The default separator is a comma sign. However you may use any other character by setting special environment variable [JX_ARG_SEP](jxcore-utils.markdown#jxargsep).
 
 See also `extract.what` in [File structure](#file-structure).
 
@@ -215,7 +215,7 @@ Boolean value. Default is `true`. See also [boolean values](#boolean-values).
 
 #### -preInstall or -preinstall
 
-This parameter receives commands separated with commas. However you may use any other character by setting special environment variable [JX_ARG_SEP](jxcore-utils.html#jxargsep).
+This parameter receives commands separated with commas. However you may use any other character by setting special environment variable [JX_ARG_SEP](jxcore-utils.markdown#jxargsep).
 
 For example, the following command line:
 
@@ -426,7 +426,7 @@ thus the `where` parameter needs to be set with "./" value.
 
 The `what` parameter corresponds to the command line option [--extract-what](#--extract-what) with the only difference,
 that through the command line it receives paths and/or masks separated with commas.
-However you may use any other separator by setting a value of special environment variable [JX_ARG_SEP](jxcore-utils.html#jxargsep).
+However you may use any other separator by setting a value of special environment variable [JX_ARG_SEP](jxcore-utils.markdown#jxargsep).
 
 * **output**
 Name of the output JX package.
