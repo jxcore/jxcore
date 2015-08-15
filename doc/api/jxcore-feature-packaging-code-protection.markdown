@@ -24,6 +24,9 @@ You may specify none, one or more of the following options:
 * -slim file||folder [, file2||folder2, ... ]
 * JXP fields may be also provided here. See below for their description.
 
+All of the options may be provided with double dash prefix (e.g. `--add`) which satisfies the general convention for long name parameters.
+However for backwards compatibility, the single dash (e.g. `-add`) is still supported.
+
 The `jx package` command recursively scans the current folder and generates a `JXP` package information file based on all files in that directory.
 After that, it compiles the `JXP` file (by invoking `compile` command).
 
@@ -172,6 +175,33 @@ When it's set to `true`, all package contents will be extracted at first run of 
 There will be a new folder created with the name parameter.
 All files and assets embedded inside the package will be saved with full directory structure preserved.
 
+#### --extract-app-root
+
+This parameter is an alias for `--extract-where "./"`
+
+#### --extract-what
+
+String value. This parameter extends `-extract`. Followed by paths and/or masks separated with commas -
+enables partial extraction and in the same time defines which assets should be extractable:
+
+    > jx package helloworld.js --extract-what "*.node,*.txt"
+
+The default separator is a comma sign. However you may use any other character by setting special environment variable [JX_ARG_SEP](jxcore-utils.html#jxargsep).
+
+See also `extract.what` in [File structure](#file-structure).
+
+#### --extract-where
+
+String value. This parameter extends `-extract` and represents a folder name or path (relative to application root directory)
+where the contents should be extracted.
+
+For example:
+
+    > jx package helloworld.js --extract-where my_folder
+    > jx package helloworld.js --extract-where ./
+
+See also `extract.where` in [File structure](#file-structure).
+
 #### -library
 
 Boolean value. Default is `true`. See also [boolean values](#boolean-values).
@@ -318,7 +348,10 @@ The JXP project file is a simple text file that contains package description wri
     "package": null,
     "startup": "helloworld.js",
     "execute": null,
-    "extract": false,
+    "extract": {
+        "what" :  "*.node,*.txt",
+        "where" : "my_folder"
+    },
     "output": "helloworld.jx",
     "files": [
         "helloworld.js"
@@ -362,7 +395,39 @@ This parameter has different meaning depending on the library value.
 When the package is compiled with `library` = `false`, and you run the compiled package, this execute file will be executed first.
 If `library` is `true`, and the package is called with `require()` method, the execute file will be returned by the latter.
 * **extract**
-See the [-extract](#-extract) command line switch.
+This parameter may receive either boolean value (see [boolean values](#boolean-values)) or an object with extended data.
+
+```js
+"extract" : {
+    "what" : [
+        "*.node,*.txt",
+        "templates"
+    ],
+    "where" : "my_folder"
+}
+```
+
+The `where` parameter (it corresponds to the command line option [--extract-where](#--extract-where)) allows to change a folder name into which the package is extracted.
+By default, when the value is not provided, it is set to the name of the package. You may change it into any other name or path, for example:
+
+```js
+"extract" : {
+    "where" : "dir1/dir2"
+}
+```
+
+If you want to extract the contents into the application's root directory, use `"where" : "./"`.
+
+**Partial extraction**
+
+The `what` parameter enables partial contents extraction. It is an array defining which paths or masks should be extracted.
+The partial extraction may work only if the contents is extracted into the application's root directory,
+thus the `where` parameter needs to be set with "./" value.
+
+The `what` parameter corresponds to the command line option [--extract-what](#--extract-what) with the only difference,
+that through the command line it receives paths and/or masks separated with commas.
+However you may use any other separator by setting a value of special environment variable [JX_ARG_SEP](jxcore-utils.html#jxargsep).
+
 * **output**
 Name of the output JX package.
 * **files**
