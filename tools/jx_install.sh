@@ -103,7 +103,7 @@ find_os() {
     if [[ "$rasp_check" =~ 'raspberrypi' ]]
     then
       OT=$(apt-get install -y unzip)
-      echo "jx_rasp"
+      echo "jx_deb$arch"
       return
     fi
 

@@ -1,0 +1,8 @@
+{
+  "files" : [
+    "assets",
+    "_asset_file.js"
+  ],
+  "native": false,
+  "package" : false
+}
