@@ -175,6 +175,10 @@ When it's set to `true`, all package contents will be extracted at first run of 
 There will be a new folder created with the name parameter.
 All files and assets embedded inside the package will be saved with full directory structure preserved.
 
+#### --extract-message
+
+Allows to display a custom message before the extracting starts.
+
 #### --extract-app-root
 
 This parameter is an alias for `--extract-where "./"`
@@ -350,7 +354,8 @@ The JXP project file is a simple text file that contains package description wri
     "execute": null,
     "extract": {
         "what" :  "*.node,*.txt",
-        "where" : "my_folder"
+        "where" : "my_folder",
+        "message" : "Extracting now..."
     },
     "output": "helloworld.jx",
     "files": [
@@ -403,7 +408,8 @@ This parameter may receive either boolean value (see [boolean values](#boolean-v
         "*.node,*.txt",
         "templates"
     ],
-    "where" : "my_folder"
+    "where" : "my_folder",
+    "message" : "Extracting now..."
 }
 ```
 
@@ -417,6 +423,13 @@ By default, when the value is not provided, it is set to the name of the package
 ```
 
 If you want to extract the contents into the application's root directory, use `"where" : "./"`.
+
+You can display a custom message before the extraction starts. For this use the `message` parameter. It can be a string or an array.
+When providing an array, you may benefit from `jxcore.utils.console.log()` formatting feature. For example:
+
+```js
+"message" : [ "Extracting now...", "red" ]
+```
 
 **Partial extraction**
 
