@@ -265,7 +265,8 @@ The JXP project file is a simple text file that contains package description wri
         "what" :  "*.node,*.txt",
         "where" : "my_folder",
         "message" : "Extracting now...",
-        "verbose" : true
+        "verbose" : true,
+        "overwrite" : true
     },
     "output": "helloWorld.jx",
     "files": [
@@ -385,7 +386,8 @@ or an object with extended data:
     ],
     "where" : "my_folder",
     "message" : "Extracting now...",
-    "verbose" : true
+    "verbose" : true,
+    "overwrite" : true
 }
 ```
 
@@ -407,6 +409,15 @@ When providing an array, you may benefit from `jxcore.utils.console.log()` forma
 The message can be also set through the command-line parameter: `--extract-message`, e.g:
 
     > jx package helloWorld.js --extract --extract-message "Extracting now..."
+
+##### overwrite
+
+Boolean value. Default is `false`.
+Can be also used from the command-line: `--extract-overwrite`. See also [boolean values](#boolean-values).
+
+    > jx package helloWorld.js --extract --extract-overwrite
+
+When it's set to `true`, the package extraction overwrites any existing files.
 
 ##### verbose
 
