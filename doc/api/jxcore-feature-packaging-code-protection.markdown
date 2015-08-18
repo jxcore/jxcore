@@ -2,15 +2,16 @@
 
 JXcore introduces a unique feature for packaging of source files and other assets into JX packages.
 
-Let’s assume you have a large project consisting of many files. This feature packs them all into a single file to simplify the distribution. It also protects your server side JavaScript code by keeping all source files inside a package, which makes them more difficult to reach.
+Let’s assume you have a large project consisting of many files. This feature packs them all into a single file to simplify the distribution.
+It also protects your server side JavaScript code by keeping all source files inside a package, which makes them more difficult to reach.
 
 JX packages can be easily executed with JXcore, just like regular JavaScript applications:
 
-    > jx helloworld.jx
+    > jx helloWorld.jx
 
 instead of:
 
-    > jx helloworld.js
+    > jx helloWorld.js
 
 ## Command
 
@@ -18,30 +19,37 @@ instead of:
 
     > jx package javascript_file [name_of_the_package] [options]
 
-You may specify none, one or more of the following options:
-
-* -add [ file||folder [, file2||folder2, ... ]]
-* -slim file||folder [, file2||folder2, ... ]
-* JXP fields may be also provided here. See below for their description.
-
-All of the options may be provided with double dash prefix (e.g. `--add`) which satisfies the general convention for long name parameters.
-However for backwards compatibility, the single dash (e.g. `-add`) is still supported.
-
 The `jx package` command recursively scans the current folder and generates a `JXP` package information file based on all files in that directory.
 After that, it compiles the `JXP` file (by invoking `compile` command).
 
 * `javascript_file` - the main file, which will be executed when JX package is launched with JXcore.
-* `name_of_the_package` - indicates the name of the package file. For example, giving the value *MyPackage*  will create *mypackage.jx* file.
+* `name_of_the_package` - indicates the name of the package file. For example, giving the value *MyPackage*  will create *MyPackage.jx* file.
 This value is optional. When not provided, the package name will be evaluated from `javascript_file` parameter (file name without an extension).
+Also the command-line argument [--name](#name) may be used here explicitly.
 
-Suppose you have a simple *Hello_World* project, with just two files: *helloworld.js* and *index.html*. When you call:
+Suppose you have a simple project, with just two files: *helloWorld.js* and *index.html*. When you call:
 
-    > jx package helloworld.js "Hello World"
+    > jx package helloWorld.js "HelloWorld"
 
-initially, the tool generates `JXP` project file (*helloworld.jxp*). Then it is used as an input for `compile` command,
-which will create the output JX package *helloworld.jx*.
+or equivalent:
 
-Description of the switches:
+    > jx package helloWorld.js --name "HelloWorld"
+
+initially, the tool generates `JXP` project file (*HelloWorld.jxp*). Then it is used as an input for `compile` command,
+which will create the output JX package *HelloWorld.jx*.
+
+#### options
+
+You may specify none, one or more of the following for the `jx package` command:
+
+* --add [ file||folder [, file2||folder2, ... ]]
+* --slim file||folder [, file2||folder2, ... ]
+* --native
+* --sign
+* JXP fields may be also provided here. See [File structure](#file-structure) for more information.
+
+All of the options may be provided with double dash prefix (e.g. `--add`) which satisfies the general convention for long name parameters.
+However for backwards compatibility, the single dash (e.g. `-add`) is still supported.
 
 #### boolean values
 
@@ -52,44 +60,44 @@ Some of the switches may be provided as boolean values. Below is description of 
 - if provided, but not followed by any value, it acts as `true`:
 
 ```bash
-> jx package helloworld.js -extract
+> jx package helloWorld.js --extract
 ```
 
 - if provided, and followed by `0` or `no` or `false`, it acts as `false`:
 
 ```bash
-> jx package helloworld.js -extract 0
-> jx package helloworld.js -extract no
-> jx package helloworld.js -extract false
+> jx package helloWorld.js --extract 0
+> jx package helloWorld.js --extract no
+> jx package helloWorld.js --extract false
 ```
 
 - if provided, and followed by anything else than `0` or `no` or `false`, it acts as `true`:
 
 ```bash
-> jx package helloworld.js -extract 1
-> jx package helloworld.js -extract yes
-> jx package helloworld.js -extract something
+> jx package helloWorld.js --extract 1
+> jx package helloWorld.js --extract yes
+> jx package helloWorld.js --extract something
 ```
 
-#### -add
+#### --add
 
 This optional parameter followed by file and/or folder names separated with commas - **explicitly adds** those files/folders into the final JX package.
 For example, you may want to package only certain files/folders located at current directory - not the whole its contents.
 
 The default separator is a comma sign. However you may use any other separator by setting a value of special environment variable [JX_ARG_SEP](jxcore-utils.markdown#jxargsep).
 
-If you want to pack just one file (e.g. *helloworld.js*) you can provide an `-add` option without a file name.
+If you want to pack just one file (e.g. *helloWorld.js*) you can provide an `--add` option without a file name.
 Thus the following two commands are equivalent:
 
-     > jx package helloworld.js "Hello World" -add
+     > jx package helloWorld.js "HelloWorld" --add
 
-     > jx package helloworld.js "Hello World" -add helloworld.js
+     > jx package helloWorld.js "HelloWorld" --add helloWorld.js
 
 Yu can still combine `-add` and `-slim` together, e.g. to add a folder, but exclude its sub-directory, like:
 
-     > jx package helloworld.js "Hello World" -add node_modules -slim node_modules/express
+     > jx package helloWorld.js "HelloWorld" --add node_modules --slim node_modules/express
 
-#### -slim
+#### --slim
 
 This optional parameter followed by file and/or folder names separated with commas - **prevents adding** those files/folders into the final JX package.
 
@@ -97,30 +105,30 @@ The default separator is a comma sign. However you may use any other character b
 
 ##### wildcards
 
-For both `-add` and `-slim` you can also use wildcards (`*` and `?`) for each file/folder entry.
+For both `--add` and `--slim` you can also use wildcards (`*` and `?`) for each file/folder entry.
 However if you do so, you'd better wrap them in double quotes, like below:
 
-    > jx package helloworld.js "Hello World" -add "file*.txt"
+    > jx package helloWorld.js "HelloWorld" --add "file*.txt"
 
-Otherwise the wildcard expression would be evaluated by shell (before invoking the command) and `-add` option
+Otherwise the wildcard expression would be evaluated by shell (before invoking the command) and `--add` option
 would receive only first of the matched entries.
 
 Separated entries are also valid:
 
-    > jx package helloworld.js "Hello World" -add "file*.txt,*.jpg" -slim "node?modules,dir*"
+    > jx package helloWorld.js "HelloWorld" --add "file*.txt,*.jpg" --slim "node?modules,dir*"
 
 ##### absolute and relative paths
 
-Each single entries provided to `-add` or `-slim` may represent either an absolute path or path relative to current working directory.
-Below example defines for the `-slim` option the same path in 3 ways (2 relative and 3rd absolute), which is of course redundant, however illustrates the subject:
+Each single entries provided to `--add` or `--slim` may represent either an absolute path or path relative to current working directory.
+Below example defines for the `--slim` option the same path in 3 ways (2 relative and 3rd absolute), which is of course redundant, however illustrates the subject:
 
-     > jx package helloworld.js "Hello World" -slim out,./out,/users/me/folder/out
+     > jx package helloWorld.js "HelloWorld" --slim out,./out,/users/me/folder/out
 
-#### -native
+#### --native
 
 Boolean value. Default is `false`. See also [boolean values](#boolean-values).
 
-     > jx package helloworld.js "Hello World" -native
+     > jx package helloWorld.js "HelloWorld" --native
 
 When it's set to `true`, the compilation process creates standalone, self-executable binary rather than a package.
 It means, that you can run it directly without `jx` binary.
@@ -130,129 +138,30 @@ In fact, for Unix systems it will not contain any extension at all, while on Win
 
 Thus, you can run it on Unix systems the following way:
 
-    > ./helloworld
+    > ./helloWorld
 
 On Windows:
 
-    > helloworld.exe
+    > helloWorld.exe
 
 Additionally on Windows platforms certain file description details are written into the package's header information.
-Those are: `-company`, `-copyright`, `-description`, `-name` and `-version`.
+Those are: `--company`, `--copyright`, `--description`, `--name` and `--version`.
 
-#### -name
+#### --sign
 
-String value.
-
-#### -version
-
-String value.
-
-#### -author
-
-String value.
-
-#### -description
-
-String value.
-
-#### -company
-
-String value.
-
-#### -copyright
-
-String value.
-
-#### -website
-
-String value.
-
-#### -extract
-
-Boolean value. Default is `false`. See also [boolean values](#boolean-values).
-
-When it's set to `true`, all package contents will be extracted at first run of the compiled package.
-There will be a new folder created with the name parameter.
-All files and assets embedded inside the package will be saved with full directory structure preserved.
-
-#### --extract-message
-
-Allows to display a custom message before the extracting starts.
-
-#### --extract-app-root
-
-This parameter is an alias for `--extract-where "./"`
-
-#### --extract-what
-
-String value. This parameter extends `-extract`. Followed by paths and/or masks separated with commas -
-enables partial extraction and in the same time defines which assets should be extractable:
-
-    > jx package helloworld.js --extract-what "*.node,*.txt"
-
-The default separator is a comma sign. However you may use any other character by setting special environment variable [JX_ARG_SEP](jxcore-utils.markdown#jxargsep).
-
-See also `extract.what` in [File structure](#file-structure).
-
-#### --extract-where
-
-String value. This parameter extends `-extract` and represents a folder name or path (relative to application root directory)
-where the contents should be extracted.
-
-For example:
-
-    > jx package helloworld.js --extract-where my_folder
-    > jx package helloworld.js --extract-where ./
-
-See also `extract.where` in [File structure](#file-structure).
-
-#### -library
-
-Boolean value. Default is `true`. See also [boolean values](#boolean-values).
-
-Value set to `true` means that JX package can be treated as a library and it can be used from inside another JX package (with `require()` method).
-Setting this value to `false` is a good way of preventing its usage as an external module (and then `require()` will not be possible).
-
-#### -fs_reach_sources
-
-Boolean value. Default is `true`. See also [boolean values](#boolean-values).
-
-#### -preInstall or -preinstall
-
-This parameter receives commands separated with commas. However you may use any other character by setting special environment variable [JX_ARG_SEP](jxcore-utils.markdown#jxargsep).
-
-For example, the following command line:
-
-    > jx package helloworld.js -preinstall "mkdir dir1,touch dir1/file.txt"
-
-will get converted to the following array and embedded into JXP project file:
-
-```js
-    ...
-	"preInstall": [
-		"mkdir dir1",
-		"touch dir1/file.txt"
-	],
-	...
-```
-
-See also `preinstall` in [File structure](#file-structure).
-
-#### -sign
-
-String value. It it used only when [-native](#-native) switch is set to `true`.
+String value. It it used only when [-native](#--native) switch is set to `true`.
 It can be used for signing the native executable with user's certificate after the package is created.
 
 This applies only for Windows platforms and can work only if [Sign Tool](https://msdn.microsoft.com/en-us/library/8s9b9yaz%28v=vs.110%29.aspx) is installed in the system
 (it is s automatically installed with Visual Studio).
 
-The `-sign` switch may receive few variations of values:
+The `--sign` switch may receive few variations of values:
 
 * **no value** (which means `true`)
 
 For example:
 
-    > jx package helloworld.js "HelloWorld" --native -sign
+    > jx package helloWorld.js "HelloWorld" --native --sign
 
 This internally invokes the following command:
 
@@ -264,7 +173,7 @@ which automatically selects the best signing certificate. Please refer to `signt
 
 For example:
 
-    > jx package helloworld.js "HelloWorld" --native -sign "c:\mycert.pfx"
+    > jx package helloWorld.js "HelloWorld" --native --sign "c:\mycert.pfx"
 
 This internally invokes the following command:
 
@@ -274,11 +183,11 @@ Signs the native package with provided certificate file.
 However this will not work if the certificate requires a password, because it needs to be specified explicitly.
 In this case you can use the next approach.
 
-* **signtool's command line parameters**:
+* **signtool's command-line parameters**:
 
 For example:
 
-    > jx package helloworld.js "HelloWorld" --native -sign "/f 'c:\mycert.pfx' /p password"
+    > jx package helloWorld.js "HelloWorld" --native --sign "/f 'c:\mycert.pfx' /p password"
 
 This internally invokes the following command:
 
@@ -290,7 +199,7 @@ When you already have a `JXP` project file (either created with `package` comman
 
     > jx compile project_file.jxp -native
 
-When `-native` switch is provided, it overrides `native` parameter value from a `JXP` file.
+When `--native` switch is provided with `jx compile` command, it overrides `native` parameter value from a `JXP` file.
 
 ## Hiding body of functions
 
@@ -334,7 +243,7 @@ You can do it either manually or by using `package` command.
 
 ### Excluding folders
 
-See `package` command with `-slim` switch.
+See `package` command with `--slim` switch.
 
 ### File structure
 
@@ -342,7 +251,7 @@ The JXP project file is a simple text file that contains package description wri
 
 ```js
 {
-    "name": "Hello World",
+    "name": "HelloWorld",
     "version": "1.0",
     "author": "",
     "description": "",
@@ -350,16 +259,16 @@ The JXP project file is a simple text file that contains package description wri
     "copyright": "",
     "website" : "",
     "package": null,
-    "startup": "helloworld.js",
+    "startup": "helloWorld.js",
     "execute": null,
     "extract": {
         "what" :  "*.node,*.txt",
         "where" : "my_folder",
         "message" : "Extracting now..."
     },
-    "output": "helloworld.jx",
+    "output": "helloWorld.jx",
     "files": [
-        "helloworld.js"
+        "helloWorld.js"
     ],
     "assets": [
         "index.html"
@@ -390,22 +299,87 @@ var name = obj.name;
 
 Below you can find explanation for all supported fields:
 
-* **name**, **version**, **author**, **description**, **company**, **copyright**, **website**
-These are all string values.
-* **startup**
+#### name
+
+String value.
+Can be also used from the command-line: `--name`.
+
+This parameter is mandatory in JXP file, however optional in command-line. When not provided, the package name will be evaluated
+from `javascript_file` parameter (file name without an extension) - in this case of example above, this would be "helloWorld".
+
+Hence the two following calls are equivalent:
+
+    > jx package helloWorld.js --name MyApp
+    > jx package helloWorld.js MyApp
+
+#### version
+
+String value. Default "1.0".
+Can be also used from the command-line: `--version`, e.g.:
+
+    > jx package helloWorld.js --version 2.1
+
+#### author
+
+String value. Optional.
+Can be also used from the command-line: `--author`, e.g.:
+
+    > jx package helloWorld.js --author "John Doe"
+
+#### description
+
+String value. Optional.
+Can be also used from the command-line: `--description`, e.g.:
+
+    > jx package helloWorld.js --description "My best app"
+
+#### company
+
+String value. Optional.
+Can be also used from the command-line: `--company`, e.g.:
+
+    > jx package helloWorld.js --company "My company"
+
+#### copyright
+
+String value. Optional.
+Can be also used from the command-line: `--copyright`, e.g.:
+
+    > jx package helloWorld.js --copyright "My company"
+
+#### website
+
+String value. Optional.
+Can be also used from the command-line: `--website`, e.g:
+
+    > jx package helloWorld.js --website "http://mydomain.com"
+
+#### startup
+
 Name of the main project file. If execute parameter is not defined, this file will be executed first when you run the package.
-* **execute**
+
+#### execute
+
 Name of the main execution file. If this parameter is omitted or null – the value from startup will be used.
-This parameter has different meaning depending on the library value.
-When the package is compiled with `library` = `false`, and you run the compiled package, this execute file will be executed first.
+This parameter has different meaning depending on the `library` value.
+When the package is compiled with `library` = `false`, and you run the compiled package, this `execute` file will be executed first.
 If `library` is `true`, and the package is called with `require()` method, the execute file will be returned by the latter.
-* **extract**
-This parameter may receive either boolean value (see [boolean values](#boolean-values)) or an object with extended data.
+
+#### extract
+
+This parameter may receive either boolean value, e.g:
+
+```js
+"extract" : true
+```
+
+or an object with extended data:
 
 ```js
 "extract" : {
     "what" : [
-        "*.node,*.txt",
+        "*.node",
+        "*.txt",
         "templates"
     ],
     "where" : "my_folder",
@@ -413,46 +387,112 @@ This parameter may receive either boolean value (see [boolean values](#boolean-v
 }
 ```
 
-The `where` parameter (it corresponds to the command line option [--extract-where](#--extract-where)) allows to change a folder name into which the package is extracted.
-By default, when the value is not provided, it is set to the name of the package. You may change it into any other name or path, for example:
+Default value for `extract` is `false` (or when parameter is not provided).
 
-```js
-"extract" : {
-    "where" : "dir1/dir2"
-}
-```
+When it's set to `true` or an object, all package contents will be extracted at first run of the compiled package.
+By default there will be a new folder created with the `name` parameter.
+All files and assets embedded inside the package will be saved with full directory structure preserved.
 
-If you want to extract the contents into the application's root directory, use `"where" : "./"`.
+##### message
 
 You can display a custom message before the extraction starts. For this use the `message` parameter. It can be a string or an array.
 When providing an array, you may benefit from `jxcore.utils.console.log()` formatting feature. For example:
 
 ```js
-"message" : [ "Extracting now...", "red" ]
+"message" : [ "Extracting now...", "red+bold" ]
 ```
 
-**Partial extraction**
+The message can be also set through the command-line parameter: `--extract-message`, e.g:
 
-The `what` parameter enables partial contents extraction. It is an array defining which paths or masks should be extracted.
+    > jx package helloWorld.js --extract --extract-message "Extracting now..."
+
+##### Full Extraction
+
+When the `extract` in JXP file parameter is boolean `true`, it enables the **full extraction** (extracts the entire contents on first package execution).
+
+You can achieve the same by using command-line parameter `--extract`, which accepts multiple [boolean values](#boolean-values), e.g.:
+
+    > jx package helloWorld.js --extract
+
+##### Partial extraction
+
+##### what
+
+The `what` parameter enables **partial contents extraction**. It is an array defining which paths or masks should be extracted.
+
+```js
+"extract" : {
+    "what" : [
+        "*.node",
+        "*.txt"
+    ]
+}
+```
+
 The partial extraction may work only if the contents is extracted into the application's root directory,
 thus the `where` parameter needs to be set with "./" value.
 
-The `what` parameter corresponds to the command line option [--extract-what](#--extract-what) with the only difference,
-that through the command line it receives paths and/or masks separated with commas.
-However you may use any other separator by setting a value of special environment variable [JX_ARG_SEP](jxcore-utils.markdown#jxargsep).
+When providing this parameter from the command-line, use `--extract-what`:
 
-* **output**
+    > jx package helloWorld.js --extract-what "*.node,*.txt"
+
+The default separator is a comma sign. However you may use any other character by setting special environment variable [JX_ARG_SEP](jxcore-utils.markdown#jxargsep).
+
+##### where
+
+The `where` allows to change a folder name into which the package is extracted.
+By default, when the value is not provided, it is set to the name of the package.
+You may change it into any other name or path (relative to application root directory), for example:
+
+```js
+"extract" : {
+    "where" : "my_folder/my_sub_folder"
+}
+```
+
+If you want to extract the contents into the application's root directory rather than into default sub folder, use `"where" : "./"`.
+
+When providing this parameter from the command-line, use `--extract-where`:
+
+    > jx package helloWorld.js --extract-where my_folder
+
+There is also an extra command-line parameter available: `--extract-app-root` which is an alias to `--extract-where "./"`'
+Thus the two following calls are equivalent:
+
+    > jx package helloWorld.js --extract-where ./
+    > jx package helloWorld.js --extract-where --extract-app-root
+
+#### output
+
 Name of the output JX package.
-* **files**
-This is an array, where you can define, which script files from your project will be included into the JX package. Only `*.js` and `*.json` files are allowed here.
-* **assets**
+
+#### files
+
+This is an array, where you can define, which script files from your project will be included into the JX package.
+Only `*.js` and `*.json` files are allowed here.
+
+#### assets
+
 This is the array with static resource files. You can embed any asset file into the `jx` package.
-* **library**
-See the [-library](#-library) command line switch.
-* **licence_file**
-Name of the file containing the licensing information – it is generally a simple text file. If this parameter is omitted or null and if a file named “LICENSE” exists in the directory from where you compile the package – it will be embedded automatically.
-* **readme_file**
-Name of the file containing additional notes about the package. If this parameter is omitted or null and if a file named “README” or “README.md” exists in the directory from where you compile the package – it will be embedded automatically.
+
+#### library
+
+Boolean value. Default is `true`.
+Can be also used from the command-line: `--library`. See also [boolean values](#boolean-values).
+
+Value set to `true` means that JX package can be treated as a library and it can be used from inside another JX package (with `require()` method).
+Setting this value to `false` is a good way of preventing its usage as an external module (and then `require()` will not be possible).
+
+#### licence_file
+
+Name of the file containing the licensing information – it is generally a simple text file.
+If this parameter is omitted or null and if a file named “LICENSE” exists in the directory from where you compile the package – it will be embedded automatically.
+
+#### readme_file
+
+Name of the file containing additional notes about the package.
+If this parameter is omitted or null and if a file named “README” or “README.md” exists in the directory
+from where you compile the package– it will be embedded automatically.
 When a license or readme file is specified, it can be also displayed in a console window directly from the package.
 
 For example, running the following command:
@@ -463,7 +503,8 @@ will display the licence file to the console without executing the package. The 
 
     > jx package.jx readme
 
-* **preInstall**
+#### preInstall
+
 This is an array, where you can define system commands to be executed right before jx package execution.
 For example, this might be creating a folder, installing an additional package/module or just anything.
 Commands are executed in the same order as the array is defined.
@@ -495,7 +536,26 @@ and appends the result (the jx version number) to the same file.
 When all of the commands are executed, there will be a file created `your_module.installed` preventing subsequent execution of pre-install section.
 If you want to run it again, simply remove that file.
 
-* **custom_fields**
+This parameter can be also used from the command-line: `--preInstall` or `--preinstall`.
+In such case it receives commands separated with commas.
+However you may use any other character by setting special environment variable [JX_ARG_SEP](jxcore-utils.markdown#jxargsep).
+
+For example, the following command line:
+
+    > jx package helloWorld.js --preinstall "mkdir dir1,touch dir1/file.txt"
+
+will get converted to the following array and embedded into JXP project file:
+
+```js
+    ...
+	"preInstall": [
+		"mkdir dir1",
+		"touch dir1/file.txt"
+	],
+	...
+```
+
+#### custom_fields
 
 You can also define your own constants, as many as you want, for example:
 
@@ -532,14 +592,24 @@ if (exports.$JXP.Release) {
 
 However, `files` members are not accessible from exports.$JXP.
 
-* **fs_reach_sources**
-Normally, `fs` can not reach the JavaScript files inside the package. If you need to access all the JavaScript files using `fs` module, you should set this parameter to 'true'. Otherwise you can either set it to 'false' or give the list of files expected to be reachable by 'fs' module. (i.e. { "lib/testfile.js":true, "lib/test2.js":true } )
+#### fs_reach_sources
 
-* **native**
-See the [-native](#-native) command line switch.
+Boolean value. Default is `true`.
 
-* **sign**
-Ability to sign the native executable package. See the [`-sign`](#-sign) switch.
+Normally, `fs` can not reach the JavaScript files inside the package.
+If you need to access all the JavaScript files using `fs` module, you should set this parameter to 'true'.
+Otherwise you can either set it to 'false' or give the list of files expected to be reachable by 'fs' module
+(i.e. { "lib/testfile.js":true, "lib/test2.js":true } ).
+
+This parameter can be also used from the command-line: `--fs_reach_sources` as one of [boolean values](#boolean-values).
+
+#### native
+
+See the [--native](#--native) command-line switch.
+
+#### sign
+
+Ability to sign the native executable package. See the [`--sign`](#--sign) switch.
 
 ### Supported file types
 
