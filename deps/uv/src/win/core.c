@@ -335,7 +335,8 @@ int threadHasMessage(const int tid) {
 
 int uv_run_jx(uv_loop_t* loop, uv_run_mode mode, void (*triggerSync)(const int),
               const int tid) {
-  int r;
+  int r, force_close, success;
+  uint64_t start_time, end_time;
   void (*poll)(uv_loop_t * loop, int block);
 
   if (pGetQueuedCompletionStatusEx)
@@ -398,15 +399,15 @@ int uv_run_jx(uv_loop_t* loop, uv_run_mode mode, void (*triggerSync)(const int),
     loop->stop_flag = 0;
     if (mode != UV_RUN_DEFAULT || r == 0) return r;
 
-    int force_close = uv__loop_alive(loop);
+    force_close = uv__loop_alive(loop);
     if (force_close) {
-      uint64_t start_time = uv_hrtime();
+      start_time = uv_hrtime();
 
-      int ret_val = 1;
-      while (ret_val) {
-        ret_val = uv_run_jx(loop, UV_RUN_NOWAIT,
+      success = 1;
+      while (success) {
+        success = uv_run_jx(loop, UV_RUN_NOWAIT,
                              triggerSync, THREAD_ID_ALREADY_DEFINED);
-        uint64_t end_time = uv_hrtime();
+        end_time = uv_hrtime();
         if(end_time - start_time > 500 * 1024 * 1024) {
           break;
         }
