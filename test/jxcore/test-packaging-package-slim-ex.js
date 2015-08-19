@@ -86,7 +86,7 @@ var test_slim = function (definition, native, cb) {
 
     var cmd = 'cd "' + dir + '" && ' + (native ? jx_file : '"' + process.execPath + '" ' + jx_file);
     var ret = jxcore.utils.cmdSync(cmd);
-    if (ret.out.toString().length)
+    if (ret.out.toString().indexOf("TEST ERROR") !== -1)
       errors.push(
         jxcore.utils.console.setColor("Errors for slim `" + slim + "` (", native ? "native" : "jx", "package ) :\n", "red") +
         jxcore.utils.console.setColor(jx_file, "yellow") +
