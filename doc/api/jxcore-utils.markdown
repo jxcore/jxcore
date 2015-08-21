@@ -270,19 +270,42 @@ console.log(jxcore.utils.OSInfo());
 For a MAC x64 it would return:
 
 ```js
-{ fullName: 'mac-x64',
-  isUbuntu: false,
-  isDebian: false,
-  isMac: true,
+{ isMobile: false,
+  isIOS: false,
+  isAndroid: false,
+  isWinRT: false,
+  fullName: 'osx-x64',
   is64: true,
   is32: false,
   isARM: false,
+  isMipsel: false,
+  isUbuntu: false,
+  isDebian: false,
+  isMac: true,
   isRH: false,
   isSuse: false,
   isBSD: false,
   isArch: false,
   isWindows: false,
+  isGentoo: false,
+  isLinux: false,
   OS_STR: 'osx64' }
+```
+
+When the method is called from mobile devices, it does not return Linux distribution information.
+The following output comes from iPhone 4S:
+
+```js
+{ isMobile: true,
+  isIOS: true,
+  isAndroid: false,
+  isWinRT: false,
+  fullName: 'ios-arm (mobile)',
+  is64: false,
+  is32: true,
+  isARM: true,
+  isMipsel: false,
+  OS_STR: 'iosARM' }
 ```
 
 ## argv Parsing
