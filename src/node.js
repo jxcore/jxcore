@@ -255,7 +255,7 @@
 
     if (!process.isEmbedded && !process._EmbeddedSource && !process.subThread) {
       for ( var o in __ops) {
-        if (process.argv[1] === o) {
+        if (__ops.hasOwnProperty(o) && process.argv[1] === o) {
           var sep = getActiveFolder();
           __ops[o] = !NativeModule.require('fs').existsSync(sep + o + ".js");
           if (!__ops[o]) {
