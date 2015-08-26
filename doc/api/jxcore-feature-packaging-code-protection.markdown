@@ -45,6 +45,7 @@ You may specify none, one or more of the following for the `jx package` command:
 * --add [ file||folder [, file2||folder2, ... ]]
 * --slim file||folder [, file2||folder2, ... ]
 * --native
+* --show-progress
 * --sign
 * JXP fields may be also provided here. See [File structure](#file-structure) for more information.
 
@@ -146,6 +147,25 @@ On Windows:
 
 Additionally on Windows platforms certain file description details are written into the package's header information.
 Those are: `--company`, `--copyright`, `--description`, `--name` and `--version`.
+
+#### --show-progress
+
+This parameter defines the way of displaying packaging progress.
+It may receive multiple values: `list` (default), `line`, `percent`, `none`.
+
+Each option also has it's own influence on the performance of packaging process, which gets more visible for larger projects (containing e.g. thousands of files).
+
+* `list` - the standard way of displaying added files as a list - one below another.
+For really large projects it may not only flood the console window, but also unnecessarily extend the packaging duration.
+
+* `line` - not much faster then `list`, however doesn't flood the screen - each of the next added file is displayed in the same line of console window.
+
+* `percent` - only the percent of the progress is displayed, instead of file names.
+This option may significantly reduce packaging duration, because the progress is printed only 100 times (100%), instead of e.g. 10 000 (in case if you would have a project containing that many files).
+
+* `none` - the packaging process doesn't display packaging progress at all. For large projects it is expected to be the fastest.
+
+    > jx package helloWorld.js "HelloWorld" --show-progress percent
 
 #### --sign
 
