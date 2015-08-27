@@ -38,18 +38,22 @@
 
 int uv__pthread_sigmask(int how, const sigset_t* set, sigset_t* oset) {
   static int workaround;
+  int error_no;
 
   if (workaround) {
     return sigprocmask(how, set, oset);
-  } else if (pthread_sigmask(how, set, oset)) {
-    if (errno == EINVAL && sigprocmask(how, set, oset) == 0) {
-      workaround = 1;
-      return 0;
-    } else {
-      return -1;
-    }
   } else {
-    return 0;
+    error_no = pthread_sigmask(how, set, oset);
+    if (error_no) {
+      if (error_no == EINVAL && sigprocmask(how, set, oset) == 0) {
+        workaround = 1;
+        return 0;
+      } else {
+        return -1;
+      }
+    } else {
+      return 0;
+    }
   }
 }
 
