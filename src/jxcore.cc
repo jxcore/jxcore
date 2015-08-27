@@ -76,6 +76,7 @@ static char **copy_argv(int argc, char **argv) {
 static char *jx_source[1] = {"@jx_source"};
 
 static void WaitThreadExit(uv_loop_t *ev_loop) {
+  ENGINE_LOG_THIS("jxcore.cc", "WaitThreadExit");
   if (getThreadCount() > 0) Sleep(5);
 
   bool busy = getThreadCount() > 0;
@@ -184,6 +185,7 @@ void JXEngine::PrintHelp() {
 
 // Parse node command line arguments.
 void JXEngine::ParseArgs(int argc, char **argv) {
+  ENGINE_LOG_THIS("JXEngine", "ParseArgs");
   int i = 1;
 
 #ifndef JXCORE_EMBEDDED
@@ -289,6 +291,7 @@ void JXEngine::ParseArgs(int argc, char **argv) {
 }
 
 char **JXEngine::Init(int argc, char *argv[], bool engine_inited_already) {
+  ENGINE_LOG_THIS("JXEngine", "Init");
   // Initialize prog_start_time to get relative uptime.
   main_node_->prog_start_time = uv_now(main_node_->loop);
 
@@ -411,6 +414,7 @@ class AutoScope {
 };
 
 JXEngine::JXEngine(int argc, char **argv, bool self_hosted) {
+  ENGINE_LOG_THIS("JXEngine", "JXEngine");
   if (jxcore_first_instance) {
     jxcore_first_instance = false;
     node::commons::self_hosted_process_ = self_hosted;
@@ -441,6 +445,7 @@ JXEngine::JXEngine(int argc, char **argv, bool self_hosted) {
 }
 
 void JXEngine::Init() {
+  ENGINE_LOG_THIS("JXEngine", "Init");
   static bool instance_inited_ = false;
 
   if (instance_inited_) {
@@ -457,6 +462,7 @@ void JXEngine::Init() {
 }
 
 void JXEngine::Start() {
+  ENGINE_LOG_THIS("JXEngine", "Start");
   node::commons::process_status_ = node::JXCORE_INSTANCE_ALIVE;
   if (self_hosted_)
     InitializeEngine(argc_, argv_);
@@ -466,6 +472,7 @@ void JXEngine::Start() {
 
 void JXEngine::MemoryMap(const char *filename, const char *content,
                          bool entry_file) {
+  ENGINE_LOG_THIS("JXEngine", "MemoryMap");
   if (entry_file) {
     if (entry_file_name_.length() != 0) {
       error_console(
@@ -486,6 +493,7 @@ void JXEngine::MemoryMap(const char *filename, const char *content,
 
 #ifdef JS_ENGINE_MOZJS
 void JXEngine::InitializeEngine(int argc, char **argv) {
+  ENGINE_LOG_THIS("JXEngine", "InitializeEngine");
   char **argv_copy;
   if (argc > 0) {
     argv_ = uv_setup_args(argc, argv);
@@ -596,6 +604,7 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
 }
 #elif defined(JS_ENGINE_V8)
 void JXEngine::InitializeEngine(int argc, char **argv) {
+  ENGINE_LOG_THIS("JXEngine", "InitializeEngine");
   const char *replaceInvalid = getenv("NODE_INVALID_UTF8");
   if (replaceInvalid == NULL)
     node::WRITE_UTF8_FLAGS |= v8::String::REPLACE_INVALID_UTF8;
@@ -721,6 +730,7 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
 void DeclareProxy(node::commons *com, JS_HANDLE_OBJECT_REF methods,
                   const char *name, int interface_id,
                   JS_NATIVE_METHOD native_method) {
+  ENGINE_LOG_THIS("JXEngine", "DeclareProxy");
   JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
 
@@ -755,6 +765,7 @@ void DeclareProxy(node::commons *com, JS_HANDLE_OBJECT_REF methods,
 }
 
 void JXEngine::InitializeProxyMethods(node::commons *com) {
+  ENGINE_LOG_THIS("JXEngine", "InitializeProxyMethods");
   JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
   JS_HANDLE_OBJECT process_l = com->getProcess();
@@ -774,6 +785,7 @@ void JXEngine::InitializeProxyMethods(node::commons *com) {
 
 #if defined(JS_ENGINE_MOZJS)
 void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
+  ENGINE_LOG_THIS("JXEngine", "InitializeEmbeddedEngine");
   char **argv_copy;
   if (argc > 0) {
     argv_ = uv_setup_args(argc, argv);
@@ -848,6 +860,7 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
 }
 
 void JXEngine::Destroy() {
+  ENGINE_LOG_THIS("JXEngine", "Destroy");
   JSContext *ctx = main_iso_.GetRaw();
   JSRuntime *rt = JS_GetRuntime(ctx);
   {
@@ -936,6 +949,7 @@ void JXEngine::Destroy() {
 
 #if defined(JS_ENGINE_V8)
 void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
+  ENGINE_LOG_THIS("JXEngine", "InitializeEmbeddedEngine");
   if (!JS_engine_inited_) {
     const char *replaceInvalid = getenv("NODE_INVALID_UTF8");
     if (replaceInvalid == NULL)
@@ -1023,6 +1037,7 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
 }
 
 void JXEngine::Destroy() {
+  ENGINE_LOG_THIS("JXEngine", "Destroy");
   AutoScope _scope_(this, true);
   {
     customLock(CSLOCK_JOBS);
@@ -1076,6 +1091,7 @@ void JXEngine::Destroy() {
 
 char *JX_Stringify(node::commons *com, JS_HANDLE_OBJECT obj,
                    size_t *data_length) {
+  ENGINE_LOG_THIS("JXEngine", "JX_Stringify");
   JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
 
@@ -1123,6 +1139,7 @@ char *JX_Stringify(node::commons *com, JS_HANDLE_OBJECT obj,
 
 JS_HANDLE_VALUE JX_Parse(node::commons *com, const char *str,
                          const size_t length) {
+  ENGINE_LOG_THIS("JXEngine", "JX_Parse");
   JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
 
@@ -1170,6 +1187,7 @@ JS_HANDLE_VALUE JX_Parse(node::commons *com, const char *str,
 bool JXEngine::ConvertToJXResult(node::commons *com,
                                  JS_HANDLE_VALUE_REF ret_val,
                                  JXResult *result) {
+  ENGINE_LOG_THIS("JXEngine", "ConvertToJXResult");
   assert(result->com_ && "JXResult object wasn't initialized");
   result->persistent_ = false;
   result->was_stored_ = false;
@@ -1278,6 +1296,7 @@ bool Evaluate_(const char *source, const char *filename, JXResult *result,
 
 bool JXEngine::Evaluate(const char *source, const char *filename,
                         JXResult *result) {
+  ENGINE_LOG_THIS("JXEngine", "Evaluate");
   bool ret_val = false;
   if (!this->IsInScope()) {
     AutoScope _scope_(this, true);
@@ -1293,6 +1312,7 @@ bool JXEngine::Evaluate(const char *source, const char *filename,
 
 bool JXEngine::DefineProxyMethod(const char *name, const int interface_id,
                                  JS_NATIVE_METHOD method) {
+  ENGINE_LOG_THIS("JXEngine", "DefineProxyMethod");
   bool ret_val = true;
   if (main_node_ == NULL) {
     methods_to_initialize_[name].native_method_ = method;
@@ -1320,6 +1340,7 @@ exit_:
 }
 
 bool JXEngine::DefineNativeMethod(const char *name, JS_NATIVE_METHOD method) {
+  ENGINE_LOG_THIS("JXEngine", "DefineNativeMethod");
   bool ret_val = true;
   if (main_node_ == NULL) {
     methods_to_initialize_[name].native_method_ = method;
@@ -1346,6 +1367,7 @@ bool JXEngine::DefineNativeMethod(const char *name, JS_NATIVE_METHOD method) {
 }
 
 int JXEngine::Loop() {
+  ENGINE_LOG_THIS("JXEngine", "Loop");
   int ret_val = 0;
   {
     AutoScope _scope_(this, true);
@@ -1359,6 +1381,7 @@ int JXEngine::Loop() {
 }
 
 int JXEngine::LoopOnce() {
+  ENGINE_LOG_THIS("JXEngine", "LoopOnce");
   if (this->IsInScope()) return 1;
 
   int ret_val = 0;
@@ -1374,6 +1397,7 @@ int JXEngine::LoopOnce() {
 }
 
 void JXEngine::ShutDown() {
+  ENGINE_LOG_THIS("JXEngine", "ShutDown");
   node::commons::process_status_ = node::JXCORE_INSTANCE_EXITED;
   jx_destroy_locks();
   node::commons::threadPoolCount = 0;
@@ -1385,6 +1409,7 @@ void JXEngine::ShutDown() {
 }
 
 JXEngine *JXEngine::ActiveInstance() {
+  ENGINE_LOG_THIS("JXEngine", "ActiveInstance");
   if (jx_engine_instances.empty()) return NULL;
 
   const int actual_thread_id = node::commons::getCurrentThreadId();
@@ -1396,6 +1421,7 @@ JXEngine *JXEngine::ActiveInstance() {
 }
 
 JXEngine *JXEngine::GetInstanceByThreadId(const int threadId) {
+  ENGINE_LOG_THIS("JXEngine", "GetInstanceByThreadId");
   if (jx_engine_instances.empty()) return NULL;
 
   jx_engine_map::iterator it = jx_engine_instances.find(threadId);
