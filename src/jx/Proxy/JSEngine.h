@@ -47,9 +47,10 @@
 typedef JS_HANDLE_VALUE (*JS_NATIVE_METHOD)(const JS_V8_ARGUMENT& args);
 typedef void (*JS_FINALIZER_METHOD)(JS_HANDLE_VALUE_REF val, void* data);
 
+#if defined(__ANDROID__) && defined(JXCORE_EMBEDDED)
 #ifndef JXCORE_ALOG_TAG
 #define JXCORE_ALOG_TAG "jxcore-log"
-#if defined(__ANDROID__) && defined(JXCORE_EMBEDDED)
+#endif
 #include <android/log.h>
 #define log_console(...) \
   __android_log_print(ANDROID_LOG_INFO, JXCORE_ALOG_TAG, __VA_ARGS__)
@@ -68,7 +69,6 @@ typedef void (*JS_FINALIZER_METHOD)(JS_HANDLE_VALUE_REF val, void* data);
   } while (0)
 #define error_console(...) fprintf(stderr, __VA_ARGS__)
 #define warn_console(...) fprintf(stderr, __VA_ARGS__)
-#endif
 #endif
 
 #elif defined(JS_ENGINE_MOZJS)
