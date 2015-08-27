@@ -20,6 +20,9 @@
 // consumed. Works on single thread!
 // #define JXCORE_PRINT_NATIVE_CALLS 1
 
+// Print the logs as soon as happens.
+// #define JXCORE_PRINT_LOGS_ASAP 1
+
 // Enabling JXCORE_PRINT_NATIVE_CALLS_FILE_LINE adds the source file and line
 // after the native method in the log report.
 // Recommend this is enabled to differentiate different JS_LOCAL_METHOD(New)
