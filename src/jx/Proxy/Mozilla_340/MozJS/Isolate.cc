@@ -7,7 +7,7 @@
 
 namespace MozJS {
 
-void GCOnMozJS(JSRuntime *rt, JSGCStatus status, void *data) {
+void GCOnMozJS(JSRuntime* rt, JSGCStatus status, void* data) {
 #ifdef JXCORE_PRINT_NATIVE_CALLS
   // TODO(obastemur) GC is happening so?
   if (status == JSGC_BEGIN) {
@@ -21,9 +21,9 @@ void GCOnMozJS(JSRuntime *rt, JSGCStatus status, void *data) {
 #endif
 }
 
-bool JSEngineInterrupt(JSContext *ctx) {
+bool JSEngineInterrupt(JSContext* ctx) {
   int tid = JS_GetThreadId(ctx);
-  node::commons *com = node::commons::getInstanceByThreadId(tid);
+  node::commons* com = node::commons::getInstanceByThreadId(tid);
   if (com != NULL && com->should_interrupt_) {
     ENGINE_LOG_THIS("MozJS", "JSEngineInterrupt - API Call");
     com->should_interrupt_ = false;
@@ -37,34 +37,21 @@ bool JSEngineInterrupt(JSContext *ctx) {
 }
 
 // Dummy ShellPrincipals from SM Shell
-class ShellPrincipals : public JSPrincipals {
-  uint32_t bits;
+uint32_t ShellPrincipals::getBits(JSPrincipals* p) {
+  if (!p) return 0xffff;
+  return static_cast<ShellPrincipals*>(p)->bits;
+}
 
-  static uint32_t getBits(JSPrincipals* p) {
-    if (!p) return 0xffff;
-    return static_cast<ShellPrincipals*>(p)->bits;
-  }
+void ShellPrincipals::destroy(JSPrincipals* principals) {
+  js_free(static_cast<ShellPrincipals*>(principals));
+}
 
- public:
-  explicit ShellPrincipals(uint32_t bits, int32_t refcount = 0) : bits(bits) {
-    this->refcount = refcount;
-  }
-
-  static void destroy(JSPrincipals* principals) {
-    js_free(static_cast<ShellPrincipals*>(principals));
-  }
-
-  static bool subsumes(JSPrincipals* first, JSPrincipals* second) {
-    uint32_t firstBits = getBits(first);
-    uint32_t secondBits = getBits(second);
-    return (firstBits | secondBits) == firstBits;
-  }
-
-  static JSSecurityCallbacks securityCallbacks;
-
-  // Fully-trusted principals singleton.
-  static ShellPrincipals fullyTrusted;
-};
+bool ShellPrincipals::subsumes(JSPrincipals* first,
+                                      JSPrincipals* second) {
+  uint32_t firstBits = getBits(first);
+  uint32_t secondBits = getBits(second);
+  return (firstBits | secondBits) == firstBits;
+}
 
 JSSecurityCallbacks ShellPrincipals::securityCallbacks = {
     nullptr,  // contentSecurityPolicyAllows
