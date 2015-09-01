@@ -50,6 +50,26 @@
 #define JS_OBJECT_SLOT_MAX_INDEX (JS_OBJECT_SLOT_COUNT - 3)
 
 namespace MozJS {
+class ShellPrincipals : public JSPrincipals {
+  uint32_t bits;
+
+  static uint32_t getBits(JSPrincipals* p);
+
+ public:
+  explicit ShellPrincipals(uint32_t bits, int32_t refcount = 0) : bits(bits) {
+    this->refcount = refcount;
+  }
+
+  static void destroy(JSPrincipals* principals);
+
+  static bool subsumes(JSPrincipals* first, JSPrincipals* second);
+
+  static JSSecurityCallbacks securityCallbacks;
+
+  // Fully-trusted principals singleton.
+  static ShellPrincipals fullyTrusted;
+};
+
 class Isolate {
   bool disposable_;
   int threadId_;
