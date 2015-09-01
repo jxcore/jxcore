@@ -35,14 +35,41 @@ if(!cmp) {
   process.exit(1);
 }
 
+// check startsWith implementation
+if (!"".startsWith) {
+  String.prototype.startsWith = function(x) {
+    return (this.indexOf(x) === 0);
+  }
+}
+
+function tidy(str) {
+  var newArr = [];
+  var arr = str.replace(/\r/g, '').split('\n');
+  
+  // cleanup line comments and empty lines
+  for(var i=0, length=arr.length; i < length; i++) {
+    arr[i] = arr[i].trim();
+    if (arr[i].length === 0) continue;
+    if (!arr[i].startsWith('//')) {
+      newArr.push(arr[i]);
+    }
+  }
+  
+  return newArr.join('\n');
+}
+
 for (var o = 3, ln = process.argv.length; o < ln; o++) {
   var file_name = process.argv[o];
   var extname = path.extname(file_name);
   if (extname == '.py') continue;
 
   var buffer = fs.readFileSync(file_name);
+  
   var name = path.basename(file_name).replace('.js', '').replace('.gypi', '');
-  if (name != '_jx_marker') buffer = cmp(buffer + " ");
+  if (name != '_jx_marker') {
+    buffer = tidy(buffer+ "");
+    buffer = cmp(buffer + " ");
+  }
 
   buffers[name] = buffer;
 }
@@ -56,7 +83,7 @@ stream.once('open', function(fd) {
     str = "  const char " + o + "_native[]={";
     for (var o = 0, ln = buffer.length; o < ln; o++) {
       if (o) str += ",";
-      if (o % 2048 == 0) str += '\n\t';
+      if (o % 128 == 0) str += '\n\t';
       str += "(char)" + buffer[o];
       if (o % 1000 == 0) {
         stream.write(str);
