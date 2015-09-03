@@ -49,9 +49,10 @@ function tidy(str) {
   // cleanup line comments and empty lines
   for(var i=0, length=arr.length; i < length; i++) {
     arr[i] = arr[i].trim();
-    if (arr[i].length === 0) continue;
     if (!arr[i].startsWith('//')) {
       newArr.push(arr[i]);
+    } else {
+      newArr.push("");
     }
   }
   
