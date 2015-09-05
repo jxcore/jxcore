@@ -14,6 +14,10 @@ const jsval JSVAL_TRUE  = IMPL_TO_JSVAL(BUILD_JSVAL(JSVAL_TAG_BOOLEAN,   true));
 const jsval JSVAL_VOID  = IMPL_TO_JSVAL(BUILD_JSVAL(JSVAL_TAG_UNDEFINED, 0));
 
 namespace JS {
+JS_PUBLIC_API(double) GenericNaN()
+{
+    return mozilla::SpecificNaN<double>(0, 0x8000000000000ULL);
+}
 
 const HandleValue NullHandleValue = HandleValue::fromMarkedLocation(&JSVAL_NULL);
 const HandleValue UndefinedHandleValue = HandleValue::fromMarkedLocation(&JSVAL_VOID);

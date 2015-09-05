@@ -933,11 +933,8 @@ static inline JS_VALUE_CONSTEXPR JS::Value UndefinedValue();
  * Among other properties, this NaN's bit pattern conforms to JS::Value's
  * bit pattern restrictions.
  */
-static JS_PUBLIC_API(double)
-GenericNaN()
-{
-  return mozilla::SpecificNaN<double>(0, 0x8000000000000ULL);
-}
+JS_PUBLIC_API(double) GenericNaN();
+
 
 /* MSVC with PGO miscompiles this function. */
 #if defined(_MSC_VER)
