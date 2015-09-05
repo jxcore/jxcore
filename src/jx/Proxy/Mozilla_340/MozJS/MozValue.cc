@@ -430,8 +430,7 @@ int32_t Value::Int32Value() {
     return 0;
   }
 
-  assert(0 && "Can not convert object to integer");
-  return 0;
+  return (int32_t)JS::GenericNaN();;
 }
 
 uint32_t Value::Uint32Value() {
@@ -485,8 +484,7 @@ double Value::NumberValue() {
     return atof(*str);
   }
 
-  assert(0 && "Can not convert object to number");
-  return 0;
+  return JS::GenericNaN();
 }
 
 String Value::ToString() { return String(*this); }
