@@ -749,8 +749,8 @@ JS_METHOD(Buffer, IndexOfNumber) {
 
     RETURN_PARAM(rval);
   } else {
-    void* ptr = memchr(data + offset, needle, len - offset);
-    char* ptr_char = static_cast<char*>(ptr);
+    const void* ptr = memchr(data + offset, needle, len - offset);
+    const char* ptr_char = static_cast<const char*>(ptr);
     JS_LOCAL_INTEGER rval =
         STD_TO_INTEGER(ptr ? static_cast<int32_t>(ptr_char - data) : -1);
     RETURN_PARAM(rval);
