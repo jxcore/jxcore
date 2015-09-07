@@ -541,6 +541,223 @@ JS_RETAINED_OBJECT_INFO* WrapperInfo(uint16_t class_id,
 }
 #endif
 
+JS_METHOD(Buffer, Compare) {
+  if (args.Length() < 2) {
+    THROW_EXCEPTION("Buffer::Compare expects 2 arguments");
+  }
+
+  JS_HANDLE_VALUE arg0 = args.GetItem(0);
+  JS_HANDLE_VALUE arg1 = args.GetItem(1);
+
+  if (!jxHasInstance(arg0, com) || !jxHasInstance(arg1, com)) {
+    THROW_EXCEPTION("Buffer::Compare expects 2 arguments (buffer, buffer)");
+  }
+
+  unsigned len0 = BUFFER__LENGTH(arg0);
+  unsigned len1 = BUFFER__LENGTH(arg1);
+
+  const char* data0 = BUFFER__DATA(arg0);
+  const char* data1 = BUFFER__DATA(arg1);
+
+  size_t cmp_length = MIN(len0, len1);
+
+  int val = cmp_length > 0 ? memcmp(data0, data1, cmp_length) : 0;
+
+  // Normalize val to be an integer in the range of [1, -1] since
+  // implementations of memcmp() can vary by platform.
+  if (val == 0) {
+    if (len0 > len1)
+      val = 1;
+    else if (len0 < len1)
+      val = -1;
+  } else {
+    if (val > 0)
+      val = 1;
+    else
+      val = -1;
+  }
+
+  JS_LOCAL_INTEGER ival = STD_TO_INTEGER(val);
+  RETURN_PARAM(ival);
+}
+JS_METHOD_END
+
+int32_t IndexOf(const char* haystack, size_t h_length, const char* needle,
+                size_t n_length) {
+  assert(h_length >= n_length &&
+         "Buffer::IndexOf h_length must be >= n_length");
+  // TODO(trevnorris): Implement Boyer-Moore string search algorithm.
+  for (size_t i = 0; i < h_length - n_length + 1; i++) {
+    if (haystack[i] == needle[0]) {
+      if (memcmp(haystack + i, needle, n_length) == 0) return i;
+    }
+  }
+  return -1;
+}
+
+JS_METHOD(Buffer, IndexOfString) {
+  if (args.Length() < 2 || !args.IsString(1)) {
+    THROW_EXCEPTION(
+        "Buffer::IndexOfString expects following arguments (buffer, string, "
+        "number "
+        "[optional]).");
+  }
+
+  JS_HANDLE_VALUE arg0 = args.GetItem(0);
+
+  if (!jxHasInstance(arg0, com)) {
+    THROW_EXCEPTION(
+        "Buffer::IndexOfString expects 3 arguments (buffer, string, number "
+        "[optional])");
+  }
+
+  jxcore::JXString str;
+  args.GetString(1, &str);
+
+  unsigned len = BUFFER__LENGTH(arg0);
+  const char* data = BUFFER__DATA(arg0);
+
+  int32_t offset_i32 = 0;
+
+  if (args.IsNumber(2)) {
+    JS_HANDLE_VALUE arg2 = args.GetItem(2);
+    offset_i32 = NUMBER_TO_STD(arg2);
+  }
+
+  uint32_t offset;
+
+  if (offset_i32 < 0) {
+    if (offset_i32 + static_cast<int32_t>(len) < 0)
+      offset = 0;
+    else
+      offset = static_cast<uint32_t>(len + offset_i32);
+  } else {
+    offset = static_cast<uint32_t>(offset_i32);
+  }
+
+  if (str.length() == 0 || len == 0 ||
+      (offset != 0 && str.length() + offset <= str.length()) ||
+      str.length() + offset > len) {
+    JS_LOCAL_INTEGER rval = STD_TO_INTEGER(-1);
+
+    RETURN_PARAM(rval);
+  } else {
+    int32_t r = IndexOf(data + offset, len - offset, *str, str.length());
+
+    JS_LOCAL_INTEGER rval =
+        STD_TO_INTEGER(r == -1 ? -1 : static_cast<int32_t>(r + offset));
+    RETURN_PARAM(rval);
+  }
+}
+JS_METHOD_END
+
+JS_METHOD(Buffer, IndexOfBuffer) {
+  if (args.Length() < 2) {
+    THROW_EXCEPTION(
+        "Buffer::IndexOfBuffer expects following arguments (buffer, buffer, "
+        "number "
+        "[optional]).");
+  }
+
+  JS_HANDLE_VALUE arg0 = args.GetItem(0);
+  JS_HANDLE_VALUE arg1 = args.GetItem(1);
+
+  if (!jxHasInstance(arg0, com) || !jxHasInstance(arg1, com)) {
+    THROW_EXCEPTION(
+        "Buffer::IndexOfBuffer expects following arguments (buffer, buffer, "
+        "number "
+        "[optional])");
+  }
+
+  unsigned len = BUFFER__LENGTH(arg0);
+  const char* data = BUFFER__DATA(arg0);
+
+  unsigned len1 = BUFFER__LENGTH(arg1);
+  const char* data1 = BUFFER__DATA(arg1);
+
+  int32_t offset_i32 = 0;
+
+  if (args.IsNumber(2)) {
+    JS_HANDLE_VALUE arg2 = args.GetItem(2);
+    offset_i32 = NUMBER_TO_STD(arg2);
+  }
+
+  uint32_t offset;
+
+  if (offset_i32 < 0) {
+    if (offset_i32 + static_cast<int32_t>(len) < 0)
+      offset = 0;
+    else
+      offset = static_cast<uint32_t>(len + offset_i32);
+  } else {
+    offset = static_cast<uint32_t>(offset_i32);
+  }
+
+  if (len1 == 0 || len == 0 || (offset != 0 && len1 + offset <= len1) ||
+      len1 + offset > len) {
+
+    JS_LOCAL_INTEGER rval = STD_TO_INTEGER(-1);
+
+    RETURN_PARAM(rval);
+  } else {
+
+    int32_t r = IndexOf(data + offset, len - offset, data1, len1);
+
+    JS_LOCAL_INTEGER rval =
+        STD_TO_INTEGER(r == -1 ? -1 : static_cast<int32_t>(r + offset));
+
+    RETURN_PARAM(rval);
+  }
+}
+JS_METHOD_END
+
+JS_METHOD(Buffer, IndexOfNumber) {
+  if (args.Length() < 2 || !args.IsNumber(1)) {
+    THROW_EXCEPTION(
+        "Buffer::IndexOfNumber expects following arguments (buffer, number, "
+        "number "
+        "[optional]).");
+  }
+
+  JS_HANDLE_VALUE arg0 = args.GetItem(0);
+
+  if (!jxHasInstance(arg0, com)) {
+    THROW_EXCEPTION(
+        "Buffer::IndexOfNumber expects following arguments (buffer, number, "
+        "number "
+        "[optional])");
+  }
+
+  unsigned len = BUFFER__LENGTH(arg0);
+  const char* data = BUFFER__DATA(arg0);
+
+  uint32_t needle = args.GetUInteger(1);
+  int32_t offset_i32 = args.GetUInteger(2);
+  uint32_t offset;
+
+  if (offset_i32 < 0) {
+    if (offset_i32 + static_cast<int32_t>(len) < 0)
+      offset = 0;
+    else
+      offset = static_cast<uint32_t>(len + offset_i32);
+  } else {
+    offset = static_cast<uint32_t>(offset_i32);
+  }
+
+  if (len == 0 || offset + 1 > len) {
+    JS_LOCAL_INTEGER rval = STD_TO_INTEGER(-1);
+
+    RETURN_PARAM(rval);
+  } else {
+    void* ptr = memchr(data + offset, needle, len - offset);
+    char* ptr_char = static_cast<char*>(ptr);
+    JS_LOCAL_INTEGER rval =
+        STD_TO_INTEGER(ptr ? static_cast<int32_t>(ptr_char - data) : -1);
+    RETURN_PARAM(rval);
+  }
+}
+JS_METHOD_END
+
 }  // namespace node
 
 NODE_MODULE(node_buffer, node::Buffer::Initialize)
