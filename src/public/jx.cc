@@ -252,6 +252,18 @@ int JX_Loop() {
   return engine->Loop();
 }
 
+void JX_QuitLoop() {
+  JXEngine *engine = JXEngine::ActiveInstance();
+  if (engine == NULL) {
+    warn_console(
+        "(JX_Loop) Did you initialize the JXEngine instance for this "
+        "thread?\n");
+    return;
+  }
+
+  uv_stop(JS_GET_UV_LOOP(engine->GetThreadId()));
+}
+
 bool JX_IsV8() {
 #ifdef JS_ENGINE_V8
   return true;
