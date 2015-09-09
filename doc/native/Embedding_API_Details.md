@@ -195,3 +195,6 @@ Wrap a pointer into a JS object
 
 ##### void JX_UnwrapObject(JXValue *object)
 Unwrap the pointer from a JS object (doesn't remove it)
+
+##### void JX_QuitLoop()
+Calls `uv_stop` on thread's uv_loop. Use `LoopOnce` if you need to control the thread.
