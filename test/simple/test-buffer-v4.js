@@ -21,12 +21,16 @@ assert.strictEqual(bf.indexOf(111), 4);
 
 var bf2 = new Buffer("Hello World");
 assert.strictEqual(Buffer.compare(bf, bf2), 0);
+assert.strictEqual(bf.compare(bf, bf2), 0);
 
 var bf3 = new Buffer("Hello Worl ");
 assert.strictEqual(Buffer.compare(bf, bf3), 1);
+assert.strictEqual(bf.compare(bf3), 1);
 
 var bf4 = new Buffer("Hello Worle");
 assert.strictEqual(Buffer.compare(bf, bf4), -1);
+assert.strictEqual(bf.compare(bf4), -1);
 
 var bf5 = new Buffer("Hello");
 assert.strictEqual(Buffer.compare(bf, bf5), 1);
+assert.strictEqual(bf.compare(bf5), 1);
