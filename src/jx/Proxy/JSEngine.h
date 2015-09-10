@@ -9,25 +9,48 @@
 #undef JS_ENGINE_V8  // an ugly hack for Eclipse Editor / Debugger
 #endif
 
-#if defined(JS_ENGINE_V8)
+// TODO(obastemur) backward compatibility. remove this after updating sub modules
+#if !defined(V8_IS_3_14) && !defined(MOZJS_IS_3_40)
+#ifdef JS_ENGINE_V8
+#define V8_IS_3_14
+#else
+#define MOZJS_IS_3_40
+#endif
+#endif
 
-#define ENGINE_NS v8
+#ifdef V8_IS_3_14
 
 #include "v8.h"
 #include "v8-debug.h"
 #include "v8-profiler.h"
-#include "jx/Proxy/V8/PMacro.h"
-#include "jx/Proxy/V8/PArguments.h"
-#include "jx/Proxy/V8/v8_typed_array.h"
+#include "jx/Proxy/V8_3_14/PMacro.h"
+#include "jx/Proxy/V8_3_14/PArguments.h"
+#include "jx/Proxy/V8_3_14/v8_typed_array.h"
 
-#define NODE_OBJECT_WRAP_HEADER "jx/Proxy/V8/node_object_wrap.h"
+#define NODE_OBJECT_WRAP_HEADER "jx/Proxy/V8_3_14/node_object_wrap.h"
 
+#elif defined(MOZJS_IS_3_40)
+
+#include "Mozilla_340/PMacro.h"
+#include "Mozilla_340/MozJS/MozJS.h"
+#include "Mozilla_340/JXString.h"
+#include "Mozilla_340/PArguments.h"
+#include "Mozilla_340/EngineHelper.h"
+
+#define NODE_OBJECT_WRAP_HEADER "jx/Proxy/Mozilla_340/node_object_wrap.h"
+
+#endif
+
+#if defined(JS_ENGINE_V8)
+
+#define ENGINE_NS v8
 typedef JS_HANDLE_VALUE (*JS_NATIVE_METHOD)(const JS_V8_ARGUMENT& args);
 typedef void (*JS_FINALIZER_METHOD)(JS_HANDLE_VALUE_REF val, void* data);
 
+#if defined(__ANDROID__) && defined(JXCORE_EMBEDDED)
 #ifndef JXCORE_ALOG_TAG
 #define JXCORE_ALOG_TAG "jxcore-log"
-#if defined(__ANDROID__) && defined(JXCORE_EMBEDDED)
+#endif
 #include <android/log.h>
 #define log_console(...) \
   __android_log_print(ANDROID_LOG_INFO, JXCORE_ALOG_TAG, __VA_ARGS__)
@@ -47,19 +70,10 @@ typedef void (*JS_FINALIZER_METHOD)(JS_HANDLE_VALUE_REF val, void* data);
 #define error_console(...) fprintf(stderr, __VA_ARGS__)
 #define warn_console(...) fprintf(stderr, __VA_ARGS__)
 #endif
-#endif
 
 #elif defined(JS_ENGINE_MOZJS)
 
 #define ENGINE_NS MozJS
-
-#include "Mozilla/PMacro.h"
-#include "Mozilla/MozJS/MozJS.h"
-#include "Mozilla/JXString.h"
-#include "Mozilla/PArguments.h"
-#include "Mozilla/EngineHelper.h"
-
-#define NODE_OBJECT_WRAP_HEADER "jx/Proxy/Mozilla/node_object_wrap.h"
 
 typedef bool (*JS_NATIVE_METHOD)(JSContext *ctx, unsigned argc, JS::Value *val);
 #endif
@@ -68,17 +82,17 @@ typedef bool (*JS_NATIVE_METHOD)(JSContext *ctx, unsigned argc, JS::Value *val);
 // the whole scope every time one of the member methods exit
 // This implementation is for 'embedders' only (jxcore_init)
 #ifdef JS_ENGINE_V8
-#define JS_ENGINE_SCOPE(x, pass)                      \
-  v8::Locker locker(x->node_isolate); \
-  if (pass) {                        \
-    x->node_isolate->Enter();         \
-  }                                            \
-  v8::HandleScope handle_scope;                \
-  v8::Context::Scope context_scope(context_);  \
+#define JS_ENGINE_SCOPE(x, pass)              \
+  v8::Locker locker(x->node_isolate);         \
+  if (pass) {                                 \
+    x->node_isolate->Enter();                 \
+  }                                           \
+  v8::HandleScope handle_scope;               \
+  v8::Context::Scope context_scope(context_); \
   v8::Isolate* __contextORisolate = x->node_isolate
 #elif defined(JS_ENGINE_MOZJS)
 #define JS_ENGINE_SCOPE(x, pass) \
-  JS_ENTER_SCOPE();       \
+  JS_ENTER_SCOPE();              \
   JS_DEFINE_STATE_MARKER(x)
 #endif
 

@@ -140,6 +140,10 @@ class NODE_EXTERN Buffer : public ObjectWrap {
   static DEFINE_JS_METHOD(MakeFastBuffer);
   static DEFINE_JS_METHOD(Fill);
   static DEFINE_JS_METHOD(Copy);
+  static DEFINE_JS_METHOD(Compare);
+  static DEFINE_JS_METHOD(IndexOfString);
+  static DEFINE_JS_METHOD(IndexOfNumber);
+  static DEFINE_JS_METHOD(IndexOfBuffer);
 
   Buffer(node::commons* com, JS_HANDLE_OBJECT_REF wrapper, size_t length);
   void Replace(char* data, size_t length, free_callback callback, void* hint);
@@ -177,6 +181,10 @@ class NODE_EXTERN Buffer : public ObjectWrap {
     SET_INSTANCE_METHOD("writeDoubleBE", Buffer::WriteDoubleBE, 0);
     SET_INSTANCE_METHOD("fill", Buffer::Fill, 0);
     SET_INSTANCE_METHOD("copy", Buffer::Copy, 0);
+    SET_CLASS_METHOD("compare", Buffer::Compare, 2);
+    SET_CLASS_METHOD("indexOfString", Buffer::IndexOfString, 3);
+    SET_CLASS_METHOD("indexOfNumber", Buffer::IndexOfNumber, 3);
+    SET_CLASS_METHOD("indexOfBuffer", Buffer::IndexOfBuffer, 3);
 
     SET_CLASS_METHOD("byteLength", Buffer::ByteLength, 1);
     SET_CLASS_METHOD("Utf8Length", Buffer::Utf8Length, 0);

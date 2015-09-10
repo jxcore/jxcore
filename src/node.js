@@ -41,6 +41,10 @@
 
     Error.captureStackTrace = function(err, __) {
       var st;
+      if (typeof err === 'undefined' || typeof err === 'string') {
+        return;
+      }
+
       if (!err.stack) {
         // TODO(obastemur) there must be a better way to do this
         try {
@@ -51,6 +55,10 @@
           err.lineNumber = e.lineNumber;
           err.columnNumber = e.columnNumber;
         }
+
+        if (!err.stack)
+          err.stack = "\n"; // silly but we don't want to throw here no matter
+                            // what
 
         st = err.stack.split('\n');
         st.shift();
@@ -84,13 +92,17 @@
           if (!err.name)
             err.name = "Error";
           return err.name + ": " + err.message + "\n" + arr;
-        }
+        };
       }
-      
-      if(Error.prepareStackTrace) {
-        var newStack = Error.prepareStackTrace(err, __);
-        if (newStack)
-          err.stack = newStack;
+
+      if (Error.prepareStackTrace) {
+        try {
+          var newStack = Error.prepareStackTrace(err, __ || err.stack);
+          if (newStack)
+            err.stack = newStack;
+        } catch (e) {
+          // silly but do not let Error.prepareStackTrace throwing
+        }
       }
     };
 
@@ -243,7 +255,7 @@
 
     if (!process.isEmbedded && !process._EmbeddedSource && !process.subThread) {
       for ( var o in __ops) {
-        if (process.argv[1] === o) {
+        if (__ops.hasOwnProperty(o) && process.argv[1] === o) {
           var sep = getActiveFolder();
           __ops[o] = !NativeModule.require('fs').existsSync(sep + o + ".js");
           if (!__ops[o]) {
@@ -329,20 +341,22 @@
           }
 
           NativeModule.require('_jx_config');
-
-          // If this is a worker in cluster mode, start up the communication
-          // channel.
-          if (process.env.NODE_UNIQUE_ID) {
-            var cluster = NativeModule.require('cluster');
-
-            cluster._setupWorker();
-
-            // Make sure it's not accidentally inherited by child processes.
-            delete process.env.NODE_UNIQUE_ID;
-          }
         }
       } else {
         NativeModule.require('_jx_config');
+      }
+
+      if (!process.subThread && !process._Monitor) {
+        // If this is a worker in cluster mode, start up the communication
+        // channel.
+        if (process.env.NODE_UNIQUE_ID) {
+          var cluster = NativeModule.require('cluster');
+
+          cluster._setupWorker();
+
+          // Make sure it's not accidentally inherited by child processes.
+          delete process.env.NODE_UNIQUE_ID;
+        }
       }
 
       if (__debug) {
@@ -502,19 +516,6 @@
   startup.globalConsole = function() {
     global.__defineGetter__('console', function() {
       return NativeModule.require('console');
-    });
-    Object.defineProperty(global, '__callstack', {
-      get : function() {
-        var orig = Error.prepareStackTrace;
-        Error.prepareStackTrace = function(_, stack) {
-          return stack;
-        };
-        var err = new Error;
-        Error.captureStackTrace(err, arguments.callee);
-        var stack = err.stack;
-        Error.prepareStackTrace = orig;
-        return stack;
-      }
     });
   };
 
@@ -1010,37 +1011,84 @@
 
   startup.processStdio = function() {
     var stdin, stdout, stderr;
+    
+    var util = NativeModule.require('util');
+    var isAndroid = process.platform === 'android' && process.isEmbedded;
+    var $tw;
+    if (isAndroid) {
+      $tw = process.binding("jxutils_wrap");
+    }
+
+    var fake_stdout = null, fake_stderr = null; 
+
+    var Writable = NativeModule.require('stream').Writable;
+    util.inherits(StdLogCatOut, Writable);
+
+    function StdLogCatOut(opt) {
+      Writable.call(this, opt);
+    }
+
+    if (isAndroid) { // target LogCat for stdout and stderr
+      fake_stdout = new StdLogCatOut();
+      fake_stdout.write = fake_stdout._write = function(bf) {
+        $tw.print(bf + "");
+      };
+      
+      fake_stderr = new StdLogCatOut();
+      fake_stderr.write = fake_stderr._write = function(bf) {
+        $tw.print_err_warn(bf + "", true);
+      };
+    }
 
     process.__defineGetter__('stdout', function() {
       if (stdout)
         return stdout;
-      stdout = createWritableStdioStream(1);
+      if (isAndroid) {
+        stdout = fake_stdout;
+      } else {
+        stdout = createWritableStdioStream(1);
+      }
+      
       stdout.destroy = stdout.destroySoon = function(er) {
         er = er || new Error('process.stdout cannot be closed.');
         stdout.emit('error', er);
       };
+      
       if (stdout.isTTY) {
         process.on('SIGWINCH', function() {
           stdout._refreshSize();
         });
       }
+      
       return stdout;
     });
 
     process.__defineGetter__('stderr', function() {
       if (stderr)
         return stderr;
-      stderr = createWritableStdioStream(2);
+      
+      if (isAndroid) {
+        stderr = fake_stderr;
+      } else {
+        stderr = createWritableStdioStream(2);
+      }
+      
       stderr.destroy = stderr.destroySoon = function(er) {
         er = er || new Error('process.stderr cannot be closed.');
         stderr.emit('error', er);
       };
+      
       return stderr;
     });
 
     process.__defineGetter__('stdin', function() {
       if (stdin)
         return stdin;
+      
+      if (process.isEmbedded && (isAndroid || process.platform == 'ios')) {
+        console.error("stdin is not supported on embedded mobile applications");
+        // do not throw or return null
+      }
 
       var tty_wrap = process.binding('tty_wrap');
       var fd = 0;

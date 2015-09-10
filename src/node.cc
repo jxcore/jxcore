@@ -83,12 +83,7 @@ bool no_deprecation;
 char* app_sandbox_folder = NULL;
 #endif
 
-int WRITE_UTF8_FLAGS
-#ifdef JS_ENGINE_V8
-    = v8::String::HINT_MANY_WRITES_EXPECTED | v8::String::NO_NULL_TERMINATION;
-#elif defined(JS_ENGINE_MOZJS)
-    = 1;
-#endif
+int WRITE_UTF8_FLAGS = JS_ENGINE_WRITE_UTF8_FLAGS;
 
 static void Spin(uv_idle_t* handle, int status) {
   node::commons* com = node::commons::getInstanceByThreadId(handle->threadId);
@@ -1900,6 +1895,7 @@ static JS_LOCAL_METHOD(DebugEnd) {
 JS_METHOD_END
 
 void SetupProcessObject(const int threadId) {
+  ENGINE_LOG_THIS("node", "SetupProcessObject");
   JS_ENTER_SCOPE_COM();
   JS_DEFINE_STATE_MARKER(com);
 
@@ -2212,6 +2208,7 @@ void SetupProcessObject(const int threadId) {
 static void AtExit() { uv_tty_reset_mode(); }
 
 void Load(JS_HANDLE_OBJECT process_l) {
+  ENGINE_LOG_THIS("node", "Load");
   node::commons* com = node::commons::getInstance();
   JS_DEFINE_STATE_MARKER(com);
 
@@ -2270,6 +2267,7 @@ void Load(JS_HANDLE_OBJECT process_l) {
 }
 
 void RunAtExit() {
+  ENGINE_LOG_THIS("node", "RunAtExit");
   node::commons* com = node::commons::getInstance();
   if (com != NULL) {
     AtExitCallback* p = com->at_exit_functions_;
@@ -2287,6 +2285,7 @@ void RunAtExit() {
 }
 
 void AtExit(void (*cb)(void* arg), void* arg) {
+  ENGINE_LOG_THIS("node", "AtExit");
   node::commons* com = node::commons::getInstance();
   if (com != NULL) {
     AtExitCallback* p = new AtExitCallback;
@@ -2298,6 +2297,7 @@ void AtExit(void (*cb)(void* arg), void* arg) {
 }
 
 void EmitExit(JS_HANDLE_OBJECT process_l) {
+  ENGINE_LOG_THIS("node", "EmitExit");
   JS_ENTER_SCOPE_COM();
   JS_DEFINE_STATE_MARKER(com);
 
@@ -2315,6 +2315,7 @@ void EmitExit(JS_HANDLE_OBJECT process_l) {
 }
 
 void EmitReset(JS_HANDLE_OBJECT process_l, const int code) {
+  ENGINE_LOG_THIS("node", "EmitReset");
   JS_ENTER_SCOPE_COM();
   JS_DEFINE_STATE_MARKER(com);
 

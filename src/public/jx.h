@@ -60,6 +60,10 @@ JX_LoopOnce();
 JXCORE_EXTERN(int)
 JX_Loop();
 
+// quit event loop
+JXCORE_EXTERN(void)
+JX_QuitLoop();
+
 // returns true if the underlying engine is SpiderMonkey
 JXCORE_EXTERN(bool)
 JX_IsSpiderMonkey();
