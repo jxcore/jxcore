@@ -14,6 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+var minimize = require('./node_modules/ecma-parser/samples/minimize').minimize;
 var fs = require('fs');
 var path = require('path');
 
@@ -21,17 +22,18 @@ var out_file = process.argv[2];
 var header_name = path.basename(out_file).replace(/[.]/g, "_");
 
 var str = '#ifndef ' + header_name + '\n' + '#define ' + header_name + '\n'
-        + 'namespace jxcore {\n\n';
+    + 'namespace jxcore {\n\n';
 
 var buffers = {};
 var cmp;
-if(process.versions.node == "0.10.31") // old jxcore
+if (process.versions.node == "0.10.31") // old jxcore
   cmp = process.binding('jxtimers_wrap')._cmp;
 else
   cmp = process.binding('jxutils_wrap')._cmp;
 
-if(!cmp) {
-  jxcore.utils.console.log("You need a 'jx' binary for the compress build.", "red");
+if (!cmp) {
+  jxcore.utils.console.log("You need 'jx' binary is on the path for the minified build.",
+      "red");
   process.exit(1);
 }
 
@@ -42,83 +44,73 @@ if (!"".startsWith) {
   }
 }
 
-function tidy(str) {
-  var newArr = [];
-  var arr = str.replace(/\r/g, '').split('\n');
-  
-  // cleanup line comments and empty lines
-  for(var i=0, length=arr.length; i < length; i++) {
-    arr[i] = arr[i].trim();
-    if (!arr[i].startsWith('//')) {
-      newArr.push(arr[i]);
-    } else {
-      newArr.push("");
-    }
-  }
-  
-  return newArr.join('\n');
-}
-
 for (var o = 3, ln = process.argv.length; o < ln; o++) {
   var file_name = process.argv[o];
   var extname = path.extname(file_name);
-  if (extname == '.py') continue;
+  if (extname == '.py')
+    continue;
 
   var buffer = fs.readFileSync(file_name);
-  
+
   var name = path.basename(file_name).replace('.js', '').replace('.gypi', '');
   if (name != '_jx_marker') {
-    buffer = tidy(buffer+ "");
-    buffer = cmp(buffer + " ");
+    buffer = cmp((minimize(file_name, buffer + '')) + " ");
   }
 
   buffers[name] = buffer;
 }
 
 var stream = fs.createWriteStream(out_file);
-stream.once('open', function(fd) {
-  stream.write(str);
+stream.once('open',
+    function(fd) {
+      stream.write(str);
 
-  for ( var o in buffers) {
-    var buffer = buffers[o];
-    str = "  const char " + o + "_native[]={";
-    for (var o = 0, ln = buffer.length; o < ln; o++) {
-      if (o) str += ",";
-      if (o % 128 == 0) str += '\n\t';
-      str += "(char)" + buffer[o];
-      if (o % 1000 == 0) {
-        stream.write(str);
-        str = "";
+      for ( var o in buffers) {
+        var buffer = buffers[o];
+        str = '  const char ' + o + '_native[]={';
+        for (var o = 0, ln = buffer.length; o < ln; o++) {
+          if (o)
+            str += ',';
+          if (o % 128 == 0)
+            str += '\n\t';
+          str += '(char)' + buffer[o];
+          if (o % 1000 == 0) {
+            stream.write(str);
+            str = '';
+          }
+        }
+
+        if (str.length)
+          stream.write(str);
+
+        stream.write(',0};\n\n');
       }
-    }
 
-    if (str.length) stream.write(str);
-
-    stream.write(',0};\n\n');
-  }
-
-  stream.write('typedef struct _native {\n' + '  const char* name;\n'
+      stream.write('typedef struct _native {\n' + '  const char* name;\n'
           + '  const char* source;\n' + '  size_t source_len;\n'
           + '}_native;\n\n');
 
-  stream.write('static const struct _native natives[] = {\n');
+      stream.write('static const struct _native natives[] = {\n');
 
-  for ( var o in buffers) {
-    var buffer = buffers[o];
-    if (o == '_jx_marker')
-      str = '  {"' + o + '", ' + o + '_native, 0},\n';
-    else
-      str = '  {"' + o + '", ' + o + '_native, sizeof(' + o + '_native)-1},\n';
+      for ( var o in buffers) {
+        if (!buffers.hasOwnProperty(o)) continue;
+        
+        var buffer = buffers[o];
+        if (o == '_jx_marker')
+          str = '  {"' + o + '", ' + o + '_native, 0},\n';
+        else
+          str = '  {"' + o + '", ' + o + '_native, sizeof(' + o
+              + '_native)-1},\n';
 
-    stream.write(str);
-  }
+        stream.write(str);
+      }
 
-  stream.write('  {NULL, NULL, 0}\n\n');
-  stream.write('};\n');
-  stream.write('}\n#endif\n');
+      stream.write('  {NULL, NULL, 0}\n\n');
+      stream.write('};\n');
+      stream.write('}\n#endif\n');
 
-  stream.end();
-});
+      stream.end();
+    });
 
 stream.once('close', function(fd) {
   // dummy
