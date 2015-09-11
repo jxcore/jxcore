@@ -39,6 +39,7 @@ Coming soon;
 
   - Ubuntu 14 LTS VM
   - Debian 7 VM, Ci20(mips), RP B+(arm), RP 2(arm), VM(osuosl - power8)
+  - Udoo (arm + arduino)
   - FreeBSD 10 VM
   - Windows 7 x64, 8.1 x64
   - OSX 10.9, 10.10 
