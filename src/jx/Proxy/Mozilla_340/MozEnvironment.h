@@ -3,6 +3,17 @@
 #ifndef SRC_JX_PROXY_MOZILLA_MOZENVIRONMENT_H_
 #define SRC_JX_PROXY_MOZILLA_MOZENVIRONMENT_H_
 
+#define ENGINE_NS MozJS
+
+typedef bool (*JS_NATIVE_METHOD)(JSContext *ctx, unsigned argc, JS::Value *val);
+
+#define JS_ENGINE_SCOPE(x, pass) \
+  JS_ENTER_SCOPE();              \
+  JS_DEFINE_STATE_MARKER(x)
+
+#define __JS_LOCAL_STRING const char *
+#define __JS_LOCAL_VALUE jsval
+
 #define JS_ENGINE_MARKER MozJS::Isolate *
 
 #define JS_CURRENT_ENGINE() MozJS::Isolate::GetCurrent()

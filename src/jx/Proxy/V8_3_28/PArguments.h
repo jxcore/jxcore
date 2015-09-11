@@ -5,7 +5,7 @@
 
 #include "v8.h"
 #include "JXString.h"
-#define JS_V8_ARGUMENT v8::Arguments
+#define JS_V8_ARGUMENT v8::FunctionCallbackInfo<v8::Value>
 
 namespace jxcore {
 
@@ -20,11 +20,14 @@ class PArguments {
       : args__(&args), length_(args.Length()) {}
 
   inline v8::Local<v8::Context> GetContext() {
-    return v8::Context::GetCurrent();
+    return v8__args.GetIsolate()->GetCurrentContext();
   }
+
   inline v8::Isolate *GetIsolate() { return v8__args.GetIsolate(); }
 
-  void *GetHolder() { return v8__args.Holder()->GetPointerFromInternalField(0); }
+  void *GetHolder() {
+    return v8__args.Holder()->GetAlignedPointerFromInternalField(0);
+  }
 
   const JS_V8_ARGUMENT *GetArgs() { return args__; }
 
@@ -111,19 +114,25 @@ class PArguments {
     return v8__args[index]->IsString() || v8__args[index]->IsNull();
   }
 
-  bool GetBoolean(const unsigned index) { return v8__args[index]->BooleanValue(); }
+  bool GetBoolean(const unsigned index) {
+    return v8__args[index]->BooleanValue();
+  }
 
   int64_t GetInteger(const unsigned index) {
     return v8__args[index]->IntegerValue();
   }
 
-  int32_t GetInt32(const unsigned index) { return v8__args[index]->Int32Value(); }
+  int32_t GetInt32(const unsigned index) {
+    return v8__args[index]->Int32Value();
+  }
 
   unsigned GetUInteger(const unsigned index) {
     return v8__args[index]->Uint32Value();
   }
 
-  double GetNumber(const unsigned index) { return v8__args[index]->NumberValue(); }
+  double GetNumber(const unsigned index) {
+    return v8__args[index]->NumberValue();
+  }
 
   int GetString(const unsigned index, JXString *jxs) {
     jxs->SetFromHandle(v8__args[index]);
@@ -135,7 +144,9 @@ class PArguments {
     return v8__args[index]->ToString()->Utf8Length();
   }
 
-  JS_HANDLE_VALUE GetItem(const unsigned index) const { return v8__args[index]; }
+  JS_HANDLE_VALUE GetItem(const unsigned index) const {
+    return v8__args[index];
+  }
 
   JS_HANDLE_STRING GetAsString(const unsigned index) const {
     return v8__args[index].As<v8::String>();

@@ -12,7 +12,8 @@
 #define NODE_EXTERN __declspec(dllimport)
 #endif
 #else
-#define NODE_EXTERN /* nothing */
+/* nothing */
+#define NODE_EXTERN
 #endif
 
 #ifdef BUILDING_NODE_EXTENSION

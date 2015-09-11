@@ -6,8 +6,8 @@
 #include "V8Types.h"
 
 #define ENGINE_NS v8
-typedef JS_HANDLE_VALUE (*JS_NATIVE_METHOD)(const JS_V8_ARGUMENT& args);
-typedef void (*JS_FINALIZER_METHOD)(JS_HANDLE_VALUE_REF val, void* data);
+typedef JS_HANDLE_VALUE (*JS_NATIVE_METHOD)(const JS_V8_ARGUMENT &args);
+typedef void (*JS_FINALIZER_METHOD)(JS_HANDLE_VALUE_REF val, void *data);
 
 #if defined(__ANDROID__) && defined(JXCORE_EMBEDDED)
 #ifndef JXCORE_ALOG_TAG
@@ -40,16 +40,16 @@ typedef void (*JS_FINALIZER_METHOD)(JS_HANDLE_VALUE_REF val, void* data);
   }                                           \
   v8::HandleScope handle_scope;               \
   v8::Context::Scope context_scope(context_); \
-  v8::Isolate* __contextORisolate = x->node_isolate
+  v8::Isolate *__contextORisolate = x->node_isolate
 
 #define __JS_LOCAL_STRING JS_LOCAL_STRING
 #define __JS_LOCAL_VALUE JS_LOCAL_VALUE
 
 #define JS_ENGINE_MARKER v8::Isolate *
 
-#define JS_CURRENT_CONTEXT() V8_T_CONTEXT::GetCurrent()
-
 #define JS_CURRENT_ENGINE() v8::Isolate::GetCurrent()
+
+#define JS_CURRENT_CONTEXT() JS_CURRENT_ENGINE()->GetCurrentContext()
 
 #define JS_GET_GLOBAL() JS_CURRENT_CONTEXT()->Global()
 
@@ -66,13 +66,14 @@ typedef void (*JS_FINALIZER_METHOD)(JS_HANDLE_VALUE_REF val, void* data);
 
 #define JS_GET_UV_LOOP(index) node::commons::getInstanceByThreadId(index)->loop
 
-#define JS_ENTER_SCOPE() v8::HandleScope scope
+#define JS_ENTER_SCOPE() v8::HandleScope scope(v8::Isolate::GetCurrent())
 
-#define JS_ENTER_SCOPE_WITH(x) v8::HandleScope scope
+#define JS_ENTER_SCOPE_WITH(x) v8::HandleScope scope(x)
 
-#define JS_ENTER_SCOPE_COM() \
-  JS_ENTER_SCOPE();          \
-  node::commons *com = node::commons::getInstanceByThreadId(scope.GetThreadId())
+#define JS_ENTER_SCOPE_COM()                                     \
+  node::commons *com =                                           \
+      node::commons::getInstance(); \
+  JS_ENTER_SCOPE_WITH(com->node_isolate)
 
 #define JS_ENTER_SCOPE_COM_WITH(x) \
   JS_ENTER_SCOPE_WITH(x);          \
