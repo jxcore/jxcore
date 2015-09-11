@@ -11,6 +11,7 @@
       # Private node.js folder and stuff needed to include from it
       "../../src",
       "../cares/include",
+      "../http_parser",
     ],
     "direct_dependent_settings": {
       "include_dirs": [

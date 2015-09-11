@@ -33,13 +33,13 @@ typedef void (*JS_FINALIZER_METHOD)(JS_HANDLE_VALUE_REF val, void *data);
 #define warn_console(...) fprintf(stderr, __VA_ARGS__)
 #endif
 
-#define JS_ENGINE_SCOPE(x, pass)              \
-  v8::Locker locker(x->node_isolate);         \
-  if (pass) {                                 \
-    x->node_isolate->Enter();                 \
-  }                                           \
-  v8::HandleScope handle_scope;               \
-  v8::Context::Scope context_scope(context_); \
+#define JS_ENGINE_SCOPE(x, pass)                 \
+  v8::Locker locker(x->node_isolate);            \
+  if (pass) {                                    \
+    x->node_isolate->Enter();                    \
+  }                                              \
+  v8::HandleScope handle_scope(x->node_isolate); \
+  v8::Context::Scope context_scope(context_);    \
   v8::Isolate *__contextORisolate = x->node_isolate
 
 #define __JS_LOCAL_STRING JS_LOCAL_STRING
@@ -70,9 +70,8 @@ typedef void (*JS_FINALIZER_METHOD)(JS_HANDLE_VALUE_REF val, void *data);
 
 #define JS_ENTER_SCOPE_WITH(x) v8::HandleScope scope(x)
 
-#define JS_ENTER_SCOPE_COM()                                     \
-  node::commons *com =                                           \
-      node::commons::getInstance(); \
+#define JS_ENTER_SCOPE_COM()                         \
+  node::commons *com = node::commons::getInstance(); \
   JS_ENTER_SCOPE_WITH(com->node_isolate)
 
 #define JS_ENTER_SCOPE_COM_WITH(x) \
@@ -96,8 +95,34 @@ typedef void (*JS_FINALIZER_METHOD)(JS_HANDLE_VALUE_REF val, void *data);
       (x != NULL) ? x->node_isolate : JS_CURRENT_ENGINE()
 #define JS_DEFINE_STATE_MARKER_(x) JS_ENGINE_MARKER __contextORisolate = x
 
+#define JS_DEFINE_CURRENT_MARKER() JS_DEFINE_STATE_MARKER_(JS_CURRENT_ENGINE())
+
 #define JS_DEFINE_COM_AND_MARKER()                   \
   node::commons *com = node::commons::getInstance(); \
   JS_DEFINE_STATE_MARKER(com)
+
+
+// this would have been a template function were it not for the fact that g++
+// sometimes fails to resolve it...
+#define THROW_ERROR(fun)                                                   \
+  do {                                                                     \
+    JS_ENTER_SCOPE();                                                      \
+    return ENGINE_NS::ThrowException(fun(STD_TO_STRING(errmsg))); \
+  } while (0)
+
+inline static JS_HANDLE_VALUE ThrowError(const char *errmsg) {
+  THROW_ERROR(ENGINE_NS::Exception::Error);
+}
+
+inline static JS_HANDLE_VALUE ThrowTypeError(const char *errmsg) {
+  THROW_ERROR(ENGINE_NS::Exception::TypeError);
+}
+
+inline static JS_HANDLE_VALUE ThrowRangeError(const char *errmsg) {
+  THROW_ERROR(ENGINE_NS::Exception::RangeError);
+}
+
+JS_HANDLE_VALUE FromConstructorTemplate(JS_PERSISTENT_FUNCTION_TEMPLATE t,
+                                        const JS_V8_ARGUMENT &args);
 
 #endif  // SRC_JX_PROXY_V8_V8ENVIRONMENT_H_

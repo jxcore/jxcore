@@ -5,7 +5,6 @@
 
 #include "v8.h"
 #include "JXString.h"
-#define JS_V8_ARGUMENT v8::FunctionCallbackInfo<v8::Value>
 
 namespace jxcore {
 

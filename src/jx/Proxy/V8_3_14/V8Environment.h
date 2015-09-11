@@ -99,4 +99,27 @@ typedef void (*JS_FINALIZER_METHOD)(JS_HANDLE_VALUE_REF val, void* data);
   node::commons *com = node::commons::getInstance(); \
   JS_DEFINE_STATE_MARKER(com)
 
+// this would have been a template function were it not for the fact that g++
+// sometimes fails to resolve it...
+#define THROW_ERROR(fun)                                                   \
+  do {                                                                     \
+    JS_ENTER_SCOPE();                                                      \
+    return ENGINE_NS::ThrowException(fun(STD_TO_STRING(errmsg))); \
+  } while (0)
+
+inline static JS_HANDLE_VALUE ThrowError(const char *errmsg) {
+  THROW_ERROR(ENGINE_NS::Exception::Error);
+}
+
+inline static JS_HANDLE_VALUE ThrowTypeError(const char *errmsg) {
+  THROW_ERROR(ENGINE_NS::Exception::TypeError);
+}
+
+inline static JS_HANDLE_VALUE ThrowRangeError(const char *errmsg) {
+  THROW_ERROR(ENGINE_NS::Exception::RangeError);
+}
+
+JS_HANDLE_VALUE FromConstructorTemplate(JS_PERSISTENT_FUNCTION_TEMPLATE t,
+                                        const JS_V8_ARGUMENT &args);
+
 #endif  // SRC_JX_PROXY_V8_V8ENVIRONMENT_H_

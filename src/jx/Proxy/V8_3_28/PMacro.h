@@ -16,8 +16,6 @@
 #define JXCORE_PUBLIC
 #endif
 
-#define JS_V8_ARGUMENT v8::Arguments
-
 #define JS_CLASS_NEW_INSTANCE(obj_name, js_name) \
   assert(args.IsConstructCall());                \
   JS_LOCAL_OBJECT obj_name = args.This()->ToObject()
@@ -50,25 +48,25 @@
   jxcore::PArguments args(p___args);              \
   if (com->expects_reset) RETURN();
 
-#define JS_METHOD(class_name, method_name)                                 \
+#define JS_METHOD(class_name, method_name)                                  \
   JS_HANDLE_VALUE class_name::method_name(const JS_V8_ARGUMENT& p___args) { \
-    ENGINE_LOG_THIS(#class_name, #method_name);                            \
+    ENGINE_LOG_THIS(#class_name, #method_name);                             \
   __JS_METHOD_BEGIN_COM()
 
-#define JS_LOCAL_METHOD(method_name)                           \
+#define JS_LOCAL_METHOD(method_name)                            \
   JS_HANDLE_VALUE method_name(const JS_V8_ARGUMENT& p___args) { \
-    ENGINE_LOG_THIS("LOCAL", #method_name);                    \
+    ENGINE_LOG_THIS("LOCAL", #method_name);                     \
   __JS_METHOD_BEGIN_COM()
 
 // IF node::commons *com is available from wrap use below
-#define JS_METHOD_NO_COM(class_name, method_name)                          \
+#define JS_METHOD_NO_COM(class_name, method_name)                           \
   JS_HANDLE_VALUE class_name::method_name(const JS_V8_ARGUMENT& p___args) { \
-    ENGINE_LOG_THIS(#class_name, #method_name);                            \
+    ENGINE_LOG_THIS(#class_name, #method_name);                             \
   __JS_METHOD_BEGIN_NO_COM()
 
-#define JS_LOCAL_METHOD_NO_COM(method_name)                    \
+#define JS_LOCAL_METHOD_NO_COM(method_name)                     \
   JS_HANDLE_VALUE method_name(const JS_V8_ARGUMENT& p___args) { \
-    ENGINE_LOG_THIS("LOCAL", #method_name);                    \
+    ENGINE_LOG_THIS("LOCAL", #method_name);                     \
   __JS_METHOD_BEGIN_NO_COM()
 
 #define DEFINE_JS_METHOD(name) \
@@ -286,20 +284,6 @@ namespace node {
   (target)                                                               \
       ->Set(v8::String::NewSymbol(#constant), v8::Number::New(constant), \
             static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete))
-
-template <typename target_t>
-void SetMethod(target_t obj, const char* name,
-               v8::InvocationCallback callback) {
-  obj->Set(v8::String::NewSymbol(name),
-           v8::FunctionTemplate::New(callback)->GetFunction());
-}
-
-template <typename target_t>
-void SetPrototypeMethod(target_t target, const char* name,
-                        v8::InvocationCallback callback) {
-  v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(callback);
-  target->PrototypeTemplate()->Set(v8::String::NewSymbol(name), templ);
-}
 
 // for backwards compatibility
 #define NODE_SET_METHOD node::SetMethod

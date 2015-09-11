@@ -21,23 +21,25 @@
 #define V8_T_CONTEXT v8::Context
 #define V8_T_NULL v8::Null
 
+#define JS_V8_ARGUMENT v8::FunctionCallbackInfo<v8::Value>
+
 // #public
 #define V8_T_LOCAL(x) v8::Local<x>
 #define V8_T_HANDLE(x) v8::Handle<x>
 #define V8_T_PERSISTENT(x) v8::Persistent<x>
 
-#define JS_UNDEFINED() V8_T_LOCAL(V8_T_VALUE)::New(V8_T_UNDEFINED())
-#define JS_NULL() V8_T_LOCAL(V8_T_VALUE)::New(V8_T_NULL(JS_GET_STATE_MARKER()))
+#define JS_UNDEFINED() V8_T_LOCAL(V8_T_VALUE)::New(__contextORisolate, V8_T_UNDEFINED())
+#define JS_NULL() V8_T_LOCAL(V8_T_VALUE)::New(__contextORisolate, V8_T_NULL(JS_GET_STATE_MARKER()))
 
 #define JS_NEW_ERROR_VALUE(x) ENGINE_NS::Exception::Error(x)
-#define JS_NEW_OBJECT_TEMPLATE() V8_T_OBJECT_TEMPLATE::New()
+#define JS_NEW_OBJECT_TEMPLATE() V8_T_OBJECT_TEMPLATE::New(__contextORisolate)
 
 #define JS_NEW_EMPTY_OBJECT() V8_T_OBJECT::New()
 #define JS_NEW_EMPTY_STRING() V8_T_STRING::Empty()
 #define _JS_NEW_INTEGER(x) V8_T_INTEGER::New(x, JS_GET_STATE_MARKER())
 #define _JS_NEW_UNSIGNED(x) V8_T_INTEGER::NewFromUnsigned(x, __contextORisolate)
-#define _JS_NEW_NUMBER(x) V8_T_NUMBER::New(x)
-#define _JS_NEW_BOOLEAN(x) V8_T_BOOLEAN::New(x)
+#define _JS_NEW_NUMBER(x) V8_T_NUMBER::New(__contextORisolate, x)
+#define _JS_NEW_BOOLEAN(x) V8_T_BOOLEAN::New(__contextORisolate, x)
 
 #define JS_PERSISTENT_VALUE V8_T_PERSISTENT(V8_T_VALUE)
 #define JS_PERSISTENT_VALUE_REF JS_PERSISTENT_VALUE
@@ -77,17 +79,17 @@
 #define JS_LOCAL_BOOLEAN V8_T_LOCAL(V8_T_BOOLEAN)
 #define JS_LOCAL_FUNCTION V8_T_LOCAL(V8_T_FUNCTION)
 #define JS_LOCAL_FUNCTION_TEMPLATE V8_T_LOCAL(V8_T_FUNCTION_TEMPLATE)
-#define TO_LOCAL_FUNCTION(x) JS_LOCAL_FUNCTION::New(x)
+#define TO_LOCAL_FUNCTION(x) JS_LOCAL_FUNCTION::New(__contextORisolate, x)
 #define JS_LOCAL_CONTEXT V8_T_LOCAL(V8_T_CONTEXT)
 
 #define JS_NEW_ARRAY() V8_T_ARRAY::New(JS_GET_STATE_MARKER())
 #define JS_NEW_ARRAY_WITH_COUNT(n) V8_T_ARRAY::New(JS_GET_STATE_MARKER(), n)
 #define JS_NEW_FUNCTION_TEMPLATE(x) V8_T_FUNCTION_TEMPLATE::New(x)
-#define JS_NEW_FUNCTION_CALL_TEMPLATE(x) V8_T_FUNCTION_TEMPLATE::New(x)
-#define JS_NEW_EMPTY_FUNCTION_TEMPLATE() V8_T_FUNCTION_TEMPLATE::New()
+#define JS_NEW_FUNCTION_CALL_TEMPLATE(x) V8_T_FUNCTION_TEMPLATE::New(__contextORisolate, x)
+#define JS_NEW_EMPTY_FUNCTION_TEMPLATE() V8_T_FUNCTION_TEMPLATE::New(__contextORisolate)
 #define JS_NEW_CONTEXT(a, b) V8_T_CONTEXT::New(a, b)
 #define JS_NEW_EMPTY_CONTEXT() V8_T_CONTEXT::New()
-#define JS_NEW_PERSISTENT_CONTEXT(x) v8::Persistent<v8::Context>::New(x)
+#define JS_NEW_PERSISTENT_CONTEXT(x) v8::Persistent<v8::Context>::New(__contextORisolate, x)
 
 #define JS_CAST_VALUE(x) JS_LOCAL_VALUE::Cast(x)
 #define JS_CAST_OBJECT(x) JS_LOCAL_OBJECT::Cast(x)
@@ -96,36 +98,34 @@
 #define JS_CAST_FUNCTION(x) JS_LOCAL_FUNCTION::Cast(x)
 #define JS_CAST_FUNCTION_TEMPLATE(x) JS_LOCAL_FUNCTION_TEMPLATE::Cast(x)
 
-#define JS_CLEAR_PERSISTENT_(x) \
-  x.Dispose();                  \
-  x.Clear()
+#define JS_CLEAR_PERSISTENT_(x) x.Reset()
 
 #define JS_CLEAR_PERSISTENT(x) \
   if (!x.IsEmpty()) {          \
     JS_CLEAR_PERSISTENT_(x);   \
   }
 
-#define JS_NEW_PERSISTENT_OBJECT(x) JS_PERSISTENT_OBJECT::New(x)
+#define JS_NEW_PERSISTENT_OBJECT(x) JS_PERSISTENT_OBJECT::New(__contextORisolate, x)
 #define JS_NEW_PERSISTENT_OBJECT_TEMPLATE(x) \
-  JS_PERSISTENT_OBJECT_TEMPLATE::New(x)
-#define JS_NEW_PERSISTENT_ARRAY() JS_PERSISTENT_ARRAY::New(JS_NEW_ARRAY())
+  JS_PERSISTENT_OBJECT_TEMPLATE::New(__contextORisolate, x)
+#define JS_NEW_PERSISTENT_ARRAY() JS_PERSISTENT_ARRAY::New(__contextORisolate, JS_NEW_ARRAY())
 #define JS_NEW_EMPTY_PERSISTENT_OBJECT() \
   JS_NEW_PERSISTENT_OBJECT(JS_NEW_EMPTY_OBJECT())
-#define JS_NEW_PERSISTENT_STRING(b) JS_PERSISTENT_STRING::New(b)
-#define JS_NEW_PERSISTENT_FUNCTION(b) JS_PERSISTENT_FUNCTION::New(b)
+#define JS_NEW_PERSISTENT_STRING(b) JS_PERSISTENT_STRING::New(__contextORisolate, b)
+#define JS_NEW_PERSISTENT_FUNCTION(b) JS_PERSISTENT_FUNCTION::New(__contextORisolate, b)
 #define JS_NEW_PERSISTENT_FUNCTION_TEMPLATE(b) \
-  JS_PERSISTENT_FUNCTION_TEMPLATE::New(b)
-#define JS_NEW_PERSISTENT_SCRIPT(x) JS_PERSISTENT_SCRIPT::New(x)
+  JS_PERSISTENT_FUNCTION_TEMPLATE::New(__contextORisolate, b)
+#define JS_NEW_PERSISTENT_SCRIPT(x) JS_PERSISTENT_SCRIPT::New(__contextORisolate, x)
 #define JS_DISPOSE_PERSISTENT_CONTEXT(x) (x).Dispose()
-#define JS_NEW_PERSISTENT_VALUE(x) JS_PERSISTENT_VALUE::New(x)
+#define JS_NEW_PERSISTENT_VALUE(x) JS_PERSISTENT_VALUE::New(__contextORisolate, x)
 
-#define JS_TYPE_TO_LOCAL_VALUE(x) JS_LOCAL_VALUE::New(x)
-#define JS_TYPE_TO_LOCAL_OBJECT(x) JS_LOCAL_OBJECT::New(x)
-#define JS_TYPE_TO_LOCAL_STRING(x) JS_LOCAL_STRING::New(x)
-#define JS_TYPE_TO_LOCAL_FUNCTION(x) JS_LOCAL_FUNCTION::New(x)
-#define JS_TYPE_TO_LOCAL_FUNCTION_TEMPLATE(x) JS_LOCAL_FUNCTION_TEMPLATE::New(x)
+#define JS_TYPE_TO_LOCAL_VALUE(x) JS_LOCAL_VALUE::New(__contextORisolate, x)
+#define JS_TYPE_TO_LOCAL_OBJECT(x) JS_LOCAL_OBJECT::New(__contextORisolate, x)
+#define JS_TYPE_TO_LOCAL_STRING(x) JS_LOCAL_STRING::New(__contextORisolate, x)
+#define JS_TYPE_TO_LOCAL_FUNCTION(x) JS_LOCAL_FUNCTION::New(__contextORisolate, x)
+#define JS_TYPE_TO_LOCAL_FUNCTION_TEMPLATE(x) JS_LOCAL_FUNCTION_TEMPLATE::New(__contextORisolate, x)
 #define JS_TYPE_TO_LOCAL_CONTEXT(x) (x)
-#define JS_NEW_LOCAL_CONTEXT(x) v8::Local<v8::Context>::New(x)
+#define JS_NEW_LOCAL_CONTEXT(x) v8::Local<v8::Context>::New(__contextORisolate, x)
 #define JS_TYPE_TO_LOCAL_ARRAY(x) (x).As<v8::Array>()
 
 #define JS_GET_CONTEXT_GLOBAL(x) x->Global()
@@ -182,8 +182,8 @@
 #define JS_VALUE_TO_BOOLEAN(x) x->ToBoolean()
 #define JS_STRING_TO_ERROR_VALUE(x) v8::Exception::Error(x)
 
-#define UTF8_TO_STRING(str) V8_T_STRING::New(JS_GET_STATE_MARKER(), str)
-#define STD_TO_STRING(str) V8_T_STRING::New(JS_GET_STATE_MARKER(), str)
+#define UTF8_TO_STRING(str) V8_T_STRING::NewFromTwoByte(JS_GET_STATE_MARKER(), (const uint16_t*) str)
+#define STD_TO_STRING(str) V8_T_STRING::NewFromOneByte(JS_GET_STATE_MARKER(), (const uint8_t*)str)
 #define STD_TO_STRING_WITH_LENGTH(str, l) \
   V8_T_STRING::New(JS_GET_STATE_MARKER(), str, l)
 #define UTF8_TO_STRING_WITH_LENGTH(str, l) \
