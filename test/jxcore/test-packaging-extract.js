@@ -1,8 +1,7 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
 /*
- This unit is creating jx package with `library` set to false and checks, if is able to require() it.
- Should not be able.
+ This unit is creating extractable jx package and checks, if files gets extracted.
  */
 
 // -------------   init part
