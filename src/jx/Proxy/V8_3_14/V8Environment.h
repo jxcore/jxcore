@@ -59,4 +59,10 @@
   node::commons *com = node::commons::getInstance(); \
   JS_DEFINE_STATE_MARKER(com)
 
+#define ___THROW_ERROR(fun) \
+  do {                                                                     \
+    JS_ENTER_SCOPE();                                                      \
+    return ENGINE_NS::ThrowException(fun(ENGINE_NS::String::New(errmsg))); \
+  } while (0)
+
 #endif  // SRC_JX_PROXY_V8_V8ENVIRONMENT_H_

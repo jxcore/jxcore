@@ -21,6 +21,8 @@
 #define V8_T_CONTEXT v8::Context
 #define V8_T_NULL v8::Null
 
+#define JS_V8_ARGUMENT v8::Arguments
+
 // #public
 #define V8_T_LOCAL(x) v8::Local<x>
 #define V8_T_HANDLE(x) v8::Handle<x>

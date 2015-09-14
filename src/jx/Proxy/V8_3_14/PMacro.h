@@ -16,8 +16,6 @@
 #define JXCORE_PUBLIC
 #endif
 
-#define JS_V8_ARGUMENT v8::Arguments
-
 #define JS_CLASS_NEW_INSTANCE(obj_name, js_name) \
   assert(args.IsConstructCall());                \
   JS_LOCAL_OBJECT obj_name = args.This()->ToObject()
