@@ -1367,7 +1367,7 @@
 
   NativeModule.wrapper = [
     '(function (exports, require, module, __filename, __dirname, ' +
-    'setTimeout, setInterval, process) { ',
+        'setTimeout, setInterval, process) { ',
     '\n});'];
 
   NativeModule.prototype.compile = function() {
