@@ -98,11 +98,8 @@ void EnableDebugSignalHandler(uv_signal_t *handle, int);
 
 // this would have been a template function were it not for the fact that g++
 // sometimes fails to resolve it...
-#define THROW_ERROR(fun)                                                   \
-  do {                                                                     \
-    JS_ENTER_SCOPE();                                                      \
-    return ENGINE_NS::ThrowException(fun(ENGINE_NS::String::New(errmsg))); \
-  } while (0)
+#define THROW_ERROR(fun)  ___THROW_ERROR(fun)
+
 inline static JS_HANDLE_VALUE ThrowError(const char *errmsg) {
   THROW_ERROR(ENGINE_NS::Exception::Error);
 }
@@ -112,8 +109,9 @@ inline static JS_HANDLE_VALUE ThrowTypeError(const char *errmsg) {
 inline static JS_HANDLE_VALUE ThrowRangeError(const char *errmsg) {
   THROW_ERROR(ENGINE_NS::Exception::RangeError);
 }
+
 JS_HANDLE_VALUE FromConstructorTemplate(JS_PERSISTENT_FUNCTION_TEMPLATE t,
-                                        const ENGINE_NS::Arguments &args);
+                                        const JS_V8_ARGUMENT &args);
 #endif
 
 JS_HANDLE_VALUE FromConstructorTemplateX(JS_PERSISTENT_FUNCTION_TEMPLATE t,
