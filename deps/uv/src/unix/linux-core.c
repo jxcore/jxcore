@@ -50,7 +50,6 @@
 #endif
 #endif
 
-
 #undef NANOSEC
 #define NANOSEC ((uint64_t)1e9)
 
@@ -192,29 +191,20 @@ void uv__io_poll_jx(uv_loop_t* loop, int timeout, const int tid) {
 
   for (;;) {
     if (sigmask != 0 && no_epoll_pwait != 0)
-      if (pthread_sigmask(SIG_BLOCK, &sigset, NULL))
-        abort();
+      if (pthread_sigmask(SIG_BLOCK, &sigset, NULL)) abort();
 
     if (sigmask != 0 && no_epoll_pwait == 0) {
-      nfds = uv__epoll_pwait(loop->backend_fd,
-                             events,
-                             ARRAY_SIZE(events),
-                             timeout,
-                             sigmask);
-      if (nfds == -1 && errno == ENOSYS)
-        no_epoll_pwait = 1;
+      nfds = uv__epoll_pwait(loop->backend_fd, events, ARRAY_SIZE(events),
+                             timeout, sigmask);
+      if (nfds == -1 && errno == ENOSYS) no_epoll_pwait = 1;
     } else {
-      nfds = uv__epoll_wait(loop->backend_fd,
-                            events,
-                            ARRAY_SIZE(events),
-                            timeout);
-      if (nfds == -1 && errno == ENOSYS)
-        no_epoll_wait = 1;
+      nfds =
+          uv__epoll_wait(loop->backend_fd, events, ARRAY_SIZE(events), timeout);
+      if (nfds == -1 && errno == ENOSYS) no_epoll_wait = 1;
     }
 
     if (sigmask != 0 && no_epoll_pwait != 0)
-      if (pthread_sigmask(SIG_UNBLOCK, &sigset, NULL))
-        abort();
+      if (pthread_sigmask(SIG_UNBLOCK, &sigset, NULL)) abort();
 
     /* Update loop->time unconditionally. It's tempting to skip the update when
      * timeout == 0 (i.e. non-blocking poll) but there is no guarantee that the
@@ -415,7 +405,7 @@ uv_err_t uv_resident_set_memory(size_t* rss) {
   if (errno != 0) goto err;
   if (val < 0) goto err;
 
-  *rss = val * getpagesize();
+  *rss = val* getpagesize();
   return uv_ok_;
 
 err:
@@ -614,7 +604,18 @@ static int read_times(unsigned int numcpus, uv_cpu_info_t* ci) {
       unsigned int n = num;
       for (len = sizeof("cpu0"); n /= 10; len++)
         ;
-      assert(sscanf(buf, "cpu%u ", &n) == 1 && n == num);
+      assert(sscanf(buf, "cpu%u ", &n) == 1 && n >= num);
+
+      while (n > num) {
+        // OS has a bug and we couldn't read the previous CPU value
+        ts.user = 0;
+        ts.nice = 0;
+        ts.sys = 0;
+        ts.idle = 0;
+        ts.irq = 0;
+        ci[num].cpu_times = ts;
+        num++;
+      }
     }
 
     /* Line contains user, nice, system, idle, iowait, irq, softirq, steal,
