@@ -268,7 +268,7 @@ void JXEngine::ParseArgs(int argc, char **argv) {
         argv[i] = const_cast<char *>("");
       } else if (strcmp(arg, "--v8-options") == 0) {
 #ifndef JS_ENGINE_V8
-        error_console("--v8-options are not available for non-V8 build\n");
+        log_console("  --v8-options are not available for non-V8 build\n");
         exit(0);
 #endif
         argv[i] = const_cast<char *>("--help");
