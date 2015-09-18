@@ -292,7 +292,7 @@
               ['OS=="ios"', {
                 'xcode_settings': {
                   'IPHONEOS_DEPLOYMENT_TARGET': '6.0',
-                  'IPHONEOS_SDK_VERSION': '8.1',
+                  'IPHONEOS_SDK_VERSION': '9.0',
                 },
                 'defines': ['__IOS__']
               }],
