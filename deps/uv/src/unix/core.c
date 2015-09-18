@@ -360,6 +360,7 @@ int uv_run_jx(uv_loop_t* loop, uv_run_mode mode, void (*triggerSync)(const int),
               const int tid) {
   int timeout;
   int r;
+  int ret_val = 1;
 
   if (tid != THREAD_ID_ALREADY_DEFINED) {
     if (tid != THREAD_ID_NOT_DEFINED)
@@ -417,16 +418,15 @@ int uv_run_jx(uv_loop_t* loop, uv_run_mode mode, void (*triggerSync)(const int),
     if (force_close) {
       uint64_t start_time = uv_hrtime();
 
-      int ret_val = 1;
       while (ret_val) {
-        ret_val = uv_run_jx(loop, UV_RUN_NOWAIT,
-                             triggerSync, THREAD_ID_ALREADY_DEFINED);
+        ret_val = uv_run_jx(loop, UV_RUN_NOWAIT, triggerSync,
+                            THREAD_ID_ALREADY_DEFINED);
         uint64_t end_time = uv_hrtime();
-        if(end_time - start_time > 50 * 1000 * 1000) {
+        if (end_time - start_time > 50 * 1000 * 1000) {
           break;
         }
       }
-	}
+    }
   }
 
   return r;
