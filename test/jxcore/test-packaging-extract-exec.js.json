@@ -1,0 +1,11 @@
+{
+  "files" : [
+    "assets/test-packaging-extract-exec"
+  ],
+  "args" : [
+    { "argv": "sync.js" },
+    { "argv": "async.js" }
+  ],
+  "native": false,
+  "package": false
+}
