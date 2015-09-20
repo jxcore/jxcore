@@ -291,10 +291,12 @@ JS_METHOD(JXUtilsWrap, RunLoop) {
     loops[com->threadId] = 0;
     RETURN_PARAM(STD_TO_BOOLEAN(true));
   }
+
   int sleep_time = args.GetInteger(0), r = 1;
   if (loops[com->threadId] == 1) {
     RETURN_PARAM(STD_TO_BOOLEAN(false));
   }
+
   uv_run_mode op = UV_RUN_PAUSE;
   if (sleep_time == -1) {
     op = UV_RUN_ONCE;
@@ -308,7 +310,7 @@ JS_METHOD(JXUtilsWrap, RunLoop) {
     r = uv_run_jx(com->loop, op, node::commons::CleanPinger, com->threadId);
   }
 
-  RETURN_PARAM(STD_TO_BOOLEAN(r == 0 ? false : true));
+  RETURN_PARAM(STD_TO_BOOLEAN(true));
 }
 JS_METHOD_END
 
