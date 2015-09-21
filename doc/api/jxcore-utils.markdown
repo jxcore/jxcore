@@ -36,7 +36,7 @@ There is also a blog post on this subject: [Pause, Jump, and Continue](http://jx
 
 ### pause()
 
-Stops the execution of JavaScript exactly on the line called.
+Stops the execution of JavaScript exactly on the line called, but only if there are `ref()`s to be processed in the event loop at the moment (see notes below).
 It also stops processing all new IO events which may occur from now on. To be more precise, it doesn't poll from libuv events.
 All events are received, but kept in libuv queue and stay unprocessed.
 To resume the execution of the application and start processing the events, you need to call `continue()`.
@@ -61,14 +61,65 @@ console.log("Hello Again!");
 Please remind that actual pause may be somewhat longer (difference of few milliseconds) since pausing time depends on how busy is the system / current process.
 For `sleep(2000)` this probably would not make a difference. But if you call `sleep(1)` - it may wait a little bit longer.
 
+**Notes:** the `pause()` does not always behave exactly as in other programming languages.
+For example it has no effect when there are no `ref()`s existing in the event loop at the moment of calling the `pause()`.
+
+What does it mean?
+
+Some of the objects/functions in JXcore expose `ref()`/`unref()` methods for interacting with event loop. Those are e.g.:
+
+* [Timers](timers.markdown#unref)
+* [net.Socket](net.markdown#socketunref)
+* [net.Server](net.markdown#serverunref)
+* [child_process](child_process.markdown)  - e.g. see [spawn](child_process.markdown#child_processspawncommand-args-options)
+
+For example if you call `setTimeout()` it does internally invoke `ref()` which adds the task to the event loop. That's why the above sample works.
+The same applies to all `child_process` methods, e.g.:
+
+```js
+var child = require('child_process').spawn(process.execPath, [ __dirname +  "/child.js"]);
+child.on('close', function() {
+    jxcore.utils.continue();
+});
+jxcore.utils.pause();
+```
+
+However, if we would `unref()` the timer immediately - the `pause()` would **not** stop the execution:
+
+```js
+setTimeout(function(){
+  jxcore.utils.continue();
+}, 1000).unref();
+jxcore.utils.pause(); // pause does not stop here
+```
+
+From the same reason the following code would also **not** stop, because there is nothing added to the event loop:
+
+```js
+console.log("something")
+jxcore.utils.pause(); // pause does not stop here
+```
+
 ### jump()
 
 This function acts similar to `pause()` except that it doesn't stop processing IO events.
 
 ### continue()
 
-Resumes block execution paused by `pause()` or `jump()`;
+Resumes block execution paused by `pause()` or `jump()`.
 
+Please note, that even if you omit the `jxcore.utils.continue()` invocation,
+the process will resume anyway once the event loop has been emptied, for example:
+
+```js
+setTimeout(function(){
+    // do something
+}, 1000);
+jxcore.utils.pause(); // pause does not stop here
+```
+
+In the above code, the `pause()` will stop for 1 sec and resume afterwards (as soon as the timer function completes),
+even if `jxcore.utils.continue()` was not called.
 
 ## Console Output
 
