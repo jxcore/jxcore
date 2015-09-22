@@ -12,16 +12,14 @@ Node 0.12 (v8 + api) updates will be part of the upcoming releases (as soon as n
 
 ### Current Release Roadmap*
 * [Mobile Test Cases](https://github.com/jxcore/jxcore/blob/master/doc/TODO%20-%20Testing.md) (@)
-* Native Public API Documentation (@)
-* Complete embedded native interface API (+)
+* Improve embedded native interface API (+)
 * JXcore build time native module embedding (@)
-* JX package protection with public/private keys (@)
-* Android, iOS cordova interface (+)
-* Compiled JavaScript for Mobile Applications (+)
+* JXcore packaging improvements [use binary only instead of base64]
+* Windows UWP support (+)
 
 ### Next Release RoadMap*
 * Debugger support for SpiderMonkey (@)
-* Windows ARM (@)
+* Node 4.x update (@)
 * Power7, Power8, Mips64 Arch. support (+)
 * Debugging from Mobile Applications (@)
 
