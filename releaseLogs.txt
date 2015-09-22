@@ -1,5 +1,22 @@
 JXcore (http://jxcore.io)
 
+----JXcore 3.0.6
+
+- jx packages extraction enhancements:
+  partial extraction, verbosity, pre/post actions, async execution
+- fix compilation of core for compilers that use C89 (@dustmop)
+- new Buffer methods: compare() and indexOf()
+- packaging extraction enabled also for native packages
+- add new embedding API for stopping the main loop (@gcampax)
+- jslint source code fixes
+- dns lookup optimizations
+- fixed piping of createReadStream() for packages
+- ios enable_bitcode support
+- ios 9.x support
+- android: fix samsung galaxy cpu info issue
+- android: fix 4.0.3 kernel bug
+- reduced memory consumption
+
 ----JXcore 3.0.5
 
 - performance fixes for sqlite
