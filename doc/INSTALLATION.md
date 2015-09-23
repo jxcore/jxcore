@@ -9,7 +9,7 @@ The [jx_install.sh](https://github.com/jxcore/jxcore/blob/master/tools/jx_instal
 downloads the latest release.
 
 ```bash
-$ curl https://github.com/jxcore/jxcore/blob/master/tools/jx_install.sh | bash
+$ curl https://raw.githubusercontent.com/jxcore/jxcore/master/tools/jx_install.sh | bash
 ```
 
 The same script can be taken also from the shorter URL: [http://jxcore.com/xil.sh](http://jxcore.com/xil.sh), so the command would look this way:
