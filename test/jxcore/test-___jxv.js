@@ -1,7 +1,7 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
 var assert = require('assert');
-var fs = require('fs')
+var fs = require('fs');
 var expectedVersion;
 
 var vers = fs.readFileSync('src/node_version.h') + "";
@@ -9,10 +9,7 @@ var index = vers.indexOf('0.3.');
 var index2 = vers.indexOf('"', index);
 var str = vers.substr(index+4, index2-(index+4));
 
-if (process.versions.v8)
-  expectedVersion = "v 0.3." + str;
-else
-  expectedVersion = "v Beta-0.3." + str;
+expectedVersion = "v 0.3." + str;
 
 var color = jxcore.utils.console.setColor;
 var str_insteadof = " instead of " + color(expectedVersion, "green");

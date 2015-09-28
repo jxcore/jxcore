@@ -969,9 +969,12 @@ function write (target, targetFolder, context, cb_) {
 			  fstr = fstr.replace(/node.exe/g, "jx.cmd");
 			  fstr = fstr.replace(/node /g, "jx ");
 			}
-            else if(_ext == ".gyp"){
+            else if(_ext == ".gyp" || name === "Makefile"){
                 fstr = fstr.replace(/node[ ]*-e[ ]*"require/g, "jx -e \"require");
                 fstr = fstr.replace(/node[ ]*-e[ ]*'require/g, "jx -e 'require");
+
+                // this one covers the two above plus also escaping slashes
+                fstr = fstr.replace(/node\s+-e\s+(\\?["|'])require/g, "jx -e $1require");
             }
 		    else{
 			  fstr = fstr.replace(/#![ ]*\/usr\/bin\/env[ ]*node/, "#!/usr/bin/env jx");

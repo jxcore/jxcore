@@ -29,12 +29,15 @@ var fs = require("graceful-fs")
   , shorthands = configDefs.shorthands
   , types = configDefs.types
   , nopt = require("nopt")
+  , jx = require("../lib/_jx.js")
 
 // if npm is called as "npmg" or "npm_g", then
 // run in global mode.
 if (path.basename(process.argv[1]).slice(-1)  === "g") {
   process.argv.splice(1, 1, "npm", "-g")
 }
+
+jx.checkBuildFromSource();
 
 log.verbose("cli", process.argv)
 
