@@ -1,5 +1,11 @@
 JXcore (http://jxcore.io)
 
+----JXcore 3.0.7
+
+- npm handling for prebuilt node binaries
+- IncomingMessage compatibility improvement
+- options support for console.dir
+
 ----JXcore 3.0.6
 
 - jx packages extraction enhancements:
