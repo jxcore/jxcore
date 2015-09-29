@@ -94,8 +94,17 @@ function lifecycle_ (pkg, stage, wd, env, unsafe, failOk, cb) {
   if (packageLifecycle) {
     // define this here so it's available to all scripts.
     var scr = pkg.scripts[stage]
-    if (typeof scr === "string" && scr.slice(0,5).toLowerCase() === "node ")
-      scr = process.execPath + " " + scr.slice(5)
+
+    if (typeof scr === "string") {
+      if (scr.slice(0,5).toLowerCase() === "node ")
+        scr = process.execPath + " " + scr.slice(5)
+
+      // this is to prevent `prebuild` module to download prebuilt binaries
+      // and force building against jx
+      if (scr.indexOf("prebuild --download") !== -1)
+        scr = "node-gyp rebuild"
+    }
+
     env.npm_lifecycle_script = scr
   }
 
