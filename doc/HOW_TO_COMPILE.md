@@ -89,7 +89,7 @@ git submodule update
 > For leveldown-mobile API, see [https://github.com/Level/leveldown-mobile](https://github.com/Level/leveldown-mobile)
 
 
-##### Notes
+#### Notes
 If your python binary is in a non-standard location or has a non-standard name, 
 run the following instead:
 
@@ -98,12 +98,12 @@ run the following instead:
     make
     make install
 
-##### Download JXcore 
+#### Download JXcore 
 You can download (latest stable) binaries for various operating systems from  
 [http://jxcore.com/downloads/](http://jxcore.com/downloads/)  
 (Future `jxcore.io` releases will be shared from `http://jxcore.io`)
 
-##### Notes for Windows
+#### Notes for Windows
 
 If you run `vcbuild.bat` without specifying the target architecture, it will be determined by a 
 current Python version you have installed (not the operating system architecture).
@@ -118,16 +118,16 @@ Then you can still build JXcore x32 on Windows x64:
 / $> vcbuild.bat ia32
 ```
 
-##### Notes for CentOS/Red Hat
+#### Notes for CentOS/Red Hat
 
 If you'll ever have problem with GCC 4.7+ installation on Red Hat, please see 
 [#297](https://github.com/jxcore/jxcore/issues/297).
 
-##### Compiling against Mipsel
+#### Compiling against Mipsel
 
 Your linux distro might be using an older version of GCC. We encourage you to set `--dest-os=mipsel` 
 explicitly within the  `./configure` call
 
 ```
-./configure ...... --dest-os=mipsel
+./configure ...... --dest-cpu=mipsel
 ```
