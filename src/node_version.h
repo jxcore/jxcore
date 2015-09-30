@@ -9,6 +9,10 @@
 
 #define NODE_VERSION_IS_RELEASE 1
 
+#define JXCORE_MAJOR_VERSION 3
+#define JXCORE_MINOR_VERSION 1
+#define JXCORE_PATCH_VERSION 0
+
 #ifndef xNODE_TAG
 #define xNODE_TAG ""
 #endif
@@ -29,13 +33,17 @@
       "-pre"
 #endif
 
+#define JXCORE_VERSION_STRING                                   \
+  "0." NODE_STRINGIFY(JXCORE_MAJOR_VERSION) "." NODE_STRINGIFY( \
+      JXCORE_MINOR_VERSION) "." NODE_STRINGIFY(JXCORE_PATCH_VERSION)
+
 #define NODE_VERSION "v" NODE_VERSION_STRING
 
 #ifdef JS_ENGINE_MOZJS
 #define MOZJS_VERSION 34
-#define JXCORE_VERSION "v 0.3.0.7"
+#define JXCORE_VERSION "v " JXCORE_VERSION_STRING
 #else
-#define JXCORE_VERSION "v 0.3.0.7"
+#define JXCORE_VERSION "v " JXCORE_VERSION_STRING
 #endif
 
 #define NODE_VERSION_AT_LEAST(major, minor, patch)                  \

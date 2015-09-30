@@ -29,7 +29,7 @@
 
 // Version resource
 VS_VERSION_INFO VERSIONINFO
-FILEVERSION NODE_MAJOR_VERSION,NODE_MINOR_VERSION,NODE_PATCH_VERSION,0
+FILEVERSION 0,JXCORE_MAJOR_VERSION,JXCORE_MINOR_VERSION,JXCORE_PATCH_VERSION
 PRODUCTVERSION NODE_MAJOR_VERSION,NODE_MINOR_VERSION,NODE_PATCH_VERSION,0
 FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -53,8 +53,9 @@ BEGIN
 VALUE "CompanyName", "Nubisa, Inc"
 VALUE "ProductName", "JXcore"
 VALUE "FileDescription", "Evented MT'ed I/O for V8 JavaScript"
-VALUE "FileVersion", NODE_VERSION_STRING
-VALUE "ProductVersion", NODE_VERSION_STRING
+// on Windows the below FileVersion has no effect, since FILEVERSION from above has precedence
+VALUE "FileVersion", JXCORE_VERSION_STRING
+VALUE "ProductVersion", JXCORE_VERSION_STRING " (Node " NODE_VERSION_STRING ")"
 VALUE "OriginalFilename", "jx.exe"
 VALUE "InternalName", "jx"
 VALUE "LegalCopyright", "Copyright Nubisa, Inc. and Node contributors."
