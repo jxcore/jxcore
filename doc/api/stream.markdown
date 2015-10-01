@@ -506,6 +506,16 @@ function writeOneMillionTimes(writer, data, encoding, callback) {
 }
 ```
 
+#### writable.cork()
+
+Forces buffering of all writes.
+
+Buffered data will be flushed either at `.uncork()` or at `.end()` call.
+
+#### writable.uncork()
+
+Flush all data, buffered since `.cork()` call.
+
 #### writable.end([chunk], [encoding], [callback])
 
 * `chunk` {String | Buffer} Optional data to write
