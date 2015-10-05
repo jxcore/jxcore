@@ -1021,6 +1021,21 @@ the class that defines it, and should not be called directly by user
 programs.  However, you **are** expected to override this method in
 your own extension classes.
 
+### writable.\_writev(chunks, callback)
+
+* `chunks` {Array} The chunks to be written.  Each chunk has following
+  format: `{ chunk: ..., encoding: ... }`.
+* `callback` {Function} Call this function (optionally with an error
+  argument) when you are done processing the supplied chunks.
+
+Note: **This function MUST NOT be called directly.**  It may be
+implemented by child classes, and called by the internal Writable
+class methods only.
+
+This function is completely optional to implement. In most cases it is
+unnecessary.  If implemented, it will be called with all the chunks
+that are buffered in the write queue.
+
 
 ### Class: stream.Duplex
 
