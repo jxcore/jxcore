@@ -1187,6 +1187,49 @@ In turn, as a response, the backend service will invoke the client's local `call
 client.Call("serverMethod", "Hello", callback);
 ```
 
+This is how the `callback` may look like:
+
+```java
+Callback callback = new Callback() {
+    @Override
+    public void call(Object o, Integer err) throws Exception {
+        if (err == 0) {
+            System.out.println("Received from the server " + o.toString());
+        }
+    }
+};
+```
+
+If server sends a string to the client, e.g.:
+
+```js
+// server-side:
+server.sendCallBack(env, "Hello");
+```
+
+then callback receives the value as a string (`o` argument). However if server sends an object:
+
+```js
+// server-side:
+server.sendCallBack(env, { str : "Hello", bool : true});
+```
+
+then on the client-side you may read it the following way:
+
+
+```java
+Callback callback = new Callback() {
+	@Override
+	public void call(Object o, Integer err) throws Exception {
+		if (err == 0) {
+			Client.JSON obj = (JSON) o;
+			System.out.println("str: " + obj.getValue("str"));
+			System.out.println("bool: " + obj.getValue("bool"));
+		}
+	}
+};
+```
+
 ## Connect()
 
 Starts the client, connects to the server. Returns a boolean value based on the result.
