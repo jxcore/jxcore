@@ -2,29 +2,27 @@
 
 var port = 8124;
 var started = false;
+var closed = false;
 
 var net = require('net');
 var server = net.createServer();
 var jx = require('jxtools');
 var assert = jx.assert;
 
-if (process.threadId != -1)
-  process.keepAlive();
+if (jx.onlyForSingleThread())
+  return;
 
 process.on('exit', function (code) {
-  assert.ok(started, "Client did not connect to the server.")
+  assert.ok(started, 'Server did not start.');
+  assert.ok(closed, 'Server did not close.');
 });
 
-process.release();
 server.listen(port, function () {
   started = true;
-  server.close();
-
-  server.on('close', function(){
-	  if (process.threadId !== -1) {
-		process.release();
-	  }
+  server.on('close', function () {
+    closed = true;
   });
+  server.close();
 });
 
 server.on("error", function (err) {
