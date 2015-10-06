@@ -1449,7 +1449,11 @@ static void EnvQuery(v8::Local<v8::String> property,
   }
 #endif
   // Not found
-  if (rc != -1) RETURN_GETTER_PARAM(STD_TO_INTEGER(rc));
+  if (rc != -1) {
+    RETURN_GETTER_PARAM(STD_TO_INTEGER(rc));
+  }
+
+  RETURN_GETTER_PARAM(JS_HANDLE_INTEGER_);
 }
 
 #ifdef V8_IS_3_14
