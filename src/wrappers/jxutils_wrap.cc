@@ -291,12 +291,10 @@ JS_METHOD(JXUtilsWrap, RunLoop) {
     loops[com->threadId] = 0;
     RETURN_PARAM(STD_TO_BOOLEAN(true));
   }
-
   int sleep_time = args.GetInteger(0), r = 1;
   if (loops[com->threadId] == 1) {
     RETURN_PARAM(STD_TO_BOOLEAN(false));
   }
-
   uv_run_mode op = UV_RUN_PAUSE;
   if (sleep_time == -1) {
     op = UV_RUN_ONCE;
@@ -356,7 +354,7 @@ JS_METHOD(JXUtilsWrap, Compress) {
 
   if (buff == NULL) RETURN_PARAM(STD_TO_BOOLEAN(false));
 
-  RETURN_PARAM(JS_VALUE_TO_OBJECT(buff->handle_));
+  RETURN_PARAM(JS_TYPE_TO_LOCAL_OBJECT(buff->handle_));
 }
 JS_METHOD_END
 
@@ -379,7 +377,7 @@ JS_METHOD(JXUtilsWrap, Uncompress) {
 
   if (buff == NULL) RETURN_PARAM(STD_TO_BOOLEAN(false));
 
-  RETURN_PARAM(JS_VALUE_TO_OBJECT(buff->handle_));
+  RETURN_PARAM(JS_TYPE_TO_LOCAL_OBJECT(buff->handle_));
 }
 JS_METHOD_END
 

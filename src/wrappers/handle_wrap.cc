@@ -51,7 +51,8 @@ JS_METHOD_NO_COM(HandleWrap, Close) {
 
   if (args.IsFunction(0)) {
     commons* com = wrap->com;
-    JS_NAME_SET(wrap->object_, JS_PREDEFINED_STRING(close), GET_ARG(0));
+    JS_LOCAL_OBJECT lobj = JS_OBJECT_FROM_PERSISTENT(wrap->object_);
+    JS_NAME_SET(lobj, JS_PREDEFINED_STRING(close), GET_ARG(0));
     wrap->flags_ |= kCloseCallback;
   }
 }
@@ -60,6 +61,7 @@ JS_METHOD_END
 HandleWrap::HandleWrap(JS_HANDLE_OBJECT_REF object, uv_handle_t* h) {
   ENGINE_LOG_THIS("HandleWrap", "HandleWrap");
   JS_ENTER_SCOPE_COM();
+  JS_DEFINE_STATE_MARKER(com);
 
   this->com = com;
   flags_ = 0;
@@ -72,8 +74,10 @@ HandleWrap::HandleWrap(JS_HANDLE_OBJECT_REF object, uv_handle_t* h) {
 #ifdef JS_ENGINE_V8
   assert(JS_OBJECT_FIELD_COUNT(object) > 0);
 #endif
-  object_ = JS_NEW_PERSISTENT_OBJECT(object);
-  JS_SET_POINTER_DATA(object_, this);
+
+  JS_NEW_PERSISTENT_OBJECT(object_, object);
+  JS_LOCAL_OBJECT lobj = JS_OBJECT_FROM_PERSISTENT(object_);
+  JS_SET_POINTER_DATA(lobj, this);
   QUEUE_INSERT_TAIL(&com->NQ->wrap, &handle_wrap_queue_);
 }
 
@@ -101,12 +105,14 @@ void HandleWrap::OnClose(uv_handle_t* handle) {
   // But the handle pointer should be gone.
   assert(wrap->handle__ == NULL);
 
+  JS_LOCAL_OBJECT lobj = JS_OBJECT_FROM_PERSISTENT(wrap->object_);
   if (wrap->flags_ & kCloseCallback) {
-    MakeCallback(wrap->com, wrap->object_, wrap->com->pstr_close, 0, NULL);
+    commons *com = wrap->com;
+    MakeCallback(wrap->com, lobj, JS_PREDEFINED_STRING(close), 0, NULL);
   }
 
   if (!JS_IS_EMPTY(wrap->object_)) {
-    JS_SET_POINTER_DATA(wrap->object_, NULL);
+    JS_SET_POINTER_DATA(lobj, NULL);
   }
   JS_CLEAR_PERSISTENT(wrap->object_);
   delete wrap;

@@ -100,6 +100,7 @@ void DefineJavaScript(JS_HANDLE_OBJECT target) {
   for (int i = 0; jxcore::natives[i].name; i++) {
     if (strcmp(jxcore::natives[i].name, "config") == 0) continue;
     const char *name = jxcore::natives[i].name;
+
     if (name[0] == '_' && name[1] == 'j' && name[2] == 'x') continue;
 
     if (jxcore::natives[i].source != jxcore::node_native) {

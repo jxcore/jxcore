@@ -39,7 +39,8 @@ void StatWatcher::Callback(uv_fs_poll_t* handle, int status,
     SetErrno(uv_last_error(wrap->watcher_->loop));
   }
 
-  MakeCallback(com, wrap->handle_, com->pstr_onchange, ARRAY_SIZE(argv), argv);
+  JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(wrap->handle_);
+  MakeCallback(com, objl, JS_PREDEFINED_STRING(onchange), ARRAY_SIZE(argv), argv);
 }
 
 JS_METHOD(StatWatcher, New) {
@@ -72,7 +73,8 @@ JS_METHOD_END
 JS_METHOD(StatWatcher, Stop) {
   StatWatcher* wrap = ObjectWrap::Unwrap<StatWatcher>(args.Holder());
 
-  MakeCallback(com, wrap->handle_, STD_TO_STRING("onstop"), 0, NULL);
+  JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(wrap->handle_);
+  MakeCallback(com, objl, STD_TO_STRING("onstop"), 0, NULL);
   wrap->Stop();
 }
 JS_METHOD_END

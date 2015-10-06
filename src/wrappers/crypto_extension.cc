@@ -219,7 +219,7 @@ JS_METHOD(CryptoExtensionWrap, GenerateHKDF) {
   HMAC_CTX_cleanup(&hmac);
 
   node::Buffer *buff = node::Buffer::New((char *)buf, done, com);
-  JS_LOCAL_OBJECT hval = JS_VALUE_TO_OBJECT(buff->handle_);
+  JS_LOCAL_OBJECT hval = JS_TYPE_TO_LOCAL_OBJECT(buff->handle_);
 
   RETURN_PARAM(hval);
 }
@@ -306,7 +306,7 @@ JS_METHOD(CryptoExtensionWrap, CreateBundle) {
   free_openssl_resources(privkey, x509_cert, cacertstack, pkcs12bundle);
 
   node::Buffer *buff = node::Buffer::New(pkcs12out, size, com);
-  JS_LOCAL_OBJECT hval = JS_VALUE_TO_OBJECT(buff->handle_);
+  JS_LOCAL_OBJECT hval = JS_TYPE_TO_LOCAL_OBJECT(buff->handle_);
   RETURN_PARAM(hval);
 }
 JS_METHOD_END
@@ -425,7 +425,7 @@ JS_METHOD(CryptoExtensionWrap, ExtractPublicKey) {
   free_openssl_resources(privkey, x509_cert, cacertstack, pkcs12bundle);
 
   node::Buffer *buff = node::Buffer::New(pubkeyout, size, com);
-  JS_LOCAL_OBJECT hval = JS_VALUE_TO_OBJECT(buff->handle_);
+  JS_LOCAL_OBJECT hval = JS_TYPE_TO_LOCAL_OBJECT(buff->handle_);
   RETURN_PARAM(hval);
 }
 JS_METHOD_END

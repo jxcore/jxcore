@@ -24,6 +24,16 @@
     {
       'target_name': 'sqlite',
       'conditions': [
+        [ 'v8_is_3_28==1', {
+          'defines': [
+            'V8_IS_3_28=1'
+          ],
+        }],
+        [ 'v8_is_3_14==1', {
+          'defines': [
+            'V8_IS_3_14=1'
+          ],
+        }],
         ['use_system_sqlite', {
           'type': 'none',
           'direct_dependent_settings': {

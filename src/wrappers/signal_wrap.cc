@@ -50,11 +50,11 @@ JS_METHOD_NO_COM(SignalWrap, Stop) {
 JS_METHOD_END
 
 void SignalWrap::OnSignal(uv_signal_t* handle, int signum) {
-  JS_ENTER_SCOPE();
-
   SignalWrap* wrap = container_of(handle, SignalWrap, handle_);
   assert(wrap);
   commons* com = wrap->com;
+
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
 
 #ifdef JS_ENGINE_V8
@@ -62,7 +62,8 @@ void SignalWrap::OnSignal(uv_signal_t* handle, int signum) {
 #elif defined(JS_ENGINE_MOZJS)
   __JS_LOCAL_VALUE argv[1] = {JS::Int32Value(signum)};
 #endif
-  MakeCallback(com, wrap->object_, JS_STRING_ID("onsignal"), ARRAY_SIZE(argv),
+  JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(wrap->object_);
+  MakeCallback(com, objl, JS_STRING_ID("onsignal"), ARRAY_SIZE(argv),
                argv);
 }
 

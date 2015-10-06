@@ -46,12 +46,13 @@ JS_HANDLE_OBJECT Buffer::New(JS_HANDLE_STRING string) {
 
 Buffer* Buffer::New(size_t length, node::commons* com) {
   ENGINE_LOG_THIS("Buffer", "New2");
-  JS_ENTER_SCOPE();
   if (com == NULL) com = node::commons::getInstance();
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
 
   JS_LOCAL_VALUE arg = STD_TO_UNSIGNED(length);
-  JS_LOCAL_FUNCTION fnc = JS_GET_FUNCTION(com->bf_constructor_template);
+  JS_LOCAL_FUNCTION fnc = JS_GET_FUNCTION(
+      JS_TYPE_TO_LOCAL_FUNCTION_TEMPLATE(com->bf_constructor_template));
   JS_LOCAL_OBJECT b = JS_NEW_INSTANCE(fnc, 1, &arg);
 
   if (JS_IS_EMPTY(b)) return NULL;
@@ -61,12 +62,13 @@ Buffer* Buffer::New(size_t length, node::commons* com) {
 
 Buffer* Buffer::New(const char* data, size_t length, node::commons* com) {
   ENGINE_LOG_THIS("Buffer", "New3");
-  JS_ENTER_SCOPE();
   if (com == NULL) com = node::commons::getInstance();
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
 
   JS_LOCAL_VALUE arg = STD_TO_UNSIGNED(0);
-  JS_LOCAL_FUNCTION fnc = JS_GET_FUNCTION(com->bf_constructor_template);
+  JS_LOCAL_FUNCTION fnc = JS_GET_FUNCTION(
+      JS_TYPE_TO_LOCAL_FUNCTION_TEMPLATE(com->bf_constructor_template));
   JS_LOCAL_OBJECT obj = JS_NEW_INSTANCE(fnc, 1, &arg);
 
   Buffer* buffer = ObjectWrap::Unwrap<Buffer>(obj);
@@ -78,12 +80,13 @@ Buffer* Buffer::New(const char* data, size_t length, node::commons* com) {
 Buffer* Buffer::New(char* data, size_t length, free_callback callback,
                     void* hint, node::commons* com) {
   ENGINE_LOG_THIS("Buffer", "New4");
-  JS_ENTER_SCOPE();
   if (com == NULL) com = node::commons::getInstance();
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
 
   JS_LOCAL_VALUE arg = STD_TO_UNSIGNED(0);
-  JS_LOCAL_FUNCTION fnc = JS_GET_FUNCTION(com->bf_constructor_template);
+  JS_LOCAL_FUNCTION fnc = JS_GET_FUNCTION(
+      JS_TYPE_TO_LOCAL_FUNCTION_TEMPLATE(com->bf_constructor_template));
   JS_LOCAL_OBJECT obj = JS_NEW_INSTANCE(fnc, 1, &arg);
 
   Buffer* buffer = ObjectWrap::Unwrap<Buffer>(obj);
@@ -94,7 +97,9 @@ Buffer* Buffer::New(char* data, size_t length, free_callback callback,
 
 JS_METHOD(Buffer, New) {
   if (!args.IsConstructCall()) {
-    RETURN_PARAM(FromConstructorTemplateX(com->bf_constructor_template, args));
+    RETURN_PARAM(FromConstructorTemplateX(
+        JS_TYPE_TO_LOCAL_FUNCTION_TEMPLATE(com->bf_constructor_template),
+        args));
   }
 
   int64_t length = args.GetUInteger(0);
@@ -142,7 +147,7 @@ Buffer::~Buffer() {
 void Buffer::Replace(char* data, size_t length, free_callback callback,
                      void* hint) {
   ENGINE_LOG_THIS("Buffer", "Replace");
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(com_->node_isolate);
   node::commons* com = com_;
   JS_DEFINE_STATE_MARKER(com);
 
@@ -168,10 +173,11 @@ void Buffer::Replace(char* data, size_t length, free_callback callback,
   if (disposing_) return;
 
   JS_LOCAL_VALUE val_len = STD_TO_UNSIGNED(length_);
-  JS_SET_INDEXED_EXTERNAL(handle_, data_, ENGINE_NS::kExternalUnsignedByteArray,
+  JS_LOCAL_OBJECT hl = JS_OBJECT_FROM_PERSISTENT(handle_);
+  JS_SET_INDEXED_EXTERNAL(hl, data_, ENGINE_NS::kExternalUnsignedByteArray,
                           length_);
 
-  JS_NAME_SET(handle_, JS_PREDEFINED_STRING(length), val_len);
+  JS_NAME_SET(hl, JS_PREDEFINED_STRING(length), val_len);
 }
 
 #define SLICER(name, encoding)                            \
@@ -272,61 +278,64 @@ JS_METHOD(Buffer, Copy) {
 }
 JS_METHOD_END
 
-#define WRITER(name, encoding)                                              \
-  JS_METHOD(Buffer, name) Buffer* buffer =                                  \
-      ObjectWrap::Unwrap<Buffer>(args.This());                              \
-                                                                            \
-  if (!args.IsString(0)) {                                                  \
-    THROW_TYPE_EXCEPTION("Argument must be a string");                      \
-  }                                                                         \
-                                                                            \
-  JS_HANDLE_STRING str = args.GetAsString(0);                               \
-                                                                            \
-  int length = JS_GET_STRING_LENGTH(str);                                   \
-                                                                            \
-  if (length == 0) {                                                        \
-    JS_LOCAL_VALUE val_zero = STD_TO_INTEGER(0);                            \
-    JS_NAME_SET(JS_GET_CONSTRUCTOR((com->bf_constructor_template)),         \
-                JS_PREDEFINED_STRING(_charsWritten), val_zero);             \
-    RETURN_POINTER(val_zero);                                               \
-  }                                                                         \
-                                                                            \
-  if (encoding == HEX && length % 2 != 0) {                                 \
-    THROW_TYPE_EXCEPTION("Invalid hex string");                             \
-  }                                                                         \
-                                                                            \
-  size_t offset = args.GetInt32(1);                                         \
-  size_t max_length =                                                       \
-      args.IsUndefined(2) ? buffer->length_ - offset : args.GetUInteger(2); \
-  max_length = MIN(buffer->length_ - offset, max_length);                   \
-                                                                            \
-  if (max_length == 0) {                                                    \
-    /* shortcut: nothing to write anyway */                                 \
-    JS_LOCAL_VALUE val = STD_TO_INTEGER(0);                                 \
-    JS_NAME_SET(JS_GET_CONSTRUCTOR((com->bf_constructor_template)),         \
-                JS_PREDEFINED_STRING(_charsWritten), val);                  \
-    RETURN_POINTER(val);                                                    \
-  }                                                                         \
-                                                                            \
-  if (encoding == UCS2) {                                                   \
-    max_length = max_length / 2;                                            \
-  }                                                                         \
-                                                                            \
-  if (offset >= buffer->length_) {                                          \
-    THROW_TYPE_EXCEPTION("Offset is out of bounds");                        \
-  }                                                                         \
-                                                                            \
-  char* start = buffer->data_ + offset;                                     \
-  int chars_written;                                                        \
-  size_t written =                                                          \
-      StringBytes::Write(start, max_length, str, encoding, &chars_written); \
-                                                                            \
-  JS_LOCAL_VALUE val_chars_written = STD_TO_INTEGER(chars_written);         \
-  JS_NAME_SET(JS_GET_CONSTRUCTOR((com->bf_constructor_template)),           \
-              JS_PREDEFINED_STRING(_charsWritten), val_chars_written);      \
-                                                                            \
-  JS_LOCAL_VALUE val_written = STD_TO_INTEGER(written);                     \
-  RETURN_POINTER(val_written);                                              \
+#define WRITER(name, encoding)                                                 \
+  JS_METHOD(Buffer, name) {                                                    \
+    Buffer* buffer = ObjectWrap::Unwrap<Buffer>(args.This());                  \
+                                                                               \
+    if (!args.IsString(0)) {                                                   \
+      THROW_TYPE_EXCEPTION("Argument must be a string");                       \
+    }                                                                          \
+                                                                               \
+    JS_HANDLE_STRING str = args.GetAsString(0);                                \
+                                                                               \
+    int length = JS_GET_STRING_LENGTH(str);                                    \
+    JS_LOCAL_FUNCTION_TEMPLATE bfcl =                                          \
+        JS_TYPE_TO_LOCAL_FUNCTION_TEMPLATE(com->bf_constructor_template);      \
+                                                                               \
+    if (length == 0) {                                                         \
+      JS_LOCAL_VALUE val_zero = STD_TO_INTEGER(0);                             \
+      JS_NAME_SET(JS_GET_CONSTRUCTOR(bfcl),                                    \
+                  JS_PREDEFINED_STRING(_charsWritten), val_zero);              \
+      RETURN_POINTER(val_zero);                                                \
+    }                                                                          \
+                                                                               \
+    if (encoding == HEX && length % 2 != 0) {                                  \
+      THROW_TYPE_EXCEPTION("Invalid hex string");                              \
+    }                                                                          \
+                                                                               \
+    size_t offset = args.GetInt32(1);                                          \
+    size_t max_length =                                                        \
+        args.IsUndefined(2) ? buffer->length_ - offset : args.GetUInteger(2);  \
+    max_length = MIN(buffer->length_ - offset, max_length);                    \
+                                                                               \
+    if (max_length == 0) {                                                     \
+      /* shortcut: nothing to write anyway */                                  \
+      JS_LOCAL_VALUE val = STD_TO_INTEGER(0);                                  \
+      JS_NAME_SET(JS_GET_CONSTRUCTOR(bfcl),                                    \
+                  JS_PREDEFINED_STRING(_charsWritten), val);                   \
+      RETURN_POINTER(val);                                                     \
+    }                                                                          \
+                                                                               \
+    if (encoding == UCS2) {                                                    \
+      max_length = max_length / 2;                                             \
+    }                                                                          \
+                                                                               \
+    if (offset >= buffer->length_) {                                           \
+      THROW_TYPE_EXCEPTION("Offset is out of bounds");                         \
+    }                                                                          \
+                                                                               \
+    char* start = buffer->data_ + offset;                                      \
+    int chars_written;                                                         \
+    size_t written =                                                           \
+        StringBytes::Write(start, max_length, str, encoding, &chars_written);  \
+                                                                               \
+    JS_LOCAL_VALUE val_chars_written = STD_TO_INTEGER(chars_written);          \
+    JS_NAME_SET(JS_GET_CONSTRUCTOR(bfcl), JS_PREDEFINED_STRING(_charsWritten), \
+                val_chars_written);                                            \
+                                                                               \
+    JS_LOCAL_VALUE val_written = STD_TO_INTEGER(written);                      \
+    RETURN_POINTER(val_written);                                               \
+  }                                                                            \
   JS_METHOD_END
 
 WRITER(Base64Write, BASE64)
@@ -481,16 +490,23 @@ bool Buffer::jxHasInstance(JS_HANDLE_VALUE val, commons* com) {
   return val.HasBufferSignature();
 #elif defined(JS_ENGINE_V8)
   if (!JS_IS_OBJECT(val)) return false;
+  JS_DEFINE_STATE_MARKER(com);
   JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(val);
 
   ENGINE_NS::ExternalArrayType type = JS_GET_EXTERNAL_ARRAY_DATA_TYPE(obj);
   if (type != ENGINE_NS::kExternalUnsignedByteArray) return false;
 
+  JS_LOCAL_FUNCTION_TEMPLATE bfcl =
+      JS_TYPE_TO_LOCAL_FUNCTION_TEMPLATE(com->bf_constructor_template);
   // Also check for SlowBuffers that are empty.
-  if (JS_HAS_INSTANCE(com->bf_constructor_template, obj)) return true;
+  if (JS_HAS_INSTANCE(bfcl, obj)) return true;
 
-  assert(!JS_IS_EMPTY((com->fast_buffer_constructor)));
+  assert(!JS_IS_EMPTY(com->fast_buffer_constructor));
+#ifdef V8_IS_3_28
+  return true;
+#else
   return JS_COMPARE_BY_CONSTRUCTOR(obj, com->fast_buffer_constructor);
+#endif
 #endif
 }
 
@@ -503,7 +519,7 @@ JS_METHOD(Buffer, SetFastBufferConstructor) {
   assert(args.IsFunction(0));
 
   JS_LOCAL_FUNCTION fnc = TO_LOCAL_FUNCTION(args.GetAsFunction(0));
-  com->fast_buffer_constructor = JS_NEW_PERSISTENT_FUNCTION(fnc);
+  JS_NEW_PERSISTENT_FUNCTION(com->fast_buffer_constructor, fnc);
 }
 JS_METHOD_END
 

@@ -77,8 +77,8 @@ class Statement : public ObjectWrap {
 
   INIT_NAMED_CLASS_MEMBERS(Statement, Statement) {
     int id = com->threadId;
-    jx_persistent.templates[id] =
-        JS_NEW_PERSISTENT_FUNCTION_TEMPLATE(constructor);
+    JS_NEW_PERSISTENT_FUNCTION_TEMPLATE(jx_persistent.templates[id],
+        constructor);
 
     SET_INSTANCE_METHOD("bind", Bind, 0);
     SET_INSTANCE_METHOD("get", Get, 0);
@@ -101,7 +101,8 @@ class Statement : public ObjectWrap {
     Baton(Statement* stmt_, JS_HANDLE_FUNCTION cb_) : stmt(stmt_) {
       stmt->Ref();
       request.data = this;
-      callback = JS_NEW_PERSISTENT_FUNCTION(cb_);
+      JS_DEFINE_CURRENT_MARKER();
+      JS_NEW_PERSISTENT_FUNCTION(callback, cb_);
     }
 
     virtual ~Baton() {
@@ -110,7 +111,7 @@ class Statement : public ObjectWrap {
         DELETE_FIELD(field);
       }
       stmt->Unref();
-      callback.Dispose();
+      JS_CLEAR_PERSISTENT(callback);
     }
   };
 
@@ -187,8 +188,8 @@ class Statement : public ObjectWrap {
 
     ~Async() {
       stmt->Unref();
-      item_cb.Dispose();
-      completed_cb.Dispose();
+      JS_CLEAR_PERSISTENT(item_cb);
+      JS_CLEAR_PERSISTENT(completed_cb);
       NODE_SQLITE3_MUTEX_DESTROY
     }
   };

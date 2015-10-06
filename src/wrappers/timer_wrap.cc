@@ -81,12 +81,11 @@ JS_METHOD_NO_COM(TimerWrap, GetRepeat) {
 JS_METHOD_END
 
 void TimerWrap::OnTimeout(uv_timer_t* handle, int status) {
-  JS_ENTER_SCOPE();
-
   TimerWrap* wrap = static_cast<TimerWrap*>(handle->data);
   assert(wrap);
 
   commons* com = wrap->com;
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
 
   __JS_LOCAL_VALUE argv[1] = {
@@ -97,7 +96,8 @@ void TimerWrap::OnTimeout(uv_timer_t* handle, int status) {
 #endif
   };
 
-  MakeCallback(wrap->com, wrap->object_, JS_PREDEFINED_STRING(ontimeout), 1,
+  JS_LOCAL_OBJECT lobj = JS_OBJECT_FROM_PERSISTENT(wrap->object_);
+  MakeCallback(wrap->com, lobj, JS_PREDEFINED_STRING(ontimeout), 1,
                argv);
 }
 

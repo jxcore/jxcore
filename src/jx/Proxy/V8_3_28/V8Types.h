@@ -21,25 +21,28 @@
 #define V8_T_CONTEXT v8::Context
 #define V8_T_NULL v8::Null
 
-#define JS_V8_ARGUMENT v8::Arguments
+#define JS_V8_ARGUMENT v8::FunctionCallbackInfo<v8::Value>
 
 // #public
 #define V8_T_LOCAL(x) v8::Local<x>
 #define V8_T_HANDLE(x) v8::Handle<x>
 #define V8_T_PERSISTENT(x) v8::Persistent<x>
 
-#define JS_UNDEFINED() V8_T_LOCAL(V8_T_VALUE)::New(V8_T_UNDEFINED())
-#define JS_NULL() V8_T_LOCAL(V8_T_VALUE)::New(V8_T_NULL(JS_GET_STATE_MARKER()))
+#define JS_UNDEFINED()                            \
+  V8_T_LOCAL(V8_T_VALUE)::New(__contextORisolate, \
+                              V8_T_UNDEFINED(__contextORisolate))
+#define JS_NULL() \
+  V8_T_LOCAL(V8_T_VALUE)::New(__contextORisolate, V8_T_NULL(__contextORisolate))
 
 #define JS_NEW_ERROR_VALUE(x) ENGINE_NS::Exception::Error(x)
-#define JS_NEW_OBJECT_TEMPLATE() V8_T_OBJECT_TEMPLATE::New()
+#define JS_NEW_OBJECT_TEMPLATE() V8_T_OBJECT_TEMPLATE::New(__contextORisolate)
 
-#define JS_NEW_EMPTY_OBJECT() V8_T_OBJECT::New()
-#define JS_NEW_EMPTY_STRING() V8_T_STRING::Empty()
-#define _JS_NEW_INTEGER(x) V8_T_INTEGER::New(x, JS_GET_STATE_MARKER())
-#define _JS_NEW_UNSIGNED(x) V8_T_INTEGER::NewFromUnsigned(x, __contextORisolate)
-#define _JS_NEW_NUMBER(x) V8_T_NUMBER::New(x)
-#define _JS_NEW_BOOLEAN(x) V8_T_BOOLEAN::New(x)
+#define JS_NEW_EMPTY_OBJECT() V8_T_OBJECT::New(__contextORisolate)
+#define JS_NEW_EMPTY_STRING() V8_T_STRING::Empty(__contextORisolate)
+#define _JS_NEW_INTEGER(x) V8_T_INTEGER::New(__contextORisolate, x)
+#define _JS_NEW_UNSIGNED(x) V8_T_INTEGER::NewFromUnsigned(__contextORisolate, x)
+#define _JS_NEW_NUMBER(x) V8_T_NUMBER::New(__contextORisolate, x)
+#define _JS_NEW_BOOLEAN(x) V8_T_BOOLEAN::New(__contextORisolate, x)
 
 #define JS_PERSISTENT_VALUE V8_T_PERSISTENT(V8_T_VALUE)
 #define JS_PERSISTENT_VALUE_REF JS_PERSISTENT_VALUE
@@ -79,21 +82,25 @@
 #define JS_LOCAL_BOOLEAN V8_T_LOCAL(V8_T_BOOLEAN)
 #define JS_LOCAL_FUNCTION V8_T_LOCAL(V8_T_FUNCTION)
 #define JS_LOCAL_FUNCTION_TEMPLATE V8_T_LOCAL(V8_T_FUNCTION_TEMPLATE)
-#define TO_LOCAL_FUNCTION(x) JS_LOCAL_FUNCTION::New(x)
+#define TO_LOCAL_FUNCTION(x) JS_LOCAL_FUNCTION::New(__contextORisolate, x)
 #define JS_LOCAL_CONTEXT V8_T_LOCAL(V8_T_CONTEXT)
-
-#define JS_NEW_SCRIPT(a, b) ENGINE_NS::Script::New(a, b)
 
 #define JS_NEW_ARRAY() V8_T_ARRAY::New(JS_GET_STATE_MARKER())
 #define JS_NEW_ARRAY_WITH_COUNT(n) V8_T_ARRAY::New(JS_GET_STATE_MARKER(), n)
-#define JS_NEW_FUNCTION_TEMPLATE(x) V8_T_FUNCTION_TEMPLATE::New(x)
-#define JS_NEW_FUNCTION_CALL_TEMPLATE(x) V8_T_FUNCTION_TEMPLATE::New(x)
-#define JS_NEW_EMPTY_FUNCTION_TEMPLATE() V8_T_FUNCTION_TEMPLATE::New()
-#define JS_NEW_CONTEXT(x, a, b)   \
-  v8::Persistent<v8::Context> x = \
-      V8_T_CONTEXT::New(NULL, JS_NEW_OBJECT_TEMPLATE())
-#define JS_NEW_EMPTY_CONTEXT() V8_T_CONTEXT::New()
-#define JS_NEW_PERSISTENT_CONTEXT(y, x) y = v8::Persistent<v8::Context>::New(x)
+#define JS_NEW_FUNCTION_TEMPLATE(x) \
+  V8_T_FUNCTION_TEMPLATE::New(__contextORisolate, x)
+#define JS_NEW_FUNCTION_CALL_TEMPLATE(x) \
+  V8_T_FUNCTION_TEMPLATE::New(__contextORisolate, x)
+#define JS_NEW_EMPTY_FUNCTION_TEMPLATE() \
+  V8_T_FUNCTION_TEMPLATE::New(__contextORisolate)
+#define JS_NEW_CONTEXT(x, a, b) v8::Local<v8::Context> x = V8_T_CONTEXT::New(a)
+
+static inline v8::Local<v8::Context> __JS_NEW_EMPTY_CONTEXT() {
+  return v8::Context::New(v8::Isolate::GetCurrent());
+}
+#define JS_NEW_EMPTY_CONTEXT() __JS_NEW_EMPTY_CONTEXT()
+
+#define JS_NEW_PERSISTENT_CONTEXT(x, y) x.Reset(__contextORisolate, x)
 
 #define JS_CAST_VALUE(x) JS_LOCAL_VALUE::Cast(x)
 #define JS_CAST_OBJECT(x) JS_LOCAL_OBJECT::Cast(x)
@@ -102,40 +109,41 @@
 #define JS_CAST_FUNCTION(x) JS_LOCAL_FUNCTION::Cast(x)
 #define JS_CAST_FUNCTION_TEMPLATE(x) JS_LOCAL_FUNCTION_TEMPLATE::Cast(x)
 
-#define JS_CLEAR_PERSISTENT_(x) \
-  x.Dispose();                  \
-  x.Clear()
+#define JS_CLEAR_PERSISTENT_(x) x.Reset()
 
 #define JS_CLEAR_PERSISTENT(x) \
   if (!x.IsEmpty()) {          \
     JS_CLEAR_PERSISTENT_(x);   \
   }
 
-#define JS_NEW_PERSISTENT_OBJECT(a, x) a = JS_PERSISTENT_OBJECT::New(x)
+#define JS_NEW_PERSISTENT_OBJECT(a, x) a.Reset(__contextORisolate, x)
 #define JS_NEW_PERSISTENT_OBJECT_TEMPLATE(x) \
-  JS_PERSISTENT_OBJECT_TEMPLATE::New(x)
-#define JS_NEW_PERSISTENT_ARRAY(y, x) y = JS_PERSISTENT_ARRAY::New(x)
-#define JS_NEW_EMPTY_PERSISTENT_OBJECT(x) \
-  JS_NEW_PERSISTENT_OBJECT(x, JS_NEW_EMPTY_OBJECT())
-#define JS_NEW_PERSISTENT_STRING(a, b) a = JS_PERSISTENT_STRING::New(b)
-#define JS_NEW_PERSISTENT_FUNCTION(a, b) a = JS_PERSISTENT_FUNCTION::New(b)
-#define JS_NEW_PERSISTENT_FUNCTION_TEMPLATE(a, b) \
-  a = JS_PERSISTENT_FUNCTION_TEMPLATE::New(b)
-#define JS_NEW_PERSISTENT_SCRIPT(y, x) y = JS_PERSISTENT_SCRIPT::New(x)
-#define JS_DISPOSE_PERSISTENT_CONTEXT(x) (x).Dispose()
-#define JS_NEW_PERSISTENT_VALUE(a, x) a = JS_PERSISTENT_VALUE::New(x)
-#define JS_NEW_EMPTY_PERSISTENT_FUNCTION_TEMPLATE(a) a = JS_PERSISTENT_FUNCTION_TEMPLATE()
+  JS_PERSISTENT_OBJECT_TEMPLATE::New(__contextORisolate, x)
+#define JS_NEW_PERSISTENT_ARRAY(x, y) x.Reset(__contextORisolate, y)
+#define JS_NEW_EMPTY_PERSISTENT_OBJECT(a) \
+  a.Reset(__contextORisolate, JS_NEW_EMPTY_OBJECT())
+#define JS_NEW_PERSISTENT_STRING(a, b) a.Reset(__contextORisolate, b)
+#define JS_NEW_PERSISTENT_FUNCTION(a, b) a.Reset(__contextORisolate, b)
+#define JS_NEW_PERSISTENT_FUNCTION_TEMPLATE(a, b) a.Reset(__contextORisolate, b)
+#define JS_NEW_EMPTY_PERSISTENT_FUNCTION_TEMPLATE(a) a.Reset()
+#define JS_NEW_PERSISTENT_SCRIPT(a, x) a.Reset(__contextORisolate, x)
+#define JS_DISPOSE_PERSISTENT_CONTEXT(x) (x).Reset()
+#define JS_NEW_PERSISTENT_VALUE(a, x) a.Reset(__contextORisolate, x)
 
-#define JS_TYPE_TO_LOCAL_VALUE(x) JS_LOCAL_VALUE::New(x)
-#define JS_TYPE_TO_LOCAL_OBJECT(x) JS_LOCAL_OBJECT::New(x)
-#define JS_TYPE_TO_LOCAL_STRING(x) JS_LOCAL_STRING::New(x)
-#define JS_TYPE_TO_LOCAL_FUNCTION(x) JS_LOCAL_FUNCTION::New(x)
-#define JS_TYPE_TO_LOCAL_FUNCTION_TEMPLATE(x) JS_LOCAL_FUNCTION_TEMPLATE::New(x)
-#define JS_TYPE_TO_LOCAL_CONTEXT(x) (*x)
-#define JS_NEW_LOCAL_CONTEXT(x) v8::Local<v8::Context>::New(x)
-#define JS_TYPE_TO_LOCAL_ARRAY(x) JS_LOCAL_ARRAY::New(x)
-#define JS_TYPE_TO_LOCAL_SCRIPT(x) JS_LOCAL_SCRIPT::New(x)
-#define JS_OBJECT_FROM_PERSISTENT(x) x->ToObject()
+#define JS_NEW_SCRIPT(a, b) v8::Script::Compile(a, b)
+
+#define JS_TYPE_TO_LOCAL_SCRIPT(x) JS_LOCAL_SCRIPT::New(__contextORisolate, x)
+#define JS_TYPE_TO_LOCAL_VALUE(x) JS_LOCAL_VALUE::New(__contextORisolate, x)
+#define JS_TYPE_TO_LOCAL_OBJECT(x) JS_LOCAL_OBJECT::New(__contextORisolate, x)
+#define JS_TYPE_TO_LOCAL_STRING(x) JS_LOCAL_STRING::New(__contextORisolate, x)
+#define JS_TYPE_TO_LOCAL_FUNCTION(x) \
+  JS_LOCAL_FUNCTION::New(__contextORisolate, x)
+#define JS_TYPE_TO_LOCAL_FUNCTION_TEMPLATE(x) \
+  JS_LOCAL_FUNCTION_TEMPLATE::New(__contextORisolate, x)
+#define JS_TYPE_TO_LOCAL_CONTEXT(x) PersistentToLocal(__contextORisolate, x)
+#define JS_NEW_LOCAL_CONTEXT(x) \
+  v8::Local<v8::Context>::New(__contextORisolate, x)
+#define JS_TYPE_TO_LOCAL_ARRAY(x) JS_LOCAL_ARRAY::New(__contextORisolate, x)
 
 #define JS_GET_CONTEXT_GLOBAL(x) x->Global()
 #define JS_GET_THREAD_ID() com->threadId
@@ -184,6 +192,7 @@
 #define JS_GET_FUNCTION(x) (x)->GetFunction()
 #define JS_GET_CONSTRUCTOR(x) (x)->GetFunction()
 
+#define JS_OBJECT_FROM_PERSISTENT(x) x.get()->ToObject()
 #define JS_VALUE_TO_OBJECT(x) x->ToObject()
 #define JS_VALUE_TO_STRING(x) x->ToString()
 #define JS_VALUE_TO_NUMBER(x) x->ToNumber()
@@ -191,20 +200,39 @@
 #define JS_VALUE_TO_BOOLEAN(x) x->ToBoolean()
 #define JS_STRING_TO_ERROR_VALUE(x) v8::Exception::Error(x)
 
-#define UTF8_TO_STRING(str) V8_T_STRING::New(JS_GET_STATE_MARKER(), str)
-#define STD_TO_STRING(str) V8_T_STRING::New(JS_GET_STATE_MARKER(), str)
+#define STD_TO_STRING(str) V8_T_STRING::NewFromUtf8(__contextORisolate, str)
+
+#define UTF16_TO_STRING__(str) \
+  V8_T_STRING::NewFromTwoByte(__contextORisolate, (const uint16_t *)str)
+
+inline static JS_HANDLE_STRING ___STD_TO_STRING(v8::Isolate *__contextORisolate,
+                                                const char *chr) {
+  v8::EscapableHandleScope scope(__contextORisolate);
+  return scope.Escape(STD_TO_STRING(chr));
+}
+
+inline static JS_HANDLE_STRING ___STD_TO_STRING(v8::Isolate *__contextORisolate,
+                                                const uint16_t *chr) {
+  v8::EscapableHandleScope scope(__contextORisolate);
+  return scope.Escape(UTF16_TO_STRING__(chr));
+}
+
+#define UTF8_TO_STRING(str) ___STD_TO_STRING(__contextORisolate, str)
+
 #define STD_TO_STRING_WITH_LENGTH(str, l) \
-  V8_T_STRING::New(JS_GET_STATE_MARKER(), str, l)
+  node::STD_TO_STRING_WITH_LENGTH_(__contextORisolate, str, l)
 #define UTF8_TO_STRING_WITH_LENGTH(str, l) \
-  V8_T_STRING::New(JS_GET_STATE_MARKER(), str, l)
-#define STD_TO_BOOLEAN(bl) v8::Local<v8::Boolean>::New(_JS_NEW_BOOLEAN(bl))
+  node::STD_TO_STRING_WITH_LENGTH_(__contextORisolate, str, l)
+
+#define STD_TO_BOOLEAN(bl) _JS_NEW_BOOLEAN(bl)
 #define STD_TO_INTEGER(nt) _JS_NEW_INTEGER(nt)
 #define STD_TO_UNSIGNED(nt) _JS_NEW_UNSIGNED(nt)
 #define STD_TO_NUMBER(n) _JS_NEW_NUMBER(n)
 
 #define JS_OBJECT_FIELD_COUNT(obj) obj->InternalFieldCount()
-#define JS_SET_POINTER_DATA(host, data) host->SetPointerInInternalField(0, data)
-#define JS_GET_POINTER_DATA(host) host->GetPointerFromInternalField(0)
+#define JS_SET_POINTER_DATA(host, data) \
+  host->SetAlignedPointerInInternalField(0, data)
+#define JS_GET_POINTER_DATA(host) host->GetAlignedPointerFromInternalField(0)
 #define JS_SET_INDEXED_EXTERNAL(host, b, c, d) \
   host->SetIndexedPropertiesToExternalArrayData(b, c, d)
 #define JS_GET_EXTERNAL_ARRAY_DATA(x) \
@@ -212,21 +240,22 @@
 #define JS_GET_EXTERNAL_ARRAY_DATA_LENGTH(x) \
   (x)->ToObject()->GetIndexedPropertiesExternalArrayDataLength()
 #define JS_GET_EXTERNAL_ARRAY_DATA_TYPE(x) \
-  (x)->GetIndexedPropertiesExternalArrayDataType()
+  (x)->ToObject()->GetIndexedPropertiesExternalArrayDataType()
 
-#define JS_PREDEFINED_STRING(name) JS_VALUE_TO_STRING(com->pstr_##name)
+#define JS_PREDEFINED_STRING(name) JS_VALUE_TO_STRING(com->pstr_##name.get())
 
-#define JS_REMOVE_EXTERNAL_MEMORY(data_, length_) \
-  delete[] data_;                                 \
-  v8::V8::AdjustAmountOfExternalAllocatedMemory(  \
+#define JS_REMOVE_EXTERNAL_MEMORY(data_, length_)            \
+  delete[] data_;                                            \
+  __contextORisolate->AdjustAmountOfExternalAllocatedMemory( \
       -static_cast<intptr_t>(sizeof(Buffer) + length_))
 
-#define JS_ADD_EXTERNAL_MEMORY(data_, length_) \
-  data_ = new char[length_];                   \
-  v8::V8::AdjustAmountOfExternalAllocatedMemory(sizeof(Buffer) + length_)
+#define JS_ADD_EXTERNAL_MEMORY(data_, length_)                               \
+  data_ = new char[length_];                                                 \
+  __contextORisolate->AdjustAmountOfExternalAllocatedMemory(sizeof(Buffer) + \
+                                                            length_)
 
 #define JS_ADJUST_EXTERNAL_MEMORY(k) \
-  v8::V8::AdjustAmountOfExternalAllocatedMemory(k)
+  __contextORisolate->AdjustAmountOfExternalAllocatedMemory(k)
 
 #define JS_NEW_INSTANCE(a, b, c) (a)->NewInstance(b, c)
 #define JS_NEW_DEFAULT_INSTANCE(x) (x)->NewInstance()
@@ -259,7 +288,7 @@
   v8::Script::Compile(source, filename)
 #define JS_SCRIPT_RUN(script) script->Run()
 
-#define JS_NATIVE_RETURN_TYPE JS_HANDLE_VALUE
+#define JS_NATIVE_RETURN_TYPE void
 
 #define JS_GET_ERROR_VALUE(x) x
 

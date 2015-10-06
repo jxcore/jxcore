@@ -28,7 +28,10 @@ class WriteWrap : public ReqWrap<uv_write_t> {
  protected:
   // People should not be using the non-placement new and delete operator on a
   // WriteWrap. Ensure this never happens.
-  void* operator new(size_t size) { assert(0 && "DO NOT USE"); }
+  void* operator new(size_t size) {
+    assert(0 && "DO NOT USE");
+    return NULL;
+  }
   void operator delete(void* ptr) { assert(0 && "DO NOT USE"); }
 };
 
@@ -84,9 +87,11 @@ void StreamWrap::SetHandle(uv_handle_t* h) {
 
 void StreamWrap::UpdateWriteQueueSize(const commons* com) {
   ENGINE_LOG_THIS("StreamWrap", "UpdateWriteQueueSize");
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
-  JS_NAME_SET(object_, JS_STRING_ID("writeQueueSize"),
+
+  JS_LOCAL_OBJECT obj = JS_OBJECT_FROM_PERSISTENT(object_);
+  JS_NAME_SET(obj, JS_STRING_ID("writeQueueSize"),
               STD_TO_INTEGER(stream_->write_queue_size));
 }
 
@@ -127,7 +132,8 @@ uv_buf_t StreamWrap::OnAlloc(uv_handle_t* handle, size_t suggested_size) {
   StreamWrap* wrap = static_cast<StreamWrap*>(handle->data);
   assert(wrap->stream_ == reinterpret_cast<uv_stream_t*>(handle));
   commons* com = wrap->com;
-  char* buf = com->s_slab_allocator->Allocate(wrap->object_, suggested_size);
+  JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(wrap->object_);
+  char* buf = com->s_slab_allocator->Allocate(objl, suggested_size);
   return uv_buf_init(buf, suggested_size);
 }
 
@@ -156,8 +162,6 @@ static JS_LOCAL_OBJECT AcceptHandle(uv_stream_t* pipe) {
 
 void StreamWrap::OnReadCommon(uv_stream_t* handle, ssize_t nread, uv_buf_t buf,
                               uv_handle_type pending) {
-  JS_ENTER_SCOPE();
-
   StreamWrap* wrap = static_cast<StreamWrap*>(handle->data);
 
   // We should not be getting this callback if someone as already called
@@ -165,25 +169,26 @@ void StreamWrap::OnReadCommon(uv_stream_t* handle, ssize_t nread, uv_buf_t buf,
   assert(JS_IS_EMPTY((wrap->object_)) == false);
 
   commons* com = wrap->com;
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
 
+  JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(wrap->object_);
   if (nread < 0) {
     // If libuv reports an error or EOF it *may* give us a buffer back. In that
     // case, return the space to the slab.
     if (buf.base != NULL) {
-      com->s_slab_allocator->Shrink(wrap->object_, buf.base, 0);
+      com->s_slab_allocator->Shrink(objl, buf.base, 0);
     }
 
     SetCOMErrno(com, uv_last_error(com->loop));
-    MakeCallback(com, wrap->object_, JS_PREDEFINED_STRING(onread), 0, NULL);
+    MakeCallback(com, objl, JS_PREDEFINED_STRING(onread), 0, NULL);
 
     return;
   }
 
   assert(buf.base != NULL);
 
-  JS_LOCAL_OBJECT slab =
-      com->s_slab_allocator->Shrink(wrap->object_, buf.base, nread);
+  JS_LOCAL_OBJECT slab = com->s_slab_allocator->Shrink(objl, buf.base, nread);
 
   if (nread == 0) return;
   assert(static_cast<size_t>(nread) <= buf.len);
@@ -191,8 +196,6 @@ void StreamWrap::OnReadCommon(uv_stream_t* handle, ssize_t nread, uv_buf_t buf,
   int argc = 3;
   char* buffer_data = BUFFER__DATA(slab);
   size_t started = buf.base - buffer_data;
-
-  JS_LOCAL_OBJECT target_object = JS_VALUE_TO_OBJECT(wrap->object_);
 
 #ifdef JS_ENGINE_MOZJS
   jsval argv[5] = {JS_CORE_REFERENCE(slab), JS::Int32Value(started),
@@ -225,9 +228,9 @@ void StreamWrap::OnReadCommon(uv_stream_t* handle, ssize_t nread, uv_buf_t buf,
     NODE_COUNT_PIPE_BYTES_RECV(nread);
   }
 
-  if (JS_HAS_NAME(target_object, JS_PREDEFINED_STRING(owner))) {
-    JS_LOCAL_OBJECT owner = JS_VALUE_TO_OBJECT(
-        JS_GET_NAME(target_object, JS_PREDEFINED_STRING(owner)));
+  if (JS_HAS_NAME(objl, JS_PREDEFINED_STRING(owner))) {
+    JS_LOCAL_OBJECT owner =
+        JS_VALUE_TO_OBJECT(JS_GET_NAME(objl, JS_PREDEFINED_STRING(owner)));
 
     if (JS_HAS_NAME(owner, JS_PREDEFINED_STRING(parser))) {
       JS_LOCAL_VALUE this_parser =
@@ -259,7 +262,7 @@ void StreamWrap::OnReadCommon(uv_stream_t* handle, ssize_t nread, uv_buf_t buf,
     }
   }
 
-  MakeCallback(com, target_object, JS_PREDEFINED_STRING(onread), argc, argv);
+  MakeCallback(com, objl, JS_PREDEFINED_STRING(onread), argc, argv);
 }
 
 void StreamWrap::OnRead(uv_stream_t* handle, ssize_t nread, uv_buf_t buf) {
@@ -285,8 +288,8 @@ JS_METHOD_NO_COM(StreamWrap, WriteBuffer) {
   WriteWrap* req_wrap = new (storage) WriteWrap();
   req_wrap->Init(wrap->com);
 
-  JS_NAME_SET_HIDDEN(req_wrap->object_, JS_PREDEFINED_STRING(buffer),
-                     buffer_obj);
+  JS_LOCAL_OBJECT objr = JS_OBJECT_FROM_PERSISTENT(req_wrap->object_);
+  JS_NAME_SET_HIDDEN(objr, JS_PREDEFINED_STRING(buffer), buffer_obj);
 
   uv_buf_t buf;
   buf.base = BUFFER__DATA(buffer_obj) + offset;
@@ -297,8 +300,7 @@ JS_METHOD_NO_COM(StreamWrap, WriteBuffer) {
 
   req_wrap->Dispatched();
 
-  JS_NAME_SET(req_wrap->object_, JS_PREDEFINED_STRING(bytes),
-              STD_TO_INTEGER(length));
+  JS_NAME_SET(objr, JS_PREDEFINED_STRING(bytes), STD_TO_INTEGER(length));
 
   wrap->UpdateWriteQueueSize(wrap->com);
 
@@ -315,7 +317,7 @@ JS_METHOD_NO_COM(StreamWrap, WriteBuffer) {
       NODE_COUNT_PIPE_BYTES_SENT(length);
     }
 
-    RETURN_PARAM(req_wrap->object_);
+    RETURN_PARAM(objr);
   }
 }
 JS_METHOD_END
@@ -325,7 +327,7 @@ JS_METHOD_END
   JS_NATIVE_RETURN_TYPE StreamWrap::WriteStringImpl( \
       jxcore::PArguments& args) {
 STR_WRITEIMP
-JS_ENTER_SCOPE();
+JS_ENTER_SCOPE_WITH(args.GetIsolate());
 ENGINE_UNWRAP(StreamWrap);
 JS_DEFINE_STATE_MARKER(com);
 {
@@ -376,6 +378,7 @@ JS_DEFINE_STATE_MARKER(com);
   buf.base = data;
   buf.len = data_size;
 
+  JS_LOCAL_OBJECT objr = JS_OBJECT_FROM_PERSISTENT(req_wrap->object_);
   bool ipc_pipe =
       wrap->stream_->type == UV_NAMED_PIPE && ((uv_pipe_t*)wrap->stream_)->ipc;
 
@@ -398,8 +401,7 @@ JS_DEFINE_STATE_MARKER(com);
       commons* com = send_handle_wrap->com;
       assert(!JS_IS_EMPTY((req_wrap->object_)));
       com->handle_has_symbol_ = true;
-      JS_NAME_SET(req_wrap->object_, JS_PREDEFINED_STRING(handle),
-                  send_handle_obj);
+      JS_NAME_SET(objr, JS_PREDEFINED_STRING(handle), send_handle_obj);
     }
 
     r = uv_write2(&req_wrap->req_, wrap->stream_, &buf, 1,
@@ -408,8 +410,7 @@ JS_DEFINE_STATE_MARKER(com);
   }
 
   req_wrap->Dispatched();
-  JS_NAME_SET(req_wrap->object_, JS_PREDEFINED_STRING(bytes),
-              STD_TO_INTEGER(data_size));
+  JS_NAME_SET(objr, JS_PREDEFINED_STRING(bytes), STD_TO_INTEGER(data_size));
 
   wrap->UpdateWriteQueueSize(wrap->com);
 
@@ -425,23 +426,23 @@ JS_DEFINE_STATE_MARKER(com);
       NODE_COUNT_PIPE_BYTES_SENT(buf.len);
     }
 
-    RETURN_PARAM(req_wrap->object_);
+    RETURN_PARAM(objr);
   }
 }
 JS_METHOD_END
 
 JS_METHOD_NO_COM(StreamWrap, WriteAsciiString) {
-  return WriteStringImpl<ASCII>(args);
+  RETURN_FROM(WriteStringImpl<ASCII>(args));
 }
 JS_METHOD_END
 
 JS_METHOD_NO_COM(StreamWrap, WriteUtf8String) {
-  return WriteStringImpl<UTF8>(args);
+  RETURN_FROM(WriteStringImpl<UTF8>(args));
 }
 JS_METHOD_END
 
 JS_METHOD_NO_COM(StreamWrap, WriteUcs2String) {
-  return WriteStringImpl<UCS2>(args);
+  RETURN_FROM(WriteStringImpl<UCS2>(args));
 }
 JS_METHOD_END
 
@@ -458,9 +459,10 @@ void StreamWrap::AfterWrite(uv_write_t* req, int status) {
   assert(JS_IS_EMPTY((req_wrap->object_)) == false);
   assert(JS_IS_EMPTY((wrap->object_)) == false);
 
+  JS_LOCAL_OBJECT objr = JS_OBJECT_FROM_PERSISTENT(req_wrap->object_);
   // Unref handle property
   if (com->handle_has_symbol_) {
-    JS_NAME_DELETE(req_wrap->object_, JS_PREDEFINED_STRING(handle));
+    JS_NAME_DELETE(objr, JS_PREDEFINED_STRING(handle));
     com->handle_has_symbol_ = false;
   }
 
@@ -471,23 +473,24 @@ void StreamWrap::AfterWrite(uv_write_t* req, int status) {
   wrap->UpdateWriteQueueSize(com);
 
 #ifdef JS_ENGINE_V8
+  JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(wrap->object_);
   __JS_LOCAL_VALUE argv[] = {STD_TO_INTEGER(status),
-                             JS_TYPE_TO_LOCAL_VALUE(wrap->object_),
-                             JS_TYPE_TO_LOCAL_VALUE(req_wrap->object_)};
+                             JS_TYPE_TO_LOCAL_VALUE(objl),
+                             JS_TYPE_TO_LOCAL_VALUE(objr)};
 #elif defined(JS_ENGINE_MOZJS)
   __JS_LOCAL_VALUE argv[] = {JS::Int32Value(status),
                              JS_CORE_REFERENCE(wrap->object_),
                              JS_CORE_REFERENCE(req_wrap->object_)};
 #endif
-  MakeCallback(wrap->com, req_wrap->object_, JS_PREDEFINED_STRING(oncomplete),
-               ARRAY_SIZE(argv), argv);
+  MakeCallback(wrap->com, objr, JS_PREDEFINED_STRING(oncomplete), 3, argv);
 
   req_wrap->~WriteWrap();
   delete[] reinterpret_cast<char*>(req_wrap);
 }
 
 JS_METHOD_NO_COM(StreamWrap, Shutdown) {
-  //ENGINE_LOG_THIS("StreamWrap", "Shutdown"); //already logged in JS_METHOD_NO_COM
+  // ENGINE_LOG_THIS("StreamWrap", "Shutdown"); //already logged in
+  // JS_METHOD_NO_COM
   ENGINE_UNWRAP(StreamWrap);
 
   ShutdownWrap* req_wrap = new ShutdownWrap(wrap->com);
@@ -501,7 +504,8 @@ JS_METHOD_NO_COM(StreamWrap, Shutdown) {
     delete req_wrap;
     RETURN_PARAM(JS_NULL());
   } else {
-    RETURN_PARAM(req_wrap->object_);
+    JS_LOCAL_OBJECT objr = JS_OBJECT_FROM_PERSISTENT(req_wrap->object_);
+    RETURN_PARAM(objr);
   }
 }
 JS_METHOD_END
@@ -515,25 +519,27 @@ void StreamWrap::AfterShutdown(uv_shutdown_t* req, int status) {
   assert(JS_IS_EMPTY((req_wrap->object_)) == false);
   assert(JS_IS_EMPTY((wrap->object_)) == false);
 
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(wrap->com->node_isolate);
   JS_DEFINE_STATE_MARKER(wrap->com);
 
   if (status) {
     SetCOMErrno(wrap->com, uv_last_error(wrap->com->loop));
   }
 
+  JS_LOCAL_OBJECT objr = JS_OBJECT_FROM_PERSISTENT(req_wrap->object_);
 #ifdef JS_ENGINE_V8
+  JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(wrap->object_);
   node::commons* com = wrap->com;
   __JS_LOCAL_VALUE argv[3] = {STD_TO_INTEGER(status),
-                              JS_TYPE_TO_LOCAL_VALUE(wrap->object_),
-                              JS_TYPE_TO_LOCAL_VALUE(req_wrap->object_)};
+                              JS_TYPE_TO_LOCAL_VALUE(objl),
+                              JS_TYPE_TO_LOCAL_VALUE(objr)};
 #elif defined(JS_ENGINE_MOZJS)
   __JS_LOCAL_VALUE argv[3] = {JS::Int32Value(status),
                               (wrap->object_.GetRawValue()),
-                              (req_wrap->object_.GetRawValue())};
+                              (objr.GetRawValue())};
 #endif
 
-  MakeCallback(wrap->com, req_wrap->object_, JS_PREDEFINED_STRING(oncomplete),
+  MakeCallback(wrap->com, objr, JS_PREDEFINED_STRING(oncomplete),
                ARRAY_SIZE(argv), argv);
 
   delete req_wrap;

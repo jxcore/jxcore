@@ -84,8 +84,8 @@ class TCPWrap : public StreamWrap {
     SET_INSTANCE_METHOD("setSimultaneousAccepts", SetSimultaneousAccepts, 1);
 #endif
 
-    com->tcpConstructor =
-        JS_NEW_PERSISTENT_FUNCTION(JS_GET_FUNCTION(constructor));
+    JS_NEW_PERSISTENT_FUNCTION(com->tcpConstructor,
+                               JS_GET_FUNCTION(constructor));
   }
   END_INIT_NAMED_MEMBERS(TCP)
 };

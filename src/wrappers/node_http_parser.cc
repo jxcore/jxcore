@@ -111,8 +111,9 @@ class Parser : public ObjectWrap {
 
     JS_DEFINE_STATE_MARKER(com);
 
+    JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(handle_);
     JS_LOCAL_VALUE cb =
-        JS_GET_NAME(handle_, JS_PREDEFINED_STRING(onHeadersComplete));
+        JS_GET_NAME(objl, JS_PREDEFINED_STRING(onHeadersComplete));
 
     if (!JS_IS_FUNCTION(cb)) return 0;
 
@@ -135,15 +136,15 @@ class Parser : public ObjectWrap {
       switch (parser_.method) {  // eliminate hot cases
         case 1: {
           JS_NAME_SET(message_info, JS_PREDEFINED_STRING(method),
-                      JS_TYPE_TO_LOCAL_VALUE(com->pstr_GET));
+		      JS_TYPE_TO_LOCAL_STRING(com->pstr_GET));
         } break;
         case 2: {
           JS_NAME_SET(message_info, JS_PREDEFINED_STRING(method),
-                      JS_TYPE_TO_LOCAL_VALUE(com->pstr_HEAD));
+		      JS_TYPE_TO_LOCAL_STRING(com->pstr_HEAD));
         } break;
         case 3: {
           JS_NAME_SET(message_info, JS_PREDEFINED_STRING(method),
-                      JS_TYPE_TO_LOCAL_VALUE(com->pstr_POST));
+                      JS_TYPE_TO_LOCAL_STRING(com->pstr_POST));
         } break;
         default: {
           JS_NAME_SET(message_info, JS_PREDEFINED_STRING(method),
@@ -173,7 +174,7 @@ class Parser : public ObjectWrap {
     JS_CALL_PARAMS(argv, 1, JS_CORE_REFERENCE(message_info));
 
     JS_LOCAL_VALUE head_response =
-        JS_METHOD_CALL(JS_CAST_FUNCTION(cb), handle_, 1, argv);
+        JS_METHOD_CALL(JS_CAST_FUNCTION(cb), objl, 1, argv);
 
     if (JS_IS_EMPTY(head_response)) {
       got_exception_ = true;
@@ -185,18 +186,19 @@ class Parser : public ObjectWrap {
 
   HTTP_DATA_CB(on_body) {
     ENGINE_LOG_THIS("HttpParser", "on_body");
-    JS_ENTER_SCOPE();
+    JS_ENTER_SCOPE_WITH(com->node_isolate);
     JS_DEFINE_STATE_MARKER(com);
 
     if (length == 0) {
       return 0;
     }
 
-    JS_LOCAL_VALUE cb = JS_GET_NAME(handle_, JS_PREDEFINED_STRING(onBody));
+    JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(handle_);
+    JS_LOCAL_VALUE cb = JS_GET_NAME(objl, JS_PREDEFINED_STRING(onBody));
     if (!JS_IS_FUNCTION(cb)) return 0;
 
-    if (JS_HAS_NAME(handle_, JS_PREDEFINED_STRING(incoming))) {
-      if (JS_IS_NULL(JS_GET_NAME(handle_, JS_PREDEFINED_STRING(incoming)))) {
+    if (JS_HAS_NAME(objl, JS_PREDEFINED_STRING(incoming))) {
+      if (JS_IS_NULL(JS_GET_NAME(objl, JS_PREDEFINED_STRING(incoming)))) {
         return 0;
       }
     }
@@ -204,26 +206,27 @@ class Parser : public ObjectWrap {
     int offset = at - com->pa_current_buffer_data;
 
     if (boost_performance) {
-      JS_CALL_PARAMS(
-          argv, 2,
-          JS_CORE_REFERENCE(JS_VALUE_TO_OBJECT(Buffer::New(
-              com->pa_current_buffer_data + offset, length, com)->handle_)),
-          JS_CORE_REFERENCE(STD_TO_INTEGER(length)));
+      JS_LOCAL_OBJECT ph = JS_OBJECT_FROM_PERSISTENT(
+          Buffer::New(com->pa_current_buffer_data + offset, length, com)
+              ->handle_);
+      JS_CALL_PARAMS(argv, 2, JS_CORE_REFERENCE(ph),
+                     JS_CORE_REFERENCE(STD_TO_INTEGER(length)));
 
-      JS_LOCAL_VALUE r = JS_METHOD_CALL(JS_CAST_FUNCTION(cb), handle_, 2, argv);
+      JS_LOCAL_VALUE r = JS_METHOD_CALL(JS_CAST_FUNCTION(cb), objl, 2, argv);
 
       if (JS_IS_EMPTY(r)) {
         got_exception_ = true;
         return -1;
       }
     } else {  // node.js compatibility for custom Parser object
-      JS_CALL_PARAMS(
-          argv, 3,
-          JS_CORE_REFERENCE(JS_VALUE_TO_OBJECT(Buffer::New(
-              com->pa_current_buffer_data + offset, length, com)->handle_)),
-          JS_CORE_REFERENCE(STD_TO_INTEGER(0)),
-          JS_CORE_REFERENCE(STD_TO_INTEGER(length)));
-      JS_LOCAL_VALUE r = JS_METHOD_CALL(JS_CAST_FUNCTION(cb), handle_, 3, argv);
+      JS_LOCAL_OBJECT ph = JS_OBJECT_FROM_PERSISTENT(
+          Buffer::New(com->pa_current_buffer_data + offset, length, com)
+              ->handle_);
+
+      JS_CALL_PARAMS(argv, 3, JS_CORE_REFERENCE(ph),
+                     JS_CORE_REFERENCE(STD_TO_INTEGER(0)),
+                     JS_CORE_REFERENCE(STD_TO_INTEGER(length)));
+      JS_LOCAL_VALUE r = JS_METHOD_CALL(JS_CAST_FUNCTION(cb), objl, 3, argv);
 
       if (JS_IS_EMPTY(r)) {
         got_exception_ = true;
@@ -238,14 +241,15 @@ class Parser : public ObjectWrap {
     ENGINE_LOG_THIS("HttpParser", "on_message_complete");
     JS_ENTER_SCOPE();
 
+    JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(handle_);
     if (num_fields_) Flush();  // Flush trailing HTTP headers.
 
     JS_LOCAL_VALUE cb =
-        JS_GET_NAME(handle_, JS_PREDEFINED_STRING(onMessageComplete));
+        JS_GET_NAME(objl, JS_PREDEFINED_STRING(onMessageComplete));
 
     if (!JS_IS_FUNCTION(cb)) return 0;
 
-    JS_LOCAL_VALUE r = JS_METHOD_CALL_NO_PARAM(JS_CAST_FUNCTION(cb), handle_);
+    JS_LOCAL_VALUE r = JS_METHOD_CALL_NO_PARAM(JS_CAST_FUNCTION(cb), objl);
 
     if (JS_IS_EMPTY(r)) {
       got_exception_ = true;
@@ -414,15 +418,16 @@ class Parser : public ObjectWrap {
   // spill headers and request path to JS land
   void Flush() {
     ENGINE_LOG_THIS("HttpParser", "Flush");
-    JS_ENTER_SCOPE();
+    JS_ENTER_SCOPE_WITH(com->node_isolate);
     JS_DEFINE_STATE_MARKER(com);
 
+    JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(handle_);
     JS_CALL_PARAMS(argv, 2, JS_CORE_REFERENCE(CreateHeaders()),
                    JS_CORE_REFERENCE(url_.ToString(false)));
 
-    JS_LOCAL_VALUE cb = JS_GET_NAME(handle_, JS_PREDEFINED_STRING(onHeaders));
+    JS_LOCAL_VALUE cb = JS_GET_NAME(objl, JS_PREDEFINED_STRING(onHeaders));
     if (!JS_IS_FUNCTION(cb)) return;
-    JS_LOCAL_VALUE r = JS_METHOD_CALL(JS_CAST_FUNCTION(cb), handle_, 2, argv);
+    JS_LOCAL_VALUE r = JS_METHOD_CALL(JS_CAST_FUNCTION(cb), objl, 2, argv);
 
     if (JS_IS_EMPTY(r)) got_exception_ = true;
 

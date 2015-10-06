@@ -16,7 +16,12 @@ template class NODE_EXTERN JS_PERSISTENT_FUNCTION_TEMPLATE;
 
 namespace node {
 
+#ifdef _WIN32
 class NODE_EXTERN ObjectWrap {
+#else
+// ugly eclipse syntax error
+class ObjectWrap {
+#endif
  public:
   ObjectWrap() { refs_ = 0; }
 
@@ -24,7 +29,6 @@ class NODE_EXTERN ObjectWrap {
     if (!JS_IS_EMPTY(handle_)) {
       assert(handle_.IsNearDeath());
       handle_.ClearWeak();
-      handle_->SetPointerInInternalField(0, 0);
       JS_CLEAR_PERSISTENT(handle_);
     }
   }
@@ -43,13 +47,14 @@ class NODE_EXTERN ObjectWrap {
     assert(JS_IS_EMPTY(handle_));
     assert(handle->InternalFieldCount() > 0);
 
-    JS_NEW_PERSISTENT_OBJECT(handle_, handle);
-    JS_SET_POINTER_DATA(handle_, this);
+    JS_DEFINE_CURRENT_MARKER();
+    handle_.Reset(JS_GET_STATE_MARKER(), handle);
+    JS_SET_POINTER_DATA(handle, this);
     MakeWeak();
   }
 
   inline void MakeWeak(void) {
-    handle_.MakeWeak(this, WeakCallback);
+    handle_.SetWeak(this, WeakCallback);
     handle_.MarkIndependent();
   }
 
@@ -59,8 +64,8 @@ class NODE_EXTERN ObjectWrap {
    */
   virtual void Ref() {
     assert(!JS_IS_EMPTY(handle_));
-    refs_++;
     handle_.ClearWeak();
+    refs_++;
   }
 
   /* Unref() marks an object as detached from the event loop.  This is its
@@ -84,14 +89,17 @@ class NODE_EXTERN ObjectWrap {
   int refs_;  // ro
 
  private:
-  static void WeakCallback(JS_PERSISTENT_VALUE value, void *data) {
-    JS_ENTER_SCOPE();
-    ObjectWrap *obj = static_cast<ObjectWrap *>(data);
-
-    assert(!obj->refs_);
-    assert(value == obj->handle_);
-    assert(value.IsNearDeath());
-    delete obj;
+  static void WeakCallback(
+      const v8::WeakCallbackData<v8::Object, ObjectWrap> &data) {
+    v8::Isolate *isolate = data.GetIsolate();
+    v8::HandleScope scope(isolate);
+    ObjectWrap* wrap = data.GetParameter();
+    assert(wrap->refs_ == 0);
+    assert(wrap->handle_.IsNearDeath());
+    assert(
+        data.GetValue() == v8::Local<v8::Object>::New(isolate, wrap->handle_));
+    wrap->handle_.Reset();
+    delete wrap;
   }
 };
 

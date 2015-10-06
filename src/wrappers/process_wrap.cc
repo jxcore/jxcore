@@ -203,7 +203,9 @@ JS_METHOD_NO_COM(ProcessWrap, Spawn) {
   } else {
     wrap->SetHandle((uv_handle_t*)&wrap->process_);
     assert(wrap->process_.data == wrap);
-    JS_NAME_SET(wrap->object_, JS_PREDEFINED_STRING(pid),
+
+    JS_LOCAL_OBJECT objl = JS_TYPE_TO_LOCAL_OBJECT(wrap->object_);
+    JS_NAME_SET(objl, JS_PREDEFINED_STRING(pid),
                 STD_TO_INTEGER(wrap->process_.pid));
   }
 
@@ -264,7 +266,8 @@ void ProcessWrap::OnExit(uv_process_t* handle, int exit_status,
     SetCOMErrno(wrap->com, uv_last_error(wrap->com->loop));
   }
 
-  MakeCallback(wrap->com, wrap->object_, STD_TO_STRING("onexit"),
+  JS_LOCAL_OBJECT objl = JS_TYPE_TO_LOCAL_OBJECT(wrap->object_);
+  MakeCallback(wrap->com, objl, STD_TO_STRING("onexit"),
                ARRAY_SIZE(argv), argv);
 }
 

@@ -101,6 +101,8 @@ class commons {
   bool should_interrupt_;
 #endif
 
+  void *agent_;
+
   static bool ssl_initialized_;
   static bool self_hosted_process_;
   static bool embedded_multithreading_;
@@ -323,7 +325,10 @@ class commons {
 
   void setProcess(JS_HANDLE_OBJECT_REF ps);
 
-  inline JXCORE_EXTERN(JS_HANDLE_OBJECT) getProcess() { return process_; }
+  inline JXCORE_EXTERN(JS_HANDLE_OBJECT) getProcess() {
+    JS_DEFINE_STATE_MARKER(this);
+    return JS_TYPE_TO_LOCAL_OBJECT(process_);
+  }
 
   static JXCORE_EXTERN(commons *) getInstance();
   static JXCORE_EXTERN(commons *) getInstanceIso(JS_ENGINE_MARKER iso);
@@ -361,7 +366,7 @@ class ReqWrap {
     JS_ENTER_SCOPE_WITH(com->node_isolate);
     JS_DEFINE_STATE_MARKER(com);
 
-    object_ = JS_NEW_EMPTY_PERSISTENT_OBJECT();
+    JS_NEW_EMPTY_PERSISTENT_OBJECT(object_);
 
     if (com->using_domains) {
       JS_LOCAL_OBJECT process = JS_TYPE_TO_LOCAL_OBJECT(com->getProcess());
@@ -369,7 +374,7 @@ class ReqWrap {
       JS_LOCAL_VALUE domain = JS_GET_NAME(process, domain_str);
 
       if (!JS_IS_UNDEFINED(domain)) {
-        JS_NAME_SET(object_, JS_STRING_ID("domain"), domain);
+        JS_NAME_SET(JS_TYPE_TO_LOCAL_OBJECT(object_), JS_STRING_ID("domain"), domain);
       }
     }
 

@@ -179,7 +179,7 @@ JS_METHOD_END
 
 JS_HANDLE_VALUE ThreadWrap::collectResults(node::commons *com, const int tid,
                                            bool emit_call) {
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
   int i = 0;
 
@@ -297,7 +297,7 @@ void ThreadWrap::EmitOnMessage(const int tid) {
                               JS_CORE_REFERENCE(vals)};
 #elif defined(JS_ENGINE_V8)
   // both works for MozJS but above is faster
-  __JS_LOCAL_VALUE args[2] = {*com->pstr_threadMessage, vals};
+  __JS_LOCAL_VALUE args[2] = {JS_PREDEFINED_STRING(threadMessage), vals};
 #endif
 
   MakeCallback(com, process_object, JS_PREDEFINED_STRING(emit), 2, args);

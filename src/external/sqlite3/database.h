@@ -43,14 +43,15 @@ class Database : public ObjectWrap {
     JS_ACCESSOR_SET(constructor, STD_TO_STRING("open"), OpenGetter, NULL);
 #endif
 
-    jx_persistent.templates[id] =
-        JS_NEW_PERSISTENT_FUNCTION_TEMPLATE(constructor);
+    JS_NEW_PERSISTENT_FUNCTION_TEMPLATE(jx_persistent.templates[id], constructor);
   }
   END_INIT_NAMED_MEMBERS(Database)
 
   static inline bool HasInstance(const int threadId, JS_HANDLE_VALUE_REF val) {
     if (!JS_IS_OBJECT(val)) return false;
-    return JS_HAS_INSTANCE(jx_persistent.templates[threadId], JS_VALUE_TO_OBJECT(val));
+    JS_DEFINE_CURRENT_MARKER();
+    JS_LOCAL_FUNCTION_TEMPLATE pft = JS_TYPE_TO_LOCAL_FUNCTION_TEMPLATE(jx_persistent.templates[threadId]);
+    return JS_HAS_INSTANCE(pft, JS_VALUE_TO_OBJECT(val));
   }
 
   struct Baton {
@@ -63,12 +64,13 @@ class Database : public ObjectWrap {
     Baton(Database* db_, JS_HANDLE_FUNCTION cb_) : db(db_), status(SQLITE_OK) {
       db->Ref();
       request.data = this;
-      callback = JS_NEW_PERSISTENT_FUNCTION(cb_);
+      JS_DEFINE_CURRENT_MARKER();
+      JS_NEW_PERSISTENT_FUNCTION(callback, cb_);
     }
 
     virtual ~Baton() {
       db->Unref();
-      callback.Dispose();
+      JS_CLEAR_PERSISTENT(callback);
     }
   };
 
