@@ -18,15 +18,24 @@ To compile for desktop/server environments:
 
 ##### SpiderMonkey
 ```bash
-./configure --prefix=/jxcoreSM --engine-mozilla
-make install
+./configure --engine-mozilla
+make
 ```
 
 ##### V8
 ```bash
-./configure --prefix=/jxcoreV8
-make install
+./configure
+make
 ```
+
+> JXcore 0.3.x uses V8 3.14.x by default. You may set V8 engine version by `--engine-v8-3-28`
+ If your application depends on native addons (C,C++), you should be using V8 3.14.x
+ 
+ ##### V8 3.28
+ ```
+ ./configure --engine-v8-3-28
+ make
+ ```
 
 On Windows:
 
