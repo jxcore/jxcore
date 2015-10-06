@@ -136,11 +136,11 @@ class Parser : public ObjectWrap {
       switch (parser_.method) {  // eliminate hot cases
         case 1: {
           JS_NAME_SET(message_info, JS_PREDEFINED_STRING(method),
-		      JS_TYPE_TO_LOCAL_STRING(com->pstr_GET));
+                      JS_TYPE_TO_LOCAL_STRING(com->pstr_GET));
         } break;
         case 2: {
           JS_NAME_SET(message_info, JS_PREDEFINED_STRING(method),
-		      JS_TYPE_TO_LOCAL_STRING(com->pstr_HEAD));
+                      JS_TYPE_TO_LOCAL_STRING(com->pstr_HEAD));
         } break;
         case 3: {
           JS_NAME_SET(message_info, JS_PREDEFINED_STRING(method),

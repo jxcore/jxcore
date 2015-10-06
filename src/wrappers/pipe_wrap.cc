@@ -152,9 +152,8 @@ void PipeWrap::AfterConnect(uv_connect_t* req, int status) {
   JS_LOCAL_OBJECT objr = JS_OBJECT_FROM_PERSISTENT(req_wrap->object_);
   JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(wrap->object_);
 
-  JS_LOCAL_VALUE argv[5] = {
-      STD_TO_INTEGER(status), JS_TYPE_TO_LOCAL_OBJECT(objl),
-      JS_TYPE_TO_LOCAL_OBJECT(objr), b_readable, b_writable};
+  JS_LOCAL_VALUE argv[5] = {STD_TO_INTEGER(status), objl, objr, b_readable,
+                            b_writable};
 
   MakeCallback(wrap->com, objr, JS_PREDEFINED_STRING(oncomplete), 5, argv);
 
