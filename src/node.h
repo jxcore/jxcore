@@ -74,7 +74,6 @@ extern bool inited;
 NODE_EXTERN extern bool no_deprecation;
 
 void Load(JS_HANDLE_OBJECT process);
-void EmitExit(JS_HANDLE_OBJECT process);
 
 enum encoding { ASCII, UTF8, BASE64, UCS2, BINARY, HEX, BUFFER };
 enum encoding ParseEncoding(JS_HANDLE_VALUE encoding_v,

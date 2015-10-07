@@ -1402,11 +1402,11 @@ JS_DELETER_METHOD(EnvDeleter) {
   MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, *key, -1, key_ptr,
                       key.length() + 1);
 #endif
-
+  bool rv = false;
   if (key_ptr[0] == L'=' || !SetEnvironmentVariableW(key_ptr, NULL)) {
     // Deletion failed. Return true if the key wasn't there in the first place,
     // false if it is still there.
-    bool rv = GetEnvironmentVariableW(key_ptr, NULL, NULL) == 0 &&
+    rv = GetEnvironmentVariableW(key_ptr, NULL, NULL) == 0 &&
               GetLastError() != ERROR_SUCCESS;
   }
 
