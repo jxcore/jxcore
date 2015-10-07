@@ -17,7 +17,6 @@
     'node_use_systemtap%': 'false',
     'node_shared_openssl%': 'false',
     'node_no_sqlite%': 'false',
-    'node_engine_mozilla%': 0,
     'node_shared_library%': 0,
     'node_embed_leveldown%': 0,
     'node_use_mdb%': 'false',
@@ -189,6 +188,10 @@
         'defines': ['JXCORE_EMBEDDED'],
         'type': 'shared_library'
       }],
+      ['node_shared_library==1 and node_win_onecore==1', {
+        'type': 'loadable_module',
+        'defines': [ 'UWP_DLL=1' ]
+      }],
       ['node_shared_library==0 and node_static_library==0',
       {
         'type': 'executable',
@@ -210,8 +213,33 @@
       {
         'defines': ['HAVE_OPENSSL=0']
       }],
-      ['node_engine_mozilla!=1',
-      {
+      [ 'v8_is_3_28==1', {
+        'defines': [
+          'V8_IS_3_28=1'
+        ],
+        'sources': [
+          'src/jx/Proxy/V8_3_28/JXString.cc',
+        ],
+        'conditions': [
+          ['node_engine_v8==1', {
+            'sources': [
+              'deps/v8_3_28/v8/include/v8.h',
+              'deps/v8_3_28/v8/include/v8-debug.h',
+            ],
+            'dependencies': ['deps/v8_3_28/v8/tools/gyp/v8.gyp:v8',
+              'deps/v8_3_28/debugger-agent/debugger-agent.gyp:debugger-agent',],
+          }],
+          ['node_engine_chakra==1', {
+            'variables': {
+              'node_engine_include_dir%': 'deps/chakrashim/include'
+            },
+            'defines': ['JS_ENGINE_CHAKRA=1', 'JS_ENGINE_V8=1'],
+            'dependencies': [ 'deps/chakrashim/chakrashim.gyp:chakrashim' ], 
+          }]
+        ],
+      }],
+      ['node_engine_v8==1', {
+        'defines' : ['JS_ENGINE_V8=1'],
         'conditions': [
         [ 'gcc_version<=44', {
           # GCC versions <= 4.4 do not handle the aliasing in the queue
@@ -219,21 +247,9 @@
           # to avoid subtle bugs
           'cflags': [ '-fno-strict-aliasing' ],
         }],
-        [ 'v8_is_3_28==1', {
+        ['v8_is_3_14==1', {
           'defines': [
-              'JS_ENGINE_V8=1', 'V8_IS_3_28=1'
-            ],
-            'sources': [
-              'src/jx/Proxy/V8_3_28/JXString.cc',
-              'deps/v8_3_28/v8/include/v8.h',
-              'deps/v8_3_28/v8/include/v8-debug.h',
-            ],
-            'dependencies': ['deps/v8_3_28/v8/tools/gyp/v8.gyp:v8',
-              'deps/v8_3_28/debugger-agent/debugger-agent.gyp:debugger-agent',],
-          }],
-        [ 'v8_is_3_14==1', {
-          'defines': [
-              'JS_ENGINE_V8=1', 'V8_IS_3_14=1'
+              'V8_IS_3_14=1'
             ],
             'sources': [
               'src/jx/Proxy/V8_3_14/JXString.cc',
@@ -255,8 +271,8 @@
           }]],
         }],
         ]
-      },
-      {
+      }],
+      ['node_engine_mozilla==1', {
         'v8_use_snapshot%': 'false',
         'defines': [
           'JS_ENGINE_MOZJS=1', 'EXPORT_JS_API', 'MOZJS_IS_3_40=1'
@@ -352,7 +368,7 @@
           }],
         ]
       }],
-      ['node_use_dtrace=="true" and node_engine_mozilla!=1',
+      ['node_use_dtrace=="true" and node_engine_v8==1',
       {
         'defines': ['HAVE_DTRACE=1'],
         'dependencies': ['node_dtrace_header'],
@@ -372,7 +388,7 @@
           ]
         ]
       }],
-      ['node_use_systemtap=="true" and node_engine_mozilla!=1 and v8_is_3_14==1',
+      ['node_use_systemtap=="true" and node_engine_v8==1 and v8_is_3_14==1',
       {
         'defines': ['HAVE_SYSTEMTAP=1', 'STAP_SDT_V1=1'],
         'dependencies': ['node_systemtap_header'],
@@ -389,7 +405,7 @@
           'src/node_mdb.cc',
         ],
       } ],
-      [ 'v8_postmortem_support=="true" and node_engine_mozilla!=1 and v8_is_3_28==1', {
+      [ 'v8_postmortem_support=="true" and node_engine_v8==1 and v8_is_3_28==1', {
          'dependencies': [ 'deps/v8_3_28/v8/tools/gyp/v8.gyp:postmortem-metadata' ],
          'xcode_settings': {
            'OTHER_LDFLAGS': [
@@ -397,7 +413,7 @@
            ],
          },
       }],
-      ['node_use_etw=="true" and node_engine_mozilla!=1',
+      ['node_use_etw=="true" and node_engine_v8==1',
       {
         'defines': ['HAVE_ETW=1'],
         'dependencies': ['node_etw'],
@@ -410,7 +426,7 @@
           'tools/msvs/genfiles/node_etw_provider.rc',
         ]
       }],
-      ['node_use_perfctr=="true" and node_engine_mozilla!=1',
+      ['node_use_perfctr=="true" and node_engine_v8==1',
       {
         'defines': ['HAVE_PERFCTR=1'],
         'dependencies': ['node_perfctr'],
@@ -735,7 +751,7 @@
     'target_name': 'node_dtrace_ustack',
     'type': 'none',
     'conditions': [
-      ['node_use_dtrace=="true" and OS!="mac" and OS!="linux" and node_engine_mozilla!=1',
+      ['node_use_dtrace=="true" and OS!="mac" and OS!="linux" and node_engine_v8==1',
       {
         'actions': [
         {

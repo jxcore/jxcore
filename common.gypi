@@ -11,6 +11,13 @@
     'clang%': 1,
     'python%': 'python',
     'uclibc_defined%': 0,
+    
+    # engines
+    'node_engine_chakra%': 0,
+    'node_engine_mozilla%': 0,
+    'node_engine_v8%': 0,
+    
+    'node_win_onecore%' : 0,
 
     # Enable disassembler for `--print-code` v8 options
     'v8_enable_disassembler': 1,
@@ -27,17 +34,17 @@
         'os_posix': 1,
         'v8_postmortem_support': 'true'
       }],
-      ['(GENERATOR == "ninja" or OS == "mac") and node_engine_mozilla!=1', {
+      ['(GENERATOR == "ninja" or OS == "mac") and node_engine_v8==1', {
         'OBJ_DIR': '<(PRODUCT_DIR)/obj',
         'V8_BASE': '<(PRODUCT_DIR)/libv8_base.a',
       }],
-      ['GENERATOR != "ninja" and node_engine_mozilla!=1', {
+      ['GENERATOR != "ninja" and node_engine_v8==1', {
         'OBJ_DIR': '<(PRODUCT_DIR)/obj.target',
       }],
       ['GENERATOR != "ninja" and v8_is_3_14==1', {
         'V8_BASE': '<(PRODUCT_DIR)/obj.target/deps/v8/tools/gyp/libv8_base.a',
       }],
-      ['GENERATOR != "ninja" and v8_is_3_28==1', {
+      ['GENERATOR != "ninja" and v8_is_3_28==1 and node_engine_v8==1', {
         'V8_BASE': '<(PRODUCT_DIR)/libv8_base.a',
       }],
       # A flag for POSIX platforms
@@ -90,8 +97,8 @@
         },
       },
       'Release': {
-      	'cflags': [ '-O3', '-ffunction-sections', '-fdata-sections' ],
-      	'variables': {
+        'cflags': [ '-O3', '-ffunction-sections', '-fdata-sections' ],
+        'variables': {
           'v8_enable_handle_zapping%': 0,
         },
         'conditions': [
@@ -172,6 +179,20 @@
     },
     'msvs_disabled_warnings': [4351, 4355, 4800],
     'conditions': [
+      ['node_win_onecore==1', {
+        'defines': [ 'WINONECORE=1' ],
+        'msvs_settings': {
+          'VCLinkerTool': {
+            'IgnoreDefaultLibraryNames' : [
+              'kernel32.lib',
+              'advapi32.lib',
+             ],
+           }
+        },
+        'libraries': [
+          '-lonecore.lib',
+        ],
+      }],
       ['OS == "win"', {
         'msvs_cygwin_shell': 0, # prevent actions from trying to use cygwin
         'defines': [

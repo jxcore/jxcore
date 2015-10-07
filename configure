@@ -236,6 +236,16 @@ parser.add_option("--engine-mozilla",
     dest="engine_mozilla",
     help="compile using mozilla spider monkey")
     
+parser.add_option("--engine-chakra",
+    action="store_true",
+    dest="engine_chakra",
+    help="compile using chakra")
+    
+parser.add_option("--win-onecore",
+    action="store_true",
+    dest="win_onecore",
+    help="Build JXcore for Windows OneCore based platforms")
+    
 parser.add_option("--engine-v8-3-28",
     action="store_true",
     dest="engine_v8_3_28",
@@ -606,9 +616,12 @@ def configure_node(o):
   if options.shared_library:
     o['variables']['SHARED_OS'] = sys.platform
 
-  o['variables']['v8_is_3_14'] = 0 if options.engine_v8_3_28 else 1
-  o['variables']['v8_is_3_28'] = 1 if options.engine_v8_3_28 else 0    
+  # Chakra and V8 3.28 uses same proxy, so the interface is v8_3_28 for both
+  o['variables']['v8_is_3_28'] = 1 if options.engine_v8_3_28 or options.engine_chakra else 0    
   o['variables']['node_engine_mozilla'] = 1 if options.engine_mozilla else 0
+  o['variables']['node_engine_chakra'] = 1 if options.engine_chakra else 0
+  o['variables']['node_engine_v8'] = 0 if options.engine_chakra or options.engine_mozilla else 1
+  o['variables']['v8_is_3_14'] = 1 if o['variables']['node_engine_v8'] and o['variables']['v8_is_3_28'] != 1  else 0
   o['variables']['node_no_sqlite'] = 1 if options.node_no_sqlite else 0
   o['variables']['node_embed_leveldown'] = 1 if options.embed_leveldown else 0
   o['variables']['node_prefix'] = os.path.expanduser(options.prefix or '')
@@ -676,6 +689,7 @@ def configure_node(o):
 
   # By default, enable Performance counters on Windows.
   if flavor == 'win':
+    o['variables']['node_win_onecore'] = b(options.win_onecore)
     o['variables']['node_use_perfctr'] = b(not options.without_perfctr)
   elif options.with_perfctr:
     raise Exception('Performance counter is only supported on Windows.')
