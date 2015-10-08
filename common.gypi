@@ -1,8 +1,6 @@
 {
   'variables': {
     'visibility%': 'hidden',         # V8's visibility setting
-    'target_arch%': 'ia32',          # set v8's target architecture
-    'host_arch%': 'ia32',            # set v8's host architecture
     'want_separate_host_toolset': 0, # V8 should not build target and host
     'library%': 'static_library',    # allow override to 'shared_library' for DLL/.so builds
     'component%': 'static_library',  # NB. these names match with what V8 expects
@@ -11,22 +9,22 @@
     'clang%': 1,
     'python%': 'python',
     'uclibc_defined%': 0,
-    
+
     # engines
     'node_engine_chakra%': 0,
     'node_engine_mozilla%': 0,
     'node_engine_v8%': 0,
-    
+
     'node_win_onecore%' : 0,
 
     # Enable disassembler for `--print-code` v8 options
     'v8_enable_disassembler': 1,
 
-    # Enable V8's post-mortem debugging only on unix flavors.
     'conditions': [
       ['uclibc_defined == 1', {
         'defines':['POSIX_UCLIBC_DEFINED'],
-      }], 
+      }],
+
       ['OS == "win"', {
         'os_posix': 0,
         'v8_postmortem_support': 'false'
@@ -47,19 +45,29 @@
       ['GENERATOR != "ninja" and v8_is_3_28==1 and node_engine_v8==1', {
         'V8_BASE': '<(PRODUCT_DIR)/libv8_base.a',
       }],
-      # A flag for POSIX platforms
-        ['OS=="win"', {
-          'os_posix%': 0,
-        }, {
-          'os_posix%': 1,
-        }],
 
-        # A flag for BSD platforms
-        ['OS=="freebsd" or OS=="openbsd"', {
-          'os_bsd%': 1,
-        }, {
-          'os_bsd%': 0,
-        }],
+      # A flag for POSIX platforms
+      ['OS=="win"', {
+        'os_posix%': 0,
+      }, {
+        'os_posix%': 1,
+      }],
+
+      # A flag for BSD platforms
+      ['OS=="freebsd" or OS=="openbsd"', {
+        'os_bsd%': 1,
+      }, {
+        'os_bsd%': 0,
+      }],
+
+      # set v8's host and target architecture
+      ['target_arch=="x64"', {  # set v8's host and target architecture
+        'target_arch%': 'x64',
+        'host_arch%': 'x64',
+      }, {
+        'target_arch%': 'ia32',
+        'host_arch%': 'ia32',
+      }],
     ],
   },
 
@@ -301,7 +309,7 @@
           'EMBED_BITCODE': 'YES',
           'IPHONEOS_DEPLOYMENT_TARGET': '6.0',
           'GCC_GENERATE_DEBUGGING_SYMBOLS': 'NO',
-          
+
           'USE_HEADERMAP': 'NO',
           'OTHER_CFLAGS': [
             '-fno-strict-aliasing',
