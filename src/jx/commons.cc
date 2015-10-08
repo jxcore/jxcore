@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/resource.h>
-#define Sleep(x) usleep((x) * 1000)
+#define Sleep(x) usleep((x)*1000)
 #endif
 #if defined(_MSC_VER)
 #include <process.h>
@@ -93,7 +93,7 @@ inline commons *getCommons() {
 
 #ifdef JS_ENGINE_V8
   JS_ENGINE_MARKER current = JS_CURRENT_ENGINE();
-  int *id = (int *)current->GetData();
+  int *id = (int *)JS_GET_ENGINE_DATA(current);
   iso = isolates[*id];
 
   if (iso->node_isolate != current) {
@@ -188,10 +188,10 @@ MozJS::Value commons::CreateJSObject(const char *type_name) {
                                "  else if(type == 'RangeError')\n"
                                "    return new RangeError();\n"
                                "  else\n"
-        	                   "    return new Error();\n"
+                               "    return new Error();\n"
                                "})"),
                            STD_TO_STRING("native:jxcore_js_object")));
-    JSObjectMaker_ = JS_NEW_PERSISTENT_FUNCTION(objectMethod);
+    JS_NEW_PERSISTENT_FUNCTION(JSObjectMaker_, objectMethod);
   }
 
   MozJS::Value glob = jxcore::getGlobal(threadId);
@@ -212,7 +212,7 @@ MozJS::Value commons::GetPropertyNames(MozJS::Value *obj) {
                                "  return arr;"
                                "})"),
                            STD_TO_STRING("native:jxcore_js_prop_names")));
-    JSObjectLister_ = JS_NEW_PERSISTENT_FUNCTION(objectMethod);
+    JS_NEW_PERSISTENT_FUNCTION(JSObjectLister_, objectMethod);
   }
 
   MozJS::Value glob = jxcore::getGlobal(threadId);
@@ -229,7 +229,7 @@ void commons::CreateNewNonCallableInstance(MozJS::Value *obj,
                                "  return new obj();\n"
                                "})"),
                            STD_TO_STRING("native:jxcore_js_new_instance")));
-    JSObjectNew_ = JS_NEW_PERSISTENT_FUNCTION(objectMethod);
+    JS_NEW_PERSISTENT_FUNCTION(JSObjectNew_, objectMethod);
   }
 
   MozJS::Value glob = jxcore::getGlobal(threadId);
@@ -283,14 +283,15 @@ void commons::Dispose() {
   do {                                                         \
     if (construct) {                                           \
       JS_LOCAL_STRING str_##a = STD_TO_STRING(MAKE_STR_IN(a)); \
-      pstr_##a = JS_NEW_PERSISTENT_STRING(str_##a);            \
+      JS_NEW_PERSISTENT_STRING(pstr_##a, str_##a);             \
     } else {                                                   \
       JS_CLEAR_STRING(a);                                      \
     }                                                          \
   } while (0)
 
 void commons::setProcess(JS_HANDLE_OBJECT_REF ps) {
-  process_ = JS_NEW_PERSISTENT_OBJECT(ps);
+  JS_DEFINE_STATE_MARKER(this);
+  JS_NEW_PERSISTENT_OBJECT(process_, ps);
   stringOPS(true);
 }
 

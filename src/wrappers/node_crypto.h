@@ -85,28 +85,28 @@ class SecureContext : ObjectWrap {
 
   ~SecureContext() { FreeCTXMem(); }
 
-  INIT_NAMED_CLASS_MEMBERS(SecureContext, SecureContext)
+  INIT_NAMED_CLASS_MEMBERS(SecureContext, SecureContext) {
+    NODE_SET_PROTOTYPE_METHOD(constructor, "init", SecureContext::Init);
+    NODE_SET_PROTOTYPE_METHOD(constructor, "setKey", SecureContext::SetKey);
+    NODE_SET_PROTOTYPE_METHOD(constructor, "setCert", SecureContext::SetCert);
+    NODE_SET_PROTOTYPE_METHOD(constructor, "addCACert",
+                              SecureContext::AddCACert);
+    NODE_SET_PROTOTYPE_METHOD(constructor, "addCRL", SecureContext::AddCRL);
+    NODE_SET_PROTOTYPE_METHOD(constructor, "addRootCerts",
+                              SecureContext::AddRootCerts);
+    NODE_SET_PROTOTYPE_METHOD(constructor, "setCiphers",
+                              SecureContext::SetCiphers);
+    NODE_SET_PROTOTYPE_METHOD(constructor, "setOptions",
+                              SecureContext::SetOptions);
+    NODE_SET_PROTOTYPE_METHOD(constructor, "setSessionIdContext",
+                              SecureContext::SetSessionIdContext);
+    NODE_SET_PROTOTYPE_METHOD(constructor, "close", SecureContext::Close);
+    NODE_SET_PROTOTYPE_METHOD(constructor, "loadPKCS12",
+                              SecureContext::LoadPKCS12);
 
-  NODE_SET_PROTOTYPE_METHOD(constructor, "init", SecureContext::Init);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "setKey", SecureContext::SetKey);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "setCert", SecureContext::SetCert);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "addCACert", SecureContext::AddCACert);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "addCRL", SecureContext::AddCRL);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "addRootCerts",
-                            SecureContext::AddRootCerts);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "setCiphers",
-                            SecureContext::SetCiphers);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "setOptions",
-                            SecureContext::SetOptions);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "setSessionIdContext",
-                            SecureContext::SetSessionIdContext);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "close", SecureContext::Close);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "loadPKCS12",
-                            SecureContext::LoadPKCS12);
-
-  com->secure_context_constructor =
-      JS_NEW_PERSISTENT_FUNCTION_TEMPLATE(constructor);
-
+    JS_NEW_PERSISTENT_FUNCTION_TEMPLATE(com->secure_context_constructor,
+                                        constructor);
+  }
   END_INIT_NAMED_MEMBERS(SecureContext)
 };
 
@@ -120,17 +120,9 @@ class ClientHelloParser {
     kOther = 255
   };
 
-  enum HandshakeType {
-    kClientHello = 1
-  };
+  enum HandshakeType { kClientHello = 1 };
 
-  enum ParseState {
-    kWaiting,
-    kTLSHeader,
-    kSSLHeader,
-    kPaused,
-    kEnded
-  };
+  enum ParseState { kWaiting, kTLSHeader, kSSLHeader, kPaused, kEnded };
 
   explicit ClientHelloParser(Connection* c)
       : conn_(c), state_(kWaiting), offset_(0), body_offset_(0) {
@@ -220,15 +212,9 @@ class Connection : ObjectWrap {
 
   int HandleBIOError(BIO* bio, const char* func, int rv);
 
-  enum ZeroStatus {
-    kZeroIsNotAnError,
-    kZeroIsAnError
-  };
+  enum ZeroStatus { kZeroIsNotAnError, kZeroIsAnError };
 
-  enum SyscallStatus {
-    kIgnoreSyscall,
-    kSyscallError
-  };
+  enum SyscallStatus { kIgnoreSyscall, kSyscallError };
 
   int HandleSSLError(const char* func, int rv, ZeroStatus zs, SyscallStatus ss);
 
@@ -259,14 +245,14 @@ class Connection : ObjectWrap {
     }
 
 #ifdef OPENSSL_NPN_NEGOTIATED
-    if (!npnProtos_.IsEmpty()) npnProtos_.Dispose();
-    if (!selectedNPNProto_.IsEmpty()) selectedNPNProto_.Dispose();
+    if (!npnProtos_.IsEmpty()) JS_CLEAR_PERSISTENT(npnProtos_);
+    if (!selectedNPNProto_.IsEmpty()) JS_CLEAR_PERSISTENT(selectedNPNProto_);
 #endif
 
 #ifdef SSL_CTRL_SET_TLSEXT_SERVERNAME_CB
-    if (!sniObject_.IsEmpty()) sniObject_.Dispose();
-    if (!sniContext_.IsEmpty()) sniContext_.Dispose();
-    if (!servername_.IsEmpty()) servername_.Dispose();
+    if (!sniObject_.IsEmpty()) JS_CLEAR_PERSISTENT(sniObject_);
+    if (!sniContext_.IsEmpty()) JS_CLEAR_PERSISTENT(sniContext_);
+    if (!servername_.IsEmpty()) JS_CLEAR_PERSISTENT(servername_);
 #endif
   }
 

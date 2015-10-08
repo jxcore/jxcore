@@ -50,11 +50,11 @@ JS_METHOD_END
 
 void FSEventWrap::OnEvent(uv_fs_event_t* handle, const char* filename,
                           int events, int status) {
-  JS_ENTER_SCOPE();
-  JS_LOCAL_STRING eventStr;
-
   FSEventWrap* wrap = static_cast<FSEventWrap*>(handle->data);
   commons* com = wrap->com;
+
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
+  JS_LOCAL_STRING eventStr;
   JS_DEFINE_STATE_MARKER(com);
 
   assert(JS_IS_EMPTY((wrap->object_)) == false);
@@ -95,7 +95,8 @@ void FSEventWrap::OnEvent(uv_fs_event_t* handle, const char* filename,
                               fn_value.GetRawValue()};
 #endif
 
-  MakeCallback(com, wrap->object_, JS_PREDEFINED_STRING(onchange),
+  JS_LOCAL_OBJECT lobj = JS_OBJECT_FROM_PERSISTENT(wrap->object_);
+  MakeCallback(com, lobj, JS_PREDEFINED_STRING(onchange),
                ARRAY_SIZE(argv), argv);
 }
 
@@ -107,7 +108,11 @@ JS_METHOD_NO_COM(FSEventWrap, Close) {
   }
   wrap->initialized_ = false;
 #ifdef JS_ENGINE_V8
-  return HandleWrap::Close(p___args);
+#ifdef V8_IS_3_28
+  HandleWrap::Close(p___args);
+#else
+  RETURN_PARAM(HandleWrap::Close(p___args));
+#endif
 #elif defined(JS_ENGINE_MOZJS)
   return HandleWrap::Close(JS_GET_STATE_MARKER(), __argc, __jsval);
 #endif

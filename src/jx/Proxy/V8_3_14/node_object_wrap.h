@@ -43,7 +43,7 @@ class NODE_EXTERN ObjectWrap {
     assert(JS_IS_EMPTY(handle_));
     assert(handle->InternalFieldCount() > 0);
 
-    handle_ = JS_NEW_PERSISTENT_OBJECT(handle);
+    JS_NEW_PERSISTENT_OBJECT(handle_, handle);
     JS_SET_POINTER_DATA(handle_, this);
     MakeWeak();
   }

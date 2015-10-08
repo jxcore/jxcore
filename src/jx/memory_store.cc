@@ -30,6 +30,7 @@ void XSpace::LOCKSTORE() {
   if (exiting) return;
   uv_mutex_lock(&orstoreLocks);
 }
+
 void XSpace::UNLOCKSTORE() {
   if (exiting) return;
   uv_mutex_unlock(&orstoreLocks);
@@ -39,6 +40,7 @@ void XSpace::LOCKTIMERS() {
   if (exiting) return;
   uv_mutex_lock(&ortimerLocks);
 }
+
 void XSpace::UNLOCKTIMERS() {
   if (exiting) return;
   uv_mutex_unlock(&ortimerLocks);

@@ -102,6 +102,9 @@ class MozRoot {
   ~MozRoot();
 };
 
+typedef Value Object;
+typedef Value Function;
+
 class Value : protected MozRoot {
   friend class StringTools;
   friend class Script;

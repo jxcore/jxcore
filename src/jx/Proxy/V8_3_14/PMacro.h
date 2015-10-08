@@ -74,15 +74,17 @@
 #define DEFINE_JS_CLASS_METHOD(clss, name) \
   JS_HANDLE_VALUE clss::name(const JS_V8_ARGUMENT& p___args)
 
-#define RETURN_TRUE() RETURN_PARAM(STD_TO_BOOLEAN(true))
-#define RETURN_FALSE() RETURN_PARAM(STD_TO_BOOLEAN(false))
-
 #define GET_ARG(x) p___args[x]
 
 #define RETURN_PARAM(param)       \
   do {                            \
     return JS_LEAVE_SCOPE(param); \
   } while (0)
+
+#define RETURN_FROM(param) return param
+
+#define RETURN_TRUE() RETURN_PARAM(STD_TO_BOOLEAN(true))
+#define RETURN_FALSE() RETURN_PARAM(STD_TO_BOOLEAN(false))
 
 #define RETURN_POINTER(param) RETURN_PARAM(param)
 

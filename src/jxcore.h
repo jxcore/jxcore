@@ -33,10 +33,19 @@ public:
   inline void ExitIsolate() { }
 #elif defined(JS_ENGINE_V8)
  public:
-  JS_PERSISTENT_CONTEXT context_;
+
+  inline v8::Handle<v8::Context> getContext() {
+#ifdef V8_IS_3_14
+    return V8_T_CONTEXT::GetCurrent();
+#else    
+    return main_node_->node_isolate->GetCurrentContext();
+#endif
+  }
 
   inline void ExitIsolate() { main_node_->node_isolate->Exit(); }
 #endif
+
+  inline node::commons *getCommons() { return main_node_; }
 
   int argc_;
   char **argv_;

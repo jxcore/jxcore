@@ -6,9 +6,10 @@
  * (http://www.khronos.org/registry/typedarray/specs/latest/#5)
  */
  
-// SpiderMonkey implementation has native TypedArray support
+// SpiderMonkey && v8 3.15+ implementation has native TypedArray support
 
-if(process.versions.sm){ return; } 
+if(process.versions.sm) return;
+if(process.versions.v8 && parseFloat(process.versions.v8)>3.14) return;
 
 
 var common = require('../common');

@@ -124,7 +124,9 @@ size_t StringBytes::JXWrite(char* buf, size_t buflen, JS_HANDLE_VALUE_REF val,
                             enum encoding encoding, bool is_buffer,
                             int* chars_written) {
   ENGINE_LOG_THIS("StringBytes", "JXWrite");
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_COM();
+  JS_DEFINE_STATE_MARKER(com);
+
   size_t len = 0;
 
   // sometimes we use 'binary' when we mean 'buffer'
@@ -147,10 +149,18 @@ size_t StringBytes::JXWrite(char* buf, size_t buflen, JS_HANDLE_VALUE_REF val,
 #endif
 
   switch (encoding) {
-    case ASCII: {
+    case ASCII:
 #ifdef JS_ENGINE_V8
+#ifdef V8_IS_3_14
+    {
       len = str->WriteAscii(buf, 0, buflen, flags);
 #else
+    case BINARY:
+    case BUFFER: {
+      len = str->WriteOneByte((uint8_t*)buf, 0, buflen, flags);
+#endif
+#else
+    {
       jxcore::JXString jxsa;
       jxsa.SetFromHandle(str, true);
       len = buflen < jxsa.length() ? buflen : jxsa.length();
@@ -200,6 +210,7 @@ size_t StringBytes::JXWrite(char* buf, size_t buflen, JS_HANDLE_VALUE_REF val,
       break;
     }
 
+#if defined(JS_ENGINE_MOZJS) || defined(V8_IS_3_14)
     case BINARY:
     case BUFFER: {
       uint16_t* twobytebuf = new uint16_t[buflen];
@@ -224,6 +235,7 @@ size_t StringBytes::JXWrite(char* buf, size_t buflen, JS_HANDLE_VALUE_REF val,
       delete[] twobytebuf;
       break;
     }
+#endif
 
     case HEX: {
       jxcore::JXString value(str);
@@ -557,7 +569,9 @@ JS_LOCAL_VALUE StringBytes::Encode(const char* buf, size_t buflen,
   JS_LOCAL_STRING val;
   switch (encoding) {
     case BUFFER: {
-      return JS_LEAVE_SCOPE(Buffer::New(buf, buflen, com)->handle_);
+      JS_LOCAL_OBJECT objl =
+          JS_OBJECT_FROM_PERSISTENT(Buffer::New(buf, buflen, com)->handle_);
+      return JS_LEAVE_SCOPE(objl);
     } break;
 
     case ASCII:
@@ -599,11 +613,39 @@ JS_LOCAL_VALUE StringBytes::Encode(const char* buf, size_t buflen,
       break;
     }
 
+#if defined(JS_ENGINE_MOZJS) || defined(V8_IS_3_14)
     case UCS2: {
       const uint16_t* data = reinterpret_cast<const uint16_t*>(buf);
       val = UTF8_TO_STRING_WITH_LENGTH(data, buflen / 2);
       break;
     }
+#else
+    case UCS2: {
+      const uint16_t* out = reinterpret_cast<const uint16_t*>(buf);
+      uint16_t* dst = NULL;
+      if (IsBigEndian()) {
+        // Node's "ucs2" encoding expects LE character data inside a
+        // Buffer, so we need to reorder on BE platforms.  See
+        // http://nodejs.org/api/buffer.html regarding Node's "ucs2"
+        // encoding specification
+        dst = new uint16_t[buflen / 2];
+        for (size_t i = 0; i < buflen / 2; i++) {
+          dst[i] = (out[i] << 8) | (out[i] >> 8);
+        }
+        out = dst;
+      }
+      if (buflen < EXTERN_APEX)
+        val = v8::String::NewFromTwoByte(__contextORisolate,
+                                     out,
+				     v8::String::kNormalString,
+                                     buflen / 2);
+      else
+        val = UTF8_TO_STRING_WITH_LENGTH(out, buflen / 2);
+      if (dst)
+        delete[] dst;
+      break;
+    }
+#endif
 
     case HEX: {
       size_t dlen = buflen * 2;

@@ -371,6 +371,12 @@
     return true;               \
   } while (0)
 
+#define JS_MAKE_WEAK(a,b,c) a.MakeWeak(b,c)
+
+#define RETURN_FROM(x) return x
+
+#define JS_DEFINE_CURRENT_MARKER() JS_DEFINE_STATE_MARKER(node::commons::getInstance())
+
 namespace node {
 #define NODE_SYMBOL(s) STD_TO_STRING(s)
 #define NODE_SYMBOL_ISO(iso, s) STD_TO_STRING(s)

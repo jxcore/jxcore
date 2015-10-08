@@ -1,8 +1,6 @@
 {
   'variables': {
     'visibility%': 'hidden',         # V8's visibility setting
-    'target_arch%': 'ia32',          # set v8's target architecture
-    'host_arch%': 'ia32',            # set v8's host architecture
     'want_separate_host_toolset': 0, # V8 should not build target and host
     'library%': 'static_library',    # allow override to 'shared_library' for DLL/.so builds
     'component%': 'static_library',  # NB. these names match with what V8 expects
@@ -12,45 +10,64 @@
     'python%': 'python',
     'uclibc_defined%': 0,
 
-    # Turn on optimizations that may trigger compiler bugs.
-    # Use at your own risk. Do *NOT* report bugs if this option is enabled.
-    'node_unsafe_optimizations%': 0,
+    # engines
+    'node_engine_chakra%': 0,
+    'node_engine_mozilla%': 0,
+    'node_engine_v8%': 0,
 
-    # Enable V8's post-mortem debugging only on unix flavors.
+    'node_win_onecore%' : 0,
+
+    # Enable disassembler for `--print-code` v8 options
+    'v8_enable_disassembler': 1,
+
     'conditions': [
       ['uclibc_defined == 1', {
         'defines':['POSIX_UCLIBC_DEFINED'],
-      }], 
-      ['OS != "win" and node_engine_mozilla!=1', {
+      }],
+
+      ['OS == "win"', {
+        'os_posix': 0,
+        'v8_postmortem_support': 'false'
+      }, {
+        'os_posix': 1,
         'v8_postmortem_support': 'true'
       }],
-      ['(GENERATOR == "ninja" or OS == "mac") and node_engine_mozilla!=1', {
+      ['(GENERATOR == "ninja" or OS == "mac") and node_engine_v8==1', {
         'OBJ_DIR': '<(PRODUCT_DIR)/obj',
         'V8_BASE': '<(PRODUCT_DIR)/libv8_base.a',
       }],
-      ['GENERATOR != "ninja" and node_engine_mozilla!=1', {
+      ['GENERATOR != "ninja" and node_engine_v8==1', {
         'OBJ_DIR': '<(PRODUCT_DIR)/obj.target',
+      }],
+      ['GENERATOR != "ninja" and v8_is_3_14==1', {
         'V8_BASE': '<(PRODUCT_DIR)/obj.target/deps/v8/tools/gyp/libv8_base.a',
       }],
-      ['GENERATOR == "ninja" and node_engine_mozilla!=1', {
-        'OBJ_DIR': '<(PRODUCT_DIR)/obj',
+      ['GENERATOR != "ninja" and v8_is_3_28==1 and node_engine_v8==1', {
+        'V8_BASE': '<(PRODUCT_DIR)/libv8_base.a',
       }],
-      ['GENERATOR != "ninja" and node_engine_mozilla!=1', {
-        'OBJ_DIR': '<(PRODUCT_DIR)/obj.target',
-      }],
-      # A flag for POSIX platforms
-        ['OS=="win"', {
-          'os_posix%': 0,
-        }, {
-          'os_posix%': 1,
-        }],
 
-        # A flag for BSD platforms
-        ['OS=="freebsd" or OS=="openbsd"', {
-          'os_bsd%': 1,
-        }, {
-          'os_bsd%': 0,
-        }],
+      # A flag for POSIX platforms
+      ['OS=="win"', {
+        'os_posix%': 0,
+      }, {
+        'os_posix%': 1,
+      }],
+
+      # A flag for BSD platforms
+      ['OS=="freebsd" or OS=="openbsd"', {
+        'os_bsd%': 1,
+      }, {
+        'os_bsd%': 0,
+      }],
+
+      # set v8's host and target architecture
+      ['target_arch=="x64"', {  # set v8's host and target architecture
+        'target_arch%': 'x64',
+        'host_arch%': 'x64',
+      }, {
+        'target_arch%': 'ia32',
+        'host_arch%': 'ia32',
+      }],
     ],
   },
 
@@ -59,6 +76,9 @@
     'configurations': {
       'Debug': {
         'defines': [ 'DEBUG', '_DEBUG' ],
+        'variables': {
+          'v8_enable_handle_zapping%': 1,
+        },
         'cflags': [ '-g', '-O0' ],
         'conditions': [
           ['target_arch=="x64"', {
@@ -85,7 +105,10 @@
         },
       },
       'Release': {
-      	'cflags': [ '-O3', '-ffunction-sections', '-fdata-sections' ],
+        'cflags': [ '-O3', '-ffunction-sections', '-fdata-sections' ],
+        'variables': {
+          'v8_enable_handle_zapping%': 0,
+        },
         'conditions': [
           ['target_arch=="x64"', {
             'msvs_configuration_platform': 'x64',
@@ -93,24 +116,15 @@
           ['target_arch=="arm"', {
             'msvs_configuration_platform': 'ARM',
           }],
-          ['node_unsafe_optimizations==1', {
-            'cflags': [ '-O3', '-ffunction-sections', '-fdata-sections' ],
-            'ldflags': [ '-Wl,--gc-sections' ],
-          }, {
-            'cflags': [ '-O2', '-fno-strict-aliasing' ],
-            'cflags!': [ '-O3', '-fstrict-aliasing' ],
-            'conditions': [
-              ['OS=="solaris"', {
-                # pull in V8's postmortem metadata
-                'ldflags': [ '-Wl,-z,allextract' ]
-              }],
-              ['clang == 0 and gcc_version >= 40', {
-                'cflags': [ '-fno-tree-vrp' ],
-              }],
-              ['clang == 0 and gcc_version <= 44', {
-                'cflags': [ '-fno-tree-sink' ],
-              }],
-            ],
+          ['OS=="solaris"', {
+            # pull in V8's postmortem metadata
+            'ldflags': [ '-Wl,-z,allextract' ]
+          }],
+          ['clang == 0 and gcc_version >= 40', {
+            'cflags': [ '-fno-tree-vrp' ],
+          }],
+          ['clang == 0 and gcc_version <= 44', {
+            'cflags': [ '-fno-tree-sink' ],
           }],
           ['OS!="mac" and OS!="win"', {
             'cflags': [ '-fno-omit-frame-pointer' ],
@@ -173,6 +187,20 @@
     },
     'msvs_disabled_warnings': [4351, 4355, 4800],
     'conditions': [
+      ['node_win_onecore==1', {
+        'defines': [ 'WINONECORE=1' ],
+        'msvs_settings': {
+          'VCLinkerTool': {
+            'IgnoreDefaultLibraryNames' : [
+              'kernel32.lib',
+              'advapi32.lib',
+             ],
+           }
+        },
+        'libraries': [
+          '-lonecore.lib',
+        ],
+      }],
       ['OS == "win"', {
         'msvs_cygwin_shell': 0, # prevent actions from trying to use cygwin
         'defines': [
@@ -281,7 +309,7 @@
           'EMBED_BITCODE': 'YES',
           'IPHONEOS_DEPLOYMENT_TARGET': '6.0',
           'GCC_GENERATE_DEBUGGING_SYMBOLS': 'NO',
-          
+
           'USE_HEADERMAP': 'NO',
           'OTHER_CFLAGS': [
             '-fno-strict-aliasing',

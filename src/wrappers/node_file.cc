@@ -170,7 +170,8 @@ static void After(uv_fs_t* req) {
     }
   }
 
-  MakeCallback(com, req_wrap->object_, com->pstr_oncomplete, argc, argv);
+  JS_LOCAL_OBJECT objr = JS_OBJECT_FROM_PERSISTENT(req_wrap->object_);
+  MakeCallback(com, objr, JS_PREDEFINED_STRING(oncomplete), argc, argv);
 
   uv_fs_req_cleanup(&req_wrap->req_);
   delete req_wrap;
@@ -187,27 +188,28 @@ struct fs_req_wrap {
   uv_fs_t req;
 };
 
-#define ASYNC_DEST_CALL(func, callback, dest_path, ...)                       \
-  FSReqWrap* req_wrap;                                                        \
-  char* dest_str = (dest_path);                                               \
-  int dest_len = dest_str == NULL ? 0 : strlen(dest_str);                     \
-  char* storage = new char[sizeof(*req_wrap) + dest_len];                     \
-  req_wrap = new (storage) FSReqWrap(#func, com);                             \
-  req_wrap->dest_len(dest_len);                                               \
-  if (dest_str != NULL) {                                                     \
-    memcpy(const_cast<char*>(req_wrap->dest()), dest_str, dest_len + 1);      \
-  }                                                                           \
-  int r = uv_fs_##func(com->loop, &req_wrap->req_, __VA_ARGS__, After);       \
-  JS_NAME_SET(req_wrap->object_, JS_PREDEFINED_STRING(oncomplete), callback); \
-  req_wrap->Dispatched();                                                     \
-  if (r < 0) {                                                                \
-    uv_fs_t* req = &req_wrap->req_;                                           \
-    req->result = r;                                                          \
-    req->path = NULL;                                                         \
-    req->errorno = uv_last_error(com->loop).code;                             \
-    After(req);                                                               \
-  }                                                                           \
-  RETURN_PARAM(req_wrap->object_);
+#define ASYNC_DEST_CALL(func, callback, dest_path, ...)                  \
+  FSReqWrap* req_wrap;                                                   \
+  char* dest_str = (dest_path);                                          \
+  int dest_len = dest_str == NULL ? 0 : strlen(dest_str);                \
+  char* storage = new char[sizeof(*req_wrap) + dest_len];                \
+  req_wrap = new (storage) FSReqWrap(#func, com);                        \
+  req_wrap->dest_len(dest_len);                                          \
+  JS_LOCAL_OBJECT objr_A = JS_OBJECT_FROM_PERSISTENT(req_wrap->object_); \
+  if (dest_str != NULL) {                                                \
+    memcpy(const_cast<char*>(req_wrap->dest()), dest_str, dest_len + 1); \
+  }                                                                      \
+  int r = uv_fs_##func(com->loop, &req_wrap->req_, __VA_ARGS__, After);  \
+  JS_NAME_SET(objr_A, JS_PREDEFINED_STRING(oncomplete), callback);       \
+  req_wrap->Dispatched();                                                \
+  if (r < 0) {                                                           \
+    uv_fs_t* req = &req_wrap->req_;                                      \
+    req->result = r;                                                     \
+    req->path = NULL;                                                    \
+    req->errorno = uv_last_error(com->loop).code;                        \
+    After(req);                                                          \
+  }                                                                      \
+  RETURN_PARAM(objr_A);
 
 #define ASYNC_CALL(func, callback, ...) \
   ASYNC_DEST_CALL(func, callback, NULL, __VA_ARGS__)
@@ -263,8 +265,9 @@ JS_LOCAL_OBJECT BuildStatsObject(commons* com, const uv_statbuf_t* s) {
                                     &rt_stat);
   JS_LOCAL_OBJECT stats(rt_stat.get(), __contextORisolate);
 #elif defined(JS_ENGINE_V8)
-  JS_LOCAL_OBJECT stats = JS_NEW_DEFAULT_INSTANCE(
-      JS_GET_FUNCTION(com->nf_stats_constructor_template));
+  JS_LOCAL_FUNCTION_TEMPLATE lft =
+      JS_TYPE_TO_LOCAL_FUNCTION_TEMPLATE(com->nf_stats_constructor_template);
+  JS_LOCAL_OBJECT stats = JS_NEW_DEFAULT_INSTANCE(JS_GET_FUNCTION(lft));
 
   if (JS_IS_EMPTY(stats)) return JS_LOCAL_OBJECT();
 #endif

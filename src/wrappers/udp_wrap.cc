@@ -47,7 +47,7 @@ JS_GETTER_CLASS_METHOD(UDPWrap, GetFD) {
 JS_GETTER_METHOD_END
 
 JS_NATIVE_RETURN_TYPE UDPWrap::DoBind(jxcore::PArguments& args, int family) {
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(args.GetIsolate());
   int r;
 
   ENGINE_UNWRAP(UDPWrap);
@@ -88,10 +88,10 @@ JS_NATIVE_RETURN_TYPE UDPWrap::DoBind(jxcore::PArguments& args, int family) {
   RETURN_PARAM(STD_TO_INTEGER(r));
   JS_METHOD_END
 
-  JS_METHOD_NO_COM(UDPWrap, Bind) { return DoBind(args, AF_INET); }
+  JS_METHOD_NO_COM(UDPWrap, Bind) { RETURN_FROM(DoBind(args, AF_INET)); }
   JS_METHOD_END
 
-  JS_METHOD_NO_COM(UDPWrap, Bind6) { return DoBind(args, AF_INET6); }
+  JS_METHOD_NO_COM(UDPWrap, Bind6) { RETURN_FROM(DoBind(args, AF_INET6)); }
   JS_METHOD_END
 
 #define X(name, fn)                                       \
@@ -114,7 +114,7 @@ JS_NATIVE_RETURN_TYPE UDPWrap::DoBind(jxcore::PArguments& args, int family) {
   JS_NATIVE_RETURN_TYPE UDPWrap::SetMembership(jxcore::PArguments& args, \
                                                uv_membership membership) {
   UDPSETMEM
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(args.GetIsolate());
   ENGINE_UNWRAP(UDPWrap);
   JS_DEFINE_STATE_MARKER(com);
   {
@@ -138,12 +138,12 @@ JS_NATIVE_RETURN_TYPE UDPWrap::DoBind(jxcore::PArguments& args, int family) {
   JS_METHOD_END
 
   JS_METHOD_NO_COM(UDPWrap, AddMembership) {
-    return (SetMembership(args, UV_JOIN_GROUP));
+    RETURN_FROM(SetMembership(args, UV_JOIN_GROUP));
   }
   JS_METHOD_END
 
   JS_METHOD_NO_COM(UDPWrap, DropMembership) {
-    return (SetMembership(args, UV_LEAVE_GROUP));
+    RETURN_FROM(SetMembership(args, UV_LEAVE_GROUP));
   }
   JS_METHOD_END
 
@@ -166,8 +166,8 @@ JS_NATIVE_RETURN_TYPE UDPWrap::DoBind(jxcore::PArguments& args, int family) {
     assert(length <= BUFFER__LENGTH(buffer_obj) - offset);
 
     SendWrap* req_wrap = new SendWrap(com);
-    JS_NAME_SET_HIDDEN(req_wrap->object_, JS_PREDEFINED_STRING(buffer),
-                       buffer_obj);
+    JS_LOCAL_OBJECT objr = JS_TYPE_TO_LOCAL_OBJECT(req_wrap->object_);
+    JS_NAME_SET_HIDDEN(objr, JS_PREDEFINED_STRING(buffer), buffer_obj);
 
     uv_buf_t buf = uv_buf_init(BUFFER__DATA(buffer_obj) + offset, length);
 
@@ -196,15 +196,15 @@ JS_NATIVE_RETURN_TYPE UDPWrap::DoBind(jxcore::PArguments& args, int family) {
       delete req_wrap;
       RETURN_PARAM(JS_NULL());
     } else {
-      RETURN_PARAM(req_wrap->object_);
+      RETURN_PARAM(objr);
     }
   }
   JS_METHOD_END
 
-  JS_METHOD_NO_COM(UDPWrap, Send) { return DoSend(args, AF_INET); }
+  JS_METHOD_NO_COM(UDPWrap, Send) { RETURN_FROM(DoSend(args, AF_INET)); }
   JS_METHOD_END
 
-  JS_METHOD_NO_COM(UDPWrap, Send6) { return DoSend(args, AF_INET6); }
+  JS_METHOD_NO_COM(UDPWrap, Send6) { RETURN_FROM(DoSend(args, AF_INET6)); }
   JS_METHOD_END
 
   JS_METHOD_NO_COM(UDPWrap, RecvStart) {
@@ -251,13 +251,13 @@ JS_NATIVE_RETURN_TYPE UDPWrap::DoBind(jxcore::PArguments& args, int family) {
 
   // TODO(?) share with StreamWrap::AfterWrite() in stream_wrap.cc
   void UDPWrap::OnSend(uv_udp_send_t * req, int status) {
-    JS_ENTER_SCOPE();
-
     assert(req != NULL);
 
     SendWrap* req_wrap = reinterpret_cast<SendWrap*>(req->data);
     UDPWrap* wrap = reinterpret_cast<UDPWrap*>(req->handle->data);
     node::commons* com = wrap->com;
+
+    JS_ENTER_SCOPE_WITH(com->node_isolate);
     JS_DEFINE_STATE_MARKER(com);
 
     assert(JS_IS_EMPTY(req_wrap->object_) == false);
@@ -267,13 +267,16 @@ JS_NATIVE_RETURN_TYPE UDPWrap::DoBind(jxcore::PArguments& args, int family) {
       SetErrno(uv_last_error(com->loop));
     }
 
-    JS_LOCAL_VALUE argv[4] = {
-        STD_TO_INTEGER(status),
-        JS_TYPE_TO_LOCAL_VALUE(wrap->object_),
-        JS_TYPE_TO_LOCAL_VALUE(req_wrap->object_),
-        JS_GET_NAME_HIDDEN(req_wrap->object_, JS_PREDEFINED_STRING(buffer)), };
+    JS_LOCAL_OBJECT objr = JS_TYPE_TO_LOCAL_OBJECT(req_wrap->object_);
+    JS_LOCAL_OBJECT objl = JS_TYPE_TO_LOCAL_OBJECT(wrap->object_);
 
-    MakeCallback(wrap->com, req_wrap->object_, wrap->com->pstr_oncomplete,
+    JS_LOCAL_VALUE argv[4] = {
+        STD_TO_INTEGER(status), JS_TYPE_TO_LOCAL_VALUE(objl),
+        JS_TYPE_TO_LOCAL_VALUE(objr),
+        JS_GET_NAME_HIDDEN(objr, JS_PREDEFINED_STRING(buffer)),
+    };
+
+    MakeCallback(wrap->com, objr, JS_PREDEFINED_STRING(oncomplete),
                  ARRAY_SIZE(argv), argv);
     delete req_wrap;
   }
@@ -281,8 +284,10 @@ JS_NATIVE_RETURN_TYPE UDPWrap::DoBind(jxcore::PArguments& args, int family) {
   uv_buf_t UDPWrap::OnAlloc(uv_handle_t * handle, size_t suggested_size) {
     UDPWrap* wrap = static_cast<UDPWrap*>(handle->data);
     node::commons* com = wrap->com;
-    char* buf =
-        com->udp_slab_allocator->Allocate(wrap->object_, suggested_size);
+    JS_DEFINE_STATE_MARKER(com);
+
+    JS_LOCAL_OBJECT objl = JS_TYPE_TO_LOCAL_OBJECT(wrap->object_);
+    char* buf = com->udp_slab_allocator->Allocate(objl, suggested_size);
     return uv_buf_init(buf, suggested_size);
   }
 
@@ -294,23 +299,23 @@ JS_NATIVE_RETURN_TYPE UDPWrap::DoBind(jxcore::PArguments& args, int family) {
     node::commons* com = wrap->com;
     JS_DEFINE_STATE_MARKER(com);
 
-    JS_LOCAL_OBJECT slab = com->udp_slab_allocator->Shrink(
-        wrap->object_, buf.base, nread < 0 ? 0 : nread);
+    JS_LOCAL_OBJECT objl = JS_TYPE_TO_LOCAL_OBJECT(wrap->object_);
+    JS_LOCAL_OBJECT slab =
+        com->udp_slab_allocator->Shrink(objl, buf.base, nread < 0 ? 0 : nread);
     if (nread == 0) return;
 
     if (nread < 0) {
       JS_LOCAL_VALUE argv[] = {JS_TYPE_TO_LOCAL_OBJECT(wrap->object_)};
       SetErrno(uv_last_error(com->loop));
-      MakeCallback(com, wrap->object_, com->pstr_onmessage, ARRAY_SIZE(argv),
+      MakeCallback(com, objl, JS_PREDEFINED_STRING(onmessage), ARRAY_SIZE(argv),
                    argv);
       return;
     }
 
     JS_LOCAL_VALUE argv[] = {
-        JS_TYPE_TO_LOCAL_OBJECT(wrap->object_),        slab,
-        STD_TO_INTEGER(buf.base - BUFFER__DATA(slab)), STD_TO_INTEGER(nread),
-        AddressToJS(JS_GET_STATE_MARKER(), addr)};
-    MakeCallback(com, wrap->object_, com->pstr_onmessage, ARRAY_SIZE(argv),
+        objl, slab, STD_TO_INTEGER(buf.base - BUFFER__DATA(slab)),
+        STD_TO_INTEGER(nread), AddressToJS(JS_GET_STATE_MARKER(), addr)};
+    MakeCallback(com, objl, JS_PREDEFINED_STRING(onmessage), ARRAY_SIZE(argv),
                  argv);
   }
 
@@ -323,9 +328,11 @@ JS_NATIVE_RETURN_TYPE UDPWrap::DoBind(jxcore::PArguments& args, int family) {
   JS_LOCAL_OBJECT UDPWrap::Instantiate() {
     // If this assert fires then Initialize hasn't been called yet.
     JS_ENTER_SCOPE_COM();
+    JS_DEFINE_STATE_MARKER(com);
     assert(JS_IS_EMPTY(com->udp_constructor) == false);
 
-    JS_LOCAL_OBJECT obj = JS_NEW_DEFAULT_INSTANCE(com->udp_constructor);
+    JS_LOCAL_FUNCTION objuc = JS_TYPE_TO_LOCAL_FUNCTION(com->udp_constructor);
+    JS_LOCAL_OBJECT obj = JS_NEW_DEFAULT_INSTANCE(objuc);
 
     return JS_LEAVE_SCOPE(obj);
   }

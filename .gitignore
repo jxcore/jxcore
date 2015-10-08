@@ -99,3 +99,4 @@ tmp_jx
 *.log
 
 .pydevproject
+icu_config.gypi

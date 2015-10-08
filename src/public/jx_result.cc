@@ -39,12 +39,19 @@ class auto_state {
       jxcore::JXEngine::GetInstanceByThreadId(com->threadId)
 
 #ifdef JS_ENGINE_V8
-#define ENTER_ENGINE_SCOPE()                          \
-  v8::Locker locker(com->node_isolate);               \
-  auto_state __state__(engine, com);                  \
-  v8::HandleScope handle_scope;                       \
-  v8::Context::Scope context_scope(engine->context_); \
-  v8::Isolate *__contextORisolate = com->node_isolate;
+#ifdef V8_IS_3_14
+#define ENTER_ENGINE_SCOPE()                       \
+  JS_ENGINE_LOCKER();                              \
+  auto_state __state__(engine, com);               \
+  v8::HandleScope handle_scope;                    \
+  v8::Context::Scope context_scope(engine->getContext())
+#else
+#define ENTER_ENGINE_SCOPE()                       \
+  JS_ENGINE_LOCKER();                              \
+  auto_state __state__(engine, com);               \
+  v8::HandleScope handle_scope(com->node_isolate); \
+  v8::Context::Scope context_scope(engine->getContext())
+#endif
 
 #define RUN_IN_SCOPE(x)                         \
   if (engine != NULL && !engine->IsInScope()) { \
@@ -152,7 +159,7 @@ JX_GetInt32(JXValue *value) {
 
   int32_t ret;
 
-  RUN_IN_SCOPE({ ret = INT32_TO_STD(wrap->value_); });
+  RUN_IN_SCOPE({ ret = INT32_TO_STD(JS_TYPE_TO_LOCAL_VALUE(wrap->value_)); });
 
   return ret;
 }
@@ -166,7 +173,7 @@ JX_GetDouble(JXValue *value) {
 
   double ret;
 
-  RUN_IN_SCOPE({ ret = NUMBER_TO_STD(wrap->value_); });
+  RUN_IN_SCOPE({ ret = NUMBER_TO_STD(JS_TYPE_TO_LOCAL_VALUE(wrap->value_)); });
 
   return ret;
 }
@@ -180,7 +187,7 @@ JX_GetBoolean(JXValue *value) {
 
   bool ret;
 
-  RUN_IN_SCOPE({ ret = BOOLEAN_TO_STD(wrap->value_); });
+  RUN_IN_SCOPE({ ret = BOOLEAN_TO_STD(JS_TYPE_TO_LOCAL_VALUE(wrap->value_)); });
 
   return ret;
 }
@@ -212,10 +219,11 @@ JX_GetString(JXValue *value) {
   RUN_IN_SCOPE({
     switch (value->type_) {
       case RT_String: {
-        ret = strdup(STRING_TO_STD(wrap->value_));
+        JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(wrap->value_);
+        ret = strdup(STRING_TO_STD(JS_VALUE_TO_STRING(objl)));
       } break;
       case RT_Object: {
-        JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(wrap->value_);
+        JS_LOCAL_OBJECT obj = JS_OBJECT_FROM_PERSISTENT(wrap->value_);
 
         {
           ret = jxcore::JX_Stringify(com, obj, &value->size_);
@@ -241,9 +249,11 @@ JX_GetString(JXValue *value) {
           ret = strdup(err_msg.c_str());
         }
       } break;
-      default:
+      default: {
+        JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(wrap->value_);
         // calls JavaScript .toString
-        ret = strdup(STRING_TO_STD(wrap->value_));
+        ret = strdup(STRING_TO_STD(JS_VALUE_TO_STRING(objl)));
+      }
     }
   });
 
@@ -321,7 +331,7 @@ JX_CallFunction(JXValue *fnc, JXValue *params, const int argc, JXValue *out) {
       arr[i] = params[i].type_ == RT_Undefined ? JS_UNDEFINED() : JS_NULL();
     } else {
       jxcore::JXValueWrapper *wrap = (jxcore::JXValueWrapper *)params[i].data_;
-      arr[i] = wrap->value_;
+      arr[i] = JS_TYPE_TO_LOCAL_VALUE(wrap->value_);
     }
   }
 
@@ -359,8 +369,7 @@ JX_SetInt32(JXValue *value, const int32_t val) {
   value->type_ = RT_Int32;
   value->size_ = sizeof(int32_t);
 
-  RUN_IN_SCOPE(
-      { wrap->value_ = JS_NEW_PERSISTENT_VALUE(STD_TO_INTEGER(val)); });
+  RUN_IN_SCOPE({ JS_NEW_PERSISTENT_VALUE(wrap->value_, STD_TO_INTEGER(val)); });
 }
 
 JXCORE_EXTERN(void)
@@ -378,7 +387,7 @@ JX_SetDouble(JXValue *value, const double val) {
   value->type_ = RT_Double;
   value->size_ = sizeof(double);
 
-  RUN_IN_SCOPE({ wrap->value_ = JS_NEW_PERSISTENT_VALUE(STD_TO_NUMBER(val)); });
+  RUN_IN_SCOPE({ JS_NEW_PERSISTENT_VALUE(wrap->value_, STD_TO_NUMBER(val)); });
 }
 
 JXCORE_EXTERN(void)
@@ -396,30 +405,26 @@ JX_SetBoolean(JXValue *value, const bool val) {
   value->type_ = RT_Boolean;
   value->size_ = sizeof(bool);
 
-  RUN_IN_SCOPE(
-      { wrap->value_ = JS_NEW_PERSISTENT_VALUE(STD_TO_BOOLEAN(val)); });
+  RUN_IN_SCOPE({ JS_NEW_PERSISTENT_VALUE(wrap->value_, STD_TO_BOOLEAN(val)); });
 }
 
-#define SET_STRING(type, ct)                                             \
-  UNWRAP_COM(value);                                                     \
-  UNWRAP_RESULT(value->data_);                                           \
-                                                                         \
-  if (wrap == 0) {                                                       \
-    wrap = new jxcore::JXValueWrapper();                                 \
-    value->data_ = (void *)wrap;                                         \
-  } else if (!(wrap->value_).IsEmpty()) {                                \
-    if (!wrap->value_.IsEmpty()) {                                       \
-      wrap->value_.Dispose();                                            \
-      wrap->value_.Clear();                                              \
-    };                                                                   \
-  }                                                                      \
-                                                                         \
-  value->type_ = type;                                                   \
-  value->size_ = length;                                                 \
-                                                                         \
-  RUN_IN_SCOPE({                                                         \
-    wrap->value_ =                                                       \
-        JS_NEW_PERSISTENT_VALUE(NewString<ct>(com, val, &value->size_)); \
+#define SET_STRING(type, ct)                                         \
+  UNWRAP_COM(value);                                                 \
+  UNWRAP_RESULT(value->data_);                                       \
+                                                                     \
+  if (wrap == 0) {                                                   \
+    wrap = new jxcore::JXValueWrapper();                             \
+    value->data_ = (void *)wrap;                                     \
+  } else {                                                           \
+    JS_CLEAR_PERSISTENT(wrap->value_);                               \
+  }                                                                  \
+                                                                     \
+  value->type_ = type;                                               \
+  value->size_ = length;                                             \
+                                                                     \
+  RUN_IN_SCOPE({                                                     \
+    JS_NEW_PERSISTENT_VALUE(wrap->value_,                            \
+                            NewString<ct>(com, val, &value->size_)); \
   })
 
 template <class t>
@@ -442,7 +447,8 @@ JS_HANDLE_VALUE NewString(node::commons *com, const t *val, size_t *length) {
     JS_LOCAL_STRING str_val = UTF8_TO_STRING_WITH_LENGTH(val, *length);
     return JS_LEAVE_SCOPE(str_val);
   } else {
-    return JS_LEAVE_SCOPE(NewString_(com, val, length));
+    JS_LOCAL_STRING str_val = JS_VALUE_TO_STRING(NewString_(com, val, length));
+    return JS_LEAVE_SCOPE(str_val);
   }
 }
 
@@ -484,7 +490,7 @@ JX_SetJSON(JXValue *value, const char *val, const int32_t length) {
 
   RUN_IN_SCOPE({
     JS_HANDLE_VALUE hval = jxcore::JX_Parse(com, val, length);
-    wrap->value_ = JS_NEW_PERSISTENT_VALUE(hval);
+    JS_NEW_PERSISTENT_VALUE(wrap->value_, hval);
   });
 }
 
@@ -510,8 +516,8 @@ JX_SetBuffer(JXValue *value, const char *val, const int32_t length) {
 
   RUN_IN_SCOPE({
     node::Buffer *buff = node::Buffer::New(val, length, com);
-    JS_LOCAL_OBJECT hval = JS_VALUE_TO_OBJECT(buff->handle_);
-    wrap->value_ = JS_NEW_PERSISTENT_VALUE(hval);
+    JS_LOCAL_OBJECT hval = JS_OBJECT_FROM_PERSISTENT(buff->handle_);
+    JS_NEW_PERSISTENT_VALUE(wrap->value_, hval);
   });
 }
 
@@ -540,7 +546,7 @@ JX_SetObject(JXValue *value_to, JXValue *value_from) {
 
   jxcore::JXValueWrapper *wrap_from =
       (jxcore::JXValueWrapper *)value_from->data_;
-  RUN_IN_SCOPE({ wrap->value_ = JS_NEW_PERSISTENT_VALUE(wrap_from->value_); });
+  RUN_IN_SCOPE({ JS_NEW_PERSISTENT_VALUE(wrap->value_, wrap_from->value_); });
   value_to->persistent_ = false;
 }
 
@@ -599,7 +605,7 @@ JX_CreateEmptyObject(JXValue *value) {
 
   jxcore::JXValueWrapper *wrap = new jxcore::JXValueWrapper();
   RUN_IN_SCOPE(
-      { wrap->value_ = JS_NEW_PERSISTENT_OBJECT(JS_NEW_EMPTY_OBJECT()); });
+      { JS_NEW_PERSISTENT_OBJECT(wrap->value_, JS_NEW_EMPTY_OBJECT()); });
   value->data_ = wrap;
 
   value->size_ = 1;
@@ -622,7 +628,7 @@ JX_CreateArrayObject(JXValue *value) {
   value->com_ = com;
 
   jxcore::JXValueWrapper *wrap = new jxcore::JXValueWrapper();
-  RUN_IN_SCOPE({ wrap->value_ = JS_NEW_PERSISTENT_OBJECT(JS_NEW_ARRAY()); });
+  RUN_IN_SCOPE({ JS_NEW_PERSISTENT_OBJECT(wrap->value_, JS_NEW_ARRAY()); });
   value->data_ = wrap;
 
   value->size_ = 1;
@@ -651,7 +657,7 @@ JX_SetNamedProperty(JXValue *object, const char *name, JXValue *prop) {
     JS_LOCAL_VALUE val = wrap_prop != NULL
                              ? JS_TYPE_TO_LOCAL_VALUE(wrap_prop->value_)
                              : JS_NULL();
-    JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(wrap->value_);
+    JS_LOCAL_OBJECT obj = JS_OBJECT_FROM_PERSISTENT(wrap->value_);
     JS_NAME_SET(obj, JS_STRING_ID(name), val);
   });
 }
@@ -674,7 +680,7 @@ JX_SetIndexedProperty(JXValue *object, const unsigned index, JXValue *prop) {
     JS_LOCAL_VALUE val = wrap_prop != NULL
                              ? JS_TYPE_TO_LOCAL_VALUE(wrap_prop->value_)
                              : JS_NULL();
-    JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(wrap->value_);
+    JS_LOCAL_OBJECT obj = JS_OBJECT_FROM_PERSISTENT(wrap->value_);
     JS_INDEX_SET(obj, index, val);
   });
 }
@@ -687,7 +693,7 @@ JX_GetNamedProperty(JXValue *object, const char *name, JXValue *out) {
   assert(object->type_ == RT_Object && "object must be an Object");
 
   RUN_IN_SCOPE({
-    JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(wrap->value_);
+    JS_LOCAL_OBJECT obj = JS_OBJECT_FROM_PERSISTENT(wrap->value_);
     JS_LOCAL_VALUE sub_obj;
     if (JS_HAS_NAME(obj, JS_STRING_ID(name)))
       sub_obj = JS_GET_NAME(obj, JS_STRING_ID(name));
@@ -711,7 +717,7 @@ JX_GetIndexedProperty(JXValue *object, const int index, JXValue *out) {
   assert(object->type_ == RT_Object && "object must be an Object");
 
   RUN_IN_SCOPE({
-    JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(wrap->value_);
+    JS_LOCAL_OBJECT obj = JS_OBJECT_FROM_PERSISTENT(wrap->value_);
     JS_LOCAL_VALUE sub_obj = JS_GET_INDEX(obj, index);
 
     out->data_ = NULL;
@@ -779,7 +785,7 @@ JX_WrapObject(JXValue *object, void *ptr) {
   assert(object->type_ == RT_Object && "object must be an Object");
 
   RUN_IN_SCOPE({
-    JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(wrap->value_);
+    JS_LOCAL_OBJECT obj = JS_OBJECT_FROM_PERSISTENT(wrap->value_);
 
     JS_SET_POINTER_DATA(obj, ptr);
   });
@@ -793,7 +799,7 @@ JX_UnwrapObject(JXValue *object) {
   assert(object->type_ == RT_Object && "object must be an Object");
 
   RUN_IN_SCOPE({
-    JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(wrap->value_);
+    JS_LOCAL_OBJECT obj = JS_OBJECT_FROM_PERSISTENT(wrap->value_);
 
     return JS_GET_POINTER_DATA(obj);
   });
