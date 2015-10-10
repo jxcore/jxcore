@@ -15,8 +15,8 @@ JS_LOCAL_OBJECT AddressToJS(JS_STATE_MARKER, const sockaddr* addr);
 
 JS_LOCAL_OBJECT TCPWrap::InstantiateCOM(commons* _com) {
   commons* com = _com != NULL ? _com : commons::getInstance();
-  JS_ENTER_SCOPE_WITH(_com->node_isolate);
-  JS_DEFINE_STATE_MARKER(_com);
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
+  JS_DEFINE_STATE_MARKER(com);
 
   assert(JS_IS_EMPTY(com->tcpConstructor) == false);
 
