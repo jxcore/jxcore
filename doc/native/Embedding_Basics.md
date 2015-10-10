@@ -2,7 +2,7 @@ This document focuses on jxcore's new public interface located under (`src/publi
 
 In order to embed jxcore into your application, you should first compile it as a library.
 
-`./configure --static-library --prefix=/targetFolder --engine-mozilla` (for V8 remove --engine-mozilla)  
+`./configure --static-library --prefix=/targetFolder --engine-mozilla` (for V8 remove --engine-mozilla)
 `./make install`
 
 Additional useful parameters
@@ -61,7 +61,9 @@ void ConvertResult(JXValue *result, std::string &to_result) {
   case RT_Buffer: {
     to_result = JX_GetString(result);
   } break;
-  case RT_JSON:
+  case RT_Object: {
+    to_result = JX_GetString(result);
+  } break;
   case RT_String: {
     to_result = JX_GetString(result);
   } break;
