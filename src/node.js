@@ -1425,7 +1425,6 @@
         process.exit(1);
       }
       try { // Retrieves appBuffer efficiently and without dependencies
-		var fs = NativeModule.require('fs');
         process.appBuffer = (function(fd, fileSize){
 			var checkBuffer = new Buffer(16), offset, sigBuffer, sigSize, i, l
 			, checks = [0x82, 0x30, 0, 2, 2, 0, 0, 0], checksComplete = 0
