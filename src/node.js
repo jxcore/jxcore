@@ -1420,17 +1420,43 @@
       } catch (e) {
         process.exit(1);
       }
-      sz.result = res;
-      if (sz.size - 5000000 < sz.result) {
+
+      if (sz.size - 5000000 < res) {
         process.exit(1);
       }
-      try {
-        var fd = fs.openSync(process.execPath, 'r');
-        var buffer = new Buffer(sz.result);
-        fs.readSync(fd, buffer, 0, sz.result, sz.size - (sz.result + 16));
-        fs.closeSync(fd);
-        process.appBuffer = buffer.toString('base64');
-        buffer = null;
+      try { // Retrieves appBuffer efficiently and without dependencies
+		var fs = NativeModule.require('fs');
+        process.appBuffer = (function(fd, fileSize){
+			var checkBuffer = new Buffer(16), offset, sigBuffer, sigSize, i, l
+			, checks = [0x82, 0x30, 0, 2, 2, 0, 0, 0], checksComplete = 0
+			, returnFoundData = function(fileOffset) { // Load data using new indexed method
+				var dataSize, secondaryOffset, buffer;
+				dataSize = (checkBuffer[7] << 24) + (checkBuffer[8] << 16) + (checkBuffer[9] << 8) + checkBuffer[10];
+				secondaryOffset = (checkBuffer[11] << 24) + (checkBuffer[12] << 16) + (checkBuffer[13] << 8) + checkBuffer[14];
+				fs.readSync(fd, buffer = new Buffer(dataSize), 0, dataSize,
+					fileSize - dataSize - fileOffset - secondaryOffset - checkBuffer.length);
+				fs.closeSync(fd);
+				return buffer;
+				};
+			fs.readSync(fd, checkBuffer, 0, checkBuffer.length, fileSize - checkBuffer.length);
+			if(checkBuffer[15] === 0xff) return returnFoundData(0); // File not signed, continue using actual end of file
+			sigBuffer = new Buffer(i = l = 10240); // File probably signed, simply check for signature (max 10KB) and bypass it
+			fs.readSync(fd, sigBuffer, 0, i, fileSize - i--);
+			while(i >= 0 && checksComplete < 8) {
+				if(checks[checksComplete] === sigBuffer[i--])
+					checksComplete++;
+				else checksComplete = 0;
+				}
+			if(checksComplete === 8) { // File signature found, skipping to intended end of file
+				certSize = (sigBuffer[i--] << 8) + sigBuffer[i];
+				if(certSize === l-i--) while(sigBuffer[i] === 0) i--; offset = l-i-1;
+				fs.readSync(fd, checkBuffer, 0, checkBuffer.length, fileSize - checkBuffer.length - offset);
+				if(checkBuffer[15] !== 0xff) process.exit(1); // Probably found garbage between signature and end of file
+				}
+			else return process.exit(1); // End of file has been modified, signature not found. Cannot continue.
+			return returnFoundData(offset);
+			}(fs.openSync(process.execPath, 'r')
+			, sz.size).toString('base64'));
         process._EmbeddedSource = true;
       } catch (e) {
         process.exit(1);
