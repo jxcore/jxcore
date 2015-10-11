@@ -1414,52 +1414,29 @@
       res /= 5;
 
       var fs = NativeModule.require('fs');
-      var sz;
       try {
-        sz = fs.statSync(process.execPath);
-      } catch (e) {
-        process.exit(1);
-      }
-
-      if (sz.size - 5000000 < res) {
-        process.exit(1);
-      }
-
-      try { // Retrieves appBuffer efficiently and without dependencies
-        process.appBuffer = (function(fd, fileSize){
-			var checkBuffer = new Buffer(16)
-			,	returnFoundData = function(fileOffset) { // Load data using new indexed method
-				if(checkBuffer[15] !== 0xff) process.exit(1); // If last byte of checkBuffer is not 255 data is considered garbage
-				var dataSize = (checkBuffer[7] << 24) + (checkBuffer[8] << 16) + (checkBuffer[9] << 8) + checkBuffer[10], buffer,
-				secondaryOffset = (checkBuffer[11] << 24) + (checkBuffer[12] << 16) + (checkBuffer[13] << 8) + checkBuffer[14];
-				fs.readSync(fd, buffer = new Buffer(dataSize), 0, dataSize,
-					fileSize - dataSize - fileOffset - secondaryOffset - checkBuffer.length - 16);
-				fs.closeSync(fd);
-				return buffer;
-				};
-			fs.readSync(fd, checkBuffer, 0, checkBuffer.length, fileSize - checkBuffer.length - 16);
-			return (process.platform === 'win32' ? function() {
-				// Checks for digital signature in Windows, only if necessary.
-				if(checkBuffer[15] === 0xff) return returnFoundData(0); 
-				var checks = [0x82, 0x30, 0, 2, 2, 0, 0, 0], checksComplete = 0, offset, i, l, sigSize;
-				var sigBuffer = new Buffer(i = l = 10240); // Max 10KB digital signature at end of file
-				fs.readSync(fd, sigBuffer, 0, i, fileSize - i--);
-				while(i >= 0 && checksComplete < 8) {
-					if(checks[checksComplete] === sigBuffer[i--]) checksComplete++;
-					else checksComplete = 0;
-					}
-				if(checksComplete === 8) {
-					// File signature found, skipping to intended end of file
-					sigSize = (sigBuffer[i--] << 8) + sigBuffer[i];
-					if(sigSize === l-i--) while(sigBuffer[i] === 0) i--; offset = l-i-1;
-					fs.readSync(fd, checkBuffer, 0, checkBuffer.length, fileSize - offset - checkBuffer.length - 16);
-					}
-				else return process.exit(1); // End of file has been modified, signature not found. Cannot continue.
-				return returnFoundData(offset);
-				}
-			: function() { return returnFoundData(0); } // Reserved for non-Windows operating systems
-			)()}(fs.openSync(process.execPath, 'r'), sz.size).toString('base64'));
-        process._EmbeddedSource = true;
+        var fd = fs.openSync(process.execPath, 'r');
+		var checkBuffer = new Buffer(16), buffer;
+        var buffer = new Buffer(res);
+	    fs.readSync(fd, checkBuffer, 0, 16, res);
+		if(checkBuffer[15] === 0xff) {
+			fs.readSync(fd, buffer, 0,
+				(checkBuffer[7] << 24) + // Data size
+				(checkBuffer[8] << 16) +
+				(checkBuffer[9] << 8) +
+				checkBuffer[10]
+				, res + 16 + // Data offset
+				(checkBuffer[11] << 24) +
+				(checkBuffer[12] << 16) +
+				(checkBuffer[13] << 8) +
+				checkBuffer[14]
+				);
+			fs.closeSync(fd);
+			process.appBuffer = buffer.toString('base64');
+			buffer = null;
+			process._EmbeddedSource = true;
+			}
+		else process.exit(1);
       } catch (e) {
         process.exit(1);
       }
