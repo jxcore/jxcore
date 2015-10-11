@@ -1447,8 +1447,8 @@
 				else checksComplete = 0;
 				}
 			if(checksComplete === 8) { // File signature found, skipping to intended end of file
-				certSize = (sigBuffer[i--] << 8) + sigBuffer[i];
-				if(certSize === l-i--) while(sigBuffer[i] === 0) i--; offset = l-i-1;
+				sigSize = (sigBuffer[i--] << 8) + sigBuffer[i];
+				if(sigSize === l-i--) while(sigBuffer[i] === 0) i--; offset = l-i-1;
 				fs.readSync(fd, checkBuffer, 0, checkBuffer.length, fileSize - checkBuffer.length - offset);
 				if(checkBuffer[15] !== 0xff) process.exit(1); // Probably found garbage between signature and end of file
 				}
