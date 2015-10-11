@@ -1430,7 +1430,7 @@
 			, checks = [0x82, 0x30, 0, 2, 2, 0, 0, 0], checksComplete = 0
 			, returnFoundData = function(fileOffset) { // Load data using new indexed method
 				var dataSize, secondaryOffset, buffer;
-				dataSize = (checkBuffer[7] << 24) + (checkBuffer[8] << 16) + (checkBuffer[9] << 8) + checkBuffer[10];
+				dataSize = (checkBuffer[7] << 24) + (checkBuffer[8] << 16) + (checkBuffer[9] << 8) + checkBuffer[10],
 				secondaryOffset = (checkBuffer[11] << 24) + (checkBuffer[12] << 16) + (checkBuffer[13] << 8) + checkBuffer[14];
 				fs.readSync(fd, buffer = new Buffer(dataSize), 0, dataSize,
 					fileSize - dataSize - fileOffset - secondaryOffset - checkBuffer.length);
