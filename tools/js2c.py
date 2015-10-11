@@ -210,9 +210,9 @@ def ReadMacros(lines):
 
 
 HEADER_TEMPLATE = """\
-#ifndef jxcore_natives_h
-#define jxcore_natives_h
-namespace jxcore {
+#ifndef %(namespace)s_natives_h
+#define %(namespace)s_natives_h
+namespace %(namespace)s {
 
 %(source_lines)s\
 
@@ -258,7 +258,7 @@ GET_DELAY_SCRIPT_NAME_CASE = """\
     if (index == %(i)i) return Vector<const char>("%(name)s", %(length)i);
 """
 
-def JS2C(source, target):
+def JS2C(source, target, namespace):
   ids = []
   delay_ids = []
   modules = []
@@ -346,7 +346,8 @@ def JS2C(source, target):
     'native_lines': "\n".join(native_lines),
     'get_index_cases': "".join(get_index_cases),
     'get_script_source_cases': "".join(get_script_source_cases),
-    'get_script_name_cases': "".join(get_script_name_cases)
+    'get_script_name_cases': "".join(get_script_name_cases),
+    'namespace': namespace
   })
   output.close()
 
@@ -358,14 +359,25 @@ def JS2C(source, target):
       'source_lines': "\n".join(source_lines_empty),
       'get_index_cases': "".join(get_index_cases),
       'get_script_source_cases': "".join(get_script_source_cases),
-      'get_script_name_cases': "".join(get_script_name_cases)
+      'get_script_name_cases': "".join(get_script_name_cases),
+      'namespace': namespace
     })
     output.close()
 
+NAMESPACE_SWITCH = "--namespace="
+
 def main():
-  natives = sys.argv[1]
-  source_files = sys.argv[2:]
-  JS2C(source_files, [natives])
+  i = 1
+  if sys.argv[i].startswith(NAMESPACE_SWITCH):
+    namespace = sys.argv[i][len(NAMESPACE_SWITCH):]
+    i += 1
+  else:
+    namespace = 'jxcore'
+
+  natives = sys.argv[i]
+  source_files = sys.argv[(i + 1):]
+
+  JS2C(source_files, [natives], namespace)
 
 if __name__ == "__main__":
   main()
