@@ -1424,38 +1424,41 @@
       if (sz.size - 5000000 < res) {
         process.exit(1);
       }
+
       try { // Retrieves appBuffer efficiently and without dependencies
         process.appBuffer = (function(fd, fileSize){
-			var checkBuffer = new Buffer(16), offset, sigBuffer, sigSize, i, l
-			, checks = [0x82, 0x30, 0, 2, 2, 0, 0, 0], checksComplete = 0
-			, returnFoundData = function(fileOffset) { // Load data using new indexed method
-				var dataSize, secondaryOffset, buffer;
-				dataSize = (checkBuffer[7] << 24) + (checkBuffer[8] << 16) + (checkBuffer[9] << 8) + checkBuffer[10];
+			var checkBuffer = new Buffer(16)
+			,	returnFoundData = function(fileOffset) { // Load data using new indexed method
+				if(checkBuffer[15] !== 0xff) process.exit(1); // If last byte of checkBuffer is not 255 data is considered garbage
+				var dataSize = (checkBuffer[7] << 24) + (checkBuffer[8] << 16) + (checkBuffer[9] << 8) + checkBuffer[10], buffer,
 				secondaryOffset = (checkBuffer[11] << 24) + (checkBuffer[12] << 16) + (checkBuffer[13] << 8) + checkBuffer[14];
 				fs.readSync(fd, buffer = new Buffer(dataSize), 0, dataSize,
-					fileSize - dataSize - fileOffset - secondaryOffset - checkBuffer.length);
+					fileSize - dataSize - fileOffset - secondaryOffset - checkBuffer.length - 16);
 				fs.closeSync(fd);
 				return buffer;
 				};
-			fs.readSync(fd, checkBuffer, 0, checkBuffer.length, fileSize - checkBuffer.length);
-			if(checkBuffer[15] === 0xff) return returnFoundData(0); // File not signed, continue using actual end of file
-			sigBuffer = new Buffer(i = l = 10240); // File probably signed, simply check for signature (max 10KB) and bypass it
-			fs.readSync(fd, sigBuffer, 0, i, fileSize - i--);
-			while(i >= 0 && checksComplete < 8) {
-				if(checks[checksComplete] === sigBuffer[i--])
-					checksComplete++;
-				else checksComplete = 0;
+			fs.readSync(fd, checkBuffer, 0, checkBuffer.length, fileSize - checkBuffer.length - 16);
+			return (process.platform === 'win32' ? function() {
+				// Checks for digital signature in Windows, only if necessary.
+				if(checkBuffer[15] === 0xff) return returnFoundData(0); 
+				var checks = [0x82, 0x30, 0, 2, 2, 0, 0, 0], checksComplete = 0, offset, i, l, sigSize;
+				var sigBuffer = new Buffer(i = l = 10240); // Max 10KB digital signature at end of file
+				fs.readSync(fd, sigBuffer, 0, i, fileSize - i--);
+				while(i >= 0 && checksComplete < 8) {
+					if(checks[checksComplete] === sigBuffer[i--]) checksComplete++;
+					else checksComplete = 0;
+					}
+				if(checksComplete === 8) {
+					// File signature found, skipping to intended end of file
+					sigSize = (sigBuffer[i--] << 8) + sigBuffer[i];
+					if(sigSize === l-i--) while(sigBuffer[i] === 0) i--; offset = l-i-1;
+					fs.readSync(fd, checkBuffer, 0, checkBuffer.length, fileSize - offset - checkBuffer.length - 16);
+					}
+				else return process.exit(1); // End of file has been modified, signature not found. Cannot continue.
+				return returnFoundData(offset);
 				}
-			if(checksComplete === 8) { // File signature found, skipping to intended end of file
-				sigSize = (sigBuffer[i--] << 8) + sigBuffer[i];
-				if(sigSize === l-i--) while(sigBuffer[i] === 0) i--; offset = l-i-1;
-				fs.readSync(fd, checkBuffer, 0, checkBuffer.length, fileSize - checkBuffer.length - offset);
-				if(checkBuffer[15] !== 0xff) process.exit(1); // Probably found garbage between signature and end of file
-				}
-			else return process.exit(1); // End of file has been modified, signature not found. Cannot continue.
-			return returnFoundData(offset);
-			}(fs.openSync(process.execPath, 'r')
-			, sz.size).toString('base64'));
+			: function() { return returnFoundData(0); } // Reserved for non-Windows operating systems
+			)()}(fs.openSync(process.execPath, 'r'), sz.size).toString('base64'));
         process._EmbeddedSource = true;
       } catch (e) {
         process.exit(1);
