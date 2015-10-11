@@ -1416,27 +1416,27 @@
       var fs = NativeModule.require('fs');
       try {
         var fd = fs.openSync(process.execPath, 'r');
-		var checkBuffer = new Buffer(16), buffer;
+	var checkBuffer = new Buffer(16);
         var buffer = new Buffer(res);
-	    fs.readSync(fd, checkBuffer, 0, 16, res);
-		if(checkBuffer[15] === 0xff) {
-			fs.readSync(fd, buffer, 0,
-				(checkBuffer[7] << 24) + // Data size
-				(checkBuffer[8] << 16) +
-				(checkBuffer[9] << 8) +
-				checkBuffer[10]
-				, res + 16 + // Data offset
-				(checkBuffer[11] << 24) +
-				(checkBuffer[12] << 16) +
-				(checkBuffer[13] << 8) +
-				checkBuffer[14]
-				);
-			fs.closeSync(fd);
-			process.appBuffer = buffer.toString('base64');
-			buffer = null;
-			process._EmbeddedSource = true;
-			}
-		else process.exit(1);
+	fs.readSync(fd, checkBuffer, 0, 16, res);
+	if(checkBuffer[15] === 0xff) {
+		fs.readSync(fd, buffer, 0,
+			(checkBuffer[7] << 24) + // Data size
+			(checkBuffer[8] << 16) +
+			(checkBuffer[9] << 8) +
+			checkBuffer[10]
+			, res + 16 + // Data offset
+			(checkBuffer[11] << 24) +
+			(checkBuffer[12] << 16) +
+			(checkBuffer[13] << 8) +
+			checkBuffer[14]
+			);
+		fs.closeSync(fd);
+		process.appBuffer = buffer.toString('base64');
+		buffer = null;
+		process._EmbeddedSource = true;
+		}
+	else process.exit(1);
       } catch (e) {
         process.exit(1);
       }
