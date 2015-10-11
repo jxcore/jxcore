@@ -369,6 +369,8 @@ def _BuildCommandLineForRuleRaw(spec, cmd, cygwin_shell, has_input_path,
       command = ['type']
     else:
       command = [cmd[0].replace('/', '\\')]
+    if quote_cmd:
+      command = ['"%s"' % i for i in command]
     # Add call before command to ensure that commands can be tied together one
     # after the other without aborting in Incredibuild, since IB makes a bat
     # file out of the raw command string, and some commands (like python) are
@@ -2588,6 +2590,11 @@ def _GetMSBuildGlobalProperties(spec, guid, gyp_file_name):
     if platform_name == 'ARM':
       props.append(['WindowsSDKDesktopARMSupport', 'true'])
       break
+  
+  target_platform_version = os.environ.get('WindowsTargetPlatformVersion')
+  if target_platform_version:
+    props.append(['WindowsTargetPlatformVersion', target_platform_version])
+
   return [props]
 
 def _GetMSBuildConfigurationDetails(spec, build_file):
