@@ -36,7 +36,7 @@ set noetw_msi_arg=
 set noperfctr=
 set noperfctr_arg=
 set noperfctr_msi_arg=
-set engine_mozilla=
+set engine_=
 set static_library=
 set compress_internals=
 set c_platform=
@@ -70,7 +70,7 @@ if /i "%1"=="upload"        set upload=1&goto arg-ok
 if /i "%1"=="jslint"        set jslint=1&goto arg-ok
 if /i "%1"=="--shared-library" set static_library=--shared-library&goto arg-ok
 if /i "%1"=="--engine-mozilla" set engine_=--engine-mozilla&goto arg-ok
-if /i "%1"=="--engine-chakra" set engine_=--engine-chakra&goto arg-ok
+if /i "%1"=="--engine-chakra" set engine_=--engine-chakra&set WindowsTargetPlatformVersion=10.0.10240.0&goto arg-ok
 if /i "%1"=="--compress-internals" set compress_internals=--compress-internals&goto arg-ok
 
 echo Warning: ignoring invalid command line option `%1`.
@@ -152,15 +152,16 @@ if defined noprojgen goto msbuild
 
 @rem Generate the VS project.
 SETLOCAL
-  if defined VS100COMNTOOLS call "%VS100COMNTOOLS%\VCVarsQueryRegistry.bat"
   call :getpythonversion
   if errorlevel 1 goto exit
+
   python configure %debug_arg% %nosnapshot_arg% %noetw_arg% %noperfctr_arg% --dest-cpu=%target_arch% --tag=%TAG% %static_library% %engine_% %compress_internals%
   if errorlevel 1 goto create-msvs-files-failed
   if not exist jx.sln goto create-msvs-files-failed
   echo Project files generated.
 ENDLOCAL
 
+:msbuild
 @rem Build the sln with msbuild.
 msbuild jx.sln /m /t:%target% /p:Configuration="%config%" %c_platform% /clp:NoSummary;NoItemAndPropertyList;Verbosity=minimal /nologo
 goto exit
