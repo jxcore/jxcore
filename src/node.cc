@@ -1480,7 +1480,7 @@ static void EnvEnumerator(const v8::PropertyCallbackInfo<v8::Array>& ___info) {
   WCHAR* environment = GetEnvironmentStringsW();
   if (environment == NULL) {
     // This should not happen.
-    return scope.Close(JS_NEW_ARRAY());
+    RETURN_GETTER_PARAM(JS_NEW_ARRAY());
   }
   JS_LOCAL_ARRAY env = JS_NEW_ARRAY();
   WCHAR* p = environment;
@@ -1691,6 +1691,8 @@ void EnableDebug(bool wait_connect, node::commons* node) {
   // v8 isolate.
   if (node->node_isolate == NULL)
     node->node_isolate = v8::Isolate::GetCurrent();
+#ifdef JS_ENGINE_CHAKRA
+#else
 #ifndef V8_IS_3_14
   // Send message to enable debug in workers
   JS_ENTER_SCOPE_WITH(node->node_isolate);
@@ -1728,6 +1730,7 @@ void EnableDebug(bool wait_connect, node::commons* node) {
   node->debugger_running = true;
 
   node->node_isolate->Exit();
+#endif
 #endif
 #elif defined(JS_ENGINE_MOZJS)
 // TODO(obastemur) DEBUG!!
@@ -1918,7 +1921,8 @@ JS_METHOD_END
 
 static JS_LOCAL_METHOD(DebugEnd) {
   if (com->debugger_running) {
-#ifdef JS_ENGINE_V8
+#ifdef JS_ENGINE_CHAKRA
+#elif defined(JS_ENGINE_V8)
 #ifdef V8_IS_3_14
     v8::Debug::DisableAgent();
 #else
