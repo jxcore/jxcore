@@ -1240,6 +1240,10 @@ class EXPORT TryCatch {
   Local<v8::Message> Message() const;
   void SetVerbose(bool value);
   void CheckReportExternalException();
+
+  bool CanContinue() {
+    return HasTerminated() ? false : true;
+  }
 };
 
 class EXPORT ExtensionConfiguration {
