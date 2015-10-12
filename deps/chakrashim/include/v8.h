@@ -291,6 +291,10 @@ class EXPORT Persistent : public Handle<T> {
   Persistent<S> As();
   void Dispose();
 
+  Local<T> get() {
+    return (*this);
+  }
+
   template<typename P>
   void SetWeak(
     P* parameter,
