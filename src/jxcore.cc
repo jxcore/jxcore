@@ -206,7 +206,11 @@ void JXEngine::ParseArgs(int argc, char **argv) {
         exit(0);
       } else if (strcmp(arg, "--jsversion") == 0 || strcmp(arg, "-jsv") == 0) {
 #ifdef JS_ENGINE_V8
+#ifdef JS_ENGINE_CHAKRA
+        flush_console("Microsoft Chakra v%s\n", v8::V8::GetVersion());
+#else
         flush_console("Google V8 v%s\n", v8::V8::GetVersion());
+#endif
 #elif defined(JS_ENGINE_MOZJS)
         flush_console("Mozilla SpiderMonkey v%d\n", MOZJS_VERSION);
 #endif
