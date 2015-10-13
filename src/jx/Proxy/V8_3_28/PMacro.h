@@ -190,9 +190,7 @@
   }
 
 #define __SET_CLASS_METHOD(x, name, method, pcount) \
-  JS_NAME_SET(                                      \
-      x, STD_TO_STRING(name),                       \
-      v8::FunctionTemplate::New(__contextORisolate, method)->GetFunction())
+  node::NODE_SET_METHOD_(x, name, method)
 
 #define SET_CLASS_METHOD(name, method, pcount) \
   __SET_CLASS_METHOD(constructor, name, method, pcount)
@@ -200,11 +198,7 @@
   __SET_CLASS_METHOD(target, name, method, pcount)
 
 #define SET_INSTANCE_METHOD(name, method, pcount)                              \
-  do {                                                                         \
-    V8_T_LOCAL(V8_T_FUNCTION_TEMPLATE) templ =                                 \
-        v8::FunctionTemplate::New(__contextORisolate, method);                 \
-    JS_NAME_SET(constructor->PrototypeTemplate(), STD_TO_STRING(name), templ); \
-  } while (0)
+  node::NODE_SET_PROTOTYPE_METHOD_(constructor, name, method)
 
 #define JS_SETTER_CLASS_METHOD(clss, name)                         \
   void clss::name(JS_LOCAL_STRING property, JS_LOCAL_VALUE value,  \
