@@ -88,6 +88,8 @@ d.on('error', function(er) {
       assert.ok(!er.domainBound);
       break;
 
+    case "Cannot read property 'isDirectory' of undefined":
+    // For old JS engine:
     case 'Cannot call method \'isDirectory\' of undefined':
       assert.equal(er.domain, d);
       assert.ok(!er.domainEmitter);
