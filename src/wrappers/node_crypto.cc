@@ -3577,10 +3577,13 @@ void EIO_PBKDF2After(node::commons* com, pbkdf2_req* req,
         ENGINE_NS::Exception::Error(STD_TO_STRING("PBKDF2 error")));
     argv[1] = JS_UNDEFINED();
   }
+}
 
+void EIO_PBKDF2Cleanup(pbkdf2_req* req) {
   delete[] req->pass;
   delete[] req->salt;
   delete[] req->key;
+  JS_CLEAR_PERSISTENT(req->obj);
   delete req;
 }
 
@@ -3590,14 +3593,9 @@ void EIO_PBKDF2After(uv_work_t* work_req, int status) {
   JS_ENTER_SCOPE_COM();
   JS_LOCAL_VALUE argv[2];
   JS_LOCAL_OBJECT obj = JS_OBJECT_FROM_PERSISTENT(req->obj);
-// TODO(obastemur) Why we have this at all ?
-// #ifdef JS_ENGINE_MOZJS
-//   obj->AddRoot();
-//   req->obj.MakeWeak();
-// #endif
   EIO_PBKDF2After(com, req, argv);
   MakeCallback(com, obj, JS_PREDEFINED_STRING(ondone), ARRAY_SIZE(argv), argv);
-  JS_CLEAR_PERSISTENT(req->obj);
+  EIO_PBKDF2Cleanup(req);
 }
 
 JS_LOCAL_METHOD(PBKDF2) {
@@ -3680,6 +3678,7 @@ JS_LOCAL_METHOD(PBKDF2) {
     JS_LOCAL_VALUE argv[2];
     EIO_PBKDF2(req);
     EIO_PBKDF2After(com, req, argv);
+    EIO_PBKDF2Cleanup(req);
     if (!JS_IS_UNDEFINED(argv[0])) {
       THROW_EXCEPTION_OBJECT(argv[0]);
     }
