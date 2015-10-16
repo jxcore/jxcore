@@ -196,5 +196,9 @@ Wrap a pointer into a JS object
 ##### void JX_UnwrapObject(JXValue *object)
 Unwrap the pointer from a JS object (doesn't remove it)
 
+##### void JX_GetBuffer(JXValue *object)
+Returns a direct pointer to the underlying data for a Buffer. No copying involved.
+Don't hold to it longer than necessary, it may be garbage collected.
+
 ##### void JX_QuitLoop()
 Calls `uv_stop` on thread's uv_loop. Use `LoopOnce` if you need to control the thread.
