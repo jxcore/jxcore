@@ -689,7 +689,7 @@ def configure_node(o):
 
   # By default, enable Performance counters on Windows.
   if flavor == 'win':
-    o['variables']['node_win_onecore'] = b(options.win_onecore)
+    o['variables']['node_win_onecore'] = 1 if options.win_onecore else 0
     o['variables']['node_use_perfctr'] = b(not options.without_perfctr)
   elif options.with_perfctr:
     raise Exception('Performance counter is only supported on Windows.')
