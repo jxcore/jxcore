@@ -100,13 +100,18 @@ JX_GetDouble(JXValue *value);
 JXCORE_EXTERN(bool)
 JX_GetBoolean(JXValue *value);
 
-// for String, JSON, Error and Buffer
+// for String, JSON, Error
 // call free on return value when you are done with it
 JXCORE_EXTERN(char *)
 JX_GetString(JXValue *value);
 
 JXCORE_EXTERN(int32_t)
 JX_GetDataLength(JXValue *value);
+
+// for Buffer, it returns a direct pointer to the underlying data. no copying involved
+// don't hold to it longer than necessary, it may be gc'd away
+JXCORE_EXTERN(char *)
+JX_GetBuffer(JXValue *value);
 
 JXCORE_EXTERN(void)
 JX_SetInt32(JXValue *value, const int32_t val);

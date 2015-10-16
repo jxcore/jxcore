@@ -257,6 +257,23 @@ JX_GetDataLength(JXValue *value) {
   return value->size_;
 }
 
+JXCORE_EXTERN(char *)
+JX_GetBuffer(JXValue *value) {
+  EMPTY_CHECK(NULL);
+
+  UNWRAP_COM(value);
+  UNWRAP_RESULT(value->data_);
+
+  char *data = NULL;
+  RUN_IN_SCOPE({
+    if (value->type_ == RT_Buffer) {
+      data = BUFFER__DATA(wrap->value_);
+    }
+  });
+
+  return data;
+}
+
 JXCORE_EXTERN(void)
 JX_Free(JXValue *value) {
   assert(value != NULL && "JXResult object wasn't initialized");
