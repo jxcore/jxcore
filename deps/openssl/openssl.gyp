@@ -658,10 +658,10 @@
         ['target_arch=="arm64"', {
           'defines': [ '__ARM_ARCH_64__' ]
         }],
-		['OS=="win" and target_arch=="arm"', {
+        ['OS=="win" and target_arch=="arm"', {
           'defines': ['__arm__'],
-		}],
-		['OS=="win" and target_arch=="arm" and openssl_no_asm==0', {
+        }],
+        ['OS=="win" and target_arch=="arm" and openssl_no_asm==0', {
           'sources!': [
             # This is mostly needed for ASM and doesn't compile on windows
             'openssl/crypto/armcap.c',

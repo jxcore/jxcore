@@ -235,6 +235,11 @@
             },
             'defines': ['JS_ENGINE_CHAKRA=1', 'JS_ENGINE_V8=1'],
             'dependencies': [ 'deps/chakrashim/chakrashim.gyp:chakrashim' ], 
+            'libraries': [
+              '-lchakrart.lib',
+              '-lole32.lib',
+              '-lversion.lib',
+            ],
           }]
         ],
       }],
