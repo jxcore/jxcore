@@ -546,6 +546,7 @@ static void pthread_testcancel(void) {
 }
 
 static int pthread_cancel(pthread_t t) {
+#ifndef __arm__
   if (t->p_state & PTHREAD_CANCEL_ASYNCHRONOUS) {
     /* Dangerous asynchronous cancelling */
     CONTEXT ctxt;
@@ -572,12 +573,15 @@ static int pthread_cancel(pthread_t t) {
 
     ResumeThread(t->h);
   } else {
+#endif
     /* Safe deferred Cancelling */
     t->cancelled = 1;
 
     /* Notify everyone to look */
     _InterlockedIncrement(&_pthread_cancelling);
+#ifndef __arm__
   }
+#endif
 
   return 0;
 }
