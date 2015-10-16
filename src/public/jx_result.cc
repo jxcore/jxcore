@@ -267,7 +267,7 @@ JX_GetBuffer(JXValue *value) {
   char *data = NULL;
   RUN_IN_SCOPE({
     if (value->type_ == RT_Buffer) {
-      data = node::Buffer::Data(wrap->value_);
+      data = BUFFER__DATA(wrap->value_);
     }
   });
 
