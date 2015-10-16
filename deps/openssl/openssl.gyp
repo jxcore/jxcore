@@ -658,6 +658,15 @@
         ['target_arch=="arm64"', {
           'defines': [ '__ARM_ARCH_64__' ]
         }],
+		['OS=="win" and target_arch=="arm"', {
+          'defines': ['__arm__'],
+		}],
+		['OS=="win" and target_arch=="arm" and openssl_no_asm==0', {
+          'sources!': [
+            # This is mostly needed for ASM and doesn't compile on windows
+            'openssl/crypto/armcap.c',
+          ],
+        }],
         ['target_arch!="ia32" and target_arch!="x64" and target_arch!="arm" or openssl_no_asm!=0 or OS=="ios" or OS=="android"', {
           # Disable asm
           'defines': [
@@ -859,13 +868,6 @@
                 'openssl/crypto/armcap.c',
                 'openssl/crypto/armv4cpuid.S',
               ]
-            }],
-            ['OS=="win" and target_arch=="arm"', {
-              'defines': ['__arm__'],
-              'sources!': [
-                # This is mostly needed for ASM and doesn't compile on windows
-                'openssl/crypto/armcap.c',
-              ],
             }],
             ['OS=="win" and target_arch=="ia32"', {
               'sources': [
