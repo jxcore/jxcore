@@ -25,6 +25,9 @@
           }],
         ],
       }],
+	  ['OS=="win" and target_arch=="arm"', {
+        'defines': ['__arm__'],
+	  }],
     ],
   },
 
