@@ -40,6 +40,7 @@ set engine_=
 set static_library=
 set compress_internals=
 set c_platform=
+set wincore=
 
 :next-arg
 if "%1"=="" goto args-done
@@ -49,7 +50,7 @@ if /i "%1"=="clean"         set target=Clean&goto arg-ok
 if /i "%1"=="ia32"          set c_platform="/p:Platform=Win32"&set target_arch=ia32&goto arg-ok
 if /i "%1"=="x86"           set c_platform="/p:Platform=Win32"&set target_arch=ia32&goto arg-ok
 if /i "%1"=="x64"           set target_arch=x64&goto arg-ok
-if /i "%1"=="arm"           set c_platform="/p:Platform=ARM"&set target_arch=arm&goto arg-ok
+if /i "%1"=="arm"           set c_platform="/p:Platform=ARM"&set target_arch=arm&set wincore=--win-onecore&goto arg-ok
 if /i "%1"=="noprojgen"     set noprojgen=1&goto arg-ok
 if /i "%1"=="nobuild"       set nobuild=1&goto arg-ok
 if /i "%1"=="nosign"        set nosign=1&goto arg-ok
@@ -155,7 +156,7 @@ SETLOCAL
   call :getpythonversion
   if errorlevel 1 goto exit
 
-  python configure %debug_arg% %nosnapshot_arg% %noetw_arg% %noperfctr_arg% --dest-cpu=%target_arch% --tag=%TAG% %static_library% %engine_% %compress_internals%
+  python configure %debug_arg% %nosnapshot_arg% %noetw_arg% %noperfctr_arg% --dest-cpu=%target_arch% --tag=%TAG% %wincore% %static_library% %engine_% %compress_internals%
   if errorlevel 1 goto create-msvs-files-failed
   if not exist jx.sln goto create-msvs-files-failed
   echo Project files generated.

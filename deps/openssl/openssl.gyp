@@ -967,7 +967,7 @@
             }]
           ]
         }],
-        ['OS=="win" and node_win_onecore=="false"', {
+        ['OS=="win" and node_win_onecore==0', {
           'link_settings': {
             'libraries': [
               '-lgdi32.lib',
