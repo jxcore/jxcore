@@ -1414,24 +1414,30 @@
       res /= 5;
 
       var fs = NativeModule.require('fs');
-      var sz;
-      try {
-        sz = fs.statSync(process.execPath);
-      } catch (e) {
-        process.exit(1);
-      }
-      sz.result = res;
-      if (sz.size - 5000000 < sz.result) {
-        process.exit(1);
-      }
       try {
         var fd = fs.openSync(process.execPath, 'r');
-        var buffer = new Buffer(sz.result);
-        fs.readSync(fd, buffer, 0, sz.result, sz.size - (sz.result + 16));
-        fs.closeSync(fd);
-        process.appBuffer = buffer.toString('base64');
-        buffer = null;
-        process._EmbeddedSource = true;
+		var checkBuffer = new Buffer(16), buffer;
+		fs.readSync(fd, checkBuffer, 0, 16, res);
+		if(checkBuffer[15] === 0xff) {
+			buffer = new Buffer(
+				(checkBuffer[7] << 24) + // Data size
+				(checkBuffer[8] << 16) +
+				(checkBuffer[9] << 8) +
+				checkBuffer[10]);
+			fs.readSync(fd, buffer, 0,
+				buffer.length
+				, res + 16 + // Data offset
+				(checkBuffer[11] << 24) +
+				(checkBuffer[12] << 16) +
+				(checkBuffer[13] << 8) +
+				checkBuffer[14]
+				);
+			fs.closeSync(fd);
+			process.appBuffer = buffer.toString('base64');
+			buffer = null;
+			process._EmbeddedSource = true;
+			}
+		else process.exit(1);
       } catch (e) {
         process.exit(1);
       }
