@@ -484,7 +484,7 @@ such as in the generation of encryption keys.
 
 Usage is otherwise identical to `crypto.randomBytes`.
 
-## crypto.generateHKDF(bytes_to_generate, public_key, salt, digest_buffer)
+## crypto.generateHKDF(bytes_to_generate, ikm, salt, digest_buffer)
 
 Implements the RFC 5869's HKDF function using the specified digest, input
 keying material (IKM) and salt. It will return the specified number of bytes
