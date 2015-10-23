@@ -24,8 +24,7 @@
 // This file is derived from https://github.com/saary/node-async-helper
 //
 
-#include "v8.h"
-#include "nan.h"
+#include "../../../src/node.h"
 #include <thread>
 
 namespace NodeUtils {

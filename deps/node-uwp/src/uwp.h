@@ -21,7 +21,6 @@
 #pragma once
 
 #include "node-async.h"
-using namespace v8;
 using NodeUtils::Async;
 
 class UWPAddOn {
@@ -41,7 +40,7 @@ class UWPAddOn {
       : _coInitialized(false), _keepAliveToken(nullptr) {
   }
 
-  static void Init(Handle<Object> target);
-  static NAN_METHOD(ProjectNamespace);
-  static NAN_METHOD(Close);
+  static void Init(JS_HANDLE_OBJECT_REF target);
+  static DEFINE_JS_METHOD(ProjectNamespace);
+  static DEFINE_JS_METHOD(Close);
 };

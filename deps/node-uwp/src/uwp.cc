@@ -29,7 +29,8 @@ bool UWPAddOn::EnsureCoInitialized() {
     _coInitialized = SUCCEEDED(hr);
 
     if (!_coInitialized) {
-      Nan::ThrowError("CoInitializeEx failed");
+      JS_DEFINE_COM_AND_MARKER();
+      JS_THROW_EXCEPTION("CoInitializeEx failed");
     }
   }
 
@@ -61,38 +62,36 @@ void UWPAddOn::ReleaseKeepAlive() {
   }
 }
 
-void UWPAddOn::Init(Handle<Object> target) {
-  Nan::HandleScope scope;
+void UWPAddOn::Init(JS_HANDLE_OBJECT_REF target) {
+  JS_ENTER_SCOPE_COM();
+  JS_DEFINE_STATE_MARKER(com);
 
   NodeUtils::g_mainThreadId =
-    std::this_thread::get_id();  // Capture entering thread id
+      std::this_thread::get_id();  // Capture entering thread id
 
   if (!s_instance.EnsureCoInitialized()) {
     return;
   }
 
   JsErrorCode err = JsSetProjectionEnqueueCallback(
-    [](JsProjectionCallback jsCallback,
-       JsProjectionCallbackContext jsContext, void *context) {
-    Async::RunOnMain([jsCallback, jsContext]() {
-      jsCallback(jsContext);
-    });
-  },
-    /*projectionEnqueueContext*/nullptr);
+      [](JsProjectionCallback jsCallback, JsProjectionCallbackContext jsContext,
+         void *context) {
+        Async::RunOnMain([jsCallback, jsContext]() { jsCallback(jsContext); });
+      },
+      /*projectionEnqueueContext*/ nullptr);
+
   if (err != JsNoError) {
-    Nan::ThrowError("JsSetProjectionEnqueueCallback failed");
+    JS_THROW_EXCEPTION("JsSetProjectionEnqueueCallback failed");
     return;
   }
 
-  Nan::SetMethod(target, "projectNamespace", ProjectNamespace);
-  Nan::SetMethod(target, "close", Close);
+  JS_NAME_SET(target, JS_STRING_ID("projectNamespace"), ProjectNamespace);
+  JS_NAME_SET(target, JS_STRING_ID("close"), Close);
 }
 
-NAN_METHOD(UWPAddOn::ProjectNamespace) {
-  Nan::HandleScope scope;
-
-  if (!info[0]->IsString()) {
-    Nan::ThrowTypeError("Argument must be a string");
+JS_METHOD(UWPAddOn, ProjectNamespace) {
+  if (!args.IsString(0)) {
+    JS_THROW_EXCEPTION("Argument must be a string");
     return;
   }
 
@@ -100,23 +99,24 @@ NAN_METHOD(UWPAddOn::ProjectNamespace) {
     return;
   }
 
-  String::Value name(info[0]);
-  if (JsProjectWinRTNamespace(reinterpret_cast<wchar_t*>(*name)) != JsNoError) {
-    Nan::ThrowError("JsProjectWinRTNamespace failed");
+  jxcore::JXString name;
+  args.GetString(0, &str);
+
+  if (JsProjectWinRTNamespace(reinterpret_cast<wchar_t *>(*name)) !=
+      JsNoError) {
+    JS_THROW_EXCEPTION("JsProjectWinRTNamespace failed");
     return;
   }
 
   // Keep Node alive once successfully projected a UWP namespace
   s_instance.EnsureKeepAlive();
-  return;
 }
+JS_METHOD_END
 
-NAN_METHOD(UWPAddOn::Close) {
-  Nan::HandleScope scope;
-
+JS_METHOD(UWPAddOn, Close) {
   s_instance.ReleaseKeepAlive();
   s_instance.EnsureCoUninitialized();
-  return;
 }
+JS_METHOD_END
 
 NODE_MODULE(uwp, UWPAddOn::Init);
