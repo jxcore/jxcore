@@ -40,10 +40,10 @@ class auto_state {
 
 #ifdef JS_ENGINE_V8
 #ifdef V8_IS_3_14
-#define ENTER_ENGINE_SCOPE()                       \
-  JS_ENGINE_LOCKER();                              \
-  auto_state __state__(engine, com);               \
-  v8::HandleScope handle_scope;                    \
+#define ENTER_ENGINE_SCOPE()         \
+  JS_ENGINE_LOCKER();                \
+  auto_state __state__(engine, com); \
+  v8::HandleScope handle_scope;      \
   v8::Context::Scope context_scope(engine->getContext())
 #else
 #define ENTER_ENGINE_SCOPE()                       \
@@ -277,7 +277,8 @@ JX_GetBuffer(JXValue *value) {
   char *data = NULL;
   RUN_IN_SCOPE({
     if (value->type_ == RT_Buffer) {
-      data = BUFFER__DATA(wrap->value_);
+      JS_LOCAL_OBJECT obj = JS_OBJECT_FROM_PERSISTENT(wrap->value_);
+      data = BUFFER__DATA(obj);
     }
   });
 
