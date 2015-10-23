@@ -540,6 +540,9 @@
       obj.__defineGetter__('embeddedModule', function() {
         return NativeModule.require('_jx_loadEmbedded');
       });
+      obj.__defineGetter__('uwp', function() {
+        return NativeModule.require('_jx_loadEmbedded').require('node-uwp');
+      });
       return obj;
     });
   };

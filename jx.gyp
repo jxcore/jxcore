@@ -234,7 +234,8 @@
               'node_engine_include_dir%': 'deps/chakrashim/include'
             },
             'defines': ['JS_ENGINE_CHAKRA=1', 'JS_ENGINE_V8=1'],
-            'dependencies': [ 'deps/chakrashim/chakrashim.gyp:chakrashim' ], 
+            'dependencies': [ 'deps/chakrashim/chakrashim.gyp:chakrashim', 
+                              'deps/node-uwp/binding.gyp:uwp'],
             'libraries': [
               '-lchakrart.lib',
               '-lole32.lib',

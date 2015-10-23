@@ -24,7 +24,7 @@
 // This file is derived from https://github.com/saary/node-async-helper
 //
 
-#include "../../../src/node.h"
+#include "node.h"
 #include <thread>
 
 namespace NodeUtils {
@@ -84,7 +84,7 @@ class Async {
   }
 
   // Called by run on main in case we are not running on the main thread
-  static void AsyncCb(uv_async_t* handle) {
+  static void AsyncCb(uv_async_t* handle, int _) {
     TokenData* tokenData = static_cast<TokenData*>(handle->data);
     tokenData->func();
     ReleaseAsyncToken(handle);

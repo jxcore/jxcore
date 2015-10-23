@@ -19,6 +19,7 @@
 // IN THE SOFTWARE.
 
 #include "uwp.h"
+#include "commons.h"
 
 std::thread::id NodeUtils::g_mainThreadId;
 UWPAddOn UWPAddOn::s_instance;
@@ -30,7 +31,7 @@ bool UWPAddOn::EnsureCoInitialized() {
 
     if (!_coInitialized) {
       JS_DEFINE_COM_AND_MARKER();
-      JS_THROW_EXCEPTION("CoInitializeEx failed");
+      JS_THROW_EXCEPTION(STD_TO_STRING("CoInitializeEx failed"));
     }
   }
 
@@ -81,31 +82,41 @@ void UWPAddOn::Init(JS_HANDLE_OBJECT_REF target) {
       /*projectionEnqueueContext*/ nullptr);
 
   if (err != JsNoError) {
-    JS_THROW_EXCEPTION("JsSetProjectionEnqueueCallback failed");
+    THROW_EXCEPTION("JsSetProjectionEnqueueCallback failed");
     return;
   }
+  
+  JS_METHOD_SET(target, "projectNamespace", ProjectNamespace);
+  JS_METHOD_SET(target, "close", Close);
+}
 
-  JS_NAME_SET(target, JS_STRING_ID("projectNamespace"), ProjectNamespace);
-  JS_NAME_SET(target, JS_STRING_ID("close"), Close);
+wchar_t *GetWC(const char *c)
+{
+    const size_t cSize = mbstowcs(NULL, c, 0) + 1;
+    wchar_t* wc = new wchar_t[cSize];
+    mbstowcs (wc, c, cSize);
+
+    return wc;
 }
 
 JS_METHOD(UWPAddOn, ProjectNamespace) {
   if (!args.IsString(0)) {
-    JS_THROW_EXCEPTION("Argument must be a string");
-    return;
+    THROW_EXCEPTION("Argument must be a string");
   }
 
   if (!s_instance.EnsureCoInitialized()) {
-    return;
+    RETURN();
   }
 
   jxcore::JXString name;
-  args.GetString(0, &str);
+  args.GetString(0, &name);
 
-  if (JsProjectWinRTNamespace(reinterpret_cast<wchar_t *>(*name)) !=
-      JsNoError) {
-    JS_THROW_EXCEPTION("JsProjectWinRTNamespace failed");
-    return;
+  wchar_t *wname = GetWC(*name);
+  bool err = JsProjectWinRTNamespace(wname) !=
+      JsNoError;
+  delete wname;
+  if (err) {
+    THROW_EXCEPTION("JsProjectWinRTNamespace failed");
   }
 
   // Keep Node alive once successfully projected a UWP namespace
