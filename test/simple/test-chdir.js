@@ -12,7 +12,7 @@ process.chdir(__dirname);
 assert.equal(true, process.cwd() === __dirname);
 
 var dir = path.resolve(common.fixturesDir,
-    'weird \uc3a4\uc3ab\uc3af characters \u00e1\u00e2\u00e3');
+    'weird \ud83d\udc04 characters \ud83d\udc05');
 fs.mkdirSync(dir);
 process.chdir(dir);
 assert(process.cwd() == dir);
