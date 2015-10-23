@@ -3,6 +3,10 @@
 
 // Flags: --expose-gc
 
+// gc() does not kick in as it was before
+// so skip it for v8 3.2+
+if (parseFloat(process.versions.v8) > 3.2) return;
+
 // Add and remove a lot of different events to an EventEmitter, then check
 // that we didn't leak the event names.
 var common = require('../common');
