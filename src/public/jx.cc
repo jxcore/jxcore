@@ -71,8 +71,9 @@ JS_LOCAL_METHOD(extensionCallback) {
   }
 
   if (results[len].type_ != RT_Undefined) {
-    assert(results[len].data_ != NULL && (results[len].size_ != 0 ||
-		   results[len].type_ == RT_String) &&
+    assert((results[len].data_ != NULL || (results[len].size_ == 0 && results[len].type_ == RT_Buffer)) &&
+           "Result value is NULL and it is not a zero length buffer");
+    assert((results[len].size_ != 0 || (results[len].type_ == RT_String || results[len].type_ == RT_Buffer)) &&
            "Return value was corrupted");
 
     if (results[len].type_ == RT_Error) {
