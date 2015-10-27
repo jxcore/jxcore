@@ -256,7 +256,10 @@ static void CALLBACK uv_tty_post_raw_read(void* data, BOOLEAN didTimeout) {
   handle = (uv_tty_t*)req->data;
   loop = handle->loop;
 
+#ifndef WINONECORE
   UnregisterWait(handle->read_raw_wait);
+#endif
+
   handle->read_raw_wait = NULL;
 
   SET_REQ_SUCCESS(req);

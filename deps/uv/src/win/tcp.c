@@ -190,7 +190,9 @@ void uv_tcp_endgame(uv_loop_t* loop, uv_tcp_t* handle) {
         for (i = 0; i < uv_simultaneous_server_accepts; i++) {
           req = &handle->accept_reqs[i];
           if (req->wait_handle != INVALID_HANDLE_VALUE) {
+#ifndef WINONECORE
             UnregisterWait(req->wait_handle);
+#endif
             req->wait_handle = INVALID_HANDLE_VALUE;
           }
           if (req->event_handle) {
@@ -207,7 +209,9 @@ void uv_tcp_endgame(uv_loop_t* loop, uv_tcp_t* handle) {
     if (handle->flags & UV_HANDLE_CONNECTION &&
         handle->flags & UV_HANDLE_EMULATE_IOCP) {
       if (handle->read_req.wait_handle != INVALID_HANDLE_VALUE) {
+#ifndef WINONECORE
         UnregisterWait(handle->read_req.wait_handle);
+#endif
         handle->read_req.wait_handle = INVALID_HANDLE_VALUE;
       }
       if (handle->read_req.event_handle) {
@@ -1026,7 +1030,9 @@ void uv_process_tcp_write_req(uv_loop_t* loop, uv_tcp_t* handle,
 
   if (handle->flags & UV_HANDLE_EMULATE_IOCP) {
     if (req->wait_handle != INVALID_HANDLE_VALUE) {
+#ifndef WINONECORE
       UnregisterWait(req->wait_handle);
+#endif
       req->wait_handle = INVALID_HANDLE_VALUE;
     }
     if (req->event_handle) {

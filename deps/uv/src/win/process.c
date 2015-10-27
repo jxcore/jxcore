@@ -668,7 +668,9 @@ void uv_process_proc_exit(uv_loop_t* loop, uv_process_t* handle) {
 
   /* Unregister from process notification. */
   if (handle->wait_handle != INVALID_HANDLE_VALUE) {
+#ifndef WINONECORE
     UnregisterWait(handle->wait_handle);
+#endif
     handle->wait_handle = INVALID_HANDLE_VALUE;
   }
 
