@@ -110,9 +110,14 @@ static uv_err_t uv__create_stdio_pipe_pair(uv_loop_t* loop,
   }
 
   /* Create server pipe handle. */
+#ifndef WINONECORE
   err = uv_stdio_pipe_server(loop, server_pipe, server_access, pipe_name,
                              sizeof(pipe_name));
   if (err.code != UV_OK) goto error;
+#else
+  err = -1;
+  goto error;
+#endif
 
   /* Create child pipe handle. */
   sa.nLength = sizeof sa;
