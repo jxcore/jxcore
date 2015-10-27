@@ -37,12 +37,12 @@
         [ 'target_arch=="arm"', {
           'defines': [ '__arm__=1' ]
         }],
-        [ 'node_win_onecore=="true"', {
+        [ 'node_win_onecore==1', {
           'libraries': [
             '-lchakrart.lib',
           ],
         }],
-        [ 'node_win_onecore=="false"', {
+        [ 'node_win_onecore==0', {
           'libraries': [
             '-lchakrart.lib',
             '-lole32.lib',
