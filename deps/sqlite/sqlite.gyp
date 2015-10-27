@@ -29,6 +29,9 @@
             'V8_IS_3_28=1'
           ],
         }],
+        [ 'node_win_onecore==1', {
+          'defines': ['SQLITE_OS_WINRT']
+        }],
         [ 'v8_is_3_14==1', {
           'defines': [
             'V8_IS_3_14=1'
