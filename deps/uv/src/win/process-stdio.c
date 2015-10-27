@@ -115,7 +115,7 @@ static uv_err_t uv__create_stdio_pipe_pair(uv_loop_t* loop,
                              sizeof(pipe_name));
   if (err.code != UV_OK) goto error;
 #else
-  err = -1;
+  err.code = UV_UNKNOWN;
   goto error;
 #endif
 
