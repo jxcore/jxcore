@@ -6,6 +6,7 @@
     # as it's necessary to correctly locate the object files for post
     # processing.
     'uv_parent_path': '',
+    'node_win_onecore%': 0,
   },
 
   'target_defaults': {
@@ -190,6 +191,9 @@
         }],
         [ 'OS=="ios"', {
           'defines':['__IOS__']
+        }],
+        ['node_win_onecore==1', {
+          'defines': [ 'WINONECORE=1' ],
         }],
         [ 'OS=="ios" and (target_arch=="ia32" or target_arch=="x64")', {
           'defines':['__IOS_SIMULATOR__'],

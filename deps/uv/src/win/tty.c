@@ -355,8 +355,15 @@ static void uv_tty_queue_read_line(uv_loop_t* loop, uv_tty_t* handle) {
     }
   }
 
-  r = QueueUserWorkItem(uv_tty_line_read_thread, (void*)req,
+#ifdef WINONECORE
+  r = 0;
+  SetLastError(ERROR_NOT_SUPPORTED);
+#else
+  r = QueueUserWorkItem(uv_tty_line_read_thread,
+                        (void*) req,
                         WT_EXECUTELONGFUNCTION);
+#endif
+
   if (!r) {
     SET_REQ_ERROR(req, GetLastError());
     uv_insert_pending_req(loop, (uv_req_t*)req);

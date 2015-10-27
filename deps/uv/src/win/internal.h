@@ -270,7 +270,10 @@ void uv__fs_poll_endgame(uv_loop_t* loop, uv_fs_poll_t* handle);
  */
 void uv__util_init();
 
+#ifndef WINONECORE
 int uv_parent_pid();
+#endif
+
 void uv_fatal_error(const int errorno, const char* syscall);
 uv_err_code uv_translate_sys_error(int sys_errno);
 
