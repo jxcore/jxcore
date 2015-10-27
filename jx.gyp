@@ -487,7 +487,10 @@
           'PLATFORM="win32"',
           '_UNICODE=1',
         ],
-        'libraries': ['-lpsapi.lib']
+        'conditions': [
+        [ 'node_win_onecore==0', {
+          'libraries': ['-lpsapi.lib']
+        }]],
       },
       {#POSIX
           'defines': ['__POSIX__'],

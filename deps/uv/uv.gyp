@@ -113,15 +113,18 @@
             'src/win/winsock.c',
             'src/win/winsock.h',
           ],
-          'link_settings': {
-            'libraries': [
-              '-ladvapi32.lib',
-              '-liphlpapi.lib',
-              '-lpsapi.lib',
-              '-lshell32.lib',
-              '-lws2_32.lib'
+          'conditions' : [
+          [ 'node_win_onecore=="false"', {
+            'link_settings': {
+              'libraries': [
+                '-ladvapi32',
+                '-liphlpapi',
+                '-lpsapi',
+                '-lshell32',
+                '-lws2_32'
             ],
           },
+          }]],
         }, { # Not Windows i.e. POSIX
           'cflags': [
             '-g',
@@ -193,7 +196,8 @@
           'defines':['__IOS__']
         }],
         ['node_win_onecore==1', {
-          'defines': [ 'WINONECORE=1' ],
+          'defines': [ 'WINONECORE=1',
+                       '_WIN32_WINNT=0x0603', ]
         }],
         [ 'OS=="ios" and (target_arch=="ia32" or target_arch=="x64")', {
           'defines':['__IOS_SIMULATOR__'],
