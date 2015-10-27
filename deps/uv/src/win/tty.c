@@ -277,9 +277,15 @@ static void uv_tty_queue_read_raw(uv_loop_t* loop, uv_tty_t* handle) {
   req = &handle->read_req;
   memset(&req->overlapped, 0, sizeof(req->overlapped));
 
+#ifdef WINONECORE
+  r = 0;
+  SetLastError(ERROR_NOT_SUPPORTED);
+#else
   r = RegisterWaitForSingleObject(&handle->read_raw_wait, handle->handle,
                                   uv_tty_post_raw_read, (void*)req, INFINITE,
                                   WT_EXECUTEINWAITTHREAD | WT_EXECUTEONLYONCE);
+#endif
+
   if (!r) {
     handle->read_raw_wait = NULL;
     SET_REQ_ERROR(req, GetLastError());
