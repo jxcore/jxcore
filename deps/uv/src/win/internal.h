@@ -80,6 +80,20 @@
 /* Only used by uv_poll_t handles. */
 #define UV_HANDLE_POLL_SLOW 0x02000000
 
+#ifdef WINONECORE
+static inline void DebuggerOutput(const char* ctstr, ...) {
+    char str[8192];
+    va_list ap;
+    va_start(ap, ctstr);
+    int pos = sprintf_s(str, 8192, ctstr, ap);
+    va_end(ap);
+    str[pos] = '\0';
+
+    OutputDebugStringA(str);
+}
+#define log_console(...) DebuggerOutput(__VA_ARGS__)
+#define error_console(...) DebuggerOutput(__VA_ARGS__)
+#endif
 /*
  * Requests: see req-inl.h
  */
