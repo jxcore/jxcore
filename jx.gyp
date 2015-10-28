@@ -551,7 +551,7 @@
     'msvs_settings': {
       'VCManifestTool': {
         'EmbedManifest': 'true',
-        'AdditionalManifestFiles': 'src/res/node.exe.extra.manifest'
+        'AdditionalManifestFiles': 'src/res/jx.exe.extra.manifest'
       }
     }
   }, #generate ETW header and resource files
