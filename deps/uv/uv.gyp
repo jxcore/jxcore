@@ -114,7 +114,7 @@
             'src/win/winsock.h',
           ],
           'conditions' : [
-          [ 'node_win_onecore=="false"', {
+          [ 'node_win_onecore==0', {
             'link_settings': {
               'libraries': [
                 '-ladvapi32',
