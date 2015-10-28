@@ -21,8 +21,8 @@
 #include "uwp.h"
 #include "commons.h"
 
-std::thread::id NodeUtils::g_mainThreadId;
 UWPAddOn UWPAddOn::s_instance;
+DWORD Async::threadId;
 
 bool UWPAddOn::EnsureCoInitialized() {
   if (!_coInitialized) {
@@ -67,8 +67,7 @@ void UWPAddOn::Init(JS_HANDLE_OBJECT_REF target) {
   JS_ENTER_SCOPE_COM();
   JS_DEFINE_STATE_MARKER(com);
 
-  NodeUtils::g_mainThreadId =
-      std::this_thread::get_id();  // Capture entering thread id
+  Async::threadId = GetCurrentThreadId();
 
   if (!s_instance.EnsureCoInitialized()) {
     return;

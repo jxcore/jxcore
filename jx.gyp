@@ -186,7 +186,7 @@
       {
         'defines!': ['HAVE_DTRACE'],
         'defines': ['JXCORE_EMBEDDED'],
-        'type': 'shared_library'
+        'type': 'loadable_module'
       }],
       ['node_shared_library==1 and node_win_onecore==1', {
         'type': 'loadable_module',
@@ -548,14 +548,12 @@
         }
       ],
     ],
-    'msvs_settings':
-    {
-      'VCLinkerTool':
-      {
-        'SubSystem': 1,
-        #/subsystem:console
-      },
-    },
+    'msvs_settings': {
+      'VCManifestTool': {
+        'EmbedManifest': 'true',
+        'AdditionalManifestFiles': 'src/res/node.exe.extra.manifest'
+      }
+    }
   }, #generate ETW header and resource files
   {
     'target_name': 'node_etw',

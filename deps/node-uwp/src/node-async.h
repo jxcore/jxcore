@@ -25,11 +25,9 @@
 //
 
 #include "node.h"
-#include <thread>
+#include <functional>
 
 namespace NodeUtils {
-
-extern std::thread::id g_mainThreadId;
 
 class Async {
  private:
@@ -49,6 +47,8 @@ class Async {
   };
 
  public:
+  static DWORD threadId;
+
   static uv_async_t* GetAsyncToken() {
     return TokenData::NewAsyncToken();
   }
@@ -66,7 +66,7 @@ class Async {
   }
 
   static void RunOnMain(std::function<void()> func) {
-    if (std::this_thread::get_id() == g_mainThreadId) {
+    if (threadId == GetCurrentThreadId()) {
       func();
     } else {
       uv_async_t *async = GetAsyncToken();

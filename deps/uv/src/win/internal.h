@@ -81,7 +81,7 @@
 #define UV_HANDLE_POLL_SLOW 0x02000000
 
 #ifdef WINONECORE
-static inline void DebuggerOutput(const char* ctstr, ...) {
+static void DebuggerOutput(const char* ctstr, ...) {
     char str[8192];
     va_list ap;
     va_start(ap, ctstr);
