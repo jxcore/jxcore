@@ -20,10 +20,10 @@
   __android_log_print(ANDROID_LOG_WARN, JXCORE_ALOG_TAG, __VA_ARGS__)
 #elif defined(WINONECORE)
 static inline void DebuggerOutput_(const char* ctstr, ...) {
-  char str[8192];
+  char str[65536];
   va_list ap;
   va_start(ap, ctstr);
-  int pos = sprintf_s(str, 8192, ctstr, ap);
+  int pos = vsnprintf(str, 65536, ctstr, ap);
   va_end(ap);
   str[pos] = '\0';
 
