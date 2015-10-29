@@ -39,13 +39,14 @@ typedef void (*JS_FINALIZER_METHOD)(JS_HANDLE_VALUE_REF val, void *data);
   v8::V8::Initialize();        \
   v8::V8::SetArrayBufferAllocator(&jxcore::ArrayBufferAllocator::the_singleton)
 
-#define JS_ENGINE_SCOPE(x, pass)                  \
-  v8::Locker locker(x->node_isolate);             \
-  if (pass) {                                     \
-    x->node_isolate->Enter();                     \
-  }                                               \
-  v8::HandleScope handle_scope(x->node_isolate);  \
-  v8::Context::Scope context_scope(getContext()); \
+#define JS_ENGINE_SCOPE(x, pass)                     \
+  v8::Locker locker(x->node_isolate);                \
+  if (pass) {                                        \
+    x->node_isolate->Enter();                        \
+  }                                                  \
+  v8::Isolate::Scope isolate_scope(x->node_isolate); \
+  v8::HandleScope handle_scope(x->node_isolate);     \
+  v8::Context::Scope context_scope(getContext());    \
   v8::Isolate *__contextORisolate = x->node_isolate
 
 #define __JS_LOCAL_STRING JS_LOCAL_STRING
