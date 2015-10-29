@@ -2045,7 +2045,11 @@ void SetupProcessObject(const int threadId) {
   JS_NAME_SET(process, JS_STRING_ID("arch"), STD_TO_STRING(ARCH));
 
   // process.platform
+#ifdef WINONECORE
+  JS_NAME_SET(process, JS_STRING_ID("platform"), STD_TO_STRING("winrt"));
+#else
   JS_NAME_SET(process, JS_STRING_ID("platform"), STD_TO_STRING(PLATFORM));
+#endif
 
   jxcore::JXEngine* active_engine = jxcore::JXEngine::ActiveInstance();
   if (active_engine == NULL && threadId > 0) {
