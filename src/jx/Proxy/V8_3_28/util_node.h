@@ -11,22 +11,22 @@
 
 namespace node {
 
-#define FIXED_ONE_BYTE_STRING(isolate, string)                                \
+#define FIXED_ONE_BYTE_STRING(isolate, string) \
   (node::OneByteString((isolate), (string), sizeof(string) - 1))
 
-#define DISALLOW_COPY_AND_ASSIGN(TypeName)                                    \
-  void operator=(const TypeName&);                                            \
+#define DISALLOW_COPY_AND_ASSIGN(TypeName) \
+  void operator=(const TypeName&);         \
   TypeName(const TypeName&)
 
 #if defined(NDEBUG)
-# define ASSERT(expression)
-# define CHECK(expression)                                                    \
-  do {                                                                        \
-    if (!(expression)) abort();                                               \
+#define ASSERT(expression)
+#define CHECK(expression)       \
+  do {                          \
+    if (!(expression)) abort(); \
   } while (0)
 #else
-# define ASSERT(expression)  assert(expression)
-# define CHECK(expression)   assert(expression)
+#define ASSERT(expression) assert(expression)
+#define CHECK(expression) assert(expression)
 #endif
 
 #define CHECK_EQ(a, b) CHECK((a) == (b))
@@ -45,6 +45,7 @@ class ContainerOfHelper {
   inline ContainerOfHelper(Inner Outer::*field, Inner* pointer);
   template <typename TypeName>
   inline operator TypeName*() const;
+
  private:
   Outer* const pointer_;
 };
@@ -60,8 +61,7 @@ inline ContainerOfHelper<Inner, Outer> ContainerOf(Inner Outer::*field,
 // reference to the object.
 template <class TypeName>
 inline v8::Local<TypeName> PersistentToLocal(
-    v8::Isolate* isolate,
-    const v8::Persistent<TypeName>& persistent);
+    v8::Isolate* isolate, const v8::Persistent<TypeName>& persistent);
 
 // Unchecked conversion from a non-weak Persistent<T> to Local<TLocal<T>,
 // use with care!
@@ -74,13 +74,11 @@ inline v8::Local<TypeName> StrongPersistentToLocal(
 
 template <class TypeName>
 inline v8::Local<TypeName> WeakPersistentToLocal(
-    v8::Isolate* isolate,
-    const v8::Persistent<TypeName>& persistent);
+    v8::Isolate* isolate, const v8::Persistent<TypeName>& persistent);
 
 // Convenience wrapper around v8::String::NewFromOneByte().
 inline v8::Local<v8::String> OneByteString(v8::Isolate* isolate,
-                                           const char* data,
-                                           int length = -1);
+                                           const char* data, int length = -1);
 
 // For the people that compile with -funsigned-char.
 inline v8::Local<v8::String> OneByteString(v8::Isolate* isolate,
@@ -98,7 +96,7 @@ inline void ClearWrap(v8::Local<v8::Object> object);
 template <typename TypeName>
 inline TypeName* Unwrap(v8::Local<v8::Object> object);
 
-//class Utf8Value {
+// class Utf8Value {
 //  public:
 //    explicit Utf8Value(v8::Handle<v8::Value> value);
 //

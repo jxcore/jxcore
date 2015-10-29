@@ -14,8 +14,7 @@ ContainerOfHelper<Inner, Outer>::ContainerOfHelper(Inner Outer::*field,
                                                    Inner* pointer)
     : pointer_(reinterpret_cast<Outer*>(
           reinterpret_cast<uintptr_t>(pointer) -
-          reinterpret_cast<uintptr_t>(&(static_cast<Outer*>(0)->*field)))) {
-}
+          reinterpret_cast<uintptr_t>(&(static_cast<Outer*>(0)->*field)))) {}
 
 template <typename Inner, typename Outer>
 template <typename TypeName>
@@ -31,8 +30,7 @@ inline ContainerOfHelper<Inner, Outer> ContainerOf(Inner Outer::*field,
 
 template <class TypeName>
 inline v8::Local<TypeName> PersistentToLocal(
-    v8::Isolate* isolate,
-    const v8::Persistent<TypeName>& persistent) {
+    v8::Isolate* isolate, const v8::Persistent<TypeName>& persistent) {
   if (persistent.IsWeak()) {
     return WeakPersistentToLocal(isolate, persistent);
   } else {
@@ -44,23 +42,20 @@ template <class TypeName>
 inline v8::Local<TypeName> StrongPersistentToLocal(
     const v8::Persistent<TypeName>& persistent) {
   return *reinterpret_cast<v8::Local<TypeName>*>(
-      const_cast<v8::Persistent<TypeName>*>(&persistent));
+             const_cast<v8::Persistent<TypeName>*>(&persistent));
 }
 
 template <class TypeName>
 inline v8::Local<TypeName> WeakPersistentToLocal(
-    v8::Isolate* isolate,
-    const v8::Persistent<TypeName>& persistent) {
+    v8::Isolate* isolate, const v8::Persistent<TypeName>& persistent) {
   return v8::Local<TypeName>::New(isolate, persistent);
 }
 
 inline v8::Local<v8::String> OneByteString(v8::Isolate* isolate,
-                                           const char* data,
-                                           int length) {
+                                           const char* data, int length) {
   return v8::String::NewFromOneByte(isolate,
                                     reinterpret_cast<const uint8_t*>(data),
-                                    v8::String::kNormalString,
-                                    length);
+                                    v8::String::kNormalString, length);
 }
 
 inline v8::Local<v8::String> OneByteString(v8::Isolate* isolate,
@@ -68,8 +63,7 @@ inline v8::Local<v8::String> OneByteString(v8::Isolate* isolate,
                                            int length) {
   return v8::String::NewFromOneByte(isolate,
                                     reinterpret_cast<const uint8_t*>(data),
-                                    v8::String::kNormalString,
-                                    length);
+                                    v8::String::kNormalString, length);
 }
 
 inline v8::Local<v8::String> OneByteString(v8::Isolate* isolate,
@@ -77,8 +71,7 @@ inline v8::Local<v8::String> OneByteString(v8::Isolate* isolate,
                                            int length) {
   return v8::String::NewFromOneByte(isolate,
                                     reinterpret_cast<const uint8_t*>(data),
-                                    v8::String::kNormalString,
-                                    length);
+                                    v8::String::kNormalString, length);
 }
 
 template <typename TypeName>
@@ -88,9 +81,7 @@ void Wrap(v8::Local<v8::Object> object, TypeName* pointer) {
   object->SetAlignedPointerInInternalField(0, pointer);
 }
 
-void ClearWrap(v8::Local<v8::Object> object) {
-  Wrap<void>(object, NULL);
-}
+void ClearWrap(v8::Local<v8::Object> object) { Wrap<void>(object, NULL); }
 
 template <typename TypeName>
 TypeName* Unwrap(v8::Local<v8::Object> object) {
