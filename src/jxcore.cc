@@ -651,6 +651,12 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
       JS_ENGINE_LOCKER();
 
       JS_NEW_CONTEXT(context, isolate, NULL);
+#ifndef V8_IS_3_14
+    pContext_.Reset(isolate, context);
+#else
+    pContext_ = context;
+#endif
+
       v8::Context::Scope context_scope(context);
       v8::V8::SetFatalErrorHandler(node::OnFatalError);
       if (actual_thread_id == 0) {
@@ -1012,6 +1018,12 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
     }
 
     JS_NEW_CONTEXT(context_, isolate, NULL);
+#ifndef V8_IS_3_14
+    pContext_.Reset(isolate, context_);
+#else
+    pContext_ = context_;
+#endif
+
     v8::Context::Scope context_scope(context_);
     v8::V8::SetFatalErrorHandler(node::OnFatalError);
 

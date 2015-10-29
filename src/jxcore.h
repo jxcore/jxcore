@@ -29,16 +29,17 @@ class JXEngine {
   JS_PERSISTENT_OBJECT *global_;
   JSCompartment *jscomp_;
   ENGINE_NS::Isolate main_iso_;
-public:
-  inline void ExitIsolate() { }
+
+ public:
+  inline void ExitIsolate() {}
 #elif defined(JS_ENGINE_V8)
  public:
-
-  inline v8::Handle<v8::Context> getContext() {
+  JS_PERSISTENT_CONTEXT pContext_;
+  inline JS_HANDLE_CONTEXT getContext() {
 #ifdef V8_IS_3_14
-    return V8_T_CONTEXT::GetCurrent();
-#else    
-    return main_node_->node_isolate->GetCurrentContext();
+    return pContext_;
+#else
+    return node::PersistentToLocal(main_node_->node_isolate, pContext_);
 #endif
   }
 
