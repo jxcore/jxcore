@@ -16,31 +16,7 @@
 
 #include "jsapi.h"
 #include "jsfriendapi.h"
-
-#ifndef JXCORE_ALOG_TAG
-#define JXCORE_ALOG_TAG "jxcore-log"
-#if defined(__ANDROID__) && defined(JXCORE_EMBEDDED)
-#include <android/log.h>
-#define ALOG_TAG "jxcore-log"
-#define log_console(...) \
-  __android_log_print(ANDROID_LOG_INFO, JXCORE_ALOG_TAG, __VA_ARGS__)
-#define flush_console(...) \
-  __android_log_print(ANDROID_LOG_INFO, JXCORE_ALOG_TAG, __VA_ARGS__)
-#define error_console(...) \
-  __android_log_print(ANDROID_LOG_ERROR, JXCORE_ALOG_TAG, __VA_ARGS__)
-#define warn_console(...) \
-  __android_log_print(ANDROID_LOG_WARN, JXCORE_ALOG_TAG, __VA_ARGS__)
-#else
-#define log_console(...) fprintf(stdout, __VA_ARGS__)
-#define flush_console(...)        \
-  do {                            \
-    fprintf(stdout, __VA_ARGS__); \
-    fflush(stdout);               \
-  } while (0)
-#define error_console(...) fprintf(stderr, __VA_ARGS__)
-#define warn_console(...) fprintf(stderr, __VA_ARGS__)
-#endif
-#endif
+#include "../../console_log.h"
 
 #define JS_OBJECT_SLOT_COUNT 3
 #define JS_NATIFIED_OBJECT_SLOT_COUNT (JS_OBJECT_SLOT_COUNT + 1)
