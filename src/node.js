@@ -660,7 +660,7 @@
   };
 
   process.dlopen = function(module, filename) {
-    var isWindows = process.platform === 'win32';
+    var isWindows = process.platform === 'win32' || process.platform === 'winrt';
 
     if (isWindows) {
       filename = filename.toLowerCase();
@@ -1295,7 +1295,14 @@
           'Please revisit the folder and make sure you have an access.');
       process.exit(1);
     }
-    var isWindows = process.platform === 'win32';
+    
+    var isWindows;
+    if (process.platform === 'winrt') {
+      isWindows = true;
+      process.userPath = cwd;
+    } else {
+      isWindows = process.platform === 'win32';
+    }
 
     // Make process.argv[0] into a full path, but only touch argv[0] if it's
     // not a system $PATH lookup.
