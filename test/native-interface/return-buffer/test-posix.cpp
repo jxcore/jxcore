@@ -25,12 +25,21 @@ void sampleMethod(JXValue *params, int argc) {
   free(play);
 }
 
+void zeroBuffer(JXValue *params, int argc)
+{
+  // test creating a zero sized bufer
+  JX_SetBuffer(params+argc, nullptr, 0);
+}
+
 const char *contents =
     "var strTest = 'Hello World!';\n"
     "var buffer = process.natives.sampleMethod(strTest);\n"
     "buffer = process.natives.sampleMethod(buffer+'');\n"
     "if(buffer+'' !== strTest) \n"
-    "  process.natives.sampleMethod('', 0);"; // intentionally crash!
+    "  process.natives.sampleMethod('', 0);" // intentionally crash!
+    "var zero = process.natives.zeroBuffer();"
+    "if(zero.length !== 0)"
+    "  process.natives.sampleMethod('', 0);";
 
 int main(int argc, char **args) {
   JX_Initialize(args[0], callback);
@@ -38,6 +47,7 @@ int main(int argc, char **args) {
 
   JX_DefineMainFile(contents);
   JX_DefineExtension("sampleMethod", sampleMethod);
+  JX_DefineExtension("zeroBuffer", zeroBuffer);
   JX_StartEngine();
 
   while (JX_LoopOnce() != 0) usleep(1);

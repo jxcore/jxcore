@@ -523,7 +523,7 @@ JX_SetBuffer(JXValue *value, const char *val, const int32_t length) {
   }
 
   value->type_ = RT_Buffer;
-  value->size_ = length == 0 ? strlen(val) : length;
+  value->size_ = (length == 0 && val != NULL) ? strlen(val) : length;
 
   RUN_IN_SCOPE({
     node::Buffer *buff = node::Buffer::New(val, length, com);
