@@ -648,6 +648,7 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
   }
   do {
     do {
+      node::commons *com = NULL;
       JS_ENGINE_LOCKER();
 
       JS_NEW_CONTEXT(context, isolate, NULL);
@@ -1012,6 +1013,7 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
   }
 
   {
+    node::commons *com = NULL;
     JS_ENGINE_LOCKER();
     if (actual_thread_id != 0) {
       main_node_->node_isolate->Enter();
@@ -1415,6 +1417,7 @@ int JXEngine::LoopOnce() {
 
     ret_val = uv_run_jx(main_node_->loop, UV_RUN_NOWAIT,
                         node::commons::CleanPinger, main_node_->threadId);
+
   }
 
   return ret_val;

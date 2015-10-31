@@ -44,7 +44,6 @@ void JXInstance::runScript(void *x) {
 #ifdef JS_ENGINE_V8
       JS_ENGINE_LOCKER();
       JS_SET_ENGINE_DATA(isolate, &com->threadId);
-      com->node_isolate = isolate;
       JS_DEFINE_STATE_MARKER(com);
 
       JS_NEW_CONTEXT(context, isolate, NULL);
