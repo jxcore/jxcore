@@ -26,8 +26,10 @@ Sample Link (make sure your link also starts with OpenWrt-SDK)
 
 Once you find the link, use it as shown below;
 
+```
 > cd wrt-jx
 > ./create_package.js [THE LINK for OpenWrt-SDK] [DEVICE-ARCH]
+```
 
 For [DEVICE-ARCH] use either `arm` or `mipsel` based on your device's chipset. i.e. the sample device has `mipsel`
 
