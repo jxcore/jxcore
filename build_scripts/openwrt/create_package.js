@@ -113,13 +113,15 @@ fdata = fdata.replace("--dest-cpu=mipsel", "--dest-cpu=" + process.argv[3]);
 fs.writeFileSync(path.join(target, "jxcore/Makefile"), fdata);
 
 color.log("Please wait, cloning JXcore into target", "green");
-var res = jxcore.utils.cmdSync("git clone https://github.com/jxcore/jxcore " + target + "jxcore/jxcore");
+var cp = require('child_process');
+cp.exec("git clone https://github.com/jxcore/jxcore " + target + "jxcore/jxcore", function(err, stdout, stderr) {
+  if (err) {
+    console.error("Failed", stdout, stderr);
+    return;
+  }
+  color.log("Cloning sub modules", "green");
+  jxcore.utils.cmdSync("cd jxcore; git submodule init; git submodule update;");
 
-if (res.exitCode != 0)
-  console.error("Failed", res.out);
-
-color.log("Cloning sub modules", "green");  
-jxcore.utils.cmdSync("cd jxcore; git submodule init; git submodule update;");
-
-color.log("OpenWRT package builder is ready", "green");
-color.log("Visit OpenWrt-SDK folder and run 'make V=s'", "green");
+  color.log("OpenWRT package builder is ready", "green");
+  color.log("Visit OpenWrt-SDK folder and run 'make V=s'", "green");
+});
