@@ -35,7 +35,7 @@ fi
 LOG $GREY_COLOR "Compiling test $2"
 ROOT=${PWD}
 cd "$2"
-if [[ $3 != "v8" ]]
+if [[ $3 == "sm" ]]
 then
   LOG $GREY_COLOR "SM"
   g++ -DJS_ENGINE_MOZJS -DJS_PUNBOX64 test-posix.cpp -stdlib=libstdc++ -lstdc++ -std=c++11 -O2 -I$LIBRARY_PATH/include/node \
@@ -44,12 +44,22 @@ then
     $LIBRARY_PATH/bin/libhttp_parser.a  $LIBRARY_PATH/bin/libopenssl.a -Wl -framework CoreServices \
     -Wno-c++11-compat-deprecated-writable-strings -Wno-deprecated-declarations -Wno-unknown-warning-option -o test
 else
-  LOG $GREY_COLOR "V8"
-  g++ -DJS_ENGINE_V8 test-posix.cpp -stdlib=libstdc++ -lstdc++ -std=c++11 -O2 -I$LIBRARY_PATH/include/node \
-    $LIBRARY_PATH/bin/libcares.a  $LIBRARY_PATH/bin/libjx.a $LIBRARY_PATH/bin/libsqlite3.a \
-    $LIBRARY_PATH/bin/libchrome_zlib.a $LIBRARY_PATH/bin/libv8_base.a $LIBRARY_PATH/bin/libv8_nosnapshot.a  $LIBRARY_PATH/bin/libuv.a \
-    $LIBRARY_PATH/bin/libhttp_parser.a  $LIBRARY_PATH/bin/libopenssl.a -Wl -framework CoreServices \
-    -Wno-c++11-compat-deprecated-writable-strings -Wno-deprecated-declarations -Wno-unknown-warning-option -o test
+  if [[ $3 != "v8_328" ]]
+  then
+    LOG $GREY_COLOR "V8 3.14"
+    g++ -DJS_ENGINE_V8 test-posix.cpp -stdlib=libstdc++ -lstdc++ -std=c++11 -O2 -I$LIBRARY_PATH/include/node \
+      $LIBRARY_PATH/bin/libcares.a  $LIBRARY_PATH/bin/libjx.a $LIBRARY_PATH/bin/libsqlite3.a \
+      $LIBRARY_PATH/bin/libchrome_zlib.a $LIBRARY_PATH/bin/libv8_base.a $LIBRARY_PATH/bin/libv8_nosnapshot.a  $LIBRARY_PATH/bin/libuv.a \
+      $LIBRARY_PATH/bin/libhttp_parser.a  $LIBRARY_PATH/bin/libopenssl.a -Wl -framework CoreServices \
+      -Wno-c++11-compat-deprecated-writable-strings -Wno-deprecated-declarations -Wno-unknown-warning-option -o test
+  else
+    LOG $GREY_COLOR "V8 3.28"
+    g++ -DJS_ENGINE_V8 -DV8_IS_3_28 test-posix.cpp -stdlib=libstdc++ -lstdc++ -std=c++11 -O2 -I$LIBRARY_PATH/include/node \
+      $LIBRARY_PATH/bin/libchrome_zlib.a $LIBRARY_PATH/bin/libv8_base.a $LIBRARY_PATH/bin/libv8_nosnapshot.a \
+      $LIBRARY_PATH/bin/libuv.a $LIBRARY_PATH/bin/libcares.a  $LIBRARY_PATH/bin/libjx.a $LIBRARY_PATH/bin/libsqlite3.a \
+      $LIBRARY_PATH/bin/libhttp_parser.a  $LIBRARY_PATH/bin/libopenssl.a -Wl -framework CoreServices \
+      -Wno-c++11-compat-deprecated-writable-strings -Wno-deprecated-declarations -Wno-unknown-warning-option -o test
+  fi
 fi
 
 ERROR_ABORT "compilation failed for the test '$2'"

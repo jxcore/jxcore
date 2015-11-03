@@ -16,7 +16,9 @@ if (!fs.existsSync(args[1] + '/include/node/public/jx.h')) {
   process.exit(1);
 }
 
-if (args[2] != "v8" && args[2] != "sm") {
+var engines = {v8:1, v8_328:1, sm:1};
+
+if (!engines[args[2]]) {
   color_log("second argument needs to be either 'sm' or 'v8'", "red");
   process.exit(1);
 }
