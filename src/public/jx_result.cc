@@ -43,13 +43,11 @@ class auto_state {
 #define ENTER_ENGINE_SCOPE()         \
   JS_ENGINE_LOCKER();                \
   auto_state __state__(engine, com); \
-  v8::HandleScope handle_scope;      \
   v8::Context::Scope context_scope(engine->getContext())
 #else
-#define ENTER_ENGINE_SCOPE()                       \
-  JS_ENGINE_LOCKER();                              \
-  auto_state __state__(engine, com);               \
-  v8::HandleScope handle_scope(com->node_isolate); \
+#define ENTER_ENGINE_SCOPE()         \
+  JS_ENGINE_LOCKER();                \
+  auto_state __state__(engine, com); \
   v8::Context::Scope context_scope(engine->getContext())
 #endif
 
@@ -340,24 +338,24 @@ JX_CallFunction(JXValue *fnc, JXValue *params, const int argc, JXValue *out) {
 
   jxcore::JXFunctionWrapper *wrap = (jxcore::JXFunctionWrapper *)fnc->data_;
 
-  JS_HANDLE_VALUE *arr =
-      (JS_HANDLE_VALUE *)malloc(sizeof(JS_HANDLE_VALUE) * argc);
-
-  for (int i = 0; i < argc; i++) {
-    if (params[i].type_ == RT_Undefined || params[i].type_ == RT_Null ||
-        params[i].data_ == NULL) {
-      arr[i] = params[i].type_ == RT_Undefined ? JS_UNDEFINED() : JS_NULL();
-    } else {
-      jxcore::JXValueWrapper *wrap = (jxcore::JXValueWrapper *)params[i].data_;
-      arr[i] = JS_TYPE_TO_LOCAL_VALUE(wrap->value_);
-    }
-  }
-
   bool done = false;
   bool ret;
 
   JS_HANDLE_VALUE res;
   RUN_IN_SCOPE({
+    JS_HANDLE_VALUE *arr =
+        (JS_HANDLE_VALUE *)malloc(sizeof(JS_HANDLE_VALUE) * argc);
+
+    for (int i = 0; i < argc; i++) {
+      if (params[i].type_ == RT_Undefined || params[i].type_ == RT_Null ||
+          params[i].data_ == NULL) {
+        arr[i] = params[i].type_ == RT_Undefined ? JS_UNDEFINED() : JS_NULL();
+      } else {
+        jxcore::JXValueWrapper *wrap =
+            (jxcore::JXValueWrapper *)params[i].data_;
+        arr[i] = JS_TYPE_TO_LOCAL_VALUE(wrap->value_);
+      }
+    }
     res = wrap->Call(argc, arr, &done);
     free(arr);
 
