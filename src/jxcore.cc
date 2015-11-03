@@ -578,8 +578,7 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
     } while (0);
 
 #if defined HAVE_DTRACE || defined HAVE_ETW || defined HAVE_SYSTEMTAP
-    if (main_node_->threadId == 0)
-      node::cleanUpDTrace();
+    if (main_node_->threadId == 0) node::cleanUpDTrace();
 #endif
 
     if (main_node_->threadId == 0) {
@@ -634,10 +633,12 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
   // OpenSSL's pool.
   v8::V8::SetEntropySource(node::crypto::EntropySource);
 #endif
+  node::commons *com = NULL;
   if (actual_thread_id == 0) {
     main_node_ = new node::commons(0);
   } else {
     main_node_ = node::commons::newInstance(actual_thread_id);
+    com = main_node_;
   }
   // This needs to run *before* V8::Initialize()
   // Use copy here as to not modify the original argv:
@@ -648,14 +649,13 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
   }
   do {
     do {
-      node::commons *com = NULL;
       JS_ENGINE_LOCKER();
 
       JS_NEW_CONTEXT(context, isolate, NULL);
 #ifndef V8_IS_3_14
-    pContext_.Reset(isolate, context);
+      pContext_.Reset(isolate, context);
 #else
-    pContext_ = context;
+      pContext_ = context;
 #endif
 
       v8::Context::Scope context_scope(context);
@@ -708,8 +708,7 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
     } while (0);
 
 #if defined HAVE_DTRACE || defined HAVE_ETW || defined HAVE_SYSTEMTAP
-    if (main_node_->threadId == 0)
-      node::cleanUpDTrace();
+    if (main_node_->threadId == 0) node::cleanUpDTrace();
 #endif
 
     if (main_node_->threadId == 0) {
@@ -1008,12 +1007,14 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
     JS_ENGINE_INITIALIZE();
   }
 
+  node::commons *com = NULL;
   if (actual_thread_id == 0) {
     main_node_->node_isolate = NULL;
+  } else {
+    com = main_node_;
   }
 
   {
-    node::commons *com = NULL;
     JS_ENGINE_LOCKER();
     if (actual_thread_id != 0) {
       main_node_->node_isolate->Enter();
@@ -1097,8 +1098,7 @@ void JXEngine::Destroy() {
   customUnlock(CSLOCK_JOBS);
 
 #if defined HAVE_DTRACE || defined HAVE_ETW || defined HAVE_SYSTEMTAP
-  if (main_node_->threadId == 0)
-    node::cleanUpDTrace();
+  if (main_node_->threadId == 0) node::cleanUpDTrace();
 #endif
 
 #ifndef NDEBUG
@@ -1417,7 +1417,6 @@ int JXEngine::LoopOnce() {
 
     ret_val = uv_run_jx(main_node_->loop, UV_RUN_NOWAIT,
                         node::commons::CleanPinger, main_node_->threadId);
-
   }
 
   return ret_val;
