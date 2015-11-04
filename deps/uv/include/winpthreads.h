@@ -110,12 +110,14 @@
 
 #define PTHREAD_BARRIER_SERIAL_THREAD 1
 
+#if _MSC_VER < 1900
 /* Windows doesn't have this, so declare it ourselves. */
 struct timespec {
   /* long long in windows is the same as long in unix for 64bit */
   long long tv_sec;
   long long tv_nsec;
 };
+#endif
 
 typedef struct _pthread_cleanup _pthread_cleanup;
 struct _pthread_cleanup {
@@ -544,6 +546,7 @@ static void pthread_testcancel(void) {
 }
 
 static int pthread_cancel(pthread_t t) {
+#ifndef __arm__
   if (t->p_state & PTHREAD_CANCEL_ASYNCHRONOUS) {
     /* Dangerous asynchronous cancelling */
     CONTEXT ctxt;
@@ -570,12 +573,15 @@ static int pthread_cancel(pthread_t t) {
 
     ResumeThread(t->h);
   } else {
+#endif
     /* Safe deferred Cancelling */
     t->cancelled = 1;
 
     /* Notify everyone to look */
     _InterlockedIncrement(&_pthread_cancelling);
+#ifndef __arm__
   }
+#endif
 
   return 0;
 }

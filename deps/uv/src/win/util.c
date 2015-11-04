@@ -269,6 +269,7 @@ uint64_t uv_get_total_memory(void) {
   return (uint64_t)memory_status.ullTotalPhys;
 }
 
+#ifndef WINONECORE
 int uv_parent_pid() {
   int parent_pid = -1;
   HANDLE handle;
@@ -290,6 +291,7 @@ int uv_parent_pid() {
   CloseHandle(handle);
   return parent_pid;
 }
+#endif
 
 char** uv_setup_args(int argc, char** argv) { return argv; }
 

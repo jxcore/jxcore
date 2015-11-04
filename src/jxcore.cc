@@ -206,7 +206,11 @@ void JXEngine::ParseArgs(int argc, char **argv) {
         exit(0);
       } else if (strcmp(arg, "--jsversion") == 0 || strcmp(arg, "-jsv") == 0) {
 #ifdef JS_ENGINE_V8
+#ifdef JS_ENGINE_CHAKRA
+        flush_console("Microsoft Chakra v%s\n", v8::V8::GetVersion());
+#else
         flush_console("Google V8 v%s\n", v8::V8::GetVersion());
+#endif
 #elif defined(JS_ENGINE_MOZJS)
         flush_console("Mozilla SpiderMonkey v%d\n", MOZJS_VERSION);
 #endif
@@ -268,7 +272,7 @@ void JXEngine::ParseArgs(int argc, char **argv) {
         argv[i] = const_cast<char *>("");
       } else if (strcmp(arg, "--v8-options") == 0) {
 #ifndef JS_ENGINE_V8
-        log_console("  --v8-options are not available for non-V8 build\n");
+        error_console(" --v8-options are not available for non-V8 build\n");
         exit(0);
 #endif
         argv[i] = const_cast<char *>("--help");
@@ -325,6 +329,7 @@ char **JXEngine::Init(int argc, char *argv[], bool engine_inited_already) {
 // of the start of the stack (we're assuming that we haven't pushed a lot
 // of frames yet).
 #ifdef JS_ENGINE_V8
+#ifdef V8_IS_3_14
     if (main_node_->max_stack_size != 0) {
       uint32_t stack_var;
       v8::ResourceConstraints constraints;
@@ -335,6 +340,7 @@ char **JXEngine::Init(int argc, char *argv[], bool engine_inited_already) {
       v8::SetResourceConstraints(
           &constraints);  // Must be done before V8::Initialize
     }
+#endif
 
     if (!main_node_->is_packaged_)
       v8::V8::SetFlagsFromCommandLine(&v8argc, v8argv, false);
@@ -357,13 +363,7 @@ char **JXEngine::Init(int argc, char *argv[], bool engine_inited_already) {
   uv_unref((uv_handle_t *)main_node_->check_immediate_watcher);
   uv_idle_init(main_node_->loop, main_node_->idle_immediate_dummy);
 
-// Fetch a reference to the main isolate, so we have a reference to it
-// even when we need it to access it from another (debugger) thread.
-// com->node_isolate = Isolate::GetCurrent();
-
-#if defined(JS_ENGINE_V8)
-  if (!engine_inited_already) v8::V8::SetFatalErrorHandler(node::OnFatalError);
-#elif defined(JS_ENGINE_MOZJS)
+#if defined(JS_ENGINE_MOZJS)
   JS_SetErrorReporter(main_node_->node_isolate->GetRaw(), node::OnFatalError);
 #endif
 
@@ -576,8 +576,9 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
         Job::removeTaskers();
       }
     } while (0);
+
 #if defined HAVE_DTRACE || defined HAVE_ETW || defined HAVE_SYSTEMTAP
-    node::cleanUpDTrace();
+    if (main_node_->threadId == 0) node::cleanUpDTrace();
 #endif
 
     if (main_node_->threadId == 0) {
@@ -632,26 +633,35 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
   // OpenSSL's pool.
   v8::V8::SetEntropySource(node::crypto::EntropySource);
 #endif
+  node::commons *com = NULL;
   if (actual_thread_id == 0) {
     main_node_ = new node::commons(0);
   } else {
     main_node_ = node::commons::newInstance(actual_thread_id);
+    com = main_node_;
   }
   // This needs to run *before* V8::Initialize()
   // Use copy here as to not modify the original argv:
   Init(argc, argv_copy, JS_engine_inited_);
   if (!JS_engine_inited_) {
     JS_engine_inited_ = true;
-    v8::V8::Initialize();
+    JS_ENGINE_INITIALIZE();
   }
   do {
     do {
-      v8::Locker locker;
-      v8::HandleScope handle_scope;
-      v8::Persistent<v8::Context> context = v8::Context::New();
+      JS_ENGINE_LOCKER();
+
+      JS_NEW_CONTEXT(context, isolate, NULL);
+#ifndef V8_IS_3_14
+      pContext_.Reset(isolate, context);
+#else
+      pContext_ = context;
+#endif
+
       v8::Context::Scope context_scope(context);
+      v8::V8::SetFatalErrorHandler(node::OnFatalError);
       if (actual_thread_id == 0) {
-        main_node_->node_isolate = v8::Isolate::GetCurrent();
+        main_node_->node_isolate = isolate;
         main_node_->setMainIsolate();
       }
 
@@ -663,7 +673,9 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
                     STD_TO_STRING(entry_file_name_.c_str()));
       }
 
+#ifdef V8_IS_3_14
       v8_typed_array::AttachBindings(context->Global());
+#endif
 
       main_node_->loop->loopId = main_node_->threadId;
 
@@ -694,8 +706,9 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
       context.Dispose();
 #endif
     } while (0);
+
 #if defined HAVE_DTRACE || defined HAVE_ETW || defined HAVE_SYSTEMTAP
-    node::cleanUpDTrace();
+    if (main_node_->threadId == 0) node::cleanUpDTrace();
 #endif
 
     if (main_node_->threadId == 0) {
@@ -991,30 +1004,42 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
     v8::V8::SetEntropySource(node::crypto::EntropySource);
 #endif
     JS_engine_inited_ = true;
-    v8::V8::Initialize();
+    JS_ENGINE_INITIALIZE();
   }
 
+  node::commons *com = NULL;
   if (actual_thread_id == 0) {
     main_node_->node_isolate = NULL;
+  } else {
+    com = main_node_;
   }
 
   {
-    v8::Locker locker(main_node_->node_isolate);
+    JS_ENGINE_LOCKER();
     if (actual_thread_id != 0) {
       main_node_->node_isolate->Enter();
     }
-    v8::HandleScope handle_scope;
-    context_ = v8::Context::New();
+
+    JS_NEW_CONTEXT(context_, isolate, NULL);
+#ifndef V8_IS_3_14
+    pContext_.Reset(isolate, context_);
+#else
+    pContext_ = context_;
+#endif
+
     v8::Context::Scope context_scope(context_);
+    v8::V8::SetFatalErrorHandler(node::OnFatalError);
 
     if (actual_thread_id == 0) {
-      main_node_->node_isolate = v8::Isolate::GetCurrent();
+      main_node_->node_isolate = isolate;
       main_node_->setMainIsolate();
     }
 
     node::SetupProcessObject(actual_thread_id);
     JS_HANDLE_OBJECT process_l = main_node_->getProcess();
+#ifdef V8_IS_3_14
     v8_typed_array::AttachBindings(context_->Global());
+#endif
 
     JS_DEFINE_STATE_MARKER(main_node_);
     if (entry_file_name_.length() != 0) {
@@ -1073,7 +1098,7 @@ void JXEngine::Destroy() {
   customUnlock(CSLOCK_JOBS);
 
 #if defined HAVE_DTRACE || defined HAVE_ETW || defined HAVE_SYSTEMTAP
-  node::cleanUpDTrace();
+  if (main_node_->threadId == 0) node::cleanUpDTrace();
 #endif
 
 #ifndef NDEBUG
@@ -1121,11 +1146,11 @@ char *JX_Stringify(node::commons *com, JS_HANDLE_OBJECT obj,
                                  "  }\n"
                                  "});"),
                              STD_TO_STRING("binding:stringify")));
-      com->JSONstringify = JS_NEW_PERSISTENT_FUNCTION(_JSONstringify);
+      JS_NEW_PERSISTENT_FUNCTION(com->JSONstringify, _JSONstringify);
     }
 
-    JS_LOCAL_VALUE result =
-        JS_METHOD_CALL(com->JSONstringify, JS_GET_GLOBAL(), 1, args);
+    JS_LOCAL_FUNCTION fncl = JS_TYPE_TO_LOCAL_FUNCTION(com->JSONstringify);
+    JS_LOCAL_VALUE result = JS_METHOD_CALL(fncl, JS_GET_GLOBAL(), 1, args);
     str_value = JS_VALUE_TO_STRING(result);
   } else {
     str_value = JS_VALUE_TO_STRING(obj);
@@ -1162,12 +1187,13 @@ JS_HANDLE_VALUE JX_Parse(node::commons *com, const char *str,
                                                 "  }\n"
                                                 "});"),
                                             STD_TO_STRING("binding:parse")));
-    com->JSONparse = JS_NEW_PERSISTENT_FUNCTION(_JSONparse);
+    JS_NEW_PERSISTENT_FUNCTION(com->JSONparse, _JSONparse);
   }
 
   JS_LOCAL_VALUE args[1] = {str_value};
-  JS_LOCAL_VALUE result =
-      JS_METHOD_CALL(com->JSONparse, JS_GET_GLOBAL(), 1, args);
+
+  JS_LOCAL_FUNCTION fncl = JS_TYPE_TO_LOCAL_FUNCTION(com->JSONparse);
+  JS_LOCAL_VALUE result = JS_METHOD_CALL(fncl, JS_GET_GLOBAL(), 1, args);
 
   return JS_LEAVE_SCOPE(result);
 }
@@ -1177,11 +1203,11 @@ JS_HANDLE_VALUE JX_Parse(node::commons *com, const char *str,
   to_->data_ = NULL;         \
   to_->size_ = 0
 
-#define MANAGE_EXCEPTION                            \
-  JS_LOCAL_VALUE exception = try_catch.Exception(); \
-  result->type_ = RT_Error;                         \
-  result->data_ = new JXValueWrapper(exception);    \
-  result->size_ = 1;                                \
+#define MANAGE_EXCEPTION                              \
+  JS_LOCAL_VALUE exception = try_catch.Exception();   \
+  result->type_ = RT_Error;                           \
+  result->data_ = new JXValueWrapper(com, exception); \
+  result->size_ = 1;                                  \
   return true;
 
 bool JXEngine::ConvertToJXResult(node::commons *com,
@@ -1233,7 +1259,7 @@ bool JXEngine::ConvertToJXResult(node::commons *com,
   }
 
   if (result->type_ != RT_Undefined) {
-    JXValueWrapper *pr_wrap = new JXValueWrapper(ret_val);
+    JXValueWrapper *pr_wrap = new JXValueWrapper(com, ret_val);
     result->data_ = (void *)pr_wrap;
     return true;
   }
@@ -1253,13 +1279,13 @@ bool JXEngine::ConvertToJXResult(node::commons *com,
     result->type_ = RT_Error;
     JS_LOCAL_STRING dummy = STD_TO_STRING("Unsupported return type.");
     result->size_ = JS_GET_STRING_LENGTH(dummy);
-    result->data_ = (void *)new JXValueWrapper(dummy);
+    result->data_ = (void *)new JXValueWrapper(com, dummy);
 
     return false;
   }
 
   result->type_ = RT_Object;
-  JXValueWrapper *wrap = new JXValueWrapper(ret_val);
+  JXValueWrapper *wrap = new JXValueWrapper(com, ret_val);
   result->data_ = (void *)wrap;
   result->size_ = 1;
 

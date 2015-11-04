@@ -7,6 +7,7 @@ perf.data.old
 tags
 .lock-wscript
 *.pyc
+.vs/
 doc/api.xml
 tmp/
 android-toolchain-mipsel/
@@ -99,3 +100,4 @@ tmp_jx
 *.log
 
 .pydevproject
+icu_config.gypi

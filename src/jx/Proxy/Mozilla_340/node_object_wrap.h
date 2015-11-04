@@ -30,7 +30,7 @@ class NODE_EXTERN ObjectWrap {
   inline void Wrap(JS_HANDLE_OBJECT handle) {
     assert(JS_IS_EMPTY(handle_));
 
-    handle_ = JS_NEW_PERSISTENT_OBJECT(handle);
+    JS_NEW_PERSISTENT_OBJECT(handle_, handle);
     JS_SET_POINTER_DATA(handle_, this);
     MakeWeak();
   }

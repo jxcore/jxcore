@@ -136,6 +136,7 @@ static HANDLE open_named_pipe(WCHAR* name, DWORD* duplex_flags) {
   return INVALID_HANDLE_VALUE;
 }
 
+#ifndef WINONECORE
 uv_err_t uv_stdio_pipe_server(uv_loop_t* loop, uv_pipe_t* handle, DWORD access,
                               char* name, size_t nameSize) {
   HANDLE pipeHandle;
@@ -184,6 +185,7 @@ error:
 
   return err;
 }
+#endif
 
 static int uv_set_pipe_handle(uv_loop_t* loop, uv_pipe_t* handle,
                               HANDLE pipeHandle, DWORD duplex_flags) {
@@ -330,8 +332,10 @@ void uv_pipe_endgame(uv_loop_t* loop, uv_pipe_t* handle) {
 
       if (handle->flags & UV_HANDLE_EMULATE_IOCP) {
         if (handle->read_req.wait_handle != INVALID_HANDLE_VALUE) {
+#ifndef WINONECORE
           UnregisterWait(handle->read_req.wait_handle);
           handle->read_req.wait_handle = INVALID_HANDLE_VALUE;
+#endif
         }
         if (handle->read_req.event_handle) {
           CloseHandle(handle->read_req.event_handle);
@@ -847,12 +851,17 @@ static void uv_pipe_queue_read(uv_loop_t* loop, uv_pipe_t* handle) {
   req = &handle->read_req;
 
   if (handle->flags & UV_HANDLE_NON_OVERLAPPED_PIPE) {
+#ifdef WINONECORE
+    SET_REQ_ERROR(req, ERROR_NOT_SUPPORTED);
+    goto error;
+#else
     if (!QueueUserWorkItem(&uv_pipe_zero_readfile_thread_proc, req,
                            WT_EXECUTELONGFUNCTION)) {
       /* Make this req pending reporting an error. */
       SET_REQ_ERROR(req, GetLastError());
       goto error;
     }
+#endif
   } else {
     memset(&req->overlapped, 0, sizeof(req->overlapped));
     if (handle->flags & UV_HANDLE_EMULATE_IOCP) {
@@ -876,6 +885,10 @@ static void uv_pipe_queue_read(uv_loop_t* loop, uv_pipe_t* handle) {
         }
       }
       if (req->wait_handle == INVALID_HANDLE_VALUE) {
+#ifdef WINONECORE
+        SET_REQ_ERROR(req, ERROR_NOT_SUPPORTED);
+        goto error;
+#else
         if (!RegisterWaitForSingleObject(&req->wait_handle,
                                          req->overlapped.hEvent,
                                          post_completion_read_wait, (void*)req,
@@ -883,6 +896,7 @@ static void uv_pipe_queue_read(uv_loop_t* loop, uv_pipe_t* handle) {
           SET_REQ_ERROR(req, GetLastError());
           goto error;
         }
+#endif
       }
     }
   }
@@ -962,10 +976,14 @@ static uv_write_t* uv_remove_non_overlapped_write_req(uv_pipe_t* handle) {
 static void uv_queue_non_overlapped_write(uv_pipe_t* handle) {
   uv_write_t* req = uv_remove_non_overlapped_write_req(handle);
   if (req) {
+#ifdef WINONECORE
+    uv_fatal_error(ERROR_NOT_SUPPORTED, "QueueUserWorkItem");
+#else
     if (!QueueUserWorkItem(&uv_pipe_writefile_thread_proc, req,
                            WT_EXECUTELONGFUNCTION)) {
       uv_fatal_error(GetLastError(), "QueueUserWorkItem");
     }
+#endif
   }
 }
 
@@ -1120,6 +1138,9 @@ static int uv_pipe_write_impl(uv_loop_t* loop, uv_write_t* req,
       if (!req->event_handle) {
         uv_fatal_error(GetLastError(), "CreateEvent");
       }
+#ifdef WINONECORE
+      return -1;
+#else
       if (!RegisterWaitForSingleObject(&req->wait_handle,
                                        req->overlapped.hEvent,
                                        post_completion_write_wait, (void*)req,
@@ -1127,6 +1148,7 @@ static int uv_pipe_write_impl(uv_loop_t* loop, uv_write_t* req,
         uv__set_sys_error(loop, GetLastError());
         return -1;
       }
+#endif
     }
   }
 
@@ -1335,8 +1357,10 @@ void uv_process_pipe_write_req(uv_loop_t* loop, uv_pipe_t* handle,
 
   if (handle->flags & UV_HANDLE_EMULATE_IOCP) {
     if (req->wait_handle != INVALID_HANDLE_VALUE) {
+#ifndef WINONECORE
       UnregisterWait(req->wait_handle);
       req->wait_handle = INVALID_HANDLE_VALUE;
+#endif
     }
     if (req->event_handle) {
       CloseHandle(req->event_handle);
@@ -1553,10 +1577,14 @@ int uv_pipe_open(uv_pipe_t* pipe, uv_file file) {
   pipe->handle = os_handle;
   pipe->flags |= UV_HANDLE_READABLE | UV_HANDLE_WRITABLE;
 
+#ifndef WINONECORE
   if (pipe->ipc) {
     assert(!(pipe->flags & UV_HANDLE_NON_OVERLAPPED_PIPE));
     pipe->ipc_pid = uv_parent_pid();
     assert(pipe->ipc_pid != -1);
   }
+#else
+  return -1;
+#endif
   return 0;
 }

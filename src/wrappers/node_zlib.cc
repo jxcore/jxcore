@@ -61,17 +61,15 @@ class ZCtx : public ObjectWrap {
     assert(init_done_ && "close before init");
     assert(mode_ <= UNZIP);
 
+    JS_DEFINE_CURRENT_MARKER();
+
     if (mode_ == DEFLATE || mode_ == GZIP || mode_ == DEFLATERAW) {
       (void)deflateEnd(&strm_);
-#ifdef JS_ENGINE_V8
-      v8::V8::AdjustAmountOfExternalAllocatedMemory(-kDeflateContextSize);
-#endif
+      JS_ADJUST_EXTERNAL_MEMORY(-kDeflateContextSize);
     } else if (mode_ == INFLATE || mode_ == GUNZIP || mode_ == INFLATERAW ||
                mode_ == UNZIP) {
       (void)inflateEnd(&strm_);
-#ifdef JS_ENGINE_V8
-      v8::V8::AdjustAmountOfExternalAllocatedMemory(-kInflateContextSize);
-#endif
+      JS_ADJUST_EXTERNAL_MEMORY(-kInflateContextSize);
     }
     mode_ = NONE;
 
@@ -157,16 +155,15 @@ class ZCtx : public ObjectWrap {
         return;
     }
 
+    JS_LOCAL_OBJECT objh = JS_OBJECT_FROM_PERSISTENT(ctx->handle_);
     JS_LOCAL_INTEGER avail_out = STD_TO_INTEGER(ctx->strm_.avail_out);
     JS_LOCAL_INTEGER avail_in = STD_TO_INTEGER(ctx->strm_.avail_in);
     ctx->write_in_progress_ = false;
     // call the write() cb
-    assert(JS_IS_FUNCTION(
-               JS_GET_NAME(ctx->handle_, JS_PREDEFINED_STRING(callback))) &&
+    assert(JS_IS_FUNCTION(JS_GET_NAME(objh, JS_PREDEFINED_STRING(callback))) &&
            "Invalid callback");
     JS_LOCAL_VALUE args[2] = {avail_in, avail_out};
-    MakeCallback(com, ctx->handle_, STD_TO_STRING("callback"), ARRAY_SIZE(args),
-                 args);
+    MakeCallback(com, objh, STD_TO_STRING("callback"), ARRAY_SIZE(args), args);
 
     ctx->Unref();
     if (ctx->pending_close_) ctx->Close();
@@ -182,14 +179,13 @@ class ZCtx : public ObjectWrap {
     JS_ENTER_SCOPE_COM();
     JS_DEFINE_STATE_MARKER(com);
 
-    assert(JS_IS_FUNCTION(
-               JS_GET_NAME(ctx->handle_, JS_PREDEFINED_STRING(onerror))) &&
+    JS_LOCAL_OBJECT objh = JS_OBJECT_FROM_PERSISTENT(ctx->handle_);
+    assert(JS_IS_FUNCTION(JS_GET_NAME(objh, JS_PREDEFINED_STRING(onerror))) &&
            "Invalid error handler");
 
     JS_LOCAL_VALUE args[2] = {STD_TO_STRING(msg), STD_TO_NUMBER(ctx->err_)};
 
-    MakeCallback(com, ctx->handle_, STD_TO_STRING("onerror"), ARRAY_SIZE(args),
-                 args);
+    MakeCallback(com, objh, STD_TO_STRING("onerror"), ARRAY_SIZE(args), args);
 
     // no hope of rescue.
     if (ctx->write_in_progress_) ctx->Unref();
@@ -225,6 +221,8 @@ class ZCtx : public ObjectWrap {
       ctx->windowBits_ *= -1;
     }
 
+    JS_DEFINE_CURRENT_MARKER();
+
     switch (ctx->mode_) {
       case DEFLATE:
       case GZIP:
@@ -232,18 +230,14 @@ class ZCtx : public ObjectWrap {
         ctx->err_ =
             deflateInit2(&ctx->strm_, ctx->level_, Z_DEFLATED, ctx->windowBits_,
                          ctx->memLevel_, ctx->strategy_);
-#ifdef JS_ENGINE_V8
-        v8::V8::AdjustAmountOfExternalAllocatedMemory(kDeflateContextSize);
-#endif
+        JS_ADJUST_EXTERNAL_MEMORY(kDeflateContextSize);
         break;
       case INFLATE:
       case GUNZIP:
       case INFLATERAW:
       case UNZIP:
         ctx->err_ = inflateInit2(&ctx->strm_, ctx->windowBits_);
-#ifdef JS_ENGINE_V8
-        v8::V8::AdjustAmountOfExternalAllocatedMemory(kInflateContextSize);
-#endif
+        JS_ADJUST_EXTERNAL_MEMORY(kInflateContextSize);
         break;
       default:
         assert(0 && "wtf?");
@@ -414,7 +408,8 @@ JS_METHOD(NodeZlib, Write) {
 
   uv_queue_work(com->loop, work_req, ZCtx::Process, ZCtx::After);
 
-  RETURN_POINTER(ctx->handle_);
+  JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(ctx->handle_);
+  RETURN_POINTER(objl);
 }
 JS_METHOD_END
 

@@ -88,7 +88,11 @@ void uv_winapi_init() {
     uv_fatal_error(GetLastError(), "GetProcAddress");
   }
 
+#ifdef WINONECORE
+  kernel32_module = GetModuleHandleA("kernelbase.dll");
+#else
   kernel32_module = GetModuleHandleA("kernel32.dll");
+#endif
   if (kernel32_module == NULL) {
     uv_fatal_error(GetLastError(), "GetModuleHandleA");
   }

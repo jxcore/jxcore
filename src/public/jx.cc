@@ -71,9 +71,11 @@ JS_LOCAL_METHOD(extensionCallback) {
   }
 
   if (results[len].type_ != RT_Undefined) {
-    assert((results[len].data_ != NULL || (results[len].size_ == 0 && results[len].type_ == RT_Buffer)) &&
+    assert((results[len].data_ != NULL ||
+            (results[len].size_ == 0 && results[len].type_ == RT_Buffer)) &&
            "Result value is NULL and it is not a zero length buffer");
-    assert((results[len].size_ != 0 || (results[len].type_ == RT_String || results[len].type_ == RT_Buffer)) &&
+    assert((results[len].size_ != 0 || (results[len].type_ == RT_String ||
+                                        results[len].type_ == RT_Buffer)) &&
            "Return value was corrupted");
 
     if (results[len].type_ == RT_Error) {
@@ -94,7 +96,7 @@ JS_LOCAL_METHOD(extensionCallback) {
     }
 
     JXValueWrapper *wrap = (JXValueWrapper *)results[len].data_;
-    JS_HANDLE_VALUE ret_val = wrap->value_;
+    JS_HANDLE_VALUE ret_val = JS_TYPE_TO_LOCAL_VALUE(wrap->value_);
     JX_Free(&results[len]);
     RETURN_PARAM(ret_val);
   }
@@ -150,14 +152,15 @@ void JX_Initialize(const char *home_folder, JX_CALLBACK callback) {
   size_t home_length = strlen(home_folder);
   argv = (char *)malloc((12 + home_length) * sizeof(char));
   memcpy(argv, home_folder, home_length * sizeof(char));
-  if (home_length && home_folder[home_length-1] != '/' && home_folder[home_length-1] != '\\') {
+  if (home_length && home_folder[home_length - 1] != '/' &&
+      home_folder[home_length - 1] != '\\') {
     memcpy(argv + home_length, "/jx\0main.js", 11 * sizeof(char));
     argv[home_length + 11] = '\0';
     app_args[1] = argv + home_length + 4;
   } else {
-	memcpy(argv + home_length, "jx\0main.js", 10 * sizeof(char));
-	argv[home_length + 10] = '\0';
-	app_args[1] = argv + home_length + 3;
+    memcpy(argv + home_length, "jx\0main.js", 10 * sizeof(char));
+    argv[home_length + 10] = '\0';
+    app_args[1] = argv + home_length + 3;
   }
 
   app_args[0] = argv;

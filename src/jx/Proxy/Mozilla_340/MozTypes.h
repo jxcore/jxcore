@@ -48,9 +48,9 @@
 #define JS_NEW_EMPTY_FUNCTION_TEMPLATE() \
   MOZ_T_OBJECT::NewEmptyFunction(JS_GET_STATE_MARKER())
 
-#define JS_NEW_CONTEXT(a, b) MozJS::Isolate::New(a, b)
+#define JS_NEW_CONTEXT(x, a, b) MozJS::Isolate x = MozJS::Isolate::New(a, b)
 #define JS_NEW_EMPTY_CONTEXT() MozJS::Isolate::New()
-#define JS_NEW_PERSISTENT_CONTEXT(x) x
+#define JS_NEW_PERSISTENT_CONTEXT(x, y) x = y
 #define JS_NEW_LOCAL_CONTEXT(x) (x)->GetRaw()
 #define JS_DISPOSE_PERSISTENT_CONTEXT(x)                               \
   do {                                                                 \
@@ -113,21 +113,19 @@
 
 #define JS_PERSISTENT_CONTEXT MozJS::Isolate *
 #define JS_PERSISTENT_SCRIPT MOZ_T_PERSISTENT(MOZ_T_SCRIPT)
-#define JS_NEW_PERSISTENT_OBJECT(x) (x).RootCopy()
+#define JS_NEW_PERSISTENT_OBJECT(a, x) a = (x).RootCopy()
 #define JS_NEW_PERSISTENT_OBJECT_TEMPLATE(x) (x).RootCopy()
 
-#define JS_NEW_PERSISTENT_ARRAY()                           \
-  MOZ_T_OBJECT(JS_NewArrayObject(JS_GET_STATE_MARKER(), 0), \
-               JS_GET_STATE_MARKER()).RootCopy()
+#define JS_NEW_PERSISTENT_ARRAY(y, x) y = x.RootCopy()
 
-#define JS_NEW_EMPTY_PERSISTENT_OBJECT() \
-  MOZ_T_OBJECT(JS_GET_STATE_MARKER()).RootCopy()
+#define JS_NEW_EMPTY_PERSISTENT_OBJECT(x) \
+  x = MOZ_T_OBJECT(JS_GET_STATE_MARKER()).RootCopy()
 
-#define JS_NEW_PERSISTENT_STRING(x) MOZ_T_STRING(x).RootCopy()
-#define JS_NEW_PERSISTENT_FUNCTION(x) (x).RootCopy()
-#define JS_NEW_PERSISTENT_FUNCTION_TEMPLATE(x) (x).RootCopy()
-#define JS_NEW_PERSISTENT_SCRIPT(x) (x).RootCopy()
-#define JS_NEW_PERSISTENT_VALUE(x) (x).RootCopy()
+#define JS_NEW_PERSISTENT_STRING(y, x) y = MOZ_T_STRING(x).RootCopy()
+#define JS_NEW_PERSISTENT_FUNCTION(y, x) y = (x).RootCopy()
+#define JS_NEW_PERSISTENT_FUNCTION_TEMPLATE(y, x) y = (x).RootCopy()
+#define JS_NEW_PERSISTENT_SCRIPT(y, x) y = (x).RootCopy()
+#define JS_NEW_PERSISTENT_VALUE(y, x) y = (x).RootCopy()
 
 #define JS_CLEAR_PERSISTENT_(x) \
   if (x.IsRooted()) {           \
@@ -144,6 +142,7 @@
 #define JS_TYPE_TO_LOCAL_FUNCTION_TEMPLATE(x) (x)
 #define JS_TYPE_TO_LOCAL_CONTEXT(x) (x)->GetRaw()
 #define JS_TYPE_TO_LOCAL_ARRAY(x) (x)
+#define JS_OBJECT_FROM_PERSISTENT(x) x
 
 #define JS_GET_CONTEXT_GLOBAL(x) MozJS::Value(JS::CurrentGlobalOrNull(x), x)
 #define JS_GET_THREAD_ID() com->threadId
@@ -260,6 +259,8 @@
 
 #define JS_ADD_EXTERNAL_MEMORY(data_, length_) \
   data_ = (char *)JS_malloc(JS_GET_STATE_MARKER(), sizeof(char) * length_)
+
+#define JS_ADJUST_EXTERNAL_MEMORY(k)
 
 #define JS_NEW_INSTANCE(a, b, c) (a).NewInstance(b, c)
 #define JS_GET_STRING_LENGTH(a) (a).StringLength()

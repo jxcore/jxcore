@@ -18,32 +18,7 @@
 #ifdef JXCORE_PRINT_NATIVE_CALLS
 
 #include <map>
-#include <string>
-#include <stdlib.h>
-
-#if defined(__ANDROID__) && defined(JXCORE_EMBEDDED)
-#ifndef JXCORE_ALOG_TAG
-#define JXCORE_ALOG_TAG "jxcore-log"
-#endif
-#include <android/log.h>
-#define log_console(...) \
-  __android_log_print(ANDROID_LOG_INFO, JXCORE_ALOG_TAG, __VA_ARGS__)
-#define flush_console(...) \
-  __android_log_print(ANDROID_LOG_INFO, JXCORE_ALOG_TAG, __VA_ARGS__)
-#define error_console(...) \
-  __android_log_print(ANDROID_LOG_ERROR, JXCORE_ALOG_TAG, __VA_ARGS__)
-#define warn_console(...) \
-  __android_log_print(ANDROID_LOG_WARN, JXCORE_ALOG_TAG, __VA_ARGS__)
-#else
-#define log_console(...) fprintf(stdout, __VA_ARGS__)
-#define flush_console(...)        \
-  do {                            \
-    fprintf(stdout, __VA_ARGS__); \
-    fflush(stdout);               \
-  } while (0)
-#define error_console(...) fprintf(stderr, __VA_ARGS__)
-#define warn_console(...) fprintf(stderr, __VA_ARGS__)
-#endif
+#include "console_log.h"
 
 class LogDetails {
  public:

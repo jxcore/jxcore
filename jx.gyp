@@ -17,9 +17,10 @@
     'node_use_systemtap%': 'false',
     'node_shared_openssl%': 'false',
     'node_no_sqlite%': 'false',
-    'node_engine_mozilla%': 0,
     'node_shared_library%': 0,
     'node_embed_leveldown%': 0,
+    'node_use_mdb%': 'false',
+    'node_v8_options%': '',
     'library_files': [
       'lib/jx/_jx_argv.js',
       'lib/jx/_jx_subs.js',
@@ -155,6 +156,7 @@
       'NODE_WANT_INTERNALS=1',
       'ARCH="<(target_arch)"',
       'PLATFORM="<(OS)"', #'NODE_TAG="<(node_tag)"',
+      'NODE_V8_OPTIONS="<(node_v8_options)"',
     ],
 
     'cflags!': ['-ansi'],
@@ -184,7 +186,11 @@
       {
         'defines!': ['HAVE_DTRACE'],
         'defines': ['JXCORE_EMBEDDED'],
-        'type': 'shared_library'
+        'type': 'loadable_module'
+      }],
+      ['node_shared_library==1 and node_win_onecore==1', {
+        'type': 'loadable_module',
+        'defines': [ 'UWP_DLL=1' ]
       }],
       ['node_shared_library==0 and node_static_library==0',
       {
@@ -207,17 +213,81 @@
       {
         'defines': ['HAVE_OPENSSL=0']
       }],
-      ['node_engine_mozilla!=1',
-      {
+      [ 'v8_is_3_28==1', {
         'defines': [
-          'JS_ENGINE_V8=1', 'V8_IS_3_14=1'
+          'V8_IS_3_28=1'
         ],
         'sources': [
-          'src/jx/Proxy/V8_3_14/JXString.cc',
-          'src/jx/Proxy/V8_3_14/v8_typed_array.cc',
+          'src/jx/Proxy/V8_3_28/JXString.cc',
+        ],
+        'conditions': [
+          ['node_engine_v8==1', {
+            'sources': [
+              'deps/v8_3_28/v8/include/v8.h',
+              'deps/v8_3_28/v8/include/v8-debug.h',
+            ],
+            'dependencies': ['deps/v8_3_28/v8/tools/gyp/v8.gyp:v8',
+              'deps/v8_3_28/debugger-agent/debugger-agent.gyp:debugger-agent',],
+          }],
+          ['node_engine_chakra==1', {
+            'variables': {
+              'node_engine_include_dir%': 'deps/chakrashim/include'
+            },
+            'defines': ['JS_ENGINE_CHAKRA=1', 'JS_ENGINE_V8=1'],
+            'dependencies': [ 'deps/chakrashim/chakrashim.gyp:chakrashim', 
+                              'deps/node-uwp/binding.gyp:uwp'],
+             'conditions': [
+               [ 'node_win_onecore==1', {
+                 'libraries': [
+                  '-lchakrart.lib',
+                 ],
+               }],
+               [ 'node_win_onecore==0', {
+                 'libraries': [
+                   '-lchakrart.lib',
+                   '-lole32.lib',
+                   '-lversion.lib',
+                  ],
+               }]
+            ],
+          }]
+        ],
+      }],
+      ['node_engine_v8==1', {
+        'defines' : ['JS_ENGINE_V8=1'],
+        'conditions': [
+        [ 'gcc_version<=44', {
+          # GCC versions <= 4.4 do not handle the aliasing in the queue
+          # implementation, so disable aliasing on these platforms
+          # to avoid subtle bugs
+          'cflags': [ '-fno-strict-aliasing' ],
+        }],
+        ['v8_is_3_14==1', {
+          'defines': [
+              'V8_IS_3_14=1'
+            ],
+            'sources': [
+              'src/jx/Proxy/V8_3_14/JXString.cc',
+              'src/jx/Proxy/V8_3_14/v8_typed_array.cc',
+              'deps/v8/include/v8.h',
+              'deps/v8/include/v8-debug.h',
+            ],
+            'dependencies': ['deps/v8/tools/gyp/v8.gyp:v8'],
+        }],
+        [ 'v8_enable_i18n_support==1', {
+          'defines': [ 'NODE_HAVE_I18N_SUPPORT=1' ],
+          'dependencies': [
+            '<(icu_gyp_path):icui18n',
+            '<(icu_gyp_path):icuuc',
+          ],
+          'conditions': [
+            [ 'icu_small=="true"', {
+              'defines': [ 'NODE_HAVE_SMALL_ICU=1' ],
+          }]],
+        }],
         ]
-      },
-      {
+      }],
+      ['node_engine_mozilla==1', {
         'v8_use_snapshot%': 'false',
         'defines': [
           'JS_ENGINE_MOZJS=1', 'EXPORT_JS_API', 'MOZJS_IS_3_40=1'
@@ -232,6 +302,11 @@
           'src/jx/Proxy/Mozilla_340/PArguments.cc',
           'src/jx/Proxy/Mozilla_340/SpiderHelper.cc',
         ],
+        'include_dirs': [
+          'deps/mozjs/src',
+          'deps/mozjs/incs',
+        ],
+        'dependencies': ['deps/mozjs/mozjs.gyp:mozjs'],
         'conditions': [
           ['OS!="win"', {
             'defines': ['JS_POSIX_NSPR=1']
@@ -308,7 +383,7 @@
           }],
         ]
       }],
-      ['node_use_dtrace=="true" and node_engine_mozilla!=1',
+      ['node_use_dtrace=="true" and node_engine_v8==1',
       {
         'defines': ['HAVE_DTRACE=1'],
         'dependencies': ['node_dtrace_header'],
@@ -328,7 +403,7 @@
           ]
         ]
       }],
-      ['node_use_systemtap=="true" and node_engine_mozilla!=1',
+      ['node_use_systemtap=="true" and node_engine_v8==1 and v8_is_3_14==1',
       {
         'defines': ['HAVE_SYSTEMTAP=1', 'STAP_SDT_V1=1'],
         'dependencies': ['node_systemtap_header'],
@@ -338,7 +413,22 @@
           '<(SHARED_INTERMEDIATE_DIR)/node_systemtap.h',
         ],
       }],
-      ['node_use_etw=="true" and node_engine_mozilla!=1',
+      [ 'node_use_mdb=="true" and v8_is_3_28==1', {
+        'dependencies': [ 'node_mdb' ],
+        'include_dirs': [ '<(SHARED_INTERMEDIATE_DIR)' ],
+        'sources': [
+          'src/node_mdb.cc',
+        ],
+      } ],
+      [ 'v8_postmortem_support=="true" and node_engine_v8==1 and v8_is_3_28==1', {
+         'dependencies': [ 'deps/v8_3_28/v8/tools/gyp/v8.gyp:postmortem-metadata' ],
+         'xcode_settings': {
+           'OTHER_LDFLAGS': [
+             '-Wl,-force_load,<(V8_BASE)',
+           ],
+         },
+      }],
+      ['node_use_etw=="true" and node_engine_v8==1',
       {
         'defines': ['HAVE_ETW=1'],
         'dependencies': ['node_etw'],
@@ -351,7 +441,7 @@
           'tools/msvs/genfiles/node_etw_provider.rc',
         ]
       }],
-      ['node_use_perfctr=="true" and node_engine_mozilla!=1',
+      ['node_use_perfctr=="true" and node_engine_v8==1',
       {
         'defines': ['HAVE_PERFCTR=1'],
         'dependencies': ['node_perfctr'],
@@ -362,21 +452,6 @@
           'src/node_counters.h',
           'tools/msvs/genfiles/node_perfctr_provider.rc',
         ]
-      }],
-      ['node_shared_v8=="false" and node_engine_mozilla!=1',
-      {
-        'sources': [
-          'deps/v8/include/v8.h',
-          'deps/v8/include/v8-debug.h',
-        ],
-        'dependencies': ['deps/v8/tools/gyp/v8.gyp:v8'],
-      },
-      {
-        'include_dirs': [
-          'deps/mozjs/src',
-          'deps/mozjs/incs',
-        ],
-        'dependencies': ['deps/mozjs/mozjs.gyp:mozjs']
       }],
       ['node_no_sqlite==0',
       {        
@@ -421,7 +496,10 @@
           'PLATFORM="win32"',
           '_UNICODE=1',
         ],
-        'libraries': ['-lpsapi.lib']
+        'conditions': [
+        [ 'node_win_onecore==0', {
+          'libraries': ['-lpsapi.lib']
+        }]],
       },
       {#POSIX
           'defines': ['__POSIX__'],
@@ -470,14 +548,12 @@
         }
       ],
     ],
-    'msvs_settings':
-    {
-      'VCLinkerTool':
-      {
-        'SubSystem': 1,
-        #/subsystem:console
-      },
-    },
+    'msvs_settings': {
+      'VCManifestTool': {
+        'EmbedManifest': 'true',
+        'AdditionalManifestFiles': 'src/res/jx.exe.extra.manifest'
+      }
+    }
   }, #generate ETW header and resource files
   {
     'target_name': 'node_etw',
@@ -626,10 +702,36 @@
     ]
   },
   {
+    'target_name': 'node_mdb',
+    'type': 'none',
+    'conditions': [
+      [ 'node_use_mdb=="true"',
+        {
+          'dependencies': [ 'deps/mdb_v8/mdb_v8.gyp:mdb_v8' ],
+          'actions': [
+            {
+              'action_name': 'node_mdb',
+              'inputs': [ '<(PRODUCT_DIR)/obj.target/deps/mdb_v8/mdb_v8.so' ],
+              'outputs': [ '<(PRODUCT_DIR)/obj.target/node/src/node_mdb.o' ],
+              'conditions': [
+                [ 'target_arch=="ia32"', {
+                  'action': [ 'elfwrap', '-o', '<@(_outputs)', '<@(_inputs)' ],
+                } ],
+                [ 'target_arch=="x64"', {
+                  'action': [ 'elfwrap', '-64', '-o', '<@(_outputs)', '<@(_inputs)' ],
+                } ],
+              ],
+            },
+          ],
+        },
+      ],
+    ],
+  },
+  {
     'target_name': 'node_dtrace_provider',
     'type': 'none',
     'conditions': [
-      ['node_use_dtrace=="true" and OS!="mac"',
+      ['node_use_dtrace=="true" and OS!="mac" and OS!="linux"',
       {
         'actions': [
         {
@@ -645,14 +747,27 @@
             '-o', '<@(_outputs)'
           ]
         }]
-      }]
+      }],
+      [ 'node_use_dtrace=="true" and OS=="linux"', {
+        'actions': [
+        {
+          'action_name': 'node_dtrace_provider_o',
+          'inputs': [ 'src/node_provider.d' ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/node_dtrace_provider.o'
+          ],
+          'action': [
+            'dtrace', '-C', '-G', '-s', '<@(_inputs)', '-o', '<@(_outputs)'
+          ],
+         }],
+      }],
     ]
   },
   {
     'target_name': 'node_dtrace_ustack',
     'type': 'none',
     'conditions': [
-      ['node_use_dtrace=="true" and OS!="mac"',
+      ['node_use_dtrace=="true" and OS!="mac" and OS!="linux" and node_engine_v8==1',
       {
         'actions': [
         {

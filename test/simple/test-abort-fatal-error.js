@@ -1,7 +1,8 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
 
-if(process.versions.sm) { return; }
+if (process.versions.sm) { return; }
+if (process.versions.v8 && parseFloat(process.versions.v8) > 3.15) { return; }
 
 var assert = require('assert');
 var common = require('../common');

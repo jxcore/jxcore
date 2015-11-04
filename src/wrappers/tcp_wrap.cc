@@ -14,11 +14,14 @@ typedef class ReqWrap<uv_connect_t> ConnectWrap;
 JS_LOCAL_OBJECT AddressToJS(JS_STATE_MARKER, const sockaddr* addr);
 
 JS_LOCAL_OBJECT TCPWrap::InstantiateCOM(commons* _com) {
-  JS_ENTER_SCOPE_COM();
+  commons* com = _com != NULL ? _com : commons::getInstance();
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
+  JS_DEFINE_STATE_MARKER(com);
 
-  assert(JS_IS_EMPTY((com->tcpConstructor)) == false);
+  assert(JS_IS_EMPTY(com->tcpConstructor) == false);
 
-  JS_LOCAL_OBJECT obj = JS_NEW_DEFAULT_INSTANCE(com->tcpConstructor);
+  JS_LOCAL_FUNCTION lfnc = JS_TYPE_TO_LOCAL_FUNCTION(com->tcpConstructor);
+  JS_LOCAL_OBJECT obj = JS_NEW_DEFAULT_INSTANCE(lfnc);
 
   return JS_LEAVE_SCOPE(obj);
 }
@@ -260,6 +263,7 @@ void TCPWrap::OnConnection(uv_stream_t* handle, int status) {
   // uv_close() on the handle.
   assert(JS_IS_EMPTY((wrap->object_)) == false);
 
+  JS_LOCAL_OBJECT objl = JS_TYPE_TO_LOCAL_OBJECT(wrap->object_);
   if (status == 0) {
     // Instantiate the client javascript object and handle.
     JS_LOCAL_OBJECT client_obj = InstantiateCOM(wrap->com);
@@ -273,14 +277,13 @@ void TCPWrap::OnConnection(uv_stream_t* handle, int status) {
 
     // Successful accept. Call the onconnection callback in JavaScript land.
     __JS_LOCAL_VALUE argv[1] = {JS_CORE_REFERENCE(client_obj)};
-    MakeCallback(wrap->com, wrap->object_, JS_PREDEFINED_STRING(onconnection),
-                 1, argv);
+    MakeCallback(wrap->com, objl, JS_PREDEFINED_STRING(onconnection), 1, argv);
   } else {
     __JS_LOCAL_VALUE argv[1] = {
         JS_CORE_REFERENCE(JS_TYPE_TO_LOCAL_VALUE(JS_NULL()))};
     SetCOMErrno(wrap->com, uv_last_error(wrap->com->loop));
-    MakeCallback(wrap->com, wrap->object_, JS_PREDEFINED_STRING(onconnection),
-                 1, argv);
+
+    MakeCallback(wrap->com, objl, JS_PREDEFINED_STRING(onconnection), 1, argv);
   }
 }
 
@@ -289,7 +292,7 @@ void TCPWrap::AfterConnect(uv_connect_t* req, int status) {
   ConnectWrap* req_wrap = (ConnectWrap*)req->data;
   TCPWrap* wrap = (TCPWrap*)req->handle->data;
 
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(wrap->com->node_isolate);
 
   // The wrap and request objects should still be there.
   assert(JS_IS_EMPTY((req_wrap->object_)) == false);
@@ -301,22 +304,23 @@ void TCPWrap::AfterConnect(uv_connect_t* req, int status) {
 
   JS_DEFINE_STATE_MARKER(wrap->com);
 
+  JS_LOCAL_OBJECT objl = JS_TYPE_TO_LOCAL_OBJECT(req_wrap->object_);
+  JS_LOCAL_OBJECT objlw = JS_TYPE_TO_LOCAL_OBJECT(wrap->object_);
 #ifdef JS_ENGINE_V8
   node::commons* com = wrap->com;
   __JS_LOCAL_VALUE argv[5] = {STD_TO_INTEGER(status),
-                              JS_TYPE_TO_LOCAL_VALUE(wrap->object_),
-                              JS_TYPE_TO_LOCAL_VALUE(req_wrap->object_),
+                              JS_TYPE_TO_LOCAL_VALUE(objlw),
+                              JS_TYPE_TO_LOCAL_VALUE(objl),
                               JS_TYPE_TO_LOCAL_VALUE(STD_TO_BOOLEAN(true)),
                               JS_TYPE_TO_LOCAL_VALUE(STD_TO_BOOLEAN(true))};
 #elif defined(JS_ENGINE_MOZJS)
-  __JS_LOCAL_VALUE argv[5] = {
-      JS::Int32Value(status),               JS_CORE_REFERENCE(wrap->object_),
-      JS_CORE_REFERENCE(req_wrap->object_), JS::BooleanValue(true),
-      JS::BooleanValue(true)};
+  __JS_LOCAL_VALUE argv[5] = {JS::Int32Value(status),
+                              JS_CORE_REFERENCE(wrap->object_),
+                              JS_CORE_REFERENCE(req_wrap->object_),
+                              JS::BooleanValue(true), JS::BooleanValue(true)};
 #endif
 
-  MakeCallback(wrap->com, req_wrap->object_, JS_PREDEFINED_STRING(oncomplete),
-               5, argv);
+  MakeCallback(wrap->com, objl, JS_PREDEFINED_STRING(oncomplete), 5, argv);
 
   delete req_wrap;
 }
@@ -342,7 +346,8 @@ JS_METHOD_NO_COM(TCPWrap, Connect) {
     delete req_wrap;
     RETURN_PARAM(JS_NULL());
   } else {
-    RETURN_PARAM(req_wrap->object_);
+    JS_LOCAL_OBJECT objr = JS_TYPE_TO_LOCAL_OBJECT(req_wrap->object_);
+    RETURN_PARAM(objr);
   }
 }
 JS_METHOD_END
@@ -368,7 +373,8 @@ JS_METHOD_NO_COM(TCPWrap, Connect6) {
     delete req_wrap;
     RETURN_PARAM(JS_NULL());
   } else {
-    RETURN_PARAM(req_wrap->object_);
+    JS_LOCAL_OBJECT objr = JS_TYPE_TO_LOCAL_OBJECT(req_wrap->object_);
+    RETURN_PARAM(objr);
   }
 }
 JS_METHOD_END

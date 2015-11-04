@@ -29,14 +29,24 @@ class JXEngine {
   JS_PERSISTENT_OBJECT *global_;
   JSCompartment *jscomp_;
   ENGINE_NS::Isolate main_iso_;
-public:
-  inline void ExitIsolate() { }
+
+ public:
+  inline void ExitIsolate() {}
 #elif defined(JS_ENGINE_V8)
  public:
-  JS_PERSISTENT_CONTEXT context_;
+  JS_PERSISTENT_CONTEXT pContext_;
+  inline JS_HANDLE_CONTEXT getContext() {
+#ifdef V8_IS_3_14
+    return pContext_;
+#else
+    return node::PersistentToLocal(main_node_->node_isolate, pContext_);
+#endif
+  }
 
   inline void ExitIsolate() { main_node_->node_isolate->Exit(); }
 #endif
+
+  inline node::commons *getCommons() { return main_node_; }
 
   int argc_;
   char **argv_;

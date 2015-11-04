@@ -5,30 +5,27 @@ void callback(JXValue *results, int argc) {
   // do nothing
 }
 
-
 void sampleMethod(JXValue *params, int argc) {
   assert(argc == 1 && "previous call did not return correct value");
-  assert(JX_IsString(params+0) && "This method expects a string parameter");
+  assert(JX_IsString(params + 0) && "This method expects a string parameter");
 
   std::string data;
-  ConvertResult(params+0, data);
+  ConvertResult(params + 0, data);
 
   char *play = strdup(data.c_str());
-  int32_t ln = JX_GetDataLength(params+0);
+  int32_t ln = JX_GetDataLength(params + 0);
 
   for (int32_t n = 0; n < ln; n++) {
-    (*(play+n)) ^= 1;
+    (*(play + n)) ^= 1;
   }
 
-
-  JX_SetBuffer(params+argc, play, ln);
+  JX_SetBuffer(params + argc, play, ln);
   free(play);
 }
 
-void zeroBuffer(JXValue *params, int argc)
-{
+void zeroBuffer(JXValue *params, int argc) {
   // test creating a zero sized bufer
-  JX_SetBuffer(params+argc, nullptr, 0);
+  JX_SetBuffer(params + argc, nullptr, 0);
 }
 
 const char *contents =
@@ -36,9 +33,9 @@ const char *contents =
     "var buffer = process.natives.sampleMethod(strTest);\n"
     "buffer = process.natives.sampleMethod(buffer+'');\n"
     "if(buffer+'' !== strTest) \n"
-    "  process.natives.sampleMethod('', 0);" // intentionally crash!
-    "var zero = process.natives.zeroBuffer();"
-    "if(zero.length !== 0)"
+    "  process.natives.sampleMethod('', 0);\n"  // intentionally crash!
+    "var zero = process.natives.zeroBuffer();\n"
+    "if(zero.length !== 0)\n"
     "  process.natives.sampleMethod('', 0);";
 
 int main(int argc, char **args) {

@@ -226,7 +226,7 @@ class QueryWrap {
     JS_DEFINE_STATE_MARKER(com);
     _com = com;
 
-    object_ = JS_NEW_EMPTY_PERSISTENT_OBJECT();
+    JS_NEW_EMPTY_PERSISTENT_OBJECT(object_);
   }
 
   virtual ~QueryWrap() {
@@ -235,19 +235,21 @@ class QueryWrap {
     commons* com = _com;
     JS_DEFINE_STATE_MARKER(com);
 
-    JS_NAME_DELETE(object_, JS_PREDEFINED_STRING(oncomplete));
+    JS_LOCAL_OBJECT lobj = JS_OBJECT_FROM_PERSISTENT(object_);
+    JS_NAME_DELETE(lobj, JS_PREDEFINED_STRING(oncomplete));
 
     JS_CLEAR_PERSISTENT(object_);
   }
 
-  JS_HANDLE_OBJECT GetObject() { return object_; }
+  JS_HANDLE_OBJECT GetObject() { return JS_OBJECT_FROM_PERSISTENT(object_); }
 
   void SetOnComplete(JS_HANDLE_VALUE oncomplete) {
     JS_DEFINE_STATE_MARKER(_com);
     commons* com = _com;
 
     assert(JS_IS_FUNCTION(oncomplete));
-    JS_NAME_SET(object_, JS_PREDEFINED_STRING(oncomplete), oncomplete);
+    JS_LOCAL_OBJECT lobj = JS_OBJECT_FROM_PERSISTENT(object_);
+    JS_NAME_SET(lobj, JS_PREDEFINED_STRING(oncomplete), oncomplete);
   }
 
   // Subclasses should implement the appropriate Send method.
@@ -291,32 +293,38 @@ class QueryWrap {
   }
 
   void CallOnComplete(JS_LOCAL_VALUE answer) {
-    JS_ENTER_SCOPE();
+    JS_ENTER_SCOPE_WITH(_com->node_isolate);
     JS_DEFINE_STATE_MARKER(_com);
     commons* com = _com;
 
     JS_LOCAL_VALUE argv[2] = {STD_TO_INTEGER(0), answer};
-    MakeCallback(com, object_, com->pstr_oncomplete, ARRAY_SIZE(argv), argv);
+    JS_LOCAL_OBJECT lobj = JS_OBJECT_FROM_PERSISTENT(object_);
+    MakeCallback(com, lobj, JS_PREDEFINED_STRING(oncomplete), ARRAY_SIZE(argv),
+                 argv);
   }
 
   void CallOnComplete(JS_LOCAL_VALUE answer, JS_LOCAL_VALUE family) {
-    JS_ENTER_SCOPE();
+    JS_ENTER_SCOPE_WITH(_com->node_isolate);
     JS_DEFINE_STATE_MARKER(_com);
     commons* com = _com;
     JS_LOCAL_VALUE argv[3] = {STD_TO_INTEGER(0), answer, family};
-    MakeCallback(com, object_, com->pstr_oncomplete, ARRAY_SIZE(argv), argv);
+    JS_LOCAL_OBJECT lobj = JS_OBJECT_FROM_PERSISTENT(object_);
+    MakeCallback(com, lobj, JS_PREDEFINED_STRING(oncomplete), ARRAY_SIZE(argv),
+                 argv);
   }
 
   void ParseError(int status) {
     assert(status != ARES_SUCCESS);
     SetAresErrno(status);
 
-    JS_ENTER_SCOPE();
+    JS_ENTER_SCOPE_WITH(_com->node_isolate);
     JS_DEFINE_STATE_MARKER(_com);
     commons* com = _com;
 
     JS_LOCAL_VALUE argv[1] = {STD_TO_INTEGER(-1)};
-    MakeCallback(com, object_, com->pstr_oncomplete, ARRAY_SIZE(argv), argv);
+    JS_LOCAL_OBJECT lobj = JS_OBJECT_FROM_PERSISTENT(object_);
+    MakeCallback(com, lobj, JS_PREDEFINED_STRING(oncomplete), ARRAY_SIZE(argv),
+                 argv);
   }
 
   // Subclasses should implement the appropriate Parse method.
@@ -817,7 +825,8 @@ void AfterGetAddrInfo(uv_getaddrinfo_t* req, int status, struct addrinfo* res) {
   uv_freeaddrinfo(res);
 
   // Make the callback into JavaScript
-  MakeCallback(req_wrap->object_, com->pstr_oncomplete, ARRAY_SIZE(argv), argv);
+  JS_LOCAL_OBJECT lobj = JS_OBJECT_FROM_PERSISTENT(req_wrap->object_);
+  MakeCallback(lobj, JS_PREDEFINED_STRING(oncomplete), ARRAY_SIZE(argv), argv);
 
   delete req_wrap;
 }
@@ -877,7 +886,8 @@ static JS_LOCAL_METHOD(GetAddrInfo) {
     delete req_wrap;
     RETURN_PARAM(JS_NULL());
   } else {
-    RETURN_PARAM(req_wrap->object_);
+    JS_LOCAL_OBJECT objl = JS_TYPE_TO_LOCAL_OBJECT(req_wrap->object_);
+    RETURN_PARAM(objl);
   }
 }
 JS_METHOD_END

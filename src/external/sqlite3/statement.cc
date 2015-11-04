@@ -10,6 +10,8 @@
 
 using namespace node_sqlite3;
 
+#define PtoO(x) JS_OBJECT_FROM_PERSISTENT(x)
+
 jxcore::ThreadStore<JS_PERSISTENT_FUNCTION_TEMPLATE> Statement::jx_persistent;
 
 void Statement::Process() {
@@ -46,13 +48,13 @@ void Statement::Error(T* baton) {
   JS_DEFINE_STATE_MARKER(com);
   EXCEPTION(stmt->message.c_str(), stmt->status, exception);
 
-  if (!JS_IS_EMPTY(baton->callback) && JS_IS_FUNCTION(baton->callback)) {
+  JS_LOCAL_FUNCTION objbc = JS_TYPE_TO_LOCAL_FUNCTION(baton->callback);
+  if (!JS_IS_EMPTY(baton->callback) && JS_IS_FUNCTION(objbc)) {
     JS_LOCAL_VALUE argv[] = {exception};
-    TRY_CATCH_CALL(stmt->handle_, JS_TYPE_TO_LOCAL_FUNCTION(baton->callback), 1,
-                   argv);
+    TRY_CATCH_CALL(PtoO(stmt->handle_), objbc, 1, argv);
   } else {
     JS_LOCAL_VALUE argv[] = {STD_TO_STRING("error"), exception};
-    EMIT_EVENT(stmt->handle_, 2, argv);
+    EMIT_EVENT(PtoO(stmt->handle_), 2, argv);
   }
 }
 
@@ -128,10 +130,10 @@ void Statement::Work_AfterPrepare(uv_work_t* req) {
     stmt->Finalize();
   } else {
     stmt->prepared = true;
-    if (!JS_IS_EMPTY(baton->callback) && JS_IS_FUNCTION(baton->callback)) {
+    JS_LOCAL_FUNCTION objbc = JS_TYPE_TO_LOCAL_FUNCTION(baton->callback);
+    if (!JS_IS_EMPTY(baton->callback) && JS_IS_FUNCTION(objbc)) {
       JS_LOCAL_VALUE argv[] = {JS_NULL()};
-      TRY_CATCH_CALL(stmt->handle_, JS_TYPE_TO_LOCAL_FUNCTION(baton->callback),
-                     1, argv);
+      TRY_CATCH_CALL(PtoO(stmt->handle_), objbc, 1, argv);
     }
   }
 
@@ -305,10 +307,10 @@ void Statement::Work_AfterBind(uv_work_t* req) {
     Error(baton);
   } else {
     // Fire callbacks.
-    if (!JS_IS_EMPTY(baton->callback) && JS_IS_FUNCTION(baton->callback)) {
+    JS_LOCAL_FUNCTION objbc = JS_TYPE_TO_LOCAL_FUNCTION(baton->callback);
+    if (!JS_IS_EMPTY(baton->callback) && JS_IS_FUNCTION(objbc)) {
       JS_LOCAL_VALUE argv[] = {JS_NULL()};
-      TRY_CATCH_CALL(stmt->handle_, JS_TYPE_TO_LOCAL_FUNCTION(baton->callback),
-                     1, argv);
+      TRY_CATCH_CALL(PtoO(stmt->handle_), objbc, 1, argv);
     }
   }
 
@@ -362,17 +364,16 @@ void Statement::Work_AfterGet(uv_work_t* req) {
   if (stmt->status != SQLITE_ROW && stmt->status != SQLITE_DONE) {
     Error(baton);
   } else {
+    JS_LOCAL_FUNCTION ptof = JS_TYPE_TO_LOCAL_FUNCTION(baton->callback);
     // Fire callbacks.
-    if (!JS_IS_EMPTY(baton->callback) && JS_IS_FUNCTION(baton->callback)) {
+    if (!JS_IS_EMPTY(baton->callback) && JS_IS_FUNCTION(ptof)) {
       if (stmt->status == SQLITE_ROW) {
         // Create the result array from the data we acquired.
         JS_LOCAL_VALUE argv[] = {JS_NULL(), RowToJS(&baton->row)};
-        TRY_CATCH_CALL(stmt->handle_,
-                       JS_TYPE_TO_LOCAL_FUNCTION(baton->callback), 2, argv);
+        TRY_CATCH_CALL(PtoO(stmt->handle_), ptof, 2, argv);
       } else {
         JS_LOCAL_VALUE argv[] = {JS_NULL()};
-        TRY_CATCH_CALL(stmt->handle_,
-                       JS_TYPE_TO_LOCAL_FUNCTION(baton->callback), 1, argv);
+        TRY_CATCH_CALL(PtoO(stmt->handle_), ptof, 1, argv);
       }
     }
   }
@@ -430,14 +431,14 @@ void Statement::Work_AfterRun(uv_work_t* req) {
     Error(baton);
   } else {
     // Fire callbacks.
-    if (!JS_IS_EMPTY(baton->callback) && JS_IS_FUNCTION(baton->callback)) {
-      JS_NAME_SET(stmt->handle_, JS_STRING_ID("lastID"),
+    if (!JS_IS_EMPTY(baton->callback)) {
+      JS_NAME_SET(PtoO(stmt->handle_), JS_STRING_ID("lastID"),
                   STD_TO_INTEGER(baton->inserted_id));
-      JS_NAME_SET(stmt->handle_, JS_STRING_ID("changes"),
+      JS_NAME_SET(PtoO(stmt->handle_), JS_STRING_ID("changes"),
                   STD_TO_INTEGER(baton->changes));
 
       JS_LOCAL_VALUE argv[] = {JS_NULL()};
-      TRY_CATCH_CALL(stmt->handle_, JS_TYPE_TO_LOCAL_FUNCTION(baton->callback),
+      TRY_CATCH_CALL(PtoO(stmt->handle_), JS_TYPE_TO_LOCAL_FUNCTION(baton->callback),
                      1, argv);
     }
   }
@@ -495,8 +496,9 @@ void Statement::Work_AfterAll(uv_work_t* req) {
   if (stmt->status != SQLITE_DONE) {
     Error(baton);
   } else {
+    JS_LOCAL_FUNCTION ptof = JS_TYPE_TO_LOCAL_FUNCTION(baton->callback);
     // Fire callbacks.
-    if (!JS_IS_EMPTY(baton->callback) && JS_IS_FUNCTION(baton->callback)) {
+    if (!JS_IS_EMPTY(baton->callback) && JS_IS_FUNCTION(ptof)) {
       if (baton->rows.size()) {
         // Create the result array from the data we acquired.
         JS_LOCAL_ARRAY result = JS_NEW_ARRAY_WITH_COUNT(baton->rows.size());
@@ -508,13 +510,11 @@ void Statement::Work_AfterAll(uv_work_t* req) {
         }
 
         JS_LOCAL_VALUE argv[] = {JS_NULL(), result};
-        TRY_CATCH_CALL(stmt->handle_,
-                       JS_TYPE_TO_LOCAL_FUNCTION(baton->callback), 2, argv);
+        TRY_CATCH_CALL(JS_OBJECT_FROM_PERSISTENT(stmt->handle_), ptof, 2, argv);
       } else {
         // There were no result rows.
         JS_LOCAL_VALUE argv[] = {JS_NULL(), JS_NEW_ARRAY()};
-        TRY_CATCH_CALL(stmt->handle_,
-                       JS_TYPE_TO_LOCAL_FUNCTION(baton->callback), 2, argv);
+        TRY_CATCH_CALL(JS_OBJECT_FROM_PERSISTENT(stmt->handle_), ptof, 2, argv);
       }
     }
   }
@@ -536,7 +536,7 @@ JS_METHOD(Statement, Each) {
   if (baton == NULL) {
     THROW_EXCEPTION("Data type is not supported");
   } else {
-    baton->completed = JS_NEW_PERSISTENT_FUNCTION(completed);
+    JS_NEW_PERSISTENT_FUNCTION(baton->completed, completed);
     stmt->Schedule(Work_BeginEach, baton);
     RETURN_PARAM(args.This());
   }
@@ -546,11 +546,13 @@ JS_METHOD_END
 void Statement::Work_BeginEach(Baton* baton) {
   // Only create the Async object when we're actually going into
   // the event loop. This prevents dangling events.
+  JS_DEFINE_CURRENT_MARKER();
   EachBaton* each_baton = static_cast<EachBaton*>(baton);
   each_baton->async = new Async(each_baton->stmt, AsyncEach);
-  each_baton->async->item_cb = JS_NEW_PERSISTENT_FUNCTION(each_baton->callback);
-  each_baton->async->completed_cb =
-      JS_NEW_PERSISTENT_FUNCTION(each_baton->completed);
+  JS_NEW_PERSISTENT_FUNCTION(each_baton->async->item_cb,
+			     JS_TYPE_TO_LOCAL_FUNCTION(each_baton->callback));
+  JS_NEW_PERSISTENT_FUNCTION(each_baton->async->completed_cb,
+			     JS_TYPE_TO_LOCAL_FUNCTION(each_baton->completed));
 
   STATEMENT_BEGIN(Each);
 }
@@ -622,7 +624,7 @@ void Statement::AsyncEach(uv_async_t* handle, int status) {
       break;
     }
 
-    if (!JS_IS_EMPTY(async->item_cb) && JS_IS_FUNCTION(async->item_cb)) {
+    if (!JS_IS_EMPTY(async->item_cb)) {
       JS_LOCAL_VALUE argv[2];
       argv[0] = JS_NULL();
 
@@ -631,7 +633,7 @@ void Statement::AsyncEach(uv_async_t* handle, int status) {
       for (int i = 0; it < end; ++it, i++) {
         argv[1] = RowToJS(*it);
         async->retrieved++;
-        TRY_CATCH_CALL(async->stmt->handle_,
+        TRY_CATCH_CALL(PtoO(async->stmt->handle_),
                        JS_TYPE_TO_LOCAL_FUNCTION(async->item_cb), 2, argv);
         delete *it;
       }
@@ -639,11 +641,12 @@ void Statement::AsyncEach(uv_async_t* handle, int status) {
   }
 
   if (async->completed) {
-    if (!JS_IS_EMPTY(async->completed_cb) &&
-        JS_IS_FUNCTION(async->completed_cb)) {
+    if (!JS_IS_EMPTY(async->completed_cb)) {
+      JS_LOCAL_FUNCTION fcc = JS_TYPE_TO_LOCAL_FUNCTION(async->completed_cb);
+
       JS_LOCAL_VALUE argv[] = {JS_NULL(), STD_TO_INTEGER(async->retrieved)};
-      TRY_CATCH_CALL(async->stmt->handle_,
-                     JS_TYPE_TO_LOCAL_FUNCTION(async->completed_cb), 2, argv);
+      TRY_CATCH_CALL(JS_OBJECT_FROM_PERSISTENT(async->stmt->handle_), fcc, 2,
+                     argv);
     }
     uv_close((uv_handle_t*)handle, CloseCallback);
   }
@@ -687,10 +690,10 @@ void Statement::Work_AfterReset(uv_work_t* req) {
   STATEMENT_INIT(Baton);
 
   // Fire callbacks.
-  if (!JS_IS_EMPTY(baton->callback) && JS_IS_FUNCTION(baton->callback)) {
+  if (!JS_IS_EMPTY(baton->callback)) {
     JS_LOCAL_VALUE argv[] = {JS_NULL()};
-    TRY_CATCH_CALL(stmt->handle_, JS_TYPE_TO_LOCAL_FUNCTION(baton->callback), 1,
-                   argv);
+    JS_LOCAL_FUNCTION objbc = JS_TYPE_TO_LOCAL_FUNCTION(baton->callback);
+    TRY_CATCH_CALL(PtoO(stmt->handle_), objbc, 1, argv);
   }
 
   STATEMENT_END();
@@ -723,8 +726,8 @@ JS_LOCAL_OBJECT Statement::RowToJS(Row* row) {
       } break;
       case SQLITE_BLOB: {
         value = JS_TYPE_TO_LOCAL_VALUE(
-            Buffer::New(((Values::Blob*)field)->value,
-                        ((Values::Blob*)field)->length)->handle_);
+            PtoO(Buffer::New(((Values::Blob*)field)->value,
+                             ((Values::Blob*)field)->length)->handle_));
       } break;
       case SQLITE_NULL: {
         value = JS_NULL();
@@ -779,7 +782,7 @@ JS_METHOD(Statement, Finalize) {
   Baton* baton = new Baton(stmt, callback);
   stmt->Schedule(Finalize, baton);
 
-  RETURN_PARAM(stmt->db->handle_);
+  RETURN_PARAM(PtoO(stmt->db->handle_));
 }
 JS_METHOD_END
 
@@ -787,12 +790,12 @@ void Statement::Finalize(Baton* baton) {
   baton->stmt->Finalize();
 
   // Fire callback in case there was one.
-  if (!JS_IS_EMPTY(baton->callback) && JS_IS_FUNCTION(baton->callback)) {
-    node::commons *com = node::commons::getInstance();
+  if (!JS_IS_EMPTY(baton->callback)) {
+    node::commons* com = node::commons::getInstance();
     JS_DEFINE_STATE_MARKER(com);
+    JS_LOCAL_FUNCTION ptof = JS_TYPE_TO_LOCAL_FUNCTION(baton->callback);
 
-    TRY_CATCH_CALL_NO_PARAM(baton->stmt->handle_,
-                            JS_TYPE_TO_LOCAL_FUNCTION(baton->callback));
+    TRY_CATCH_CALL_NO_PARAM(PtoO(baton->stmt->handle_), ptof);
   }
 
   delete baton;
@@ -825,10 +828,10 @@ void Statement::CleanQueue() {
       Call* call = queue.front();
       queue.pop();
 
-      if (prepared && !JS_IS_EMPTY(call->baton->callback) &&
-          JS_IS_FUNCTION(call->baton->callback)) {
-        TRY_CATCH_CALL(
-            handle_, JS_TYPE_TO_LOCAL_FUNCTION(call->baton->callback), 1, argv);
+      if (prepared && !JS_IS_EMPTY(call->baton->callback)) {
+        TRY_CATCH_CALL(PtoO(handle_),
+                       JS_TYPE_TO_LOCAL_FUNCTION(call->baton->callback), 1,
+                       argv);
         called = true;
       }
 
@@ -842,7 +845,7 @@ void Statement::CleanQueue() {
     // Statement object.
     if (!called) {
       JS_LOCAL_VALUE args[] = {STD_TO_STRING("error"), exception};
-      EMIT_EVENT(handle_, 2, args);
+      EMIT_EVENT(PtoO(handle_), 2, args);
     }
   } else
     while (!queue.empty()) {

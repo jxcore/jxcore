@@ -658,6 +658,15 @@
         ['target_arch=="arm64"', {
           'defines': [ '__ARM_ARCH_64__' ]
         }],
+        ['OS=="win" and target_arch=="arm"', {
+          'defines': ['__arm__'],
+        }],
+        ['OS=="win" and target_arch=="arm" and openssl_no_asm==0', {
+          'sources!': [
+            # This is mostly needed for ASM and doesn't compile on windows
+            'openssl/crypto/armcap.c',
+          ],
+        }],
         ['target_arch!="ia32" and target_arch!="x64" and target_arch!="arm" or openssl_no_asm!=0 or OS=="ios" or OS=="android"', {
           # Disable asm
           'defines': [
@@ -960,13 +969,15 @@
             }]
           ]
         }],
-        ['OS=="win"', {
+        ['OS=="win" and node_win_onecore==0', {
           'link_settings': {
             'libraries': [
               '-lgdi32.lib',
               '-luser32.lib',
             ]
           },
+        }],
+        ['OS=="win"', {
           'defines': [
             'DSO_WIN32',
           ],

@@ -540,6 +540,9 @@
       obj.__defineGetter__('embeddedModule', function() {
         return NativeModule.require('_jx_loadEmbedded');
       });
+      obj.__defineGetter__('uwp', function() {
+        return NativeModule.require('_jx_loadEmbedded').require('node-uwp');
+      });
       return obj;
     });
   };
@@ -657,7 +660,7 @@
   };
 
   process.dlopen = function(module, filename) {
-    var isWindows = process.platform === 'win32';
+    var isWindows = process.platform === 'win32' || process.platform === 'winrt';
 
     if (isWindows) {
       filename = filename.toLowerCase();
@@ -1020,13 +1023,15 @@
     var stdin, stdout, stderr;
 
     var util = NativeModule.require('util');
-    var isAndroid = process.platform === 'android' && process.isEmbedded;
+    var isSTD = (process.platform === 'android' || process.platform == 'winrt')
+                  && process.isEmbedded;
     var $tw;
-    if (isAndroid) {
+    if (isSTD) {
       $tw = process.binding('jxutils_wrap');
     }
 
     var fake_stdout = null, fake_stderr = null;
+    var fake_stdin = null;
 
     var Writable = NativeModule.require('stream').Writable;
     util.inherits(StdLogCatOut, Writable);
@@ -1035,10 +1040,15 @@
       Writable.call(this, opt);
     }
 
-    if (isAndroid) { // target LogCat for stdout and stderr
+    if (isSTD) { // target LogCat for stdout and stderr
       fake_stdout = new StdLogCatOut();
       fake_stdout.write = fake_stdout._write = function(bf) {
         $tw.print(bf + '');
+      };
+      
+      fake_stdin = new StdLogCatOut();
+      fake_stdin.read = fake_stdin._read = function(bf) {
+        return new Buffer("");
       };
 
       fake_stderr = new StdLogCatOut();
@@ -1050,7 +1060,7 @@
     process.__defineGetter__('stdout', function() {
       if (stdout)
         return stdout;
-      if (isAndroid) {
+      if (isSTD) {
         stdout = fake_stdout;
       } else {
         stdout = createWritableStdioStream(1);
@@ -1074,7 +1084,7 @@
       if (stderr)
         return stderr;
 
-      if (isAndroid) {
+      if (isSTD) {
         stderr = fake_stderr;
       } else {
         stderr = createWritableStdioStream(2);
@@ -1092,45 +1102,46 @@
       if (stdin)
         return stdin;
 
-      if (process.isEmbedded && (isAndroid || process.platform == 'ios')) {
-        console.error('stdin is not supported on embedded mobile applications');
+      if (process.isEmbedded && (isSTD || process.platform == 'ios')) {
+        console.error('stdin is not supported on embedded applications');
+        stdin = fake_stdin;
         // do not throw or return null
-      }
+      } else {
+        var tty_wrap = process.binding('tty_wrap');
+        var fd = 0;
+  
+        switch (tty_wrap.guessHandleType(fd)) {
+          case 'TTY':
+            var tty = NativeModule.require('tty');
+            stdin = new tty.ReadStream(fd, {
+              highWaterMark: 0,
+              readable: true,
+              writable: false
+            });
+            break;
+  
+          case 'FILE':
+            var fs = NativeModule.require('fs');
+            stdin = new fs.ReadStream(null, {
+              fd: fd,
+              autoClose: false
+            });
+            break;
+  
+          case 'PIPE':
+          case 'TCP':
+            var net = NativeModule.require('net');
+            stdin = new net.Socket({
+              fd: fd,
+              readable: true,
+              writable: false
+            });
+            break;
 
-      var tty_wrap = process.binding('tty_wrap');
-      var fd = 0;
-
-      switch (tty_wrap.guessHandleType(fd)) {
-        case 'TTY':
-          var tty = NativeModule.require('tty');
-          stdin = new tty.ReadStream(fd, {
-            highWaterMark: 0,
-            readable: true,
-            writable: false
-          });
-          break;
-
-        case 'FILE':
-          var fs = NativeModule.require('fs');
-          stdin = new fs.ReadStream(null, {
-            fd: fd,
-            autoClose: false
-          });
-          break;
-
-        case 'PIPE':
-        case 'TCP':
-          var net = NativeModule.require('net');
-          stdin = new net.Socket({
-            fd: fd,
-            readable: true,
-            writable: false
-          });
-          break;
-
-        default:
-          // Probably an error on in uv_guess_handle()
-          throw new Error('Implement me. Unknown stdin file type!');
+          default:
+            // Probably an error on in uv_guess_handle()
+            throw new Error('Implement me. Unknown stdin file type!');
+        }
       }
 
       // For supporting legacy API we put the FD here.
@@ -1284,7 +1295,14 @@
           'Please revisit the folder and make sure you have an access.');
       process.exit(1);
     }
-    var isWindows = process.platform === 'win32';
+    
+    var isWindows;
+    if (process.platform === 'winrt') {
+      isWindows = true;
+      process.userPath = cwd;
+    } else {
+      isWindows = process.platform === 'win32';
+    }
 
     // Make process.argv[0] into a full path, but only touch argv[0] if it's
     // not a system $PATH lookup.

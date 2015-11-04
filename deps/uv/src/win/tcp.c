@@ -190,7 +190,9 @@ void uv_tcp_endgame(uv_loop_t* loop, uv_tcp_t* handle) {
         for (i = 0; i < uv_simultaneous_server_accepts; i++) {
           req = &handle->accept_reqs[i];
           if (req->wait_handle != INVALID_HANDLE_VALUE) {
+#ifndef WINONECORE
             UnregisterWait(req->wait_handle);
+#endif
             req->wait_handle = INVALID_HANDLE_VALUE;
           }
           if (req->event_handle) {
@@ -207,7 +209,9 @@ void uv_tcp_endgame(uv_loop_t* loop, uv_tcp_t* handle) {
     if (handle->flags & UV_HANDLE_CONNECTION &&
         handle->flags & UV_HANDLE_EMULATE_IOCP) {
       if (handle->read_req.wait_handle != INVALID_HANDLE_VALUE) {
+#ifndef WINONECORE
         UnregisterWait(handle->read_req.wait_handle);
+#endif
         handle->read_req.wait_handle = INVALID_HANDLE_VALUE;
       }
       if (handle->read_req.event_handle) {
@@ -366,9 +370,14 @@ static void uv_tcp_queue_accept(uv_tcp_t* handle, uv_tcp_accept_t* req) {
     handle->reqs_pending++;
     if (handle->flags & UV_HANDLE_EMULATE_IOCP &&
         req->wait_handle == INVALID_HANDLE_VALUE &&
+#ifdef WINONECORE
+        !WSAWaitForMultipleEvents(1, &req->event_handle,
+          TRUE, WSA_INFINITE, TRUE)) {
+#else
         !RegisterWaitForSingleObject(&req->wait_handle, req->event_handle,
                                      post_completion, (void*)req, INFINITE,
                                      WT_EXECUTEINWAITTHREAD)) {
+#endif
       SET_REQ_ERROR(req, GetLastError());
       uv_insert_pending_req(loop, (uv_req_t*)req);
       handle->reqs_pending++;
@@ -439,9 +448,14 @@ static void uv_tcp_queue_read(uv_loop_t* loop, uv_tcp_t* handle) {
     handle->reqs_pending++;
     if (handle->flags & UV_HANDLE_EMULATE_IOCP &&
         req->wait_handle == INVALID_HANDLE_VALUE &&
+#ifdef WINONECORE
+        !WSAWaitForMultipleEvents(1, &req->event_handle,
+          TRUE, WSA_INFINITE, TRUE)) {
+#else
         !RegisterWaitForSingleObject(&req->wait_handle, req->event_handle,
                                      post_completion, (void*)req, INFINITE,
                                      WT_EXECUTEINWAITTHREAD)) {
+#endif
       SET_REQ_ERROR(req, GetLastError());
       uv_insert_pending_req(loop, (uv_req_t*)req);
     }
@@ -868,10 +882,15 @@ int uv_tcp_write(uv_loop_t* loop, uv_write_t* req, uv_tcp_t* handle,
     REGISTER_HANDLE_REQ(loop, handle, req);
     handle->write_queue_size += req->queued_bytes;
     if (handle->flags & UV_HANDLE_EMULATE_IOCP &&
+#ifdef WINONECORE
+        !WSAWaitForMultipleEvents(1, &req->event_handle,
+          TRUE, WSA_INFINITE, TRUE)) {
+#else
         !RegisterWaitForSingleObject(
              &req->wait_handle, req->event_handle, post_write_completion,
              (void*)req, INFINITE,
              WT_EXECUTEINWAITTHREAD | WT_EXECUTEONLYONCE)) {
+#endif
       SET_REQ_ERROR(req, GetLastError());
       uv_insert_pending_req(loop, (uv_req_t*)req);
     }
@@ -1011,7 +1030,9 @@ void uv_process_tcp_write_req(uv_loop_t* loop, uv_tcp_t* handle,
 
   if (handle->flags & UV_HANDLE_EMULATE_IOCP) {
     if (req->wait_handle != INVALID_HANDLE_VALUE) {
+#ifndef WINONECORE
       UnregisterWait(req->wait_handle);
+#endif
       req->wait_handle = INVALID_HANDLE_VALUE;
     }
     if (req->event_handle) {

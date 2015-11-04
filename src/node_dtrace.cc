@@ -321,7 +321,7 @@ static int dtrace_gc_done(v8::GCType type, v8::GCCallbackFlags flags) {
 struct dtabs {
   const char *name;
 #ifdef JS_ENGINE_V8
-  JS_HANDLE_VALUE (*func)(const JS_V8_ARGUMENT &);
+  JS_NATIVE_RETURN_TYPE (*func)(const JS_V8_ARGUMENT &);
 #elif defined(JS_ENGINE_MOZJS)
   bool (*func)(JSContext *JS_GET_STATE_MARKER(), unsigned __argc,
                JS::Value *__jsval);
@@ -329,32 +329,30 @@ struct dtabs {
   JS_PERSISTENT_FUNCTION_TEMPLATE templ;
 };
 
-static jxcore::ThreadStore<dtabs[8]> tabs;
+static dtabs tabs[8];
 
 #define NODE_PROBE(a, nm) \
   a.name = #nm;           \
   a.func = nm;            \
-  a.templ = JS_PERSISTENT_FUNCTION_TEMPLATE()
+  JS_NEW_EMPTY_PERSISTENT_FUNCTION_TEMPLATE(a.templ)
 
 void InitDTrace(JS_HANDLE_OBJECT target) {
   JS_ENTER_SCOPE_COM();
   JS_DEFINE_STATE_MARKER(com);
-  const int tid = tabs.getThreadId();
 
-  NODE_PROBE(tabs.templates[tid][0], DTRACE_NET_SERVER_CONNECTION);
-  NODE_PROBE(tabs.templates[tid][1], DTRACE_NET_STREAM_END);
-  NODE_PROBE(tabs.templates[tid][2], DTRACE_NET_SOCKET_READ);
-  NODE_PROBE(tabs.templates[tid][3], DTRACE_NET_SOCKET_WRITE);
-  NODE_PROBE(tabs.templates[tid][4], DTRACE_HTTP_SERVER_REQUEST);
-  NODE_PROBE(tabs.templates[tid][5], DTRACE_HTTP_SERVER_RESPONSE);
-  NODE_PROBE(tabs.templates[tid][6], DTRACE_HTTP_CLIENT_REQUEST);
-  NODE_PROBE(tabs.templates[tid][7], DTRACE_HTTP_CLIENT_RESPONSE);
+  NODE_PROBE(tabs[0], DTRACE_NET_SERVER_CONNECTION);
+  NODE_PROBE(tabs[1], DTRACE_NET_STREAM_END);
+  NODE_PROBE(tabs[2], DTRACE_NET_SOCKET_READ);
+  NODE_PROBE(tabs[3], DTRACE_NET_SOCKET_WRITE);
+  NODE_PROBE(tabs[4], DTRACE_HTTP_SERVER_REQUEST);
+  NODE_PROBE(tabs[5], DTRACE_HTTP_SERVER_RESPONSE);
+  NODE_PROBE(tabs[6], DTRACE_HTTP_CLIENT_REQUEST);
+  NODE_PROBE(tabs[7], DTRACE_HTTP_CLIENT_RESPONSE);
 
   for (unsigned int i = 0; i < 8; i++) {
-    tabs.templates[tid][i].templ = JS_NEW_PERSISTENT_FUNCTION_TEMPLATE(
-        JS_NEW_FUNCTION_TEMPLATE(tabs.templates[tid][i].func));
-    JS_NAME_SET(target, JS_STRING_ID(tabs.templates[tid][i].name),
-                JS_GET_FUNCTION(tabs.templates[tid][i].templ));
+    JS_LOCAL_FUNCTION_TEMPLATE fnct = JS_NEW_FUNCTION_TEMPLATE(tabs[i].func);
+    JS_NEW_PERSISTENT_FUNCTION_TEMPLATE(tabs[i].templ, fnct);
+    JS_NAME_SET(target, JS_STRING_ID(tabs[i].name), JS_GET_FUNCTION(fnct));
   }
 
 #ifdef HAVE_ETW
@@ -372,7 +370,7 @@ void InitDTrace(JS_HANDLE_OBJECT target) {
 }
 
 void cleanUpDTrace() {
-#ifdef JS_ENGINE_V8
+#ifdef V8_IS_3_14
 #if defined HAVE_DTRACE || defined HAVE_ETW || defined HAVE_SYSTEMTAP
   v8::V8::RemoveGCPrologueCallback((v8::GCPrologueCallback)dtrace_gc_start);
   v8::V8::RemoveGCEpilogueCallback((v8::GCEpilogueCallback)dtrace_gc_done);

@@ -668,7 +668,9 @@ void uv_process_proc_exit(uv_loop_t* loop, uv_process_t* handle) {
 
   /* Unregister from process notification. */
   if (handle->wait_handle != INVALID_HANDLE_VALUE) {
+#ifndef WINONECORE
     UnregisterWait(handle->wait_handle);
+#endif
     handle->wait_handle = INVALID_HANDLE_VALUE;
   }
 
@@ -724,6 +726,10 @@ void uv_process_endgame(uv_loop_t* loop, uv_process_t* handle) {
 
 int uv_spawn_jx(uv_loop_t* loop, uv_process_t* process,
                 uv_process_options_t* options) {
+#ifdef WINONECORE
+  error_console("Error: WindowsOneCore does not support spawning a process.\n");
+  return -1; // not supported
+#else
   int i;
   uv_err_t err = uv_ok_;
   WCHAR* path = NULL;
@@ -942,6 +948,7 @@ done:
   }
 
   return 0;
+#endif
 }
 
 int uv_spawn(uv_loop_t* loop, uv_process_t* process,

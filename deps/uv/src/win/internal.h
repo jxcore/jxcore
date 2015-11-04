@@ -80,6 +80,20 @@
 /* Only used by uv_poll_t handles. */
 #define UV_HANDLE_POLL_SLOW 0x02000000
 
+#ifdef WINONECORE
+static void DebuggerOutput(const char* ctstr, ...) {
+    char str[8192];
+    va_list ap;
+    va_start(ap, ctstr);
+    int pos = sprintf_s(str, 8192, ctstr, ap);
+    va_end(ap);
+    str[pos] = '\0';
+
+    OutputDebugStringA(str);
+}
+#define log_console(...) DebuggerOutput(__VA_ARGS__)
+#define error_console(...) DebuggerOutput(__VA_ARGS__)
+#endif
 /*
  * Requests: see req-inl.h
  */
@@ -128,8 +142,10 @@ void uv_udp_endgame(uv_loop_t* loop, uv_udp_t* handle);
 /*
  * Pipes
  */
+#ifndef WINONECORE
 uv_err_t uv_stdio_pipe_server(uv_loop_t* loop, uv_pipe_t* handle, DWORD access,
                               char* name, size_t nameSize);
+#endif
 
 int uv_pipe_listen(uv_pipe_t* handle, int backlog, uv_connection_cb cb);
 int uv_pipe_accept(uv_pipe_t* server, uv_stream_t* client);
@@ -270,7 +286,10 @@ void uv__fs_poll_endgame(uv_loop_t* loop, uv_fs_poll_t* handle);
  */
 void uv__util_init();
 
+#ifndef WINONECORE
 int uv_parent_pid();
+#endif
+
 void uv_fatal_error(const int errorno, const char* syscall);
 uv_err_code uv_translate_sys_error(int sys_errno);
 

@@ -260,11 +260,14 @@ int SecureContext::NewSessionCallback(SSL* s, SSL_SESSION* sess) {
   i2d_SSL_SESSION(sess, &pserialized);
 
   JS_HANDLE_VALUE argv[2] = {
-      Buffer::New(reinterpret_cast<char*>(sess->session_id),
-                  sess->session_id_length, com)->handle_,
-      Buffer::New(serialized, size, SessionDataFree, NULL, com)->handle_};
+      JS_OBJECT_FROM_PERSISTENT(
+          Buffer::New(reinterpret_cast<char*>(sess->session_id),
+                      sess->session_id_length, com)->handle_),
+      JS_OBJECT_FROM_PERSISTENT(
+          Buffer::New(serialized, size, SessionDataFree, NULL, com)->handle_)};
 
-  MakeCallback(com, p->handle_, com->pstr_onnewsession, ARRAY_SIZE(argv), argv);
+  MakeCallback(com, JS_OBJECT_FROM_PERSISTENT(p->handle_),
+               JS_PREDEFINED_STRING(onnewsession), ARRAY_SIZE(argv), argv);
 
   return 0;
 }
@@ -787,12 +790,14 @@ size_t ClientHelloParser::Write(const uint8_t* data, size_t len) {
 
       state_ = kPaused;
       hello = JS_NEW_EMPTY_OBJECT();
-      JS_NAME_SET(hello, JS_PREDEFINED_STRING(sessionId),
-                  Buffer::New(reinterpret_cast<char*>(session_id), session_size,
-                              com)->handle_);
+      JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(
+          Buffer::New(reinterpret_cast<char*>(session_id), session_size, com)
+              ->handle_);
+      JS_NAME_SET(hello, JS_PREDEFINED_STRING(sessionId), objl);
 
       argv[0] = hello;
-      MakeCallback(com, conn_->handle_, com->pstr_onclienthello, 1, argv);
+      JS_LOCAL_OBJECT objk = JS_OBJECT_FROM_PERSISTENT(conn_->handle_);
+      MakeCallback(com, objk, JS_PREDEFINED_STRING(onclienthello), 1, argv);
     } break;
 
     default:
@@ -845,7 +850,8 @@ int Connection::HandleBIOError(BIO* bio, const char* func, int rv) {
     JS_LOCAL_VALUE e = JS_GET_ERROR_VALUE(
         ENGINE_NS::Exception::Error(STD_TO_STRING(ssl_error_buf)));
 
-    JS_NAME_SET(handle_, JS_STRING_ID("error"), e);
+    JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(handle_);
+    JS_NAME_SET(objl, JS_STRING_ID("error"), e);
 
     DEBUG_PRINT("[%p] BIO: %s failed: (%d) %s\n", ssl_, func, rv,
                 ssl_error_buf);
@@ -879,9 +885,11 @@ int Connection::HandleSSLError(const char* func, int rv, ZeroStatus zs,
   } else if (err == SSL_ERROR_WANT_READ) {
     DEBUG_PRINT("[%p] SSL: %s want read\n", ssl_, func);
     return 0;
+  }
 
-  } else if (err == SSL_ERROR_ZERO_RETURN) {
-    JS_NAME_SET(handle_, JS_STRING_ID("error"),
+  JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(handle_);
+  if (err == SSL_ERROR_ZERO_RETURN) {
+    JS_NAME_SET(objl, JS_STRING_ID("error"),
                 JS_GET_ERROR_VALUE(
                     ENGINE_NS::Exception::Error(STD_TO_STRING("ZERO_RETURN"))));
     return rv;
@@ -905,7 +913,7 @@ int Connection::HandleSSLError(const char* func, int rv, ZeroStatus zs,
       BIO_get_mem_ptr(bio, &mem);
       JS_LOCAL_VALUE e = JS_GET_ERROR_VALUE(ENGINE_NS::Exception::Error(
           STD_TO_STRING_WITH_LENGTH(mem->data, mem->length)));
-      JS_NAME_SET(handle_, JS_STRING_ID("error"), e);
+      JS_NAME_SET(objl, JS_STRING_ID("error"), e);
       BIO_free(bio);
     }
 
@@ -929,14 +937,14 @@ void Connection::SetShutdownFlags() {
   JS_DEFINE_STATE_MARKER(com);
 
   int flags = SSL_get_shutdown(ssl_);
+  JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(handle_);
 
   if (flags & SSL_SENT_SHUTDOWN) {
-    JS_NAME_SET(handle_, JS_STRING_ID("sentShutdown"), STD_TO_BOOLEAN(true));
+    JS_NAME_SET(objl, JS_STRING_ID("sentShutdown"), STD_TO_BOOLEAN(true));
   }
 
   if (flags & SSL_RECEIVED_SHUTDOWN) {
-    JS_NAME_SET(handle_, JS_STRING_ID("receivedShutdown"),
-                STD_TO_BOOLEAN(true));
+    JS_NAME_SET(objl, JS_STRING_ID("receivedShutdown"), STD_TO_BOOLEAN(true));
   }
 }
 
@@ -996,8 +1004,9 @@ int Connection::AdvertiseNextProtoCallback_(SSL* s, const unsigned char** data,
     *data = reinterpret_cast<const unsigned char*>("");
     *len = 0;
   } else {
-    *data = reinterpret_cast<const unsigned char*>(BUFFER__DATA(p->npnProtos_));
-    *len = BUFFER__LENGTH(p->npnProtos_);
+    JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(p->npnProtos_);
+    *data = reinterpret_cast<const unsigned char*>(BUFFER__DATA(objl));
+    *len = BUFFER__LENGTH(objl);
   }
 
   return SSL_TLSEXT_ERR_OK;
@@ -1013,7 +1022,7 @@ int Connection::SelectNextProtoCallback_(SSL* s, unsigned char** out,
 
   // Release old protocol handler if present
   if (!JS_IS_EMPTY((p->selectedNPNProto_))) {
-    p->selectedNPNProto_.Dispose();
+    JS_CLEAR_PERSISTENT(p->selectedNPNProto_);
   }
 
   if (JS_IS_EMPTY((p->npnProtos_))) {
@@ -1023,27 +1032,30 @@ int Connection::SelectNextProtoCallback_(SSL* s, unsigned char** out,
     *outlen = 8;
 
     // set status unsupported
-    p->selectedNPNProto_ = JS_NEW_PERSISTENT_VALUE(STD_TO_BOOLEAN(false));
+    JS_NEW_PERSISTENT_VALUE(p->selectedNPNProto_, STD_TO_BOOLEAN(false));
 
     return SSL_TLSEXT_ERR_OK;
   }
 
+  JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(p->npnProtos_);
   const unsigned char* npnProtos =
-      reinterpret_cast<const unsigned char*>(BUFFER__DATA(p->npnProtos_));
+      reinterpret_cast<const unsigned char*>(BUFFER__DATA(objl));
 
   int status = SSL_select_next_proto(out, outlen, in, inlen, npnProtos,
-                                     BUFFER__LENGTH(p->npnProtos_));
+                                     BUFFER__LENGTH(objl));
 
   switch (status) {
     case OPENSSL_NPN_UNSUPPORTED:
-      p->selectedNPNProto_ = JS_NEW_PERSISTENT_VALUE(JS_NULL());
+      JS_NEW_PERSISTENT_VALUE(p->selectedNPNProto_, JS_NULL());
       break;
     case OPENSSL_NPN_NEGOTIATED:
-      p->selectedNPNProto_ = JS_NEW_PERSISTENT_VALUE(STD_TO_STRING_WITH_LENGTH(
-          reinterpret_cast<const char*>(*out), *outlen));
+      JS_NEW_PERSISTENT_VALUE(
+          p->selectedNPNProto_,
+          STD_TO_STRING_WITH_LENGTH(reinterpret_cast<const char*>(*out),
+                                    *outlen));
       break;
     case OPENSSL_NPN_NO_OVERLAP:
-      p->selectedNPNProto_ = JS_NEW_PERSISTENT_VALUE(STD_TO_BOOLEAN(false));
+      JS_NEW_PERSISTENT_VALUE(p->selectedNPNProto_, STD_TO_BOOLEAN(false));
       break;
     default:
       break;
@@ -1066,7 +1078,8 @@ int Connection::SelectSNIContextCallback_(SSL* s, int* ad, void* arg) {
     if (!JS_IS_EMPTY((p->servername_))) {
       JS_CLEAR_PERSISTENT(p->servername_);
     }
-    p->servername_ = JS_NEW_PERSISTENT_STRING(STD_TO_STRING(servername));
+
+    JS_NEW_PERSISTENT_STRING(p->servername_, STD_TO_STRING(servername));
 
     // Call the SNI callback and use its return value as context
     if (!JS_IS_EMPTY((p->sniObject_))) {
@@ -1075,15 +1088,18 @@ int Connection::SelectSNIContextCallback_(SSL* s, int* ad, void* arg) {
       }
 
       // Get callback init args
-      JS_LOCAL_VALUE argv[1] = {JS_TYPE_TO_LOCAL_VALUE(p->servername_)};
+      JS_LOCAL_VALUE argv[1] = {JS_TYPE_TO_LOCAL_STRING(p->servername_)};
 
+      JS_LOCAL_OBJECT objsn = JS_OBJECT_FROM_PERSISTENT(p->sniObject_);
       // Call it
       JS_LOCAL_VALUE ret = JS_TYPE_TO_LOCAL_VALUE(MakeCallback(
-          com, p->sniObject_, com->pstr_onselect, ARRAY_SIZE(argv), argv));
+          com, objsn, JS_PREDEFINED_STRING(onselect), ARRAY_SIZE(argv), argv));
 
+      JS_LOCAL_FUNCTION_TEMPLATE objscc =
+          JS_TYPE_TO_LOCAL_FUNCTION_TEMPLATE(com->secure_context_constructor);
       // If ret is SecureContext
-      if (JS_HAS_INSTANCE(com->secure_context_constructor, ret)) {
-        p->sniContext_ = JS_NEW_PERSISTENT_VALUE(ret);
+      if (JS_HAS_INSTANCE(objscc, ret)) {
+        JS_NEW_PERSISTENT_VALUE(p->sniContext_, ret);
         SecureContext* sc =
             ObjectWrap::Unwrap<SecureContext>(JS_CAST_OBJECT(ret));
         p->InitNPN(sc, true);
@@ -1177,13 +1193,16 @@ void Connection::SSLInfoCallback(const SSL* ssl_, int where, int ret) {
     JS_ENTER_SCOPE_COM();
     Connection* c = static_cast<Connection*>(SSL_get_app_data(ssl));
 
-    MakeCallback(com, c->handle_, com->pstr_onhandshakedone, 0, NULL);
+    JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(c->handle_);
+    MakeCallback(com, objl, JS_PREDEFINED_STRING(onhandshakedone), 0, NULL);
   }
+
   if (where & SSL_CB_HANDSHAKE_DONE) {
     JS_ENTER_SCOPE_COM();
     Connection* c = static_cast<Connection*>(SSL_get_app_data(ssl));
+    JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(c->handle_);
 
-    MakeCallback(com, c->handle_, com->pstr_onhandshakedone, 0, NULL);
+    MakeCallback(com, objl, JS_PREDEFINED_STRING(onhandshakedone), 0, NULL);
   }
 }
 
@@ -1835,7 +1854,7 @@ JS_METHOD(Connection, GetNegotiatedProto) {
     RETURN_PARAM(STD_TO_STRING_WITH_LENGTH(
         reinterpret_cast<const char*>(npn_proto), npn_proto_len));
   } else {
-    RETURN_PARAM(ss->selectedNPNProto_);
+    RETURN_PARAM(JS_TYPE_TO_LOCAL_VALUE(ss->selectedNPNProto_));
   }
 }
 JS_METHOD_END
@@ -1850,7 +1869,7 @@ JS_METHOD(Connection, SetNPNProtocols) {
 
   // Release old handle
   JS_CLEAR_PERSISTENT(ss->npnProtos_);
-  ss->npnProtos_ = JS_NEW_PERSISTENT_OBJECT(JS_VALUE_TO_OBJECT(_item));
+  JS_NEW_PERSISTENT_OBJECT(ss->npnProtos_, JS_VALUE_TO_OBJECT(_item));
 
   RETURN_TRUE();
 }
@@ -1862,7 +1881,7 @@ JS_METHOD(Connection, GetServername) {
   Connection* ss = Connection::Unwrap(args.GetHolder());
 
   if (ss->is_server_ && !JS_IS_EMPTY((ss->servername_))) {
-    RETURN_PARAM(ss->servername_);
+    RETURN_PARAM(JS_TYPE_TO_LOCAL_STRING(ss->servername_));
   } else {
     RETURN_FALSE();
   }
@@ -1879,8 +1898,8 @@ JS_METHOD(Connection, SetSNICallback) {
 
   // Release old handle
   JS_CLEAR_PERSISTENT(ss->sniObject_);
-  ss->sniObject_ = JS_NEW_PERSISTENT_OBJECT(JS_NEW_EMPTY_OBJECT());
-  JS_NAME_SET(ss->sniObject_, JS_STRING_ID("onselect"), _item);
+  JS_NEW_PERSISTENT_OBJECT(ss->sniObject_, JS_NEW_EMPTY_OBJECT());
+  JS_NAME_SET(JS_OBJECT_FROM_PERSISTENT(ss->sniObject_), JS_STRING_ID("onselect"), _item);
 
   RETURN_TRUE();
 }
@@ -3558,10 +3577,13 @@ void EIO_PBKDF2After(node::commons* com, pbkdf2_req* req,
         ENGINE_NS::Exception::Error(STD_TO_STRING("PBKDF2 error")));
     argv[1] = JS_UNDEFINED();
   }
+}
 
+void EIO_PBKDF2Cleanup(pbkdf2_req* req) {
   delete[] req->pass;
   delete[] req->salt;
   delete[] req->key;
+  JS_CLEAR_PERSISTENT(req->obj);
   delete req;
 }
 
@@ -3570,14 +3592,10 @@ void EIO_PBKDF2After(uv_work_t* work_req, int status) {
   pbkdf2_req* req = container_of(work_req, pbkdf2_req, work_req);
   JS_ENTER_SCOPE_COM();
   JS_LOCAL_VALUE argv[2];
-  JS_PERSISTENT_OBJECT obj = req->obj;
-#ifdef JS_ENGINE_MOZJS
-  obj->AddRoot();
-  req->obj.MakeWeak();
-#endif
+  JS_LOCAL_OBJECT obj = JS_OBJECT_FROM_PERSISTENT(req->obj);
   EIO_PBKDF2After(com, req, argv);
-  MakeCallback(com, obj, com->pstr_ondone, ARRAY_SIZE(argv), argv);
-  obj.Dispose();
+  MakeCallback(com, obj, JS_PREDEFINED_STRING(ondone), ARRAY_SIZE(argv), argv);
+  EIO_PBKDF2Cleanup(req);
 }
 
 JS_LOCAL_METHOD(PBKDF2) {
@@ -3652,14 +3670,15 @@ JS_LOCAL_METHOD(PBKDF2) {
   req->keylen = keylen;
 
   if (args.IsFunction(4)) {
-    req->obj = JS_NEW_PERSISTENT_OBJECT(JS_NEW_EMPTY_OBJECT());
-    JS_NAME_SET(req->obj, JS_STRING_ID("ondone"), GET_ARG(4));
+    JS_NEW_PERSISTENT_OBJECT(req->obj, JS_NEW_EMPTY_OBJECT());
+    JS_NAME_SET(JS_OBJECT_FROM_PERSISTENT(req->obj), JS_STRING_ID("ondone"), GET_ARG(4));
     uv_queue_work(com->loop, &req->work_req, EIO_PBKDF2, EIO_PBKDF2After);
     RETURN();
   } else {
     JS_LOCAL_VALUE argv[2];
     EIO_PBKDF2(req);
     EIO_PBKDF2After(com, req, argv);
+    EIO_PBKDF2Cleanup(req);
     if (!JS_IS_UNDEFINED(argv[0])) {
       THROW_EXCEPTION_OBJECT(argv[0]);
     }
@@ -3683,9 +3702,7 @@ struct RandomBytesRequest {
 };
 
 RandomBytesRequest::~RandomBytesRequest() {
-  if (JS_IS_EMPTY(obj_)) return;
-  obj_.Dispose();
-  obj_.Clear();
+  JS_CLEAR_PERSISTENT(obj_);
 }
 
 void RandomBytesFree(char* data, void* hint) { delete[] data; }
@@ -3734,7 +3751,7 @@ void RandomBytesCheck(commons* com, RandomBytesRequest* req,
     Buffer* buffer =
         Buffer::New(req->data_, req->size_, RandomBytesFree, NULL, com);
     argv[0] = JS_NULL();
-    argv[1] = JS_VALUE_TO_OBJECT(buffer->handle_);
+    argv[1] = JS_OBJECT_FROM_PERSISTENT(buffer->handle_);
     req->data_ = NULL;
   }
   free(req->data_);
@@ -3747,7 +3764,7 @@ void RandomBytesAfter(uv_work_t* work_req, int status) {
   JS_ENTER_SCOPE_COM();
   JS_LOCAL_VALUE argv[2];
   RandomBytesCheck(com, req, argv);
-  MakeCallback(com, req->obj_, com->pstr_ondone, ARRAY_SIZE(argv), argv);
+  MakeCallback(com, JS_OBJECT_FROM_PERSISTENT(req->obj_), JS_PREDEFINED_STRING(ondone), ARRAY_SIZE(argv), argv);
   delete req;
 }
 
@@ -3770,12 +3787,13 @@ JS_LOCAL_METHOD(RandomBytes) {
   req->size_ = size;
 
   if (args.IsFunction(1)) {
-    req->obj_ = JS_NEW_EMPTY_PERSISTENT_OBJECT();
-    JS_NAME_SET(req->obj_, JS_STRING_ID("ondone"), GET_ARG(1));
+    JS_NEW_EMPTY_PERSISTENT_OBJECT(req->obj_);
+    JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(req->obj_);
+    JS_NAME_SET(objl, JS_STRING_ID("ondone"), GET_ARG(1));
     uv_queue_work(com->loop, &req->work_req_, RandomBytesWork<pseudoRandom>,
                   RandomBytesAfter);
 
-    RETURN_POINTER(req->obj_);
+    RETURN_POINTER(objl);
   } else {
     JS_LOCAL_VALUE argv[2];
     RandomBytesWork<pseudoRandom>(&req->work_req_);

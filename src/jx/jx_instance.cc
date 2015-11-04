@@ -34,7 +34,6 @@ void JXInstance::runScript(void *x) {
 
 #ifdef JS_ENGINE_V8
   do {
-    v8::Isolate *isolate = com->node_isolate;
 #elif defined(JS_ENGINE_MOZJS)
   ENGINE_NS::Isolate *isolate = com->node_isolate;
   JSContext *ctx = isolate->GetRaw();
@@ -43,16 +42,16 @@ void JXInstance::runScript(void *x) {
 #endif
     do {
 #ifdef JS_ENGINE_V8
-      v8::Locker locker(isolate);
-      v8::Isolate::Scope isolateScope(isolate);
-      v8::HandleScope handle_scope;
+      JS_ENGINE_LOCKER();
+      JS_SET_ENGINE_DATA(isolate, &com->threadId);
       JS_DEFINE_STATE_MARKER(com);
-      JS_LOCAL_OBJECT_TEMPLATE _global = JS_NEW_OBJECT_TEMPLATE();
 
-      v8::Handle<v8::Context> context = JS_NEW_CONTEXT(NULL, _global);
+      JS_NEW_CONTEXT(context, isolate, NULL);
       v8::Context::Scope context_scope(context);
 
+#ifdef V8_IS_3_14
       v8_typed_array::AttachBindings(context->Global());
+#endif
       JS_LOCAL_OBJECT global = context->Global();
 #elif defined(JS_ENGINE_MOZJS)
       JSAutoRequest ar(ctx);

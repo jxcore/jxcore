@@ -11,11 +11,11 @@ function test() {
   for (var i = 0; i < 10; i++) {
     jxcore.tasks.addTask(function (a) {
       require('fs').ReadStream(__filename)
-				.on('data', function (d) {})
-				.on('end', function () {
-					console.log("finished");
-					process.release();
-			});
+       .on('data', function (d) {})
+       .on('end', function () {
+          console.log("finished");
+          process.release();
+      });
 
       var str = "";
       for(var o in process.env) {

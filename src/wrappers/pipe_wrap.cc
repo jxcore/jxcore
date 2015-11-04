@@ -18,7 +18,9 @@ JS_LOCAL_OBJECT PipeWrap::Instantiate() {
   JS_ENTER_SCOPE_COM();
   JS_DEFINE_STATE_MARKER(com);
   assert(!JS_IS_EMPTY((com->pipeConstructor)));
-  return JS_LEAVE_SCOPE(JS_NEW_DEFAULT_INSTANCE(com->pipeConstructor));
+
+  JS_LOCAL_FUNCTION fpc = JS_TYPE_TO_LOCAL_FUNCTION(com->pipeConstructor);
+  return JS_LEAVE_SCOPE(JS_NEW_DEFAULT_INSTANCE(fpc));
 }
 
 PipeWrap* PipeWrap::Unwrap(JS_LOCAL_OBJECT obj) {
@@ -86,27 +88,27 @@ JS_METHOD_END
 
 // TODO(?) maybe share with TCPWrap?
 void PipeWrap::OnConnection(uv_stream_t* handle, int status) {
-  JS_ENTER_SCOPE();
-
   PipeWrap* wrap = static_cast<PipeWrap*>(handle->data);
   assert(&wrap->handle_ == (uv_pipe_t*)handle);
 
   commons* com = wrap->com;
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
+  JS_DEFINE_STATE_MARKER(com);
 
+  JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(wrap->object_);
   // We should not be getting this callback if someone as already called
   // uv_close() on the handle.
   assert(JS_IS_EMPTY((wrap->object_)) == false);
 
   if (status != 0) {
     SetErrno(uv_last_error(com->loop));
-    MakeCallback(wrap->com, wrap->object_, JS_PREDEFINED_STRING(onconnection),
-                 0, NULL);
+    MakeCallback(wrap->com, objl, JS_PREDEFINED_STRING(onconnection), 0, NULL);
     return;
   }
 
+  JS_LOCAL_FUNCTION fpc = JS_TYPE_TO_LOCAL_FUNCTION(com->pipeConstructor);
   // Instanciate the client javascript object and handle.
-  JS_LOCAL_OBJECT client_obj =
-      JS_NEW_DEFAULT_INSTANCE(wrap->com->pipeConstructor);
+  JS_LOCAL_OBJECT client_obj = JS_NEW_DEFAULT_INSTANCE(fpc);
 
   // Unwrap the client javascript object.
   assert(JS_OBJECT_FIELD_COUNT(client_obj) > 0);
@@ -118,8 +120,7 @@ void PipeWrap::OnConnection(uv_stream_t* handle, int status) {
   // Successful accept. Call the onconnection callback in JavaScript land.
   __JS_LOCAL_VALUE argv[1] = {JS_CORE_REFERENCE(client_obj)};
 
-  MakeCallback(wrap->com, wrap->object_, JS_PREDEFINED_STRING(onconnection),
-               ARRAY_SIZE(argv), argv);
+  MakeCallback(wrap->com, objl, JS_PREDEFINED_STRING(onconnection), 1, argv);
 }
 
 // TODO(?) Maybe share this with TCPWrap?
@@ -129,6 +130,7 @@ void PipeWrap::AfterConnect(uv_connect_t* req, int status) {
 
   JS_ENTER_SCOPE();
   JS_DEFINE_STATE_MARKER(wrap->com);
+  commons* com = wrap->com;
 
   // The wrap and request objects should still be there.
   assert(JS_IS_EMPTY((req_wrap->object_)) == false);
@@ -147,14 +149,13 @@ void PipeWrap::AfterConnect(uv_connect_t* req, int status) {
   JS_LOCAL_BOOLEAN b_readable = STD_TO_BOOLEAN(readable);
   JS_LOCAL_BOOLEAN b_writable = STD_TO_BOOLEAN(writable);
 
-  JS_LOCAL_VALUE argv[5] = {STD_TO_INTEGER(status),
-                            JS_TYPE_TO_LOCAL_OBJECT(wrap->object_),
-                            JS_TYPE_TO_LOCAL_OBJECT(req_wrap->object_),
-                            b_readable,
+  JS_LOCAL_OBJECT objr = JS_OBJECT_FROM_PERSISTENT(req_wrap->object_);
+  JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(wrap->object_);
+
+  JS_LOCAL_VALUE argv[5] = {STD_TO_INTEGER(status), objl, objr, b_readable,
                             b_writable};
 
-  MakeCallback(wrap->com, req_wrap->object_, wrap->com->pstr_oncomplete,
-               ARRAY_SIZE(argv), argv);
+  MakeCallback(wrap->com, objr, JS_PREDEFINED_STRING(oncomplete), 5, argv);
 
   delete req_wrap;
 }
@@ -182,7 +183,8 @@ JS_METHOD_NO_COM(PipeWrap, Connect) {
 
   req_wrap->Dispatched();
 
-  RETURN_PARAM(req_wrap->object_);
+  JS_LOCAL_OBJECT objr = JS_OBJECT_FROM_PERSISTENT(req_wrap->object_);
+  RETURN_PARAM(objr);
 }
 JS_METHOD_END
 

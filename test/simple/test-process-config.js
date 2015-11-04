@@ -12,18 +12,7 @@ assert(process.hasOwnProperty('config'));
 // ensure that `process.config` is an Object
 assert(Object(process.config) === process.config);
 
-var builds = [ "sm", "v8" ];
-var build = "";
-
-for(var o in builds) {
-  if (process.versions[builds[o]]) {
-    build = builds[o];
-    break;
-  }
-}
-
-var configPath = __filename + '-config.gypi_' + build;
-assert.ok(fs.existsSync(configPath), path.basename(configPath) + " file not found. Please run configure.")
+var configPath = path.resolve(__dirname, '..', '..', 'config.gypi');
 var config = fs.readFileSync(configPath, 'utf8');
 
 // clean up comment at the first line

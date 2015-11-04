@@ -16,8 +16,13 @@
 #include <unistd.h>
 #define Sleep(x) usleep((x) * 1000)
 #endif
+
 #ifdef JXCORE_EMBEDS_LEVELDOWN
 #include "../../deps/leveldown-mobile/src/leveldown_public.h"
+#endif
+
+#ifdef JS_ENGINE_CHAKRA
+#include "../../deps/node-uwp/src/uwp.h"
 #endif
 
 namespace node {
@@ -50,6 +55,13 @@ JS_METHOD(ModuleWrap, LoadInternal) {
 #ifdef JXCORE_EMBEDS_LEVELDOWN
   if (!strcmp(*filename, "leveldown")) {
     leveldown::RegisterModule(module);
+    RETURN();
+  }
+#endif
+
+#ifdef JS_ENGINE_CHAKRA
+  if (!strcmp(*filename, "node-uwp")) {
+    UWPAddOn::Init(module);
     RETURN();
   }
 #endif

@@ -11,23 +11,27 @@ namespace node {
 
 class commons;
 
-extern void EmitExit(JS_HANDLE_OBJECT process_l);
-extern void EmitReset(JS_HANDLE_OBJECT process_l, const int code);
+NODE_EXTERN void EmitExit(JS_HANDLE_OBJECT process_l);
+NODE_EXTERN void EmitReset(JS_HANDLE_OBJECT process_l, const int code);
 
-extern JS_HANDLE_VALUE MakeDomainCallback(node::commons *com,
-                                          const JS_HANDLE_OBJECT_REF object,
-                                          const JS_HANDLE_FUNCTION_REF callback,
-                                          int argc, JS_HANDLE_VALUE argv[]);
+NODE_EXTERN JS_HANDLE_VALUE
+    MakeDomainCallback(node::commons *com, const JS_HANDLE_OBJECT_REF object,
+                       const JS_HANDLE_FUNCTION_REF callback, int argc,
+                       JS_HANDLE_VALUE argv[]);
 
-extern JS_HANDLE_VALUE MakeCallback(node::commons *com,
-                                    const JS_HANDLE_OBJECT_REF object,
-                                    const JS_HANDLE_FUNCTION_REF callback,
-                                    int argc, JS_HANDLE_VALUE argv[]);
+NODE_EXTERN JS_HANDLE_VALUE MakeCallback(node::commons *com,
+                                         const JS_HANDLE_OBJECT_REF object,
+                                         const JS_HANDLE_FUNCTION_REF callback,
+                                         int argc, JS_HANDLE_VALUE argv[]);
 
-extern JS_HANDLE_VALUE MakeCallback(node::commons *com,
-                                    const JS_HANDLE_OBJECT_REF object,
-                                    const JS_HANDLE_STRING symbol, int argc,
-                                    JS_HANDLE_VALUE argv[]);
+NODE_EXTERN JS_HANDLE_VALUE MakeCallback(node::commons *com,
+                                         const JS_HANDLE_OBJECT_REF object,
+                                         const JS_HANDLE_STRING symbol,
+                                         int argc, JS_HANDLE_VALUE argv[]);
+
+NODE_EXTERN JS_HANDLE_VALUE
+    MakeCallback(node::commons *com, const JS_HANDLE_OBJECT_REF object,
+                 const char *symbol, int argc, JS_HANDLE_VALUE argv[]);
 
 #if defined(JS_ENGINE_MOZJS)
 JS_HANDLE_VALUE
@@ -68,7 +72,7 @@ void EnableDebugSignalHandler(uv_signal_t *handle, int);
 
 #ifndef container_of
 #define container_of(ptr, type, member) \
-  ((type *)((char *)(ptr) - offset_of(type, member)))
+  ((type *)((char *)(ptr)-offset_of(type, member)))
 #endif
 
 #define CONTAINER_OF(Pointer, TypeName, Field)                        \
@@ -94,27 +98,7 @@ void EnableDebugSignalHandler(uv_signal_t *handle, int);
   }                                                                      \
   node::commons *com = wrap->com
 
-#if defined(JS_ENGINE_V8)
-
-// this would have been a template function were it not for the fact that g++
-// sometimes fails to resolve it...
-#define THROW_ERROR(fun)  ___THROW_ERROR(fun)
-
-inline static JS_HANDLE_VALUE ThrowError(const char *errmsg) {
-  THROW_ERROR(ENGINE_NS::Exception::Error);
-}
-inline static JS_HANDLE_VALUE ThrowTypeError(const char *errmsg) {
-  THROW_ERROR(ENGINE_NS::Exception::TypeError);
-}
-inline static JS_HANDLE_VALUE ThrowRangeError(const char *errmsg) {
-  THROW_ERROR(ENGINE_NS::Exception::RangeError);
-}
-
-JS_HANDLE_VALUE FromConstructorTemplate(JS_PERSISTENT_FUNCTION_TEMPLATE t,
-                                        const JS_V8_ARGUMENT &args);
-#endif
-
-JS_HANDLE_VALUE FromConstructorTemplateX(JS_PERSISTENT_FUNCTION_TEMPLATE t,
+JS_HANDLE_VALUE FromConstructorTemplateX(JS_HANDLE_FUNCTION_TEMPLATE t,
                                          jxcore::PArguments &args);
 
 }  // namespace node

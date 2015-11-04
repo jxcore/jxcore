@@ -7,8 +7,10 @@
  * verify Buffer can used in Typed Arrays
  */
  
-// SpiderMonkey implementation has native TypedArray support
+// SpiderMonkey, V8 3.28+ implementation has native TypedArray support
 if(process.versions.sm){ return; } 
+if(process.versions.v8)
+  if(parseFloat(process.versions.v8) > 3.14) return;
 
 var common = require('../common');
 var assert = require('assert');

@@ -65,7 +65,10 @@ class NODE_EXTERN Buffer : public ObjectWrap {
     return static_cast<char*>(data);
   }
 
-  static inline char* Data(Buffer* b) { return Buffer::Data(b->handle_); }
+  static inline char* Data(Buffer* b) {
+    JS_LOCAL_OBJECT obj = JS_OBJECT_FROM_PERSISTENT(b->handle_);
+    return (char*) JS_GET_EXTERNAL_ARRAY_DATA(obj);
+  }
 
   static inline size_t Length(JS_HANDLE_VALUE val) {
     assert(JS_IS_OBJECT(val) &&
@@ -77,11 +80,15 @@ class NODE_EXTERN Buffer : public ObjectWrap {
   static void DataAndLength(JS_HANDLE_VALUE_REF val, void** data, size_t* len) {
     assert(JS_IS_OBJECT(val) &&
            "Buffer::DataAndLength, JS variable is expected to be an Object");
+
     *len = JS_GET_EXTERNAL_ARRAY_DATA_LENGTH(val);
     *data = JS_GET_EXTERNAL_ARRAY_DATA(val);
   }
 
-  static inline size_t Length(Buffer* b) { return Buffer::Length(b->handle_); }
+  static inline size_t Length(Buffer* b) {
+    JS_LOCAL_OBJECT obj = JS_OBJECT_FROM_PERSISTENT(b->handle_);
+    return JS_GET_EXTERNAL_ARRAY_DATA_LENGTH(obj);
+  }
 
   // This is verbose to be explicit with inline commenting
   static inline bool IsWithinBounds(size_t off, size_t len, size_t max) {
@@ -156,8 +163,8 @@ class NODE_EXTERN Buffer : public ObjectWrap {
 
  public:
   INIT_NAMED_CLASS_MEMBERS(SlowBuffer, Buffer) {
-    com->bf_constructor_template =
-        JS_NEW_PERSISTENT_FUNCTION_TEMPLATE(constructor);
+    JS_NEW_PERSISTENT_FUNCTION_TEMPLATE(com->bf_constructor_template,
+                                        constructor);
 
     SET_INSTANCE_METHOD("binarySlice", Buffer::BinarySlice, 0);
     SET_INSTANCE_METHOD("asciiSlice", Buffer::AsciiSlice, 0);
@@ -194,7 +201,12 @@ class NODE_EXTERN Buffer : public ObjectWrap {
                 JS_GET_FUNCTION(
                     JS_NEW_FUNCTION_CALL_TEMPLATE(SetFastBufferConstructor)));
 #ifdef JS_ENGINE_V8
+#ifdef V8_IS_3_14
     ENGINE_NS::HeapProfiler::DefineWrapperClass(BUFFER_CLASS_ID, WrapperInfo);
+#else
+    (constructor->PrototypeTemplate())
+        ->Set(STD_TO_STRING("offset"), STD_TO_INTEGER(0), v8::ReadOnly);
+#endif
 #endif
   }
   END_INIT_NAMED_MEMBERS(SlowBuffer)

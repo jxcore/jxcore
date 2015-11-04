@@ -237,6 +237,8 @@
 #  define SIXTY_FOUR_BIT_LONG
 # elif defined(_M_IX86) || defined(__i386__) || defined(__arm__) || defined(__mips__)
 #  define THIRTY_TWO_BIT
+# else
+    TARGET_ARCH_IS_NOT_SUPPORTED!
 # endif
 #endif
 

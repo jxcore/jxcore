@@ -37,11 +37,11 @@ class File {
 
   INIT_CLASS_MEMBERS() {
     JS_LOCAL_FUNCTION_TEMPLATE stat_templ = JS_NEW_EMPTY_FUNCTION_TEMPLATE();
-    com->nf_stats_constructor_template =
-        JS_NEW_PERSISTENT_FUNCTION_TEMPLATE(stat_templ);
+    JS_NEW_PERSISTENT_FUNCTION_TEMPLATE(com->nf_stats_constructor_template,
+                                        stat_templ);
 
     JS_NAME_SET(constructor, JS_STRING_ID("Stats"),
-                JS_GET_FUNCTION(com->nf_stats_constructor_template));
+                JS_GET_FUNCTION(stat_templ));
 
     SET_CLASS_METHOD("close", Close, 2);
     SET_CLASS_METHOD("open", Open, 3);

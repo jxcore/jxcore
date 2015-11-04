@@ -14,7 +14,7 @@ namespace jxcore {
 #ifdef JS_ENGINE_V8
 #define JX_ISOLATE v8::Isolate *
 #define JX_CURRENT_ENGINE() v8::Isolate::GetCurrent()
-#ifdef NODE12
+#if defined(NODE12) || !defined(V8_IS_3_14)
 #define JX_GET_ENGINE_DATA(x) x->GetData(0)
 #else
 #define JX_GET_ENGINE_DATA(x) x->GetData();

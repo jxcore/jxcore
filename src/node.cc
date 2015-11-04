@@ -110,12 +110,14 @@ static void Spin(uv_idle_t* handle, int status) {
       abort();
     }
     JS_LOCAL_FUNCTION cb = JS_TYPE_AS_FUNCTION(cb_v);
-    com->process_tickFromSpinner = JS_NEW_PERSISTENT_FUNCTION(cb);
+    JS_NEW_PERSISTENT_FUNCTION(com->process_tickFromSpinner, cb);
   }
 
   JS_TRY_CATCH(try_catch);
 
-  JS_METHOD_CALL_NO_PARAM(com->process_tickFromSpinner, com->getProcess());
+  JS_LOCAL_FUNCTION tfsl =
+      JS_TYPE_TO_LOCAL_FUNCTION(com->process_tickFromSpinner);
+  JS_METHOD_CALL_NO_PARAM(tfsl, com->getProcess());
 
   if (try_catch.HasCaught()) {
     FatalException(try_catch);
@@ -157,17 +159,20 @@ static void IdleImmediateDummy(uv_idle_t* handle, int status) {
 #ifdef JS_ENGINE_V8
 // Just for the interface compatibility
 JS_HANDLE_VALUE FromConstructorTemplate(JS_PERSISTENT_FUNCTION_TEMPLATE t,
-                                        const ENGINE_NS::Arguments& args) {
+                                        const JS_V8_ARGUMENT& args) {
   JS_ENTER_SCOPE_WITH(args.GetIsolate());
+  JS_DEFINE_STATE_MARKER_(args.GetIsolate());
+
   JS_LOCAL_VALUE argv[32];
   unsigned argc = args.Length();
   if (argc > ARRAY_SIZE(argv)) argc = ARRAY_SIZE(argv);
   for (unsigned i = 0; i < argc; ++i) argv[i] = args[i];
-  return scope.Close(t->GetFunction()->NewInstance(argc, argv));
+  JS_LOCAL_FUNCTION_TEMPLATE ptcl = JS_TYPE_TO_LOCAL_FUNCTION_TEMPLATE(t);
+  return JS_LEAVE_SCOPE(ptcl->GetFunction()->NewInstance(argc, argv));
 }
 #endif
 
-JS_HANDLE_VALUE FromConstructorTemplateX(JS_PERSISTENT_FUNCTION_TEMPLATE t,
+JS_HANDLE_VALUE FromConstructorTemplateX(JS_HANDLE_FUNCTION_TEMPLATE t,
                                          jxcore::PArguments& args) {
   JS_ENTER_SCOPE_WITH(args.GetIsolate());
   JS_HANDLE_VALUE argv[32];
@@ -206,8 +211,8 @@ JS_LOCAL_METHOD(UsingDomains) {
   JS_NAME_SET(process, tc_str, tdc);
   JS_NAME_SET(process, cth_str, ndt);
 
-  com->process_tickCallback.Dispose();
-  com->process_tickCallback = JS_NEW_PERSISTENT_FUNCTION(tdc);
+  JS_CLEAR_PERSISTENT(com->process_tickCallback);
+  JS_NEW_PERSISTENT_FUNCTION(com->process_tickCallback, tdc);
 }
 JS_METHOD_END
 
@@ -284,7 +289,8 @@ MakeDomainCallback(node::commons* com, const JS_HANDLE_OBJECT_REF object,
     return ret;
   }
 
-  JS_METHOD_CALL_NO_PARAM(com->process_tickCallback, com->getProcess());
+  JS_LOCAL_FUNCTION ptcl = JS_TYPE_TO_LOCAL_FUNCTION(com->process_tickCallback);
+  JS_METHOD_CALL_NO_PARAM(ptcl, com->getProcess());
 
   if (try_catch.HasCaught()) {
     FatalException(try_catch);
@@ -317,7 +323,7 @@ void defineProcessCallbacks(node::commons* com) {
   }
 
   JS_LOCAL_FUNCTION cb = JS_TYPE_AS_FUNCTION(cb_v);
-  com->process_tickCallback = JS_NEW_PERSISTENT_FUNCTION(cb);
+  JS_NEW_PERSISTENT_FUNCTION(com->process_tickCallback, cb);
 }
 
 // TODO(obastemur) make this application wide
@@ -417,7 +423,8 @@ MakeCallback(node::commons* com, const JS_HANDLE_OBJECT_REF object,
   }
 
   JS_HANDLE_OBJECT process_obj = com->getProcess();
-  JS_METHOD_CALL_NO_PARAM(com->process_tickCallback, process_obj);
+  JS_LOCAL_FUNCTION ptc = JS_TYPE_TO_LOCAL_FUNCTION(com->process_tickCallback);
+  JS_METHOD_CALL_NO_PARAM(ptc, process_obj);
 
   if (try_catch.HasCaught()) {
     FatalException(try_catch);
@@ -435,6 +442,13 @@ MakeCallback(const JS_HANDLE_OBJECT_REF object, const JS_HANDLE_STRING symbol,
 
 JS_HANDLE_VALUE
 MakeCallback(node::commons* com, const JS_HANDLE_OBJECT_REF object,
+             const char* symbol, int argc, JS_HANDLE_VALUE argv[]) {
+  JS_DEFINE_STATE_MARKER(com);
+  return MakeCallback(com, object, STD_TO_STRING(symbol), argc, argv);
+}
+
+JS_HANDLE_VALUE
+MakeCallback(node::commons* com, const JS_HANDLE_OBJECT_REF object,
              const JS_HANDLE_STRING symbol, int argc, JS_HANDLE_VALUE argv[]) {
   JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
@@ -442,9 +456,11 @@ MakeCallback(node::commons* com, const JS_HANDLE_OBJECT_REF object,
 
   JS_LOCAL_FUNCTION callback = JS_TYPE_AS_FUNCTION(JS_GET_NAME(object, symbol));
 
-  if (com->using_domains)
-    return JS_LEAVE_SCOPE(
+  if (com->using_domains) {
+    JS_LOCAL_OBJECT objl = JS_VALUE_TO_OBJECT(
         MakeDomainCallback(com, object, callback, argc, argv));
+    return JS_LEAVE_SCOPE(objl);
+  }
 
   return JS_HANDLE_VALUE(MakeCallback(com, object, callback, argc, argv));
 }
@@ -629,7 +645,8 @@ static JS_LOCAL_METHOD(GetActiveRequests) {
   QUEUE_FOREACH(q, UU) {
     ReqWrap<uv_req_t>* w = container_of(q, ReqWrap<uv_req_t>, req_wrap_queue_);
     if (JS_IS_EMPTY((w->object_))) continue;
-    JS_INDEX_SET(ary, i++, w->object_);
+    JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(w->object_);
+    JS_INDEX_SET(ary, i++, objl);
   }
 
   RETURN_POINTER(ary);
@@ -650,8 +667,9 @@ JS_LOCAL_METHOD(GetActiveHandles) {
   QUEUE_FOREACH(q, UU) {
     HandleWrap* w = container_of(q, HandleWrap, handle_wrap_queue_);
     if (JS_IS_EMPTY((w->object_)) || (w->flags_ & HandleWrap::kUnref)) continue;
-    JS_LOCAL_VALUE val = JS_GET_NAME(w->object_, owner_sym);
-    if (JS_IS_UNDEFINED(val)) val = JS_TYPE_TO_LOCAL_VALUE(w->object_);
+    JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(w->object_);
+    JS_LOCAL_VALUE val = JS_GET_NAME(objl, owner_sym);
+    if (JS_IS_UNDEFINED(val)) val = JS_TYPE_TO_LOCAL_VALUE(objl);
     JS_INDEX_SET(ary, i++, val);
   }
 
@@ -1042,7 +1060,7 @@ JS_LOCAL_METHOD(MemoryUsage) {
   size_t total_heap_size = 0, used_heap_size = 0;
 #ifdef JS_ENGINE_V8
   v8::HeapStatistics v8_heap_stats;
-  v8::V8::GetHeapStatistics(&v8_heap_stats);
+  JS_GET_HEAP_STATICS(&v8_heap_stats);
   total_heap_size = v8_heap_stats.total_heap_size();
   used_heap_size = v8_heap_stats.used_heap_size();
 #elif defined(JS_ENGINE_MOZJS)
@@ -1220,32 +1238,34 @@ static JS_LOCAL_METHOD(JXBinding) {
   node_module_struct* modp;
 
   if (JS_IS_EMPTY((com->binding_cache))) {
-    com->binding_cache = JS_NEW_EMPTY_PERSISTENT_OBJECT();
+    JS_NEW_EMPTY_PERSISTENT_OBJECT(com->binding_cache);
   }
 
   JS_LOCAL_OBJECT exports;
 
-  if (JS_HAS_NAME(com->binding_cache, module)) {
-    exports = JS_VALUE_TO_OBJECT(JS_GET_NAME(com->binding_cache, module));
+  JS_LOCAL_OBJECT objbc = JS_OBJECT_FROM_PERSISTENT(com->binding_cache);
+  if (JS_HAS_NAME(objbc, module)) {
+    exports = JS_VALUE_TO_OBJECT(JS_GET_NAME(objbc, module));
     RETURN_POINTER(exports);
   }
 
   // Append a string to process.moduleLoadList
   char buf[1024];
   snprintf(buf, sizeof(buf), "Binding %s", *module_v);
-  uint32_t l = JS_GET_ARRAY_LENGTH(com->module_load_list);
+  JS_LOCAL_ARRAY objml = JS_TYPE_TO_LOCAL_ARRAY(com->module_load_list);
+  uint32_t l = JS_GET_ARRAY_LENGTH(objml);
   JS_LOCAL_STRING str_buf = STD_TO_STRING(buf);
-  JS_INDEX_SET(com->module_load_list, l, str_buf);
+  JS_INDEX_SET(objml, l, str_buf);
 
   if ((modp = get_builtin_module(*module_v)) != NULL) {
     exports = JS_NEW_EMPTY_OBJECT();
     modp->register_func(exports, JS_UNDEFINED());
-    JS_NAME_SET(com->binding_cache, module, exports);
+    JS_NAME_SET(objbc, module, exports);
 
   } else if (!strcmp(*module_v, "constants")) {
     exports = JS_NEW_EMPTY_OBJECT();
     DefineConstants(exports);
-    JS_NAME_SET(com->binding_cache, module, exports);
+    JS_NAME_SET(objbc, module, exports);
 
   } else if (!strcmp(*module_v, "natives")) {
     exports = JS_NEW_EMPTY_OBJECT();
@@ -1259,7 +1279,7 @@ static JS_LOCAL_METHOD(JXBinding) {
       RETURN();
     } else {
       DefineJavaScript(exports);
-      JS_NAME_SET(com->binding_cache, module, exports);
+      JS_NAME_SET(objbc, module, exports);
     }
   } else {
     std::string message = "No such module (";
@@ -1368,8 +1388,10 @@ JS_SETADD_METHOD_END
 JS_DELETER_METHOD(EnvDeleter) {
 #ifdef __POSIX__
   jxcore::JXString key(property);
-  if (!getenv(*key)) RETURN_DELETER_FALSE();
-  unsetenv(*key);  // can't check return value, it's void on some platforms
+  bool rv = true;
+  rv = getenv(*key) != NULL;
+  if (rv)
+    unsetenv(*key);  // can't check return value, it's void on some platforms
 #else
 #ifdef JS_ENGINE_V8
   v8::String::Value key(property);
@@ -1380,67 +1402,65 @@ JS_DELETER_METHOD(EnvDeleter) {
   MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, *key, -1, key_ptr,
                       key.length() + 1);
 #endif
-
+  bool rv = false;
   if (key_ptr[0] == L'=' || !SetEnvironmentVariableW(key_ptr, NULL)) {
     // Deletion failed. Return true if the key wasn't there in the first place,
     // false if it is still there.
-    bool rv = GetEnvironmentVariableW(key_ptr, NULL, NULL) == 0 &&
+    rv = GetEnvironmentVariableW(key_ptr, NULL, NULL) == 0 &&
               GetLastError() != ERROR_SUCCESS;
+  }
 
 #ifdef JS_ENGINE_MOZJS
-    free(key_ptr);
-#endif
-    if (rv)
-      RETURN_DELETER_TRUE();
-    else
-      RETURN_DELETER_FALSE();
-  }
-#ifdef JS_ENGINE_MOZJS
-  else {
-    free(key_ptr);
-  }
+  free(key_ptr);
 #endif
 #endif
 
-  RETURN_DELETER_TRUE();
+  if (rv) RETURN_DELETER_TRUE();
 }
 JS_DELETER_METHOD_END
 
 #ifdef JS_ENGINE_V8
+#ifdef V8_IS_3_14
 static JS_HANDLE_INTEGER EnvQuery(JS_LOCAL_STRING property,
-                                  const v8::AccessorInfo& info) {
+                                  const JS_V8_PROPERTY_ARGS& ___info) {
+#else
+static void EnvQuery(v8::Local<v8::String> property,
+                     const v8::PropertyCallbackInfo<v8::Integer>& ___info) {
+#endif
   JS_ENTER_SCOPE_COM();
   JS_DEFINE_STATE_MARKER(com);
 
+  int32_t rc = -1;
 #ifdef __POSIX__
   jxcore::JXString key(property);
-  if (getenv(*key)) {
-    JS_LOCAL_INTEGER val_0 = STD_TO_INTEGER(0);
-    return JS_LEAVE_SCOPE(val_0);
-  }
+  if (getenv(*key)) rc = 0;
 #else  // _WIN32
-#ifdef JS_ENGINE_V8
   v8::String::Value key(property);
-#elif defined(JS_ENGINE_MOZJS)
-  jxcore::JXString key(property);
-#endif
   WCHAR* key_ptr = reinterpret_cast<WCHAR*>(*key);
   if (GetEnvironmentVariableW(key_ptr, NULL, 0) > 0 ||
       GetLastError() == ERROR_SUCCESS) {
+    rc = 0;
     if (key_ptr[0] == L'=') {
       // Environment variables that start with '=' are hidden and read-only.
-      return JS_LEAVE_SCOPE(
-          STD_TO_INTEGER(v8::ReadOnly || v8::DontDelete || v8::DontEnum));
-    } else {
-      return JS_LEAVE_SCOPE(STD_TO_INTEGER(0));
+      rc = static_cast<int32_t>(v8::ReadOnly) |
+           static_cast<int32_t>(v8::DontDelete) |
+           static_cast<int32_t>(v8::DontEnum);
     }
   }
 #endif
   // Not found
-  return JS_LEAVE_SCOPE(JS_HANDLE_INTEGER_);
+  if (rc != -1) {
+    RETURN_GETTER_PARAM(STD_TO_INTEGER(rc));
+  }
+
+  RETURN_GETTER_PARAM(JS_HANDLE_INTEGER_);
 }
 
-static JS_HANDLE_ARRAY EnvEnumerator(const v8::AccessorInfo& info) {
+#ifdef V8_IS_3_14
+static JS_HANDLE_ARRAY EnvEnumerator(const JS_V8_PROPERTY_ARGS& ___info) {
+#else
+static void EnvEnumerator(const v8::PropertyCallbackInfo<v8::Array>& ___info) {
+#endif
   JS_ENTER_SCOPE_COM();
   JS_DEFINE_STATE_MARKER(com);
 #ifdef __POSIX__
@@ -1460,7 +1480,7 @@ static JS_HANDLE_ARRAY EnvEnumerator(const v8::AccessorInfo& info) {
   WCHAR* environment = GetEnvironmentStringsW();
   if (environment == NULL) {
     // This should not happen.
-    return scope.Close(JS_NEW_ARRAY());
+    RETURN_GETTER_PARAM(JS_NEW_ARRAY());
   }
   JS_LOCAL_ARRAY env = JS_NEW_ARRAY();
   WCHAR* p = environment;
@@ -1484,7 +1504,8 @@ static JS_HANDLE_ARRAY EnvEnumerator(const v8::AccessorInfo& info) {
   }
   FreeEnvironmentStringsW(environment);
 #endif
-  return JS_LEAVE_SCOPE(env);
+
+  RETURN_GETTER_PARAM(env);
 }
 
 #elif defined(JS_ENGINE_MOZJS)
@@ -1650,13 +1671,10 @@ static JS_SETTER_METHOD(NeedImmediateCallbackSetter) {
 }
 JS_SETTER_METHOD_END
 
+#ifdef V8_IS_3_14
 // Called from the main thread.
 static void DispatchDebugMessagesAsyncCallback(uv_async_t* handle, int status) {
-#ifdef JS_ENGINE_V8
   v8::Debug::ProcessDebugMessages();
-#elif defined(JS_ENGINE_MOZJS)
-// TODO(obastemur) DEBUG!!
-#endif
 }
 
 // Called from V8 Debug Agent TCP thread.
@@ -1665,6 +1683,7 @@ static void DispatchMessagesDebugAgentCallback() {
   assert(com != NULL);
   uv_async_send(com->dispatch_debug_messages_async);
 }
+#endif
 
 void EnableDebug(bool wait_connect, node::commons* node) {
 #ifdef JS_ENGINE_V8
@@ -1672,7 +1691,23 @@ void EnableDebug(bool wait_connect, node::commons* node) {
   // v8 isolate.
   if (node->node_isolate == NULL)
     node->node_isolate = v8::Isolate::GetCurrent();
+#ifdef JS_ENGINE_CHAKRA
+#else
+#ifndef V8_IS_3_14
+  // Send message to enable debug in workers
+  JS_ENTER_SCOPE_WITH(node->node_isolate);
+  JS_DEFINE_STATE_MARKER_(node->node_isolate);
 
+  JS_LOCAL_OBJECT message = JS_NEW_EMPTY_OBJECT();
+  message->Set(FIXED_ONE_BYTE_STRING(node->node_isolate, "cmd"),
+               FIXED_ONE_BYTE_STRING(node->node_isolate, "NODE_DEBUG_ENABLED"));
+  v8::Local<v8::Value> argv[] = {
+      FIXED_ONE_BYTE_STRING(node->node_isolate, "internalMessage"), message};
+  MakeCallback(node, node->getProcess(), STD_TO_STRING("emit"), 2, argv);
+
+  // Enabled debugger, possibly making it wait on a semaphore
+  ((node::debugger::Agent*)node->agent_)->Enable();
+#else
   node->node_isolate->Enter();
 
   v8::Debug::SetDebugMessageDispatchHandler(DispatchMessagesDebugAgentCallback,
@@ -1695,6 +1730,8 @@ void EnableDebug(bool wait_connect, node::commons* node) {
   node->debugger_running = true;
 
   node->node_isolate->Exit();
+#endif
+#endif
 #elif defined(JS_ENGINE_MOZJS)
 // TODO(obastemur) DEBUG!!
 #endif
@@ -1716,21 +1753,21 @@ void EnableDebugSignalHandler(uv_signal_t* handle, int) {
 #endif
 }
 
-JS_LOCAL_METHOD_NO_COM(DebugProcess)
-if (args.Length() != 1) {
-  THROW_EXCEPTION("Invalid number of arguments.");
+JS_LOCAL_METHOD_NO_COM(DebugProcess) {
+  if (args.Length() != 1) {
+    THROW_EXCEPTION("Invalid number of arguments.");
+  }
+
+  pid_t pid;
+  int r;
+
+  pid = args.GetInteger(0);
+  r = kill(pid, SIGUSR1);
+  if (r != 0) {
+    JS_LOCAL_VALUE err = ErrnoException(errno, "kill");
+    THROW_EXCEPTION_OBJECT(err);
+  }
 }
-
-pid_t pid;
-int r;
-
-pid = args.GetInteger(0);
-r = kill(pid, SIGUSR1);
-if (r != 0) {
-  JS_LOCAL_VALUE err = ErrnoException(errno, "kill");
-  THROW_EXCEPTION_OBJECT(err);
-}
-
 JS_METHOD_END
 #endif  // __POSIX__
 
@@ -1884,8 +1921,13 @@ JS_METHOD_END
 
 static JS_LOCAL_METHOD(DebugEnd) {
   if (com->debugger_running) {
-#ifdef JS_ENGINE_V8
+#ifdef JS_ENGINE_CHAKRA
+#elif defined(JS_ENGINE_V8)
+#ifdef V8_IS_3_14
     v8::Debug::DisableAgent();
+#else
+    ((node::debugger::Agent*)com->agent_)->Stop();
+#endif
 #elif defined(JS_ENGINE_MOZJS)
 // TODO(obastemur) DEBUG
 #endif
@@ -1901,8 +1943,8 @@ void SetupProcessObject(const int threadId) {
 
   int i, j;
 
-  // TODO(obastemur) why we need function template ?
-  // change made in order to get typeof process === 'object' compatibility
+// TODO(obastemur) why we need function template ?
+// change made in order to get typeof process === 'object' compatibility
 #ifdef JS_ENGINE_V8
   JS_LOCAL_FUNCTION_TEMPLATE process_template =
       JS_NEW_EMPTY_FUNCTION_TEMPLATE();
@@ -1931,8 +1973,9 @@ void SetupProcessObject(const int threadId) {
               STD_TO_STRING(JXCORE_VERSION));
 
   // process.moduleLoadList
-  com->module_load_list = JS_NEW_PERSISTENT_ARRAY();
-  JS_NAME_SET(process, JS_STRING_ID("moduleLoadList"), com->module_load_list);
+  JS_LOCAL_ARRAY objml = JS_NEW_ARRAY();
+  JS_NEW_PERSISTENT_ARRAY(com->module_load_list, objml);
+  JS_NAME_SET(process, JS_STRING_ID("moduleLoadList"), objml);
 
   // process.versions
   JS_LOCAL_OBJECT versions = JS_NEW_EMPTY_OBJECT();
@@ -1946,8 +1989,13 @@ void SetupProcessObject(const int threadId) {
   JS_NAME_SET(versions, JS_STRING_ID("jxcore"),
               STD_TO_STRING(JXCORE_VERSION + 2));
 #ifdef JS_ENGINE_V8
-  JS_NAME_SET(versions, JS_STRING_ID("v8"),
-              STD_TO_STRING(v8::V8::GetVersion()));
+#ifdef JS_ENGINE_CHAKRA
+  JS_NAME_SET(versions, JS_STRING_ID("v8"), STD_TO_INTEGER(0));
+  JS_NAME_SET(versions, JS_STRING_ID("ch"), STD_TO_STRING(v8::V8::GetVersion()));
+#else
+  JS_NAME_SET(versions, JS_STRING_ID("ch"), STD_TO_INTEGER(0));
+  JS_NAME_SET(versions, JS_STRING_ID("v8"), STD_TO_STRING(v8::V8::GetVersion()));
+#endif
   JS_NAME_SET(versions, JS_STRING_ID("sm"), STD_TO_INTEGER(0));
 #elif defined(JS_ENGINE_MOZJS)
   JS_NAME_SET(versions, JS_STRING_ID("v8"), STD_TO_INTEGER(0));
@@ -1997,7 +2045,11 @@ void SetupProcessObject(const int threadId) {
   JS_NAME_SET(process, JS_STRING_ID("arch"), STD_TO_STRING(ARCH));
 
   // process.platform
+#ifdef WINONECORE
+  JS_NAME_SET(process, JS_STRING_ID("platform"), STD_TO_STRING("winrt"));
+#else
   JS_NAME_SET(process, JS_STRING_ID("platform"), STD_TO_STRING(PLATFORM));
+#endif
 
   jxcore::JXEngine* active_engine = jxcore::JXEngine::ActiveInstance();
   if (active_engine == NULL && threadId > 0) {
@@ -2252,13 +2304,15 @@ void Load(JS_HANDLE_OBJECT process_l) {
   JS_LOCAL_OBJECT global = JS_GET_GLOBAL();
   JS_LOCAL_VALUE args[1] = {JS_TYPE_TO_LOCAL_VALUE(process_l)};
 
+  if (com->threadId == 0) {
 #if defined HAVE_DTRACE || defined HAVE_ETW || defined HAVE_SYSTEMTAP
-  InitDTrace(global);
+    InitDTrace(global);
 #endif
 
 #if defined HAVE_PERFCTR
-  InitPerfCounters(global);
+    InitPerfCounters(global);
 #endif
+  }
 
   JS_METHOD_CALL(f, global, 1, args);
   if (try_catch.HasCaught()) {

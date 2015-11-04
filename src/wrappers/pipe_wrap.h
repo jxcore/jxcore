@@ -69,8 +69,8 @@ class PipeWrap : StreamWrap {
     if (!JS_IS_EMPTY(com->pipeConstructor)) {
       JS_CLEAR_PERSISTENT(com->pipeConstructor);
     }
-    com->pipeConstructor =
-        JS_NEW_PERSISTENT_FUNCTION(JS_GET_FUNCTION(constructor));
+
+    JS_NEW_PERSISTENT_FUNCTION(com->pipeConstructor, JS_GET_FUNCTION(constructor));
   }
   END_INIT_NAMED_MEMBERS(Pipe)
 };
