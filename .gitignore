@@ -99,3 +99,5 @@ tmp_jx
 *.log
 
 .pydevproject
+out_osx
+out_x64_osx
