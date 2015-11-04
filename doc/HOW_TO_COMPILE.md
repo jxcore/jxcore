@@ -71,7 +71,30 @@ compiled lib files inside the target installation folder.
 
 On Windows;
 ```
+/ $> vcbuild.bat --static-library
+```
+
+##### Compile as a Dynamic Library
+
+You can also compile JXcore as a `dynamic library`, also known as a `shared library` or `DLL`, and distribute it alongside your solution.
+
+Simply add `--shared-library` parameter to one of the above `configure` definitions. 
+
+On Windows;
+```
 / $> vcbuild.bat --shared-library
+```
+
+On OS X, an extra step is needed after building, because the .dylib file contains information on where it should be found when needed:
+
+```
+install_name_tool -id /path/to/built/libjx.dylib
+```
+
+Also, if you would like to embed the library in your OS X application, you should add an extra build step as a `Run script phase` to your app in Xcode, to modify the executable so that on run the .dylib would be searched for in the app bundle, not in a global location. For example:
+
+```
+install_name_tool -change /usr/local/lib/libjx.dylib @executable_path/../Library/libjx.dylib "$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/MacOS/$PRODUCT_NAME"
 ```
 
 ##### Additional keys
