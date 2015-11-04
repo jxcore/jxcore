@@ -35,6 +35,12 @@ node::Buffer *CompressString(node::commons *com, const char *str,
   return buff;
 }
 
+node::Buffer *CompressString(node::commons *com, JS_HANDLE_VALUE *buff) {
+  char* bufferData = node::Buffer::Data(*buff);
+  size_t bufferLength = node::Buffer::Length(*buff);
+  return CompressString(com, bufferData, bufferLength);
+}
+
 static uint8 *compress_cache_ = NULL;
 static unsigned long cache_size_ = 0;
 

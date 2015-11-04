@@ -343,17 +343,25 @@ JS_METHOD(JXUtilsWrap, SetSourceExpiration) {
 JS_METHOD_END
 
 JS_METHOD(JXUtilsWrap, Compress) {
-  if (!args.IsString(0)) {
-    THROW_TYPE_EXCEPTION("compress methods expects a string argument");
+  JS_HANDLE_VALUE handle = args.GetItem(0);
+
+  if (!args.IsString(0) && !Buffer::jxHasInstance(handle, com)) {
+    THROW_TYPE_EXCEPTION("compress methods expects string or buffer as argument");
   }
 
-  jxcore::JXString jxs;
-  args.GetString(0, &jxs);
+  node::Buffer *buff;
 
-  node::Buffer *buff = jxcore::CompressString(com, *jxs, jxs.Utf8Length());
+  if (args.IsString(0)) {
+    jxcore::JXString jxs;
+    args.GetString(0, &jxs);
 
+    buff = jxcore::CompressString(com, *jxs, jxs.Utf8Length());
+  }
+  else {
+    buff = jxcore::CompressString(com, &handle);
+  }
+  
   if (buff == NULL) RETURN_PARAM(STD_TO_BOOLEAN(false));
-
   RETURN_PARAM(JS_TYPE_TO_LOCAL_OBJECT(buff->handle_));
 }
 JS_METHOD_END
