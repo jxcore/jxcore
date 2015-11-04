@@ -165,8 +165,8 @@ If you'll ever have problem with GCC 4.7+ installation on Red Hat, please see
 
 #### Compiling against Mipsel
 
-Your linux distro might be using an older version of GCC. We encourage you to set `--dest-os=mipsel` 
-explicitly within the  `./configure` call
+Your linux distro might be using an older version of GCC. We encourage you to set 
+`--dest-os=mipsel` explicitly within the  `./configure` call
 
 ```
 ./configure ...... --dest-cpu=mipsel
