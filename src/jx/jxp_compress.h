@@ -9,6 +9,7 @@ namespace jxcore {
 typedef unsigned char mz_uint8;
 node::Buffer* CompressString(node::commons* com, const char* str,
                              const long len);
+node::Buffer* CompressString(node::commons *com, JS_HANDLE_VALUE *buff);
 
 bool RaiseCache(unsigned long cache_size);
 
