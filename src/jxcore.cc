@@ -369,9 +369,7 @@ char **JXEngine::Init(int argc, char *argv[], bool engine_inited_already) {
 
   if (!engine_inited_already) {
     // If the --debug flag was specified then initialize the debug thread.
-    if (main_node_->use_debug_agent) {
-      node::EnableDebug(main_node_->debug_wait_connect, main_node_);
-    } else {
+    if (!main_node_->use_debug_agent) {
 #ifdef _WIN32
       node::RegisterDebugSignalHandler();
 #else   // Posix
@@ -647,6 +645,7 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
     JS_engine_inited_ = true;
     JS_ENGINE_INITIALIZE();
   }
+
   do {
     do {
       JS_ENGINE_LOCKER();
@@ -663,6 +662,11 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
       if (actual_thread_id == 0) {
         main_node_->node_isolate = isolate;
         main_node_->setMainIsolate();
+      }
+
+      // If the --debug flag was specified then initialize the debug thread.
+      if (main_node_->use_debug_agent) {
+        node::EnableDebug(main_node_->debug_wait_connect, main_node_);
       }
 
       node::SetupProcessObject(actual_thread_id);
