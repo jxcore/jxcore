@@ -3538,6 +3538,220 @@ class DiffieHellman : public ObjectWrap {
   DH* dh;
 };
 
+
+class ECDH : public ObjectWrap {
+public:
+  INIT_NAMED_CLASS_MEMBERS(ECDH, ECDH)
+
+  NODE_SET_PROTOTYPE_METHOD(constructor, "generateKeys", GenerateKeys);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "computeSecret", ComputeSecret);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "getPublicKey", GetPublicKey);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "getPrivateKey", GetPrivateKey);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "setPublicKey", SetPublicKey);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "setPrivateKey", SetPrivateKey);
+
+  END_INIT_NAMED_MEMBERS(ECDH)
+
+  ~ECDH() {
+    if (key_ != NULL)
+      EC_KEY_free(key_);
+    key_ = NULL;
+    group_ = NULL;
+  }
+
+protected:
+  static JS_LOCAL_METHOD(New) {
+    // TODO(indutny): Support raw curves?
+    assert(args.IsString(0));
+
+    jxcore::JXString curve;
+    args.GetString(0, &curve);
+    
+    int nid = OBJ_sn2nid(*curve);
+    if (nid == NID_undef)
+      THROW_EXCEPTION("First argument should be a valid curve name");
+
+    EC_KEY* key = EC_KEY_new_by_curve_name(nid);
+    if (key == NULL)
+      THROW_EXCEPTION("Failed to create EC_KEY using curve name");
+
+    JS_CLASS_NEW_INSTANCE(obj);
+    ECDH *ecdh = new ECDH(key);
+    ecdh->Wrap(obj);
+    RETURN_POINTER(obj);
+  }
+  JS_METHOD_END
+
+  static JS_LOCAL_METHOD(GenerateKeys) {
+    ECDH* ecdh = Unwrap<ECDH>(args.This());
+
+    if (!EC_KEY_generate_key(ecdh->key_))
+      THROW_EXCEPTION("Failed to generate EC_KEY");
+
+    ecdh->generated_ = true;
+  }
+  JS_METHOD_END
+
+  static JS_LOCAL_METHOD(ComputeSecret) {
+    ASSERT_IS_BUFFER(args.GetItem(0));
+
+    ECDH* ecdh = Unwrap<ECDH>(args.This());
+
+    EC_POINT* pub = ecdh->BufferToPoint(Buffer::Data(args.GetItem(0)),
+      Buffer::Length(args.GetItem(0)));
+    if (pub == NULL)
+      RETURN();
+
+    // NOTE: field_size is in bits
+    int field_size = EC_GROUP_get_degree(ecdh->group_);
+    size_t out_len = (field_size + 7) / 8;
+    char* out = static_cast<char*>(malloc(out_len));
+    assert(out != NULL);
+
+    int r = ECDH_compute_key(out, out_len, pub, ecdh->key_, NULL);
+    EC_POINT_free(pub);
+    if (!r) {
+      free(out);
+      THROW_EXCEPTION("Failed to compute ECDH key");
+    }
+
+    Buffer *buff = Buffer::New(out, out_len, com);
+    RETURN_PARAM(JS_TYPE_TO_LOCAL_OBJECT(buff->handle_));
+  }
+  JS_METHOD_END
+
+  static JS_LOCAL_METHOD(GetPublicKey) {
+    // Conversion form
+    assert(args.Length() == 1);
+
+    ECDH* ecdh = Unwrap<ECDH>(args.This());
+
+    if (!ecdh->generated_)
+      THROW_EXCEPTION("You should generate ECDH keys first");
+
+    const EC_POINT* pub = EC_KEY_get0_public_key(ecdh->key_);
+    if (pub == NULL)
+      THROW_EXCEPTION("Failed to get ECDH public key");
+
+    int size;
+    point_conversion_form_t form =
+      static_cast<point_conversion_form_t>(args.GetUInteger(0));
+
+    size = EC_POINT_point2oct(ecdh->group_, pub, form, NULL, 0, NULL);
+    if (size == 0)
+      THROW_EXCEPTION("Failed to get public key length");
+
+    unsigned char* out = static_cast<unsigned char*>(malloc(size));
+    assert(out != NULL);
+
+    int r = EC_POINT_point2oct(ecdh->group_, pub, form, out, size, NULL);
+    if (r != size) {
+      free(out);
+      THROW_EXCEPTION("Failed to get public key");
+    }
+
+    Buffer *buff = Buffer::New(reinterpret_cast<char*>(out), size, com);
+    RETURN_PARAM(JS_TYPE_TO_LOCAL_OBJECT(buff->handle_));
+  }
+  JS_METHOD_END
+
+  static JS_LOCAL_METHOD(GetPrivateKey) {
+    ECDH* ecdh = Unwrap<ECDH>(args.This());
+
+    if (!ecdh->generated_)
+      THROW_EXCEPTION("You should generate ECDH keys first");
+
+    const BIGNUM* b = EC_KEY_get0_private_key(ecdh->key_);
+    if (b == NULL)
+      THROW_EXCEPTION("Failed to get ECDH private key");
+
+    int size = BN_num_bytes(b);
+    unsigned char* out = static_cast<unsigned char*>(malloc(size));
+    assert(out != NULL);
+
+    if (size != BN_bn2bin(b, out)) {
+      free(out);
+      THROW_EXCEPTION("Failed to convert ECDH private key to Buffer");
+    }
+
+    Buffer *buff = Buffer::New(reinterpret_cast<char*>(out), size, com);
+    RETURN_PARAM(JS_TYPE_TO_LOCAL_OBJECT(buff->handle_));
+  }
+  JS_METHOD_END
+
+  static JS_LOCAL_METHOD(SetPublicKey) {
+    ECDH* ecdh = Unwrap<ECDH>(args.This());
+
+    ASSERT_IS_BUFFER(args.GetItem(0));
+
+    EC_POINT* pub = ecdh->BufferToPoint(Buffer::Data(args.GetItem(0)),
+      Buffer::Length(args.GetItem(0)));
+    if (pub == NULL)
+      RETURN();
+
+    int r = EC_KEY_set_public_key(ecdh->key_, pub);
+    EC_POINT_free(pub);
+    if (!r)
+      THROW_EXCEPTION("Failed to convert BN to a private key");
+  }
+  JS_METHOD_END
+
+  static JS_LOCAL_METHOD(SetPrivateKey) {
+    ECDH* ecdh = Unwrap<ECDH>(args.This());
+
+    ASSERT_IS_BUFFER(args.GetItem(0));
+
+    BIGNUM* priv = BN_bin2bn(
+      reinterpret_cast<unsigned char*>(Buffer::Data(args.GetItem(0))),
+      Buffer::Length(args.GetItem(0)),
+      NULL);
+    if (priv == NULL)
+      THROW_EXCEPTION("Failed to convert Buffer to BN");
+
+    if (!EC_KEY_set_private_key(ecdh->key_, priv))
+      THROW_EXCEPTION("Failed to convert BN to a private key");
+  }
+  JS_METHOD_END
+
+  EC_POINT *BufferToPoint(char* data, size_t len) {
+    EC_POINT* pub;
+    int r;
+
+    pub = EC_POINT_new(group_);
+    if (pub == NULL) {
+      printf("Failed to allocate EC_POINT for a public key");
+      return NULL;
+    }
+
+    r = EC_POINT_oct2point(
+      group_,
+      pub,
+      reinterpret_cast<unsigned char*>(data),
+      len,
+      NULL);
+    if (!r) {
+      printf("Failed to translate Buffer to a EC_POINT");
+      goto fatal;
+    }
+
+    return pub;
+
+  fatal:
+    EC_POINT_free(pub);
+    return NULL;
+  }
+
+  ECDH(EC_KEY *key) : ObjectWrap(), generated_(false), key_(key), group_(EC_KEY_get0_group(key_)) {
+    //MakeWeak<ECDH>(this);
+    assert(group_ != NULL);
+  }
+
+  bool generated_;
+  EC_KEY  *key_;
+  const EC_GROUP *group_;
+};
+
+
 struct pbkdf2_req {
   uv_work_t work_req;
   int err;
@@ -3895,6 +4109,7 @@ DECLARE_CLASS_INITIALIZER(InitCrypto) {
   Cipher::Initialize(target);
   Decipher::Initialize(target);
   DiffieHellman::Initialize(target);
+  ECDH::Initialize(target);
   Hmac::Initialize(target);
   Hash::Initialize(target);
   Sign::Initialize(target);
