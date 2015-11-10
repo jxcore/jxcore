@@ -133,7 +133,7 @@
 #define JS_TYPE_TO_LOCAL_FUNCTION_TEMPLATE(x) JS_LOCAL_FUNCTION_TEMPLATE::New(x)
 #define JS_TYPE_TO_LOCAL_CONTEXT(x) (*x)
 #define JS_NEW_LOCAL_CONTEXT(x) v8::Local<v8::Context>::New(x)
-#define JS_TYPE_TO_LOCAL_ARRAY(x) JS_LOCAL_ARRAY::New(x)
+#define JS_TYPE_TO_LOCAL_ARRAY(x) (x)->ToObject().As<v8::Array>()
 #define JS_TYPE_TO_LOCAL_SCRIPT(x) JS_LOCAL_SCRIPT::New(x)
 #define JS_OBJECT_FROM_PERSISTENT(x) x->ToObject()
 
