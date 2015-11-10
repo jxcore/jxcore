@@ -3597,7 +3597,7 @@ protected:
 
     ECDH* ecdh = Unwrap<ECDH>(args.This());
 
-    EC_POINT* pub = ecdh->BufferToPoint(Buffer::Data(args.GetItem(0)),
+    EC_POINT* pub = ecdh->BufferToPoint(__contextORisolate, Buffer::Data(args.GetItem(0)),
       Buffer::Length(args.GetItem(0)));
     if (pub == NULL)
       RETURN();
@@ -3684,7 +3684,7 @@ protected:
 
     ASSERT_IS_BUFFER(args.GetItem(0));
 
-    EC_POINT* pub = ecdh->BufferToPoint(Buffer::Data(args.GetItem(0)),
+    EC_POINT* pub = ecdh->BufferToPoint(__contextORisolate, Buffer::Data(args.GetItem(0)),
       Buffer::Length(args.GetItem(0)));
     if (pub == NULL)
       RETURN();
@@ -3713,13 +3713,13 @@ protected:
   }
   JS_METHOD_END
 
-  EC_POINT *BufferToPoint(char* data, size_t len) {
+  EC_POINT *BufferToPoint(v8::Isolate *__contextORisolate, char* data, size_t len) {
     EC_POINT* pub;
     int r;
 
     pub = EC_POINT_new(group_);
     if (pub == NULL) {
-      printf("Failed to allocate EC_POINT for a public key");
+      THROW_EXCEPTION_NO_RETURN("Failed to allocate EC_POINT for a public key");
       return NULL;
     }
 
@@ -3730,7 +3730,7 @@ protected:
       len,
       NULL);
     if (!r) {
-      printf("Failed to translate Buffer to a EC_POINT");
+      THROW_EXCEPTION_NO_RETURN("Failed to translate Buffer to a EC_POINT");
       goto fatal;
     }
 
