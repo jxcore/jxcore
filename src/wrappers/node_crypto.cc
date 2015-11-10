@@ -3575,7 +3575,7 @@ protected:
     if (key == NULL)
       THROW_EXCEPTION("Failed to create EC_KEY using curve name");
 
-    JS_CLASS_NEW_INSTANCE(obj);
+    JS_CLASS_NEW_INSTANCE(obj, ECDH);
     ECDH *ecdh = new ECDH(key);
     ecdh->Wrap(obj);
     RETURN_POINTER(obj);
@@ -3597,7 +3597,7 @@ protected:
 
     ECDH* ecdh = Unwrap<ECDH>(args.This());
 
-    EC_POINT* pub = ecdh->BufferToPoint(__contextORisolate, Buffer::Data(args.GetItem(0)),
+    EC_POINT* pub = ecdh->BufferToPoint(JS_GET_STATE_MARKER(), Buffer::Data(args.GetItem(0)),
       Buffer::Length(args.GetItem(0)));
     if (pub == NULL)
       RETURN();
@@ -3684,7 +3684,7 @@ protected:
 
     ASSERT_IS_BUFFER(args.GetItem(0));
 
-    EC_POINT* pub = ecdh->BufferToPoint(__contextORisolate, Buffer::Data(args.GetItem(0)),
+    EC_POINT* pub = ecdh->BufferToPoint(JS_GET_STATE_MARKER(), Buffer::Data(args.GetItem(0)),
       Buffer::Length(args.GetItem(0)));
     if (pub == NULL)
       RETURN();
@@ -3713,7 +3713,7 @@ protected:
   }
   JS_METHOD_END
 
-  EC_POINT *BufferToPoint(v8::Isolate *__contextORisolate, char* data, size_t len) {
+  EC_POINT *BufferToPoint(JS_STATE_MARKER, char* data, size_t len) {
     EC_POINT* pub;
     int r;
 
