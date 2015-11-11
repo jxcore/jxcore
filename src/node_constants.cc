@@ -987,6 +987,14 @@ void DefineConstants(JS_HANDLE_OBJECT target) {
 #define NPN_ENABLED 1
   NODE_DEFINE_CONSTANT(target, NPN_ENABLED);
 #endif
+#if HAVE_OPENSSL
+  // NOTE: These are not defines
+  NODE_DEFINE_CONSTANT(target, POINT_CONVERSION_COMPRESSED);
+
+  NODE_DEFINE_CONSTANT(target, POINT_CONVERSION_UNCOMPRESSED);
+
+  NODE_DEFINE_CONSTANT(target, POINT_CONVERSION_HYBRID);
+#endif
 }
 
 }  // namespace node
