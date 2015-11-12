@@ -2,6 +2,7 @@
 
 var common = require('../common');
 var assert = require('assert');
+var constants = require('constants');
 
 // this test file is not compatible to Windows
 if (process.platform === 'win32') return;
@@ -26,6 +27,8 @@ var keyPem = fs.readFileSync(common.fixturesDir + '/test_key.pem', 'ascii');
 var rsaPubPem = fs.readFileSync(common.fixturesDir + '/test_rsa_pubkey.pem',
     'ascii');
 var rsaKeyPem = fs.readFileSync(common.fixturesDir + '/test_rsa_privkey.pem',
+    'ascii');
+var rsaKeyPemEncrypted = fs.readFileSync('./test_rsa_privkey_encrypted.pem',
     'ascii');
 
 try {
@@ -931,3 +934,61 @@ assert.throws(function() {
   ].join('\n');
   crypto.createSign('RSA-SHA256').update('test').sign(private);
 }, /SignFinal/);
+
+// Test RSA encryption/decryption
+(function() {
+  var input = 'I AM THE WALRUS';
+  var bufferToEncrypt = new Buffer(input);
+
+  var encryptedBuffer = crypto.publicEncrypt(rsaPubPem, bufferToEncrypt);
+
+  var decryptedBuffer = crypto.privateDecrypt(rsaKeyPem, encryptedBuffer);
+  assert.equal(input, decryptedBuffer.toString());
+
+  var decryptedBufferWithPassword = crypto.privateDecrypt({
+    key: rsaKeyPemEncrypted,
+    passphrase: 'password'
+  }, encryptedBuffer);
+  assert.equal(input, decryptedBufferWithPassword.toString());
+
+  encryptedBuffer = crypto.publicEncrypt(certPem, bufferToEncrypt);
+
+  decryptedBuffer = crypto.privateDecrypt(keyPem, encryptedBuffer);
+  assert.equal(input, decryptedBuffer.toString());
+
+  encryptedBuffer = crypto.publicEncrypt(keyPem, bufferToEncrypt);
+
+  decryptedBuffer = crypto.privateDecrypt(keyPem, encryptedBuffer);
+  assert.equal(input, decryptedBuffer.toString());
+
+  assert.throws(function() {
+    crypto.privateDecrypt({
+      key: rsaKeyPemEncrypted,
+      passphrase: 'wrong'
+    }, encryptedBuffer);
+  });
+})();
+
+function test_rsa(padding) {
+  var input = new Buffer(padding === 'RSA_NO_PADDING' ? 1024 / 8 : 32);
+  for (var i = 0; i < input.length; i++)
+    input[i] = (i * 7 + 11) & 0xff;
+  var bufferToEncrypt = new Buffer(input);
+
+  padding = constants[padding];
+
+  var encryptedBuffer = crypto.publicEncrypt({
+    key: rsaPubPem,
+    padding: padding
+  }, bufferToEncrypt);
+
+  var decryptedBuffer = crypto.privateDecrypt({
+    key: rsaKeyPem,
+    padding: padding
+  }, encryptedBuffer);
+  assert.equal(input, decryptedBuffer.toString());
+}
+
+test_rsa('RSA_NO_PADDING');
+test_rsa('RSA_PKCS1_PADDING');
+test_rsa('RSA_PKCS1_OAEP_PADDING');

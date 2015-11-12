@@ -987,6 +987,18 @@ void DefineConstants(JS_HANDLE_OBJECT target) {
 #define NPN_ENABLED 1
   NODE_DEFINE_CONSTANT(target, NPN_ENABLED);
 #endif
+
+#ifdef RSA_PKCS1_PADDING
+  NODE_DEFINE_CONSTANT(target, RSA_PKCS1_PADDING);
+#endif
+
+#ifdef RSA_PKCS1_OAEP_PADDING
+  NODE_DEFINE_CONSTANT(target, RSA_PKCS1_OAEP_PADDING);
+#endif
+
+#ifdef RSA_NO_PADDING
+  NODE_DEFINE_CONSTANT(target, RSA_NO_PADDING);
+#endif
 }
 
 }  // namespace node

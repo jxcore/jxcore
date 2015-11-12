@@ -33,6 +33,8 @@ static const char PUBLIC_KEY_PFX[] = "-----BEGIN PUBLIC KEY-----";
 static const int PUBLIC_KEY_PFX_LEN = sizeof(PUBLIC_KEY_PFX) - 1;
 static const char PUBRSA_KEY_PFX[] = "-----BEGIN RSA PUBLIC KEY-----";
 static const int PUBRSA_KEY_PFX_LEN = sizeof(PUBRSA_KEY_PFX) - 1;
+static const char CERTIFICATE_PFX[] = "-----BEGIN CERTIFICATE-----";
+static const int CERTIFICATE_PFX_LEN = sizeof(CERTIFICATE_PFX) - 1;
 static const int X509_NAME_FLAGS = ASN1_STRFLGS_ESC_CTRL |
                                    ASN1_STRFLGS_ESC_MSB |
                                    XN_FLAG_SEP_MULTILINE | XN_FLAG_FN_SN;
@@ -90,6 +92,18 @@ static void crypto_lock_cb(int mode, int n, const char* file, int line) {
     else
       uv_rwlock_wrunlock(locks + n);
   }
+}
+
+static int CryptoPemCallback(char *buf, int size, int rwflag, void *u) {
+  if (u) {
+    size_t buflen = static_cast<size_t>(size);
+    size_t len = strlen(static_cast<const char*>(u));
+    len = len > buflen ? buflen : len;
+    memcpy(buf, u, len);
+    return len;
+  }
+
+  return 0;
 }
 
 #define ThrowCryptoErrorHelper(err, is_type_error)   \
@@ -3167,6 +3181,166 @@ class Verify : public ObjectWrap {
   bool initialised_;
 };
 
+class PublicKeyCipher {
+public:
+  typedef int(*EVP_PKEY_cipher_init_t)(EVP_PKEY_CTX *ctx);
+  typedef int(*EVP_PKEY_cipher_t)(EVP_PKEY_CTX *ctx,
+    unsigned char *out, size_t *outlen,
+    const unsigned char *in, size_t inlen);
+
+  enum Operation {
+    kEncrypt,
+    kDecrypt
+  };
+
+  template <Operation operation,
+    EVP_PKEY_cipher_init_t EVP_PKEY_cipher_init,
+    EVP_PKEY_cipher_t EVP_PKEY_cipher>
+  static bool Cipher(const char* key_pem,
+                      int key_pem_len,
+                      const char* passphrase,
+                      int padding,
+                      const unsigned char* data,
+                      int len,
+                      unsigned char** out,
+                      size_t* out_len) {
+    EVP_PKEY* pkey = NULL;
+    EVP_PKEY_CTX* ctx = NULL;
+    BIO* bp = NULL;
+    X509* x509 = NULL;
+    bool fatal = true;
+
+    bp = BIO_new_mem_buf(const_cast<char*>(key_pem), key_pem_len);
+    if (bp == NULL)
+      goto exit;
+
+    // Check if this is a PKCS#8 or RSA public key before trying as X.509 and
+    // private key.
+    if (operation == kEncrypt &&
+      strncmp(key_pem, PUBLIC_KEY_PFX, PUBLIC_KEY_PFX_LEN) == 0) {
+      pkey = PEM_read_bio_PUBKEY(bp, NULL, NULL, NULL);
+      if (pkey == NULL)
+        goto exit;
+    }
+    else if (operation == kEncrypt &&
+      strncmp(key_pem, PUBRSA_KEY_PFX, PUBRSA_KEY_PFX_LEN) == 0) {
+      RSA* rsa = PEM_read_bio_RSAPublicKey(bp, NULL, NULL, NULL);
+      if (rsa) {
+        pkey = EVP_PKEY_new();
+        if (pkey)
+          EVP_PKEY_set1_RSA(pkey, rsa);
+        RSA_free(rsa);
+      }
+      if (pkey == NULL)
+        goto exit;
+    }
+    else if (operation == kEncrypt &&
+      strncmp(key_pem, CERTIFICATE_PFX, CERTIFICATE_PFX_LEN) == 0) {
+      x509 = PEM_read_bio_X509(bp, NULL, CryptoPemCallback, NULL);
+      if (x509 == NULL)
+        goto exit;
+
+      pkey = X509_get_pubkey(x509);
+      if (pkey == NULL)
+        goto exit;
+    }
+    else {
+      pkey = PEM_read_bio_PrivateKey(bp,
+        NULL,
+        CryptoPemCallback,
+        const_cast<char*>(passphrase));
+      if (pkey == NULL)
+        goto exit;
+    }
+
+    ctx = EVP_PKEY_CTX_new(pkey, NULL);
+    if (!ctx)
+      goto exit;
+    if (EVP_PKEY_cipher_init(ctx) <= 0)
+      goto exit;
+    if (EVP_PKEY_CTX_set_rsa_padding(ctx, padding) <= 0)
+      goto exit;
+
+    if (EVP_PKEY_cipher(ctx, NULL, out_len, data, len) <= 0)
+      goto exit;
+
+    *out = new unsigned char[*out_len];
+
+    if (EVP_PKEY_cipher(ctx, *out, out_len, data, len) <= 0)
+      goto exit;
+
+    fatal = false;
+
+  exit:
+    if (pkey != NULL)
+      EVP_PKEY_free(pkey);
+    if (bp != NULL)
+      BIO_free_all(bp);
+    if (ctx != NULL)
+      EVP_PKEY_CTX_free(ctx);
+
+    return !fatal;
+  }
+
+  static JS_LOCAL_METHOD(PrivateDecrypt) {
+    return Cipher<kDecrypt, EVP_PKEY_decrypt_init, EVP_PKEY_decrypt>(args);
+  }
+  JS_METHOD_END
+
+  static JS_LOCAL_METHOD(PublicEncrypt) {
+    return Cipher<kEncrypt, EVP_PKEY_encrypt_init, EVP_PKEY_encrypt>(args);
+  }
+  JS_METHOD_END
+
+  template <Operation operation,
+    EVP_PKEY_cipher_init_t EVP_PKEY_cipher_init,
+    EVP_PKEY_cipher_t EVP_PKEY_cipher>
+  static JS_NATIVE_RETURN_TYPE Cipher(jxcore::PArguments args) {
+    JS_ENTER_SCOPE_COM();
+    JS_DEFINE_STATE_MARKER(com);
+
+    ASSERT_IS_BUFFER(args.GetItem(0));
+    char* kbuf = Buffer::Data(args.GetItem(0));
+    ssize_t klen = Buffer::Length(args.GetItem(0));
+
+    ASSERT_IS_BUFFER(args.GetItem(1));
+    char* buf = Buffer::Data(args.GetItem(1));
+    ssize_t len = Buffer::Length(args.GetItem(1));
+
+    int padding = args.GetItem(2)->Uint32Value();
+
+    jxcore::JXString passphrase;
+    args.GetString(3, &passphrase);
+
+    unsigned char* out_value = NULL;
+    size_t out_len = 0;
+
+    bool r = Cipher<operation, EVP_PKEY_cipher_init, EVP_PKEY_cipher>(
+      kbuf,
+      klen,
+      args.Length() >= 3 && !args.GetItem(2)->IsNull() ? *passphrase : NULL,
+      padding,
+      reinterpret_cast<const unsigned char*>(buf),
+      len,
+      &out_value,
+      &out_len);
+
+    if (out_len == 0 || !r) {
+      delete[] out_value;
+      out_value = NULL;
+      out_len = 0;
+      if (!r) {
+        ThrowCryptoError(ERR_get_error());
+      }
+    }
+
+    Buffer *buff = Buffer::New(reinterpret_cast<char*>(out_value), out_len, com);
+    RETURN_POINTER(buff->handle_);
+    delete[] out_value;
+  }
+};
+
+
 class DiffieHellman : public ObjectWrap {
  public:
   INIT_NAMED_GROUP_CLASS_MEMBERS(DiffieHellman, DiffieHellman,
@@ -3906,6 +4080,9 @@ DECLARE_CLASS_INITIALIZER(InitCrypto) {
   JS_METHOD_SET(target, "getSSLCiphers", GetSSLCiphers);
   JS_METHOD_SET(target, "getCiphers", GetCiphers);
   JS_METHOD_SET(target, "getHashes", GetHashes);
+
+  JS_METHOD_SET(target, "publicEncrypt", PublicKeyCipher::PublicEncrypt);
+  JS_METHOD_SET(target, "privateDecrypt", PublicKeyCipher::PrivateDecrypt);
 
   JS_NAME_SET(target, JS_STRING_ID("SSL3_ENABLE"), STD_TO_BOOLEAN(SSL3_ENABLE));
   JS_NAME_SET(target, JS_STRING_ID("SSL2_ENABLE"), STD_TO_BOOLEAN(SSL2_ENABLE));
