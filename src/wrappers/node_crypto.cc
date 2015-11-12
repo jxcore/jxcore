@@ -3616,6 +3616,7 @@ protected:
     }
 
     Buffer *buff = Buffer::New(out, out_len, com);
+    free(out);
     RETURN_PARAM(JS_TYPE_TO_LOCAL_OBJECT(buff->handle_));
   }
   JS_METHOD_END
@@ -3651,6 +3652,7 @@ protected:
     }
 
     Buffer *buff = Buffer::New(reinterpret_cast<char*>(out), size, com);
+    free(out);
     RETURN_PARAM(JS_TYPE_TO_LOCAL_OBJECT(buff->handle_));
   }
   JS_METHOD_END
@@ -3675,6 +3677,7 @@ protected:
     }
 
     Buffer *buff = Buffer::New(reinterpret_cast<char*>(out), size, com);
+    free(out);
     RETURN_PARAM(JS_TYPE_TO_LOCAL_OBJECT(buff->handle_));
   }
   JS_METHOD_END
