@@ -1023,10 +1023,10 @@
     var stdin, stdout, stderr;
 
     var util = NativeModule.require('util');
-    var isSTD = (process.platform === 'android' || process.platform == 'winrt')
-                  && process.isEmbedded;
+    var isHeadless = process.isEmbedded && (process.platform === 'android' ||
+	              process.platform == 'winrt' || !process.hasStdFds);
     var $tw;
-    if (isSTD) {
+    if (isHeadless) {
       $tw = process.binding('jxutils_wrap');
     }
 
@@ -1040,7 +1040,7 @@
       Writable.call(this, opt);
     }
 
-    if (isSTD) { // target LogCat for stdout and stderr
+    if (isHeadless) { // target LogCat for stdout and stderr
       fake_stdout = new StdLogCatOut();
       fake_stdout.write = fake_stdout._write = function(bf) {
         $tw.print(bf + '');
@@ -1060,7 +1060,7 @@
     process.__defineGetter__('stdout', function() {
       if (stdout)
         return stdout;
-      if (isSTD) {
+      if (isHeadless) {
         stdout = fake_stdout;
       } else {
         stdout = createWritableStdioStream(1);
@@ -1084,7 +1084,7 @@
       if (stderr)
         return stderr;
 
-      if (isSTD) {
+      if (isHeadless) {
         stderr = fake_stderr;
       } else {
         stderr = createWritableStdioStream(2);
@@ -1102,7 +1102,7 @@
       if (stdin)
         return stdin;
 
-      if (process.isEmbedded && (isSTD || process.platform == 'ios')) {
+      if (process.isEmbedded && (isHeadless || process.platform == 'ios')) {
         console.error('stdin is not supported on embedded applications');
         stdin = fake_stdin;
         // do not throw or return null
