@@ -28,7 +28,7 @@ var rsaPubPem = fs.readFileSync(common.fixturesDir + '/test_rsa_pubkey.pem',
     'ascii');
 var rsaKeyPem = fs.readFileSync(common.fixturesDir + '/test_rsa_privkey.pem',
     'ascii');
-var rsaKeyPemEncrypted = fs.readFileSync(common.fixturesDir + './test_rsa_privkey_encrypted.pem',
+var rsaKeyPemEncrypted = fs.readFileSync(common.fixturesDir + '/test_rsa_privkey_encrypted.pem',
     'ascii');
 
 try {
