@@ -17,7 +17,8 @@
  * is a 16-bit code unit of a Unicode code point, not a "character".
  */
 
-#ifdef _MSC_VER
+// do not force char16_t for VS2015+
+#ifdef _MSC_VER && _MSC_VER < 1900
    /*
     * C++11 says char16_t is a distinct builtin type, but Windows's yvals.h
     * typedefs char16_t as an unsigned short. We would like to alias char16_t
