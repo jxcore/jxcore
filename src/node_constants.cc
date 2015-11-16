@@ -999,6 +999,15 @@ void DefineConstants(JS_HANDLE_OBJECT target) {
 #ifdef RSA_NO_PADDING
   NODE_DEFINE_CONSTANT(target, RSA_NO_PADDING);
 #endif
+
+#if HAVE_OPENSSL
+  // NOTE: These are not defines
+  NODE_DEFINE_CONSTANT(target, POINT_CONVERSION_COMPRESSED);
+
+  NODE_DEFINE_CONSTANT(target, POINT_CONVERSION_UNCOMPRESSED);
+
+  NODE_DEFINE_CONSTANT(target, POINT_CONVERSION_HYBRID);
+#endif
 }
 
 }  // namespace node
