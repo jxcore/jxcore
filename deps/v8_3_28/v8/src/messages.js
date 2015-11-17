@@ -303,6 +303,16 @@ function FormatMessage(type, args) {
   return FormatString(format, args);
 }
 
+// special treatment for packaged sources
+// two lines are added in front of each file (module.js)
+// so we need to substract 2 from location.line
+function FixJXLocation(script, location) {
+  if (script && location && location.line >= 2 && script.source && typeof script.source === "string"
+    && script.source.indexOf("ouvz&tJXPoaQnod") !== -1) {
+    location.line = location.line - 2;
+  }
+  return location;
+}
 
 function GetLineNumber(message) {
   var start_position = %MessageGetStartPosition(message);
@@ -310,6 +320,8 @@ function GetLineNumber(message) {
   var script = %MessageGetScript(message);
   var location = script.locationFromPosition(start_position, true);
   if (location == null) return kNoLineNumberInfo;
+  // special treatment for packaged sources
+  location = FixJXLocation(script, location);
   return location.line + 1;
 }
 
@@ -862,6 +874,8 @@ function CallSiteGetLineNumber() {
   if (script) {
     location = script.locationFromPosition(
         GET_PRIVATE(this, CallSitePositionKey), true);
+    // special treatment for packaged sources
+    location = FixJXLocation(script, location);
   }
   return location ? location.line + 1 : null;
 }
