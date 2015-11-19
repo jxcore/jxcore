@@ -65,8 +65,9 @@ class SuppressGC {
 
 class StringTools {
  public:
-  static JSString *JS_ConvertToJSString(JSContext *cx, const char *source,
-                                        size_t sz_source);
+  static void JS_ConvertToJSString(JSContext *cx, const char *source,
+                                   size_t sz_source,
+                                   JS::MutableHandleString ret_val);
   static void JS_ConvertToJSChar(JSContext *cx, const char *source,
                                  size_t sz_source, auto_jschar *out);
   static void JS_ConvertToJSChar(JSContext *cx, JSString *source,
