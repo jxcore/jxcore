@@ -101,14 +101,12 @@ void JXString::SetFromHandle() {
     length_ = 0;
   }
 
-  if (value_ != nullptr) {
-    JS::RootedString rs_value_(ctx_, value_);
-    str_ = JS_EncodeStringToUTF8AndLength(ctx_, rs_value_, utf8_length_);
-    if (str_ != nullptr) {
-      length_ = JS_GetStringEncodingLengthUnsafe(value_);
-      ascii_char_set_ = false;
-      return;
-    }
+  JS::RootedString rs_value_(ctx_, value_);
+  str_ = JS_EncodeStringToUTF8AndLength(ctx_, rs_value_, utf8_length_);
+  if (str_ != nullptr) {
+    length_ = JS_GetStringEncodingLengthUnsafe(value_);
+    ascii_char_set_ = false;
+    return;
   }
 
   str_ = &empty_str;
