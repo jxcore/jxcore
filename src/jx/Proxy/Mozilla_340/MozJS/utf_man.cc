@@ -58,7 +58,7 @@ class utf8_decoder {
       Return UTF8_ERROR if it is not a contination byte.
   */
   int cont() {
-    int c = get();
+    const int c = get();
     return ((c & 0xC0) == 0x80) ? (c & 0x3F) : UTF8_ERROR;
   }
 
