@@ -11,6 +11,8 @@ Copyright (c) 2005 JSON.org
 // force Char16_t
 #include "Isolate.h"
 
-int utf8_to_utf16(char16_t w[], const char p[], unsigned length);
+int CheckUnicode(const char p[], unsigned length);
+bool ConvertCharToChar16(const char *src, jschar *dst, size_t srclen,
+                         size_t *dstlenp);
 
 #endif  // SRC_JX_PROXY_MOZILLA_MOZJS_UTF_MAN_H_

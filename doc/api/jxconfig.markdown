@@ -2,7 +2,9 @@
 
     Stability: 3 - Beta
 
-You can set the below list of limitations per application & for entire system (all the JXcore apps). In order to define a global config, visit the JXcore executable binary path and create a `jx.config` file (for Windows, node.config)
+You can set the below list of limitations per application & for entire system (all the JXcore apps).
+In order to define a global config, visit the JXcore executable binary path and create a `jx.config` file.
+Additionally on Windows also `node.config` is respected (for backwards compatibility). However if there is `jx.config` file present, it takes the precedence.
 
     {
         "maxCPU":50

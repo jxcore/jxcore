@@ -189,8 +189,7 @@
         'type': 'loadable_module'
       }],
       ['node_shared_library==1 and node_win_onecore==1', {
-        'type': 'loadable_module',
-        'defines': [ 'UWP_DLL=1' ]
+        'type': 'loadable_module'
       }],
       ['node_shared_library==0 and node_static_library==0',
       {

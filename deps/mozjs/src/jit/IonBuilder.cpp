@@ -1278,9 +1278,8 @@ IonBuilder::traverseBytecode()
 
         // Nothing in inspectOpcode() is allowed to advance the pc.
         JSOp op = JSOp(*pc);
-        if (!inspectOpcode(op))  // { printf("OP: %d\n", op);fflush(stdout);
+        if (!inspectOpcode(op))
             return false;
-        // }
 
 #ifdef DEBUG
         for (size_t i = 0; i < popped.length(); i++) {
@@ -1545,7 +1544,7 @@ IonBuilder::inspectOpcode(JSOp op)
         return jsop_newobject();
 
       case JSOP_NEWARRAY:
-	return jsop_newarray(GET_UINT24(pc));
+        return jsop_newarray(GET_UINT24(pc));
 
       case JSOP_NEWARRAY_COPYONWRITE:
         return jsop_newarray_copyonwrite();
@@ -1761,7 +1760,6 @@ IonBuilder::inspectOpcode(JSOp op)
 #ifdef DEBUG
         return abort("Unsupported opcode: %s (line %d)", js_CodeName[op], info().lineno(pc));
 #else
-        // printf("ABORT %d %d\n",  op, info().lineno(pc));fflush(stdout);
         return abort("Unsupported opcode: %d (line %d)", op, info().lineno(pc));
 #endif
     }
