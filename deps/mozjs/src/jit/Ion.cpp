@@ -2904,7 +2904,6 @@ jit::ForbidCompilation(JSContext *cx, JSScript *script, ExecutionMode mode)
 
     CancelOffThreadIonCompile(cx->compartment(), script);
 
-    // printf("1) %s - %d\n", script->filename(), script->lineno());fflush(stdout);
     switch (mode) {
       case SequentialExecution:
         if (script->hasIonScript()) {
