@@ -52,9 +52,11 @@ JS_METHOD(MemoryWrap, MapGet) {
   BTStore::const_iterator it = node::commons::mapData[tid]->find(jstr);
 
   if (it != node::commons::mapData[tid]->end()) {
-    std::string backup(it->second.c_str());
+    JS_LOCAL_STRING str =
+        UTF8_TO_STRING_WITH_LENGTH(it->second.data_, it->second.length_);
+    free(it->second.data_);
     node::commons::mapData[tid]->erase(jstr);
-    RETURN_PARAM(UTF8_TO_STRING(backup.c_str()));
+    RETURN_PARAM(str);
   }
 }
 JS_METHOD_END
@@ -88,7 +90,9 @@ JS_METHOD(MemoryWrap, MapRead) {
   BTStore::const_iterator it = node::commons::mapData[tid]->find(jstr);
 
   if (it != node::commons::mapData[tid]->end()) {
-    RETURN_PARAM(UTF8_TO_STRING(it->second.c_str()));
+    JS_LOCAL_STRING str =
+        UTF8_TO_STRING_WITH_LENGTH(it->second.data_, it->second.length_);
+    RETURN_PARAM(str);
   }
 }
 JS_METHOD_END
@@ -102,7 +106,13 @@ JS_METHOD(MemoryWrap, MapRemove) {
   jxcore::JXString jxs;
   args.GetString(1, &jxs);
   std::string jstr(*jxs);
-  node::commons::mapData[tid]->erase(jstr);
+
+  BTStore::const_iterator it = node::commons::mapData[tid]->find(jstr);
+
+  if (it != node::commons::mapData[tid]->end()) {
+    free(it->second.data_);
+    node::commons::mapData[tid]->erase(jstr);
+  }
 }
 JS_METHOD_END
 
@@ -119,12 +129,32 @@ JS_METHOD(MemoryWrap, MapSet) {
 
   jxcore::JXString val;
   args.GetString(2, &val);
-  std::string vals(*val);
+  val.DisableAutoGC();
+  MAP_HOST_DATA data;
+  data.data_ = *val;
+  data.length_ = val.length();
 
   node::commons::mapData[tid]->erase(str_keys);
-  node::commons::mapData[tid]->insert(std::make_pair(str_keys, vals));
+  node::commons::mapData[tid]->insert(std::make_pair(str_keys, data));
 }
 JS_METHOD_END
+
+void MemoryWrap::MapClear(const bool clear_blocks) {
+  auto_lock locker_(CSLOCK_JBEND);
+  if (commons::mapCount == 0) {
+    return;
+  }
+
+  for (int n = 0; n < commons::mapCount; n++) {
+    BTStore::const_iterator it = commons::mapData[n]->begin();
+    for (; it != commons::mapData[n]->end(); it++) {
+      free(it->second.data_);
+    }
+    commons::mapData[n]->clear();
+    if (clear_blocks) delete commons::mapData[n];
+  }
+  commons::mapCount = 0;
+}
 
 JS_METHOD(MemoryWrap, SourceSetIfNotExists) {
   if (XSpace::Store() == NULL) RETURN();
@@ -145,11 +175,12 @@ JS_METHOD(MemoryWrap, SourceSetIfNotExists) {
     _StringStore::const_iterator it = store->find(str_keys);
     if (it == store->end()) {
       jxcore::JXString val;
+      val.DisableAutoGC();
       args.GetString(1, &val);
 
-      externalData *data = new externalData;
-      data->type = EXTERNAL_DATA_STRING;
-      data->str_data = *val;
+      MAP_HOST_DATA data;
+      data.length_ = val.length();
+      data.data_ = *val;
 
       store->insert(std::make_pair(str_keys, data));
       set = true;
@@ -183,22 +214,24 @@ JS_METHOD(MemoryWrap, SourceSetIfEq) {
       jxcore::JXString cmp;
       args.GetString(2, &cmp);
       std::string cmps(*cmp);
+      std::string org = it->second.data_;
 
-      if (it->second->str_data.compare(cmps) == 0) {
+      if (org.compare(cmps) == 0) {
         _StringStore::const_iterator it = store->find(str_keys);
 
         if (it != store->end()) {
-          externalData *old_data = it->second;
+          MAP_HOST_DATA old_data = it->second;
+          free(old_data.data_);
           store->erase(str_keys);
-          delete old_data;
         }
 
         jxcore::JXString val;
+        val.DisableAutoGC();
         args.GetString(1, &val);
 
-        externalData *data = new externalData;
-        data->type = EXTERNAL_DATA_STRING;
-        data->str_data = *val;
+        MAP_HOST_DATA data;
+        data.length_ = val.length();
+        data.data_ = *val;
 
         store->insert(std::make_pair(str_keys, data));
         set = true;
@@ -240,25 +273,27 @@ JS_METHOD(MemoryWrap, SourceSetIfEqOrNull) {
       jxcore::JXString cmp;
       args.GetString(2, &cmp);
       std::string cmps(*cmp);
+      std::string org = it->second.data_;
 
-      if (it->second->str_data.compare(cmps) == 0) equal = true;
+      if (org.compare(cmps) == 0) equal = true;
     }
 
     if (equal || null) {
       _StringStore::const_iterator it = store->find(str_keys);
 
       if (it != store->end()) {
-        externalData *old_data = it->second;
+        MAP_HOST_DATA old_data = it->second;
+        free(old_data.data_);
         store->erase(str_keys);
-        delete old_data;
       }
 
       jxcore::JXString val;
+      val.DisableAutoGC();
       args.GetString(1, &val);
 
-      externalData *data = new externalData;
-      data->type = EXTERNAL_DATA_STRING;
-      data->str_data = *val;
+      MAP_HOST_DATA data;
+      data.length_ = val.length();
+      data.data_ = *val;
 
       store->insert(std::make_pair(str_keys, data));
       set = true;
@@ -271,7 +306,8 @@ JS_METHOD(MemoryWrap, SourceSetIfEqOrNull) {
 }
 JS_METHOD_END
 
-void MemoryWrap::SharedSet(const char *name, const char *value) {
+void MemoryWrap::SharedSet(const char *name, const char *value,
+                           const size_t len) {
   XSpace::LOCKSTORE();
   _StringStore *store = XSpace::Store();
   if (store != NULL) {
@@ -279,15 +315,18 @@ void MemoryWrap::SharedSet(const char *name, const char *value) {
     _StringStore::const_iterator it = store->find(str_key);
 
     if (it != store->end()) {
-      externalData *old_data = it->second;
+      MAP_HOST_DATA old_data = it->second;
+      free(old_data.data_);
       store->erase(str_key);
-      delete old_data;
     }
 
     if (value != NULL) {
-      externalData *data = new externalData;
-      data->type = EXTERNAL_DATA_STRING;
-      data->str_data = std::string(value);
+      MAP_HOST_DATA data;
+      char *tmp = (char *)malloc(sizeof(char) * len + 1);
+      memcpy(tmp, value, sizeof(char) * len);
+      tmp[len] = char(0);
+      data.length_ = len;
+      data.data_ = tmp;
 
       store->insert(std::make_pair(str_key, data));
     }
@@ -310,7 +349,7 @@ JS_METHOD(MemoryWrap, SourceSet) {
   jxcore::JXString val;
   args.GetString(1, &val);
 
-  SharedSet(*str_key, *val);
+  SharedSet(*str_key, *val, val.length());
 
   XSpace::ExpirationKick(*str_key);
 }
@@ -357,12 +396,13 @@ JS_METHOD(MemoryWrap, SourceRead) {
   if (store != NULL) {
     _StringStore::const_iterator it = store->find(str_keys);
     if (it != store->end()) {
-      externalData *data = it->second;
-      std::string localSTR(data->str_data.c_str());
+      MAP_HOST_DATA data = it->second;
+      JS_LOCAL_STRING str =
+          UTF8_TO_STRING_WITH_LENGTH(data.data_, data.length_);
       XSpace::UNLOCKSTORE();
 
       XSpace::ExpirationKick(*str_key);
-      RETURN_PARAM(UTF8_TO_STRING(localSTR.c_str()));
+      RETURN_PARAM(str);
     }
   }
   XSpace::UNLOCKSTORE();
@@ -386,9 +426,9 @@ JS_METHOD(MemoryWrap, SourceRemove) {
     _StringStore::const_iterator it = store->find(str_keys);
 
     if (it != store->end()) {
-      externalData *data = it->second;
+      MAP_HOST_DATA data = it->second;
+      free(data.data_);
       store->erase(str_keys);
-      delete data;
     }
   }
   XSpace::UNLOCKSTORE();
@@ -414,32 +454,20 @@ JS_METHOD(MemoryWrap, SourceGet) {
     _StringStore::const_iterator it = store->find(str_keys);
 
     if (it != store->end()) {
-      externalData *data = it->second;
-      std::string str(data->str_data.c_str());
+      MAP_HOST_DATA data = it->second;
+      JS_LOCAL_STRING str =
+          UTF8_TO_STRING_WITH_LENGTH(data.data_, data.length_);
+      free(data.data_);
       store->erase(str_keys);
       XSpace::UNLOCKSTORE();
-      delete data;
 
       XSpace::ExpirationRemove(*str_key);
-      RETURN_PARAM(UTF8_TO_STRING(str.c_str()));
+      RETURN_PARAM(str);
     }
   }
   XSpace::UNLOCKSTORE();
 }
 JS_METHOD_END
-
-void MemoryWrap::MapClear(const bool clear_blocks) {
-  auto_lock locker_(CSLOCK_JBEND);
-  if (commons::mapCount == 0) {
-    return;
-  }
-
-  for (int n = 0; n < commons::mapCount; n++) {
-    commons::mapData[n]->clear();
-    if (clear_blocks) delete commons::mapData[n];
-  }
-  commons::mapCount = 0;
-}
 
 }  // namespace node
 

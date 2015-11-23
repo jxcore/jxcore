@@ -28,14 +28,7 @@ struct ttlTimer {
 #define EXTERNAL_DATA_STRING 1
 #define EXTERNAL_DATA_TIMER 2
 
-struct externalData {
-  std::string str_data;
-  double number_data;
-  int timer_data;
-  int type;
-};
-
-typedef MAP_HOST<std::string, externalData*> _StringStore;
+typedef MAP_HOST<std::string, node::MAP_HOST_DATA> _StringStore;
 typedef MAP_HOST<std::string, ttlTimer> _TimerStore;
 
 class XSpace {

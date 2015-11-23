@@ -469,7 +469,7 @@ void JXEngine::Start() {
 }
 
 void JXEngine::MemoryMap(const char *filename, const char *content,
-                         bool entry_file) {
+                         const size_t len, bool entry_file) {
   ENGINE_LOG_THIS("JXEngine", "MemoryMap");
   if (entry_file) {
     if (entry_file_name_.length() != 0) {
@@ -486,7 +486,7 @@ void JXEngine::MemoryMap(const char *filename, const char *content,
     entry_file_name_ = filename;
   }
 
-  node::MemoryWrap::SharedSet(filename, content);
+  node::MemoryWrap::SharedSet(filename, content, len);
 }
 
 #ifdef JS_ENGINE_MOZJS

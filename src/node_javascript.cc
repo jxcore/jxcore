@@ -46,12 +46,15 @@ void JXDefineJavaScript() {
 
   std::string name = "jxcore";
   std::string value = "throw new Error('jxcore is a global variable');";
+  char *tmp = (char *)malloc(sizeof(char) * value.length() + 1);
+  memcpy(tmp, value.c_str(), sizeof(char) * value.length());
+  tmp[value.length()] = char(0);
 
-  externalData *data = new externalData;
-  data->type = EXTERNAL_DATA_STRING;
-  data->str_data = value;
+  MAP_HOST_DATA jdata;
+  jdata.length_ = value.length();
+  jdata.data_ = tmp;
 
-  XSpace::Store()->insert(std::make_pair(name, data));
+  XSpace::Store()->insert(std::make_pair(name, jdata));
   XSpace::UNLOCKSTORE();
 #ifdef JXCORE_SOURCES_MINIFIED
   node::commons *com = node::commons::getInstance();
@@ -60,8 +63,9 @@ void JXDefineJavaScript() {
   for (int i = 0; jxcore::natives[i].name; i++) {
     if (jxcore::natives[i].source != jxcore::node_native) {
       std::string name(jxcore::natives[i].name);
-      data = new externalData;
-      data->type = EXTERNAL_DATA_STRING;
+
+      MAP_HOST_DATA data;
+      char *tmp;
 #ifdef JXCORE_SOURCES_MINIFIED
       if (jxcore::natives[i].source_len > 0) {
         jxcore::mz_uint8 *str = jxcore::UncompressNative(
@@ -73,7 +77,10 @@ void JXDefineJavaScript() {
         std::string bt(jxcore::natives[i].source,
                        jxcore::natives[i].source_len);
 #endif
-        data->str_data = bt;
+        tmp = (char *)malloc(sizeof(char) * bt.length() + 1);
+        memcpy(tmp, bt.c_str(), sizeof(char) * bt.length());
+        tmp[bt.length()] = char(0);
+        data.length_ = bt.length();
       } else {  // _jx_marker
         std::string bt(jxcore::natives[i].source);
         std::string btn = "exports.mark='";
@@ -85,8 +92,12 @@ void JXDefineJavaScript() {
             break;
         btn += "';";
 
-        data->str_data = btn;
+        tmp = (char *)malloc(sizeof(char) * btn.length() + 1);
+        memcpy(tmp, btn.c_str(), sizeof(char) * btn.length());
+        tmp[btn.length()] = char(0);
+        data.length_ = btn.length();
       }
+      data.data_ = tmp;
 
       XSpace::Store()->insert(std::make_pair(name, data));
     }

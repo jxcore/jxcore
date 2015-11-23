@@ -193,7 +193,7 @@ void JX_DefineMainFile(const char *data) {
     return;
   }
 
-  engine->MemoryMap("main.js", data, true);
+  engine->MemoryMap("main.js", data, strlen(data), true);
 }
 
 void JX_DefineFile(const char *name, const char *file) {
@@ -206,7 +206,7 @@ void JX_DefineFile(const char *name, const char *file) {
     return;
   }
 
-  engine->MemoryMap(name, file);
+  engine->MemoryMap(name, file, strlen(file));
 }
 
 void JX_StartEngine() {
