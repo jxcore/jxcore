@@ -14,6 +14,10 @@ Attaching any callback to `restart` event, depending on the context in which it 
 
 Internal Recovery is a separate section described [here](jxcore-feature-internal-recovery.markdown).
 
+## process.hasStdFds
+
+This property returns `true` if the environment uses file descriptors 1 & 2 for the   stdout and stderr steams. Used when allocating the console object to determine whether to use standard output streams, or whether to use an alternative (such as for Windows GUI applications).
+
 ## process.isEmbedded
 
 This property returns `true`, if the binary is a static/shared library. This case applies e.g. for mobile deployments (android, iOS).
