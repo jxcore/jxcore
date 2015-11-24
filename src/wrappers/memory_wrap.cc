@@ -1,6 +1,7 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
 #include "memory_wrap.h"
+#include "node_buffer.h"
 #include "jx/extend.h"
 #include "jx/memory_store.h"
 #include <iostream>
@@ -40,7 +41,7 @@ JS_METHOD_END
 
 JS_METHOD(MemoryWrap, MapGet) {
   if (!args.IsNumber(0) || !args.IsString(1)) {
-    THROW_EXCEPTION("Missing parameters (getMap) expects (int, string).");
+    THROW_EXCEPTION("Missing parameters (getMap) expects (int, string, bool).");
   }
 
   int tid = args.GetInteger(0) + 1;
@@ -52,11 +53,19 @@ JS_METHOD(MemoryWrap, MapGet) {
   BTStore::const_iterator it = node::commons::mapData[tid]->find(jstr);
 
   if (it != node::commons::mapData[tid]->end()) {
-    JS_LOCAL_STRING str =
-        UTF8_TO_STRING_WITH_LENGTH(it->second.data_, it->second.length_);
-    free(it->second.data_);
-    node::commons::mapData[tid]->erase(jstr);
-    RETURN_PARAM(str);
+    if (!args.GetBoolean(2)) {  // is_buffer
+      JS_LOCAL_STRING str =
+          UTF8_TO_STRING_WITH_LENGTH(it->second.data_, it->second.length_);
+      free(it->second.data_);
+      node::commons::mapData[tid]->erase(jstr);
+      RETURN_PARAM(str);
+    } else {
+      node::Buffer *buff =
+          node::Buffer::New(it->second.data_, it->second.length_, com);
+      free(it->second.data_);
+      node::commons::mapData[tid]->erase(jstr);
+      RETURN_PARAM(JS_TYPE_TO_LOCAL_OBJECT(buff->handle_));
+    }
   }
 }
 JS_METHOD_END
@@ -79,7 +88,8 @@ JS_METHOD_END
 
 JS_METHOD(MemoryWrap, MapRead) {
   if (!args.IsNumber(0) || !args.IsString(1)) {
-    THROW_EXCEPTION("Missing parameters (readMap) expects (int, string).");
+    THROW_EXCEPTION(
+        "Missing parameters (readMap) expects (int, string, bool).");
   }
 
   int tid = args.GetInteger(0) + 1;
@@ -90,9 +100,15 @@ JS_METHOD(MemoryWrap, MapRead) {
   BTStore::const_iterator it = node::commons::mapData[tid]->find(jstr);
 
   if (it != node::commons::mapData[tid]->end()) {
-    JS_LOCAL_STRING str =
-        UTF8_TO_STRING_WITH_LENGTH(it->second.data_, it->second.length_);
-    RETURN_PARAM(str);
+    if (!args.GetBoolean(2)) {  // is_buffer
+      JS_LOCAL_STRING str =
+          UTF8_TO_STRING_WITH_LENGTH(it->second.data_, it->second.length_);
+      RETURN_PARAM(str);
+    } else {
+      node::Buffer *buff =
+          node::Buffer::New(it->second.data_, it->second.length_, com);
+      RETURN_PARAM(JS_TYPE_TO_LOCAL_OBJECT(buff->handle_));
+    }
   }
 }
 JS_METHOD_END
@@ -116,10 +132,17 @@ JS_METHOD(MemoryWrap, MapRemove) {
 }
 JS_METHOD_END
 
+#define COPY_BUFFER(buf, to)                                \
+  size_t ln_##buf = BUFFER__LENGTH(buf);                    \
+  char *to = (char *)malloc(sizeof(char) * (ln_##buf + 1)); \
+  memcpy(to, BUFFER__DATA(buf), sizeof(char) * (ln_##buf)); \
+  to[ln_##buf] = char(0)
+
 JS_METHOD(MemoryWrap, MapSet) {
-  if (!args.IsNumber(0) || !args.IsString(1) || !args.IsString(2)) {
+  if (!args.IsNumber(0) || !args.IsString(1) ||
+      (!Buffer::jxHasInstance(args.GetItem(2), com) && !args.IsString(2))) {
     THROW_EXCEPTION(
-        "Missing parameters (setMap) expects (int, string, string).");
+        "Missing parameters (setMap) expects (int, string, string/buffer).");
   }
 
   int tid = args.GetInteger(0) + 1;
@@ -127,12 +150,19 @@ JS_METHOD(MemoryWrap, MapSet) {
   args.GetString(1, &str_key);
   std::string str_keys(*str_key);
 
-  jxcore::JXString val;
-  args.GetString(2, &val);
-  val.DisableAutoGC();
   MAP_HOST_DATA data;
-  data.data_ = *val;
-  data.length_ = val.length();
+  if (!args.IsString(2)) {
+    JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(args.GetItem(2));
+    COPY_BUFFER(obj, val);
+    data.data_ = val;
+    data.length_ = ln_obj;
+  } else {
+    jxcore::JXString val;
+    args.GetString(2, &val);
+    val.DisableAutoGC();
+    data.data_ = *val;
+    data.length_ = val.length();
+  }
 
   node::commons::mapData[tid]->erase(str_keys);
   node::commons::mapData[tid]->insert(std::make_pair(str_keys, data));
@@ -159,9 +189,11 @@ void MemoryWrap::MapClear(const bool clear_blocks) {
 JS_METHOD(MemoryWrap, SourceSetIfNotExists) {
   if (XSpace::Store() == NULL) RETURN();
 
-  if (!args.IsString(0) || !args.IsString(1)) {
+  if (!args.IsString(0) ||
+      (!args.IsString(1) && !Buffer::jxHasInstance(args.GetItem(1), com))) {
     THROW_EXCEPTION(
-        "Missing parameters (setSourceIfNotExists) expects (string, string).");
+        "Missing parameters (setSourceIfNotExists) expects (string, "
+        "string/buffer).");
   }
 
   jxcore::JXString str_key;
@@ -174,13 +206,19 @@ JS_METHOD(MemoryWrap, SourceSetIfNotExists) {
   if (store != NULL) {
     _StringStore::const_iterator it = store->find(str_keys);
     if (it == store->end()) {
-      jxcore::JXString val;
-      val.DisableAutoGC();
-      args.GetString(1, &val);
-
       MAP_HOST_DATA data;
-      data.length_ = val.length();
-      data.data_ = *val;
+      if (!args.IsString(1)) {
+        JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(args.GetItem(1));
+        COPY_BUFFER(obj, val);
+        data.data_ = val;
+        data.length_ = ln_obj;
+      } else {
+        jxcore::JXString val;
+        args.GetString(1, &val);
+        val.DisableAutoGC();
+        data.data_ = *val;
+        data.length_ = val.length();
+      }
 
       store->insert(std::make_pair(str_keys, data));
       set = true;
@@ -195,10 +233,13 @@ JS_METHOD_END
 JS_METHOD(MemoryWrap, SourceSetIfEq) {
   if (XSpace::Store() == NULL) RETURN();
 
-  if (!args.IsString(0) || !args.IsString(1) || !args.IsString(2)) {
+  if (!args.IsString(0) ||
+      (!args.IsString(1) && !Buffer::jxHasInstance(args.GetItem(1), com)) ||
+      (!args.IsString(2) && !Buffer::jxHasInstance(args.GetItem(2), com))) {
     THROW_EXCEPTION(
-        "Missing parameters (setSourceIfEqualsTo) expects (string, string, "
-        "string).");
+        "Missing parameters (setSourceIfEqualsTo) expects (string, "
+        "buffer/string, "
+        "buffer/string).");
   }
 
   jxcore::JXString str_key;
@@ -211,9 +252,15 @@ JS_METHOD(MemoryWrap, SourceSetIfEq) {
   if (store != NULL) {
     _StringStore::const_iterator it = store->find(str_keys);
     if (it != store->end()) {
-      jxcore::JXString cmp;
-      args.GetString(2, &cmp);
-      std::string cmps(*cmp);
+      std::string cmps;
+      if (args.IsString(2)) {
+        jxcore::JXString cmp;
+        args.GetString(2, &cmp);
+        cmps = *cmp;
+      } else {
+        JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(args.GetItem(2));
+        cmps = BUFFER__DATA(obj);
+      }
       std::string org = it->second.data_;
 
       if (org.compare(cmps) == 0) {
@@ -225,13 +272,19 @@ JS_METHOD(MemoryWrap, SourceSetIfEq) {
           store->erase(str_keys);
         }
 
-        jxcore::JXString val;
-        val.DisableAutoGC();
-        args.GetString(1, &val);
-
         MAP_HOST_DATA data;
-        data.length_ = val.length();
-        data.data_ = *val;
+        if (!args.IsString(1)) {
+          JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(args.GetItem(1));
+          COPY_BUFFER(obj, val);
+          data.data_ = val;
+          data.length_ = ln_obj;
+        } else {
+          jxcore::JXString val;
+          args.GetString(1, &val);
+          val.DisableAutoGC();
+          data.data_ = *val;
+          data.length_ = val.length();
+        }
 
         store->insert(std::make_pair(str_keys, data));
         set = true;
@@ -248,10 +301,12 @@ JS_METHOD_END
 JS_METHOD(MemoryWrap, SourceSetIfEqOrNull) {
   if (XSpace::Store() == NULL) RETURN();
 
-  if (!args.IsString(0) || !args.IsString(1) || !args.IsString(2)) {
+  if (!args.IsString(0) ||
+      (!args.IsString(1) && !Buffer::jxHasInstance(args.GetItem(1), com)) ||
+      (!args.IsString(2) && !Buffer::jxHasInstance(args.GetItem(2), com))) {
     THROW_EXCEPTION(
         "Missing parameters (setSourceIfEqualsToOrNull) expects (string, "
-        "string, string).");
+        "buffer/string, buffer/string).");
   }
 
   jxcore::JXString str_key;
@@ -270,12 +325,20 @@ JS_METHOD(MemoryWrap, SourceSetIfEqOrNull) {
     if (it == store->end()) {
       null = true;
     } else {
-      jxcore::JXString cmp;
-      args.GetString(2, &cmp);
-      std::string cmps(*cmp);
-      std::string org = it->second.data_;
+      if (!args.IsString(2)) {
+        JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(args.GetItem(2));
+        std::string cmps(BUFFER__DATA(obj));
+        std::string org = it->second.data_;
 
-      if (org.compare(cmps) == 0) equal = true;
+        if (org.compare(cmps) == 0) equal = true;
+      } else {
+        jxcore::JXString val;
+        args.GetString(2, &val);
+        std::string cmps(*val);
+        std::string org = it->second.data_;
+
+        if (org.compare(cmps) == 0) equal = true;
+      }
     }
 
     if (equal || null) {
@@ -287,13 +350,19 @@ JS_METHOD(MemoryWrap, SourceSetIfEqOrNull) {
         store->erase(str_keys);
       }
 
-      jxcore::JXString val;
-      val.DisableAutoGC();
-      args.GetString(1, &val);
-
       MAP_HOST_DATA data;
-      data.length_ = val.length();
-      data.data_ = *val;
+      if (!args.IsString(1)) {
+        JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(args.GetItem(1));
+        COPY_BUFFER(obj, val);
+        data.data_ = val;
+        data.length_ = ln_obj;
+      } else {
+        jxcore::JXString val;
+        args.GetString(1, &val);
+        val.DisableAutoGC();
+        data.data_ = *val;
+        data.length_ = val.length();
+      }
 
       store->insert(std::make_pair(str_keys, data));
       set = true;
@@ -339,17 +408,24 @@ JS_METHOD(MemoryWrap, SourceSet) {
     RETURN();
   }
 
-  if (!args.IsString(0) || !args.IsString(1)) {
-    THROW_EXCEPTION("Missing parameters (setSource) expects (string, string).");
+  if (!args.IsString(0) ||
+      (!args.IsString(1) && !Buffer::jxHasInstance(args.GetItem(1), com))) {
+    THROW_EXCEPTION(
+        "Missing parameters (setSource) expects (string, buffer/string).");
   }
 
   jxcore::JXString str_key;
   args.GetString(0, &str_key);
 
-  jxcore::JXString val;
-  args.GetString(1, &val);
-
-  SharedSet(*str_key, *val, val.length());
+  MAP_HOST_DATA data;
+  if (!args.IsString(1)) {
+    JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(args.GetItem(1));
+    SharedSet(*str_key, BUFFER__DATA(obj), BUFFER__LENGTH(obj));
+  } else {
+    jxcore::JXString val;
+    args.GetString(1, &val);
+    SharedSet(*str_key, *val, val.length());
+  }
 
   XSpace::ExpirationKick(*str_key);
 }
@@ -384,7 +460,7 @@ JS_METHOD(MemoryWrap, SourceRead) {
   if (XSpace::Store() == NULL) RETURN();
 
   if (!args.IsString(0)) {
-    THROW_EXCEPTION("Missing parameters (readSource) expects (string).");
+    THROW_EXCEPTION("Missing parameters (readSource) expects (string, bool).");
   }
 
   jxcore::JXString str_key;
@@ -397,12 +473,21 @@ JS_METHOD(MemoryWrap, SourceRead) {
     _StringStore::const_iterator it = store->find(str_keys);
     if (it != store->end()) {
       MAP_HOST_DATA data = it->second;
-      JS_LOCAL_STRING str =
-          UTF8_TO_STRING_WITH_LENGTH(data.data_, data.length_);
-      XSpace::UNLOCKSTORE();
+      if (!args.GetBoolean(1)) {  // is_buffer
+        JS_LOCAL_STRING str =
+            UTF8_TO_STRING_WITH_LENGTH(data.data_, data.length_);
+        XSpace::UNLOCKSTORE();
 
-      XSpace::ExpirationKick(*str_key);
-      RETURN_PARAM(str);
+        XSpace::ExpirationKick(*str_key);
+        RETURN_PARAM(str);
+      } else {
+        node::Buffer *buff =
+            node::Buffer::New(it->second.data_, it->second.length_, com);
+        XSpace::UNLOCKSTORE();
+
+        XSpace::ExpirationKick(*str_key);
+        RETURN_PARAM(JS_TYPE_TO_LOCAL_OBJECT(buff->handle_));
+      }
     }
   }
   XSpace::UNLOCKSTORE();
@@ -441,7 +526,7 @@ JS_METHOD(MemoryWrap, SourceGet) {
   if (XSpace::Store() == NULL) RETURN();
 
   if (!args.IsString(0)) {
-    THROW_EXCEPTION("Missing parameters (getSource) expects (string).");
+    THROW_EXCEPTION("Missing parameters (getSource) expects (string, bool).");
   }
 
   jxcore::JXString str_key;
@@ -454,15 +539,27 @@ JS_METHOD(MemoryWrap, SourceGet) {
     _StringStore::const_iterator it = store->find(str_keys);
 
     if (it != store->end()) {
-      MAP_HOST_DATA data = it->second;
-      JS_LOCAL_STRING str =
-          UTF8_TO_STRING_WITH_LENGTH(data.data_, data.length_);
-      free(data.data_);
-      store->erase(str_keys);
-      XSpace::UNLOCKSTORE();
+      if (!args.GetBoolean(1)) {  // is_buffer
+        MAP_HOST_DATA data = it->second;
+        JS_LOCAL_STRING str =
+            UTF8_TO_STRING_WITH_LENGTH(data.data_, data.length_);
+        free(data.data_);
+        store->erase(str_keys);
+        XSpace::UNLOCKSTORE();
 
-      XSpace::ExpirationRemove(*str_key);
-      RETURN_PARAM(str);
+        XSpace::ExpirationRemove(*str_key);
+        RETURN_PARAM(str);
+
+      } else {
+        node::Buffer *buff =
+            node::Buffer::New(it->second.data_, it->second.length_, com);
+        free(it->second.data_);
+        store->erase(str_keys);
+        XSpace::UNLOCKSTORE();
+
+        XSpace::ExpirationRemove(*str_key);
+        RETURN_PARAM(JS_TYPE_TO_LOCAL_OBJECT(buff->handle_));
+      }
     }
   }
   XSpace::UNLOCKSTORE();
