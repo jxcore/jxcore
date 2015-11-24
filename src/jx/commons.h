@@ -81,7 +81,12 @@ typedef enum {
   JXCORE_INSTANCE_EXITED
 } jxcore_instance_status;
 
-typedef MAP_HOST<std::string, std::string> BTStore;
+struct MAP_HOST_DATA {
+  size_t length_;
+  char *data_;
+};
+
+typedef MAP_HOST<std::string, MAP_HOST_DATA> BTStore;
 #define DEFINE_PERSISTENT_STRING(str) JS_PERSISTENT_STRING pstr_##str
 
 #ifdef _WIN32

@@ -9,7 +9,7 @@ namespace node {
 
 class MemoryWrap {
  public:
-  static void SharedSet(const char *name, const char *value);
+  static void SharedSet(const char *name, const char *value, const size_t len);
   static void MapClear(const bool clear_blocks);
 
  private:

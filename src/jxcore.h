@@ -105,7 +105,7 @@ class JXEngine {
    * if you want to set entry file from the memory content, set last parameter
    * to true
    */
-  void MemoryMap(const char *filename, const char *content,
+  void MemoryMap(const char *filename, const char *content, const size_t len,
                  bool entry_file = false);
 
   // Evaluates JS

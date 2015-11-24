@@ -52,7 +52,7 @@ if (!store.exists("111")) {
 
 * `key` {String}
 
-Removes the key/value pair from the store and returns the element’s value as a string.
+Removes the key/value pair from the store and returns the element’s value as a `string`.
 If the key is found, the method returns its value, otherwise returns `undefined`.
 
 ```js
@@ -66,11 +66,30 @@ console.log("value for key1:", jxcore.store.get("key1"));
 console.log("value for key1:", jxcore.store.get("key1"));
 ```
 
+### store.getBuffer(key)
+
+* `key` {String}
+
+Removes the key/value pair from the store and returns the element’s value as a `buffer`.
+If the key is found, the method returns its value, otherwise returns `undefined`.
+
+```js
+jxcore.store.set("key1", "value1");
+
+// below line outputs: "value for key1: value1"
+console.log("value for key1:", jxcore.store.getBuffer("key1"));
+
+// another call of get() outputs: "value for key1: undefined"
+// because the key/value pair was removed at first call
+console.log("value for key1:", jxcore.store.getBuffer("key1"));
+```
+
 ### store.read(key)
 
 * `key` {String}
 
-Reads element for specific key and returns its value as a string. This method doesn't remove the element from the store.
+Reads element for specific key and returns its value as a `string`. 
+This method doesn't remove the element from the store.
 If the key is found, the method returns its value, otherwise returns `undefined`.
 
 ```js
@@ -80,6 +99,25 @@ store.set("111", "test");
 // the calls below are equivalent:
 var x = store.read("111");
 var y = store.read(111);
+
+// now x is equal to y
+```
+
+### store.readBuffer(key)
+
+* `key` {String}
+
+Reads element for specific key and returns its value as a `buffer`. 
+This method doesn't remove the element from the store.
+If the key is found, the method returns its value, otherwise returns `undefined`.
+
+```js
+var store = jxcore.store;
+store.set("111", "test");
+
+// the calls below are equivalent:
+var x = store.readBuffer("111");
+var y = store.readBuffer(111);
 
 // now x is equal to y
 ```
@@ -99,7 +137,7 @@ store.remove(111);
 ### store.set(key, element)
 
 * `key` {String}
-* `element` {String}
+* `element` {String} or {Buffer}
 
 Sets the element’s value for specific key in the store.
 If the key already exists, the current element’s value will overwrite the previous one.
@@ -107,6 +145,8 @@ If the key already exists, the current element’s value will overwrite the prev
 ```js
 var store = jxcore.store;
 store.set("string", "test");
+// or
+store.set("string", new Buffer("test"));
 
 // below usages will make automatic conversion of provided keys and values
 // into strings:
@@ -118,11 +158,14 @@ store.set(1.45, 2.77);     // equivalent to store.set("1.45", "2.77");
 
 ## jxcore.store.shared
 
-In some scenarios you may need a single store, which you could access from any sub-instance. Use `jxcore.store.shared` object for this purpose.
+In some scenarios you may need a single store, which you could access from any sub-instance. 
+Use `jxcore.store.shared` object for this purpose.
 You should be aware of the following principles, even if all operations on this store are thread-safe.
-First of all, access time may take little longer comparing to the single threaded `jxcore.store` especially when using operations,
+First of all, access time may take little longer comparing to the single threaded `jxcore.store` 
+especially when using operations,
 which modify content of the data store (`set()`, `remove()` and `get()` – the last one also removes the item).
-Also, when different sub-instances are simultaneously writing/modifying value of the same key, the final stored value is the one that is updated last.
+Also, when separate sub-instances are simultaneously writing/modifying value of the same key, 
+the final stored value is the one that is updated last.
 
 Thread-safe `jxcore.store.shared` has exactly the same methods as single-instanced `jxcore.store`, but also implements some other members, specific for multi-tasking.
 
@@ -141,8 +184,8 @@ the `key` and it's value are automatically removed from the shared.store.
 Otherwise, whenever one of those methods are invoked for this `key` before the `timeout` elapses,
 JXcore invokes again the `expires()` method with the same parameters, so at that moment the `timeout` counter starts from zero.
 
-Precision of `key` expiration is +/- 10 milliseconds, which means, that if you set the `timeout` to e.g. 510 ms,
-the expiration may occur in a range between 500 and 520 ms.
+Precision of `key` expiration is +/- 10 milliseconds, which means, that if you set the `timeout` to e.g. 
+510 ms, the expiration may occur in a range between 500 and 520 ms.
 
 ```js
 var mem = jxcore.store.shared;
@@ -169,6 +212,10 @@ setTimeout(function(){
 
 See `store.get(key)`.
 
+### store.shared.getBuffer(key)
+
+See `store.getBuffer(key)`.
+
 ### store.shared.getBlockTimeout()
 
 Gets the maximum time (milliseconds) during which the key in a `safeBlock()` is locked.
@@ -177,6 +224,10 @@ By default its value is 10000 milliseconds and can be changed with `setBlockTime
 ### store.shared.read(key)
 
 See `store.read(key)`.
+
+### store.shared.readBuffer(key)
+
+See `store.readBuffer(key)`.
 
 ### store.shared.remove(key)
 
@@ -200,27 +251,30 @@ The `safeBlockFunction` is the execution block. This should be a function withou
 
 ```js
 jxcore.store.shared.safeBlock("myNumber", function () {
-
-        if (!shared.exists("myNumber")) {
-            shared.set("myNumber", 0);
-        }
-
-        var n = shared.read("myNumber");
-        n = parseInt(n) + 1;
-        shared.set("myNumber", n);
-
-        // working with a different key should not be performed in this block:
-        shared.set("myNumber_2", 333);
+	if (!shared.exists("myNumber")) {
+	  shared.set("myNumber", 0);
+	}
+	
+	var n = shared.read("myNumber");
+	n = parseInt(n) + 1;
+	shared.set("myNumber", n);
+	
+	// working with a different key should not be performed in this block:
+	shared.set("myNumber_2", 333);
 });
 ```
 
-In the example above we are using a `safeBlock` to perform multithread-safe increment of *myNumber* value kept in the shared store.
+In the example above we are using a `safeBlock` to perform multithread-safe increment of *myNumber* 
+value kept in the shared store.
 
-Functionality of the `safeBlockFunction` should be limited only to operations on a single key kept in the store, because locking mechanism applies only for that `key` and there is simply no safety guarantee for any other keys.
+Functionality of the `safeBlockFunction` should be limited only to operations on a single key kept 
+in the store, because locking mechanism applies only for that `key` and there is simply no safety 
+guarantee for any other keys.
 
 Every `safeBlock()` invocation locks the key and it's value for a specific amount of time defined by `setBlockTimeout()`.
 
-The `errorCallback` will be invoked whenever an exception occurs inside the `safeBlockFunction`. Exception is caught in a safe manner, so the key and its value will be unlocked for other instances access.
+The `errorCallback` will be invoked whenever an exception occurs inside the `safeBlockFunction`. 
+Exception is caught in a safe manner, so the key and its value will be unlocked for other instances access.
 
 ```js
 jxcore.store.shared.safeBlock("myNumber",
@@ -245,9 +299,11 @@ When it elapses, JXcore automatically unlocks the key for other sub-instances ac
 * `newValue` {String}
 * `checkValue` {String}
 
-Sets the element's value for specific key in the store, but only if its current value equals to `check_value`.
+Sets the element's value for specific key in the store, but only if its current value equals 
+to `check_value`.
 
-Returns `true` if `newValue` was set (current value was not equal to `checkValue`). Otherwise returns `false`.
+Returns `true` if `newValue` was set (current value was not equal to `checkValue`). Otherwise 
+returns `false`.
 
 ### store.shared.setIfEqualsToOrNull(key, newValue, checkValue)
 
@@ -255,9 +311,11 @@ Returns `true` if `newValue` was set (current value was not equal to `checkValue
 * `newValue` {String}
 * `checkValue` {String}
 
-Sets the element's value for specific key in the store, but only if its current value equals to `check_value` or if the key does not exist in the store.
+Sets the element's value for specific key in the store, but only if its current value equals 
+to `check_value` or if the key does not exist in the store.
 
-Returns `true` if `newValue` was set (current value was not equal to `checkValue` or the `key` did not exists). Otherwise returns `false`.
+Returns `true` if `newValue` was set (current value was not equal to `checkValue` or the `key` 
+did not exists). Otherwise returns `false`.
 
 ### store.shared.setIfNotExists(key, element)
 
