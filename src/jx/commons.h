@@ -356,7 +356,7 @@ class commons {
 commons *setCommons(commons *com);
 void removeCommons();
 
-void SetupProcessObject(const int step);
+void SetupProcessObject(const int step, bool debug_worker);
 void Load(JS_HANDLE_OBJECT process_l);
 void RunAtExit();
 

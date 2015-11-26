@@ -41,6 +41,10 @@ MakeCallback(node::commons *com, JS_HANDLE_OBJECT_REF host, const char *name,
 
 void EnableDebug(bool wait_connect, node::commons *node);
 
+#ifdef V8_IS_3_28
+void StartDebug(node::commons* com, bool wait);
+#endif
+
 #ifdef _WIN32
 int RegisterDebugSignalHandler();
 // emulate snprintf() on windows, _snprintf() doesn't zero-terminate the buffer

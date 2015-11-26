@@ -541,7 +541,7 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
       assert(global != NULL);
       JSAutoCompartment ac(ctx, global);
 
-      node::SetupProcessObject(actual_thread_id);
+      node::SetupProcessObject(actual_thread_id, false);
       JS_HANDLE_OBJECT process_l = main_node_->getProcess();
       if (entry_file_name_.length() != 0) {
         JS_DEFINE_STATE_MARKER(main_node_);
@@ -667,9 +667,12 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
       // If the --debug flag was specified then initialize the debug thread.
       if (main_node_->use_debug_agent) {
         node::EnableDebug(main_node_->debug_wait_connect, main_node_);
+#ifdef V8_IS_3_28
+        node::StartDebug(main_node_, false);
+#endif
       }
 
-      node::SetupProcessObject(actual_thread_id);
+      node::SetupProcessObject(actual_thread_id, false);
       JS_HANDLE_OBJECT process_l = main_node_->getProcess();
       if (entry_file_name_.length() != 0) {
         JS_DEFINE_STATE_MARKER(main_node_);
@@ -854,7 +857,7 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
   global_ = new MozJS::Value(global, ctx);
   global_->AddRoot();
 
-  node::SetupProcessObject(actual_thread_id);
+  node::SetupProcessObject(actual_thread_id, false);
   JS_HANDLE_OBJECT process_l = main_node_->getProcess();
   JS_DEFINE_STATE_MARKER(main_node_);
   if (entry_file_name_.length() != 0) {
@@ -1039,7 +1042,7 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
       main_node_->setMainIsolate();
     }
 
-    node::SetupProcessObject(actual_thread_id);
+    node::SetupProcessObject(actual_thread_id, false);
     JS_HANDLE_OBJECT process_l = main_node_->getProcess();
 #ifdef V8_IS_3_14
     v8_typed_array::AttachBindings(context_->Global());

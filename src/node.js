@@ -142,7 +142,10 @@
     startup.processKillAndExit();
     startup.processSignalHandlers();
 
-    startup.processChannel();
+    if (process.argv[1] !== '--debug-agent')
+      startup.processChannel();
+    
+    startup.processRawDebug();
 
     startup.resolveArgv0();
 
@@ -301,6 +304,10 @@
     } else if (process.argv[1] == 'debug') {
       // Start the debugger agent
       var d = NativeModule.require('_debugger');
+      d.start();
+    } else if (process.argv[1] == '--debug-agent') {
+      // Start the debugger agent
+      var d = NativeModule.require('_debugger_agent');
       d.start();
     } else if (process._eval != null) {
       // User passed '-e' or '--eval' arguments to Node.
@@ -1018,6 +1025,14 @@
 
     return stream;
   }
+  
+  startup.processRawDebug = function() {
+    var format = NativeModule.require('util').format;
+    var rawDebug = process._rawDebug;
+    process._rawDebug = function() {
+      rawDebug(format.apply(null, arguments));
+    };
+  };
 
   startup.processStdio = function() {
     var stdin, stdout, stderr;
