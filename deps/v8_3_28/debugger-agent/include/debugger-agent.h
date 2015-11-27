@@ -63,9 +63,9 @@ class Agent {
   // Worker body
   void WorkerRun();
 
-  static void ThreadCb(Agent* agent);
+  static void ThreadCb(void* agent);
   static void ParentSignalCb(uv_async_t* signal);
-  static void ChildSignalCb(uv_async_t* signal);
+  static void ChildSignalCb(uv_async_t* signal, int status);
   static void MessageHandler(const v8::Debug::Message& message);
 
   // V8 API
@@ -76,10 +76,7 @@ class Agent {
 
   void EnqueueMessage(AgentMessage* message);
 
-  enum State {
-    kNone,
-    kRunning
-  };
+  enum State { kNone, kRunning };
 
   // TODO(indutny): Verify that there are no races
   State state_;
@@ -94,7 +91,7 @@ class Agent {
   uv_thread_t thread_;
   commons* parent_env_;
   commons* child_env_;
-  uv_loop_t child_loop_;
+  uv_loop_t* child_loop_;
   v8::Persistent<v8::Object> api_;
 
   // QUEUE

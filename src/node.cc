@@ -1407,7 +1407,7 @@ JS_DELETER_METHOD(EnvDeleter) {
     // Deletion failed. Return true if the key wasn't there in the first place,
     // false if it is still there.
     rv = GetEnvironmentVariableW(key_ptr, NULL, NULL) == 0 &&
-              GetLastError() != ERROR_SUCCESS;
+         GetLastError() != ERROR_SUCCESS;
   }
 
 #ifdef JS_ENGINE_MOZJS
@@ -1683,39 +1683,68 @@ static void DispatchMessagesDebugAgentCallback() {
   assert(com != NULL);
   uv_async_send(com->dispatch_debug_messages_async);
 }
-#endif
+#elif defined(V8_IS_3_28)
+void EnableDebug(bool wait_connect, node::commons* node);
+
+// Called from V8 Debug Agent TCP thread.
+static void DispatchMessagesDebugAgentCallback(node::commons* com) {
+  uv_async_send(com->dispatch_debug_messages_async);
+}
+
+void StartDebug(node::commons* com, bool wait) {
+  node::debugger::Agent* agent = (node::debugger::Agent*)com->agent_;
+  agent->set_dispatch_handler(DispatchMessagesDebugAgentCallback);
+  com->debugger_running = agent->Start(com->debug_port, wait);
+  if (com->debugger_running == false) {
+    fprintf(stderr, "Starting debugger on port %d failed\n", com->debug_port);
+    fflush(stderr);
+    return;
+  }
+}
+
+// Called from the main thread.
+static void DispatchDebugMessagesAsyncCallback(uv_async_t* handle, int status) {
+  node::commons* com = node::commons::getInstance();
+  assert(com != NULL);
+  if (com->debugger_running == false) {
+    fprintf(stderr, "Starting debugger agent.\n");
+
+    jxcore::JXEngine* eng =
+        jxcore::JXEngine::GetInstanceByThreadId(com->threadId);
+    v8::Context::Scope context_scope(eng->getContext());
+
+    StartDebug(com, false);
+    EnableDebug(false, com);
+  }
+  v8::Isolate::Scope isolate_scope(com->node_isolate);
+  v8::Debug::ProcessDebugMessages();
+}
+#endif  // V8_IS_3_28
 
 void EnableDebug(bool wait_connect, node::commons* node) {
-#ifdef JS_ENGINE_V8
+#if defined(JS_ENGINE_V8) || defined(JS_ENGINE_CHAKRA)
   // If we're called from another thread, make sure to enter the right
   // v8 isolate.
   if (node->node_isolate == NULL)
     node->node_isolate = v8::Isolate::GetCurrent();
-#ifdef JS_ENGINE_CHAKRA
-#else
-#ifndef V8_IS_3_14
-  // Send message to enable debug in workers
-  JS_ENTER_SCOPE_WITH(node->node_isolate);
-  JS_DEFINE_STATE_MARKER_(node->node_isolate);
-
-  JS_LOCAL_OBJECT message = JS_NEW_EMPTY_OBJECT();
-  message->Set(FIXED_ONE_BYTE_STRING(node->node_isolate, "cmd"),
-               FIXED_ONE_BYTE_STRING(node->node_isolate, "NODE_DEBUG_ENABLED"));
-  v8::Local<v8::Value> argv[] = {
-      FIXED_ONE_BYTE_STRING(node->node_isolate, "internalMessage"), message};
-  MakeCallback(node, node->getProcess(), STD_TO_STRING("emit"), 2, argv);
-
-  // Enabled debugger, possibly making it wait on a semaphore
-  ((node::debugger::Agent*)node->agent_)->Enable();
-#else
-  node->node_isolate->Enter();
-
-  v8::Debug::SetDebugMessageDispatchHandler(DispatchMessagesDebugAgentCallback,
-                                            false);
 
   uv_async_init(node->loop, node->dispatch_debug_messages_async,
                 DispatchDebugMessagesAsyncCallback);
   uv_unref((uv_handle_t*)node->dispatch_debug_messages_async);
+#if defined(V8_IS_3_28)
+  // Send message to enable debug in workers
+  JS_ENTER_SCOPE_WITH(node->node_isolate);
+  JS_DEFINE_STATE_MARKER_(node->node_isolate);
+
+  // Enabled debugger, possibly making it wait on a semaphore
+  node::debugger::Agent* agent = new node::debugger::Agent(node);
+  node->agent_ = (void*)agent;
+  agent->Enable();
+#elif defined(V8_IS_3_14)
+  node->node_isolate->Enter();
+
+  v8::Debug::SetDebugMessageDispatchHandler(DispatchMessagesDebugAgentCallback,
+                                            false);
 
   // Start the debug thread and it's associated TCP server on port 5858.
   if (!v8::Debug::EnableAgent("node " NODE_VERSION, node->debug_port,
@@ -1730,7 +1759,6 @@ void EnableDebug(bool wait_connect, node::commons* node) {
   node->debugger_running = true;
 
   node->node_isolate->Exit();
-#endif
 #endif
 #elif defined(JS_ENGINE_MOZJS)
 // TODO(obastemur) DEBUG!!
@@ -1936,7 +1964,18 @@ static JS_LOCAL_METHOD(DebugEnd) {
 }
 JS_METHOD_END
 
-void SetupProcessObject(const int threadId) {
+static JS_LOCAL_METHOD(RawDebug) {
+  assert(args.Length() == 1 && args.IsString(0) &&
+         "must be called with a single string");
+
+  jxcore::JXString message;
+  args.GetString(0, &message);
+  fprintf(stderr, "%s\n", *message);
+  fflush(stderr);
+}
+JS_METHOD_END
+
+void SetupProcessObject(const int threadId, bool debug_worker) {
   ENGINE_LOG_THIS("node", "SetupProcessObject");
   JS_ENTER_SCOPE_COM();
   JS_DEFINE_STATE_MARKER(com);
@@ -1991,10 +2030,12 @@ void SetupProcessObject(const int threadId) {
 #ifdef JS_ENGINE_V8
 #ifdef JS_ENGINE_CHAKRA
   JS_NAME_SET(versions, JS_STRING_ID("v8"), STD_TO_INTEGER(0));
-  JS_NAME_SET(versions, JS_STRING_ID("ch"), STD_TO_STRING(v8::V8::GetVersion()));
+  JS_NAME_SET(versions, JS_STRING_ID("ch"),
+              STD_TO_STRING(v8::V8::GetVersion()));
 #else
   JS_NAME_SET(versions, JS_STRING_ID("ch"), STD_TO_INTEGER(0));
-  JS_NAME_SET(versions, JS_STRING_ID("v8"), STD_TO_STRING(v8::V8::GetVersion()));
+  JS_NAME_SET(versions, JS_STRING_ID("v8"),
+              STD_TO_STRING(v8::V8::GetVersion()));
 #endif
   JS_NAME_SET(versions, JS_STRING_ID("sm"), STD_TO_INTEGER(0));
 #elif defined(JS_ENGINE_MOZJS)
@@ -2044,7 +2085,7 @@ void SetupProcessObject(const int threadId) {
   // process.arch
   JS_NAME_SET(process, JS_STRING_ID("arch"), STD_TO_STRING(ARCH));
 
-  // process.platform
+// process.platform
 #ifdef WINONECORE
   JS_NAME_SET(process, JS_STRING_ID("platform"), STD_TO_STRING("winrt"));
 #else
@@ -2056,26 +2097,39 @@ void SetupProcessObject(const int threadId) {
     active_engine = jxcore::JXEngine::GetInstanceByThreadId(0);
   }
   assert(active_engine != NULL);
-  // process.argv
-  JS_LOCAL_ARRAY arguments =
-      JS_NEW_ARRAY_WITH_COUNT(active_engine->argc_ - com->option_end_index + 1);
+  if (debug_worker) {
+    JS_LOCAL_ARRAY arguments = JS_NEW_ARRAY_WITH_COUNT(2);
+    JS_INDEX_SET(arguments, 0, STD_TO_STRING("jx"));
+    JS_INDEX_SET(arguments, 1, STD_TO_STRING("--debug-agent"));
+    JS_NAME_SET(process, JS_STRING_ID("argv"), arguments);
 
-  JS_INDEX_SET(arguments, 0, UTF8_TO_STRING(active_engine->argv_[0]));
+    JS_LOCAL_ARRAY execArgv = JS_NEW_ARRAY_WITH_COUNT(1);
+    JS_INDEX_SET(execArgv, 0, STD_TO_STRING("jx"));
 
-  for (j = 1, i = com->option_end_index; i < active_engine->argc_; j++, i++) {
-    JS_INDEX_SET(arguments, j, UTF8_TO_STRING(active_engine->argv_[i]));
+    JS_NAME_SET(process, JS_STRING_ID("execArgv"), execArgv);
+  } else {
+    // process.argv
+    JS_LOCAL_ARRAY arguments = JS_NEW_ARRAY_WITH_COUNT(
+        active_engine->argc_ - com->option_end_index + 1);
+
+    JS_INDEX_SET(arguments, 0, UTF8_TO_STRING(active_engine->argv_[0]));
+
+    for (j = 1, i = com->option_end_index; i < active_engine->argc_; j++, i++) {
+      JS_INDEX_SET(arguments, j, UTF8_TO_STRING(active_engine->argv_[i]));
+    }
+
+    // assign it
+    JS_NAME_SET(process, JS_STRING_ID("argv"), arguments);
+
+    // process.execArgv
+    JS_LOCAL_ARRAY execArgv =
+        JS_NEW_ARRAY_WITH_COUNT(com->option_end_index - 1);
+    for (j = 1, i = 0; j < com->option_end_index; j++, i++) {
+      JS_INDEX_SET(execArgv, i, UTF8_TO_STRING(active_engine->argv_[j]));
+    }
+    // assign it
+    JS_NAME_SET(process, JS_STRING_ID("execArgv"), execArgv);
   }
-
-  // assign it
-  JS_NAME_SET(process, JS_STRING_ID("argv"), arguments);
-
-  // process.execArgv
-  JS_LOCAL_ARRAY execArgv = JS_NEW_ARRAY_WITH_COUNT(com->option_end_index - 1);
-  for (j = 1, i = 0; j < com->option_end_index; j++, i++) {
-    JS_INDEX_SET(execArgv, i, UTF8_TO_STRING(active_engine->argv_[j]));
-  }
-  // assign it
-  JS_NAME_SET(process, JS_STRING_ID("execArgv"), execArgv);
 
 // create process.env
 #ifdef JS_ENGINE_V8
@@ -2204,7 +2258,8 @@ void SetupProcessObject(const int threadId) {
   JS_NAME_SET(process, JS_STRING_ID("isPackaged"),
               STD_TO_BOOLEAN(com->is_packaged_));
 
-  // define various internal methods
+  // define various internal method
+  JS_METHOD_SET(process, "_rawDebug", RawDebug);
   JS_METHOD_SET(process, "_getActiveRequests", GetActiveRequests);
   JS_METHOD_SET(process, "_getActiveHandles", GetActiveHandles);
   JS_METHOD_SET(process, "_needTickCallback", NeedTickCallback);

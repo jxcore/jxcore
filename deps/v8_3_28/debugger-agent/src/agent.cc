@@ -1,3 +1,6 @@
+// Updated for JXcore [Oguz Bastemur 2015]
+// See original file at github.com/nodejs/nodejs
+
 // Copyright Fedor Indutny and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -24,12 +27,8 @@
 
 #include "node.h"
 #include "node_internals.h"  // ARRAY_SIZE
-//#include "env.h"
-//#include "env-inl.h"
 #include "v8.h"
 #include "v8-debug.h"
-//#include "util.h"
-//#include "util-inl.h"
 #include "queue.h"
 
 #include <string.h>
@@ -58,13 +57,9 @@ Agent::Agent(node::commons* com)
       parent_env_(com),
       child_env_(NULL),
       dispatch_handler_(NULL) {
-  int err;
 
-  err = uv_sem_init(&start_sem_, 0);
-  // CHECK_EQ(err, 0);
-
-  err = uv_mutex_init(&message_mutex_);
-  // CHECK_EQ(err, 0);
+  uv_sem_init(&start_sem_, 0);
+  uv_mutex_init(&message_mutex_);
 
   QUEUE_INIT(&messages_);
 }
@@ -85,39 +80,29 @@ Agent::~Agent() {
 }
 
 bool Agent::Start(int port, bool wait) {
-//  int err;
-//
-//  if (state_ == kRunning) return false;
-//
-//  err = uv_loop_init(&child_loop_);
-//  if (err != 0) goto loop_init_failed;
-//
-//  // Interruption signal handler
-//  err = uv_async_init(&child_loop_, &child_signal_, ChildSignalCb);
-//  if (err != 0) goto async_init_failed;
-//  uv_unref(reinterpret_cast<uv_handle_t*>(&child_signal_));
-//
-//  port_ = port;
-//  wait_ = wait;
-//
-//  err = uv_thread_create(&thread_, reinterpret_cast<uv_thread_cb>(ThreadCb),
-//                         this);
-//  if (err != 0) goto thread_create_failed;
-//
-//  uv_sem_wait(&start_sem_);
-//
-//  state_ = kRunning;
-//
-//  return true;
-//
-//thread_create_failed:
-//  uv_close(reinterpret_cast<uv_handle_t*>(&child_signal_), NULL);
-//
-//async_init_failed:
-//  err = uv_loop_close(&child_loop_);
-//// CHECK_EQ(err, 0);
-//
-//loop_init_failed:
+  int err;
+
+  if (state_ == kRunning) return false;
+
+  port_ = port;
+  wait_ = wait;
+
+  err = uv_thread_create(&thread_, ThreadCb, this);
+  if (err != 0) goto thread_create_failed;
+
+  uv_sem_wait(&start_sem_);
+
+  state_ = kRunning;
+
+  return true;
+
+thread_create_failed:
+  uv_close(reinterpret_cast<uv_handle_t*>(&child_signal_), NULL);
+
+async_init_failed:
+  uv_loop_delete(child_loop_);
+
+loop_init_failed:
   return false;
 }
 
@@ -128,77 +113,81 @@ void Agent::Enable() {
   // NOTE: The debugger context is created after `SetMessageHandler()` call
   // parent_env()->AssignToContext(v8::Debug::GetDebugContext());
   v8::Debug::GetDebugContext()->SetAlignedPointerInEmbedderData(
-      NODE_CONTEXT_EMBEDDER_DATA_INDEX, parent_env());
+      NODE_CONTEXT_EMBEDDER_DATA_INDEX, parent_env_);
 }
 
 void Agent::Stop() {
-//  int err;
-//
-//  if (state_ != kRunning) {
-//    return;
-//  }
-//
-//  v8::Debug::SetMessageHandler(NULL);
-//
-//  // Send empty message to terminate things
-//  EnqueueMessage(new AgentMessage(NULL, 0));
-//
-//  // Signal worker thread to make it stop
-//  err = uv_async_send(&child_signal_);
-//  // CHECK_EQ(err, 0);
-//
-//  err = uv_thread_join(&thread_);
-//  // CHECK_EQ(err, 0);
-//
-//  uv_close(reinterpret_cast<uv_handle_t*>(&child_signal_), NULL);
-//  uv_run(&child_loop_, UV_RUN_NOWAIT);
-//
-//  err = uv_loop_close(&child_loop_);
-//  // CHECK_EQ(err, 0);
-//
-//  state_ = kNone;
+  if (state_ != kRunning) {
+    return;
+  }
+
+  v8::Debug::SetMessageHandler(NULL);
+
+  // Send empty message to terminate things
+  EnqueueMessage(new AgentMessage(NULL, 0));
+
+  // Signal worker thread to make it stop
+  uv_async_send(&child_signal_);
+
+  uv_thread_join(&thread_);
+  // CHECK_EQ(err, 0);
+
+  uv_close(reinterpret_cast<uv_handle_t*>(&child_signal_), NULL);
+
+  // uv_run(child_loop_, UV_RUN_NOWAIT);
+  node::commons* com = node::commons::getInstanceByThreadId(63);
+  uv_run_jx(com->loop, UV_RUN_NOWAIT, node::commons::CleanPinger, 63);
+
+  state_ = kNone;
 }
 
 void Agent::WorkerRun() {
-  static const char* argv[] = {"node", "--debug-agent"};
-  Isolate* isolate = Isolate::New();
   {
-    Locker locker(isolate);
-    Isolate::Scope isolate_scope(isolate);
+    int threadId = 63;
 
-    HandleScope handle_scope(isolate);
-    Local<Context> context = Context::New(isolate);
+    node::commons* com = node::commons::newInstance(threadId);
 
-    // TODO IMPLEMENT!
-    //    Context::Scope context_scope(context);
-    //    Environment* env = CreateEnvironment(
-    //        isolate,
-    //        &child_loop_,
-    //        context,
-    //        ARRAY_SIZE(argv),
-    //        argv,
-    //        ARRAY_SIZE(argv),
-    //        argv);
-    //
-    //    child_env_ = env;
-    //
-    //    // Expose API
-    //    InitAdaptor(env);
-    //    LoadEnvironment(env);
-    //
-    //    CHECK_EQ(&child_loop_, env->event_loop());
-    //    uv_run(&child_loop_, UV_RUN_DEFAULT);
-    //
-    //    // Clean-up peristent
-    //    api_.Reset();
-    //
-    //    // Clean-up all running handles
-    //    env->CleanupHandles();
-    //
-    //    env->Dispose();
-    //    env = NULL;
+    JS_ENGINE_LOCKER();
+    JS_SET_ENGINE_DATA(isolate, &com->threadId);
+    JS_DEFINE_STATE_MARKER(com);
+
+    JS_NEW_CONTEXT(context, isolate, NULL);
+    v8::Context::Scope context_scope(context);
+
+    JS_LOCAL_OBJECT global = context->Global();
+
+    uv_idle_t* t = com->tick_spinner;
+    uv_idle_init(com->loop, t);
+
+    uv_check_init(com->loop, com->check_immediate_watcher);
+    uv_unref((uv_handle_t*)com->check_immediate_watcher);
+    uv_idle_init(com->loop, com->idle_immediate_dummy);
+
+    child_loop_ = com->loop;
+    uv_async_init(child_loop_, &child_signal_, ChildSignalCb);
+    uv_unref(reinterpret_cast<uv_handle_t*>(&child_signal_));
+
+    node::SetupProcessObject(threadId, true);
+    JS_HANDLE_OBJECT process_l = com->getProcess();
+
+    com->loop->loopId = threadId;
+
+    child_env_ = com;
+
+    // Expose API
+    InitAdaptor(com);
+
+    node::Load(process_l);
+
+    uv_run_jx(com->loop, UV_RUN_DEFAULT, node::commons::CleanPinger, threadId);
+
+    node::EmitExit(process_l);
+    node::RunAtExit();
+
+    com->Dispose();
+    com->node_isolate->Dispose();
   }
-  isolate->Dispose();
+  node::removeCommons();
 }
 
 void Agent::InitAdaptor(node::commons* com) {
@@ -238,11 +227,9 @@ void Agent::NotifyListen(const FunctionCallbackInfo<Value>& args) {
 
 void Agent::NotifyWait(const FunctionCallbackInfo<Value>& args) {
   Agent* a = Unwrap(args);
-
   a->wait_ = false;
 
   int err = uv_async_send(&a->child_signal_);
-  // CHECK_EQ(err, 0);
 }
 
 void Agent::SendCommand(const FunctionCallbackInfo<Value>& args) {
@@ -256,11 +243,11 @@ void Agent::SendCommand(const FunctionCallbackInfo<Value>& args) {
   if (a->dispatch_handler_ != NULL) a->dispatch_handler_(a->parent_env());
 }
 
-void Agent::ThreadCb(Agent* agent) { agent->WorkerRun(); }
+void Agent::ThreadCb(void* agent) { ((Agent*)agent)->WorkerRun(); }
 
-void Agent::ChildSignalCb(uv_async_t* signal) {
+void Agent::ChildSignalCb(uv_async_t* signal, int status) {
   Agent* a = ContainerOf(&Agent::child_signal_, signal);
-  commons *com = a->child_env();
+  commons* com = a->child_env();
   JS_DEFINE_STATE_MARKER(com);
 
   HandleScope scope(__contextORisolate);
@@ -286,7 +273,7 @@ void Agent::ChildSignalCb(uv_async_t* signal) {
 
     QUEUE_REMOVE(q);
     Local<Value> argv[] = {String::NewFromTwoByte(
-	__contextORisolate, msg->data(), String::kNormalString, msg->length())};
+        __contextORisolate, msg->data(), String::kNormalString, msg->length())};
 
     // Emit message
     MakeCallback(com, api, STD_TO_STRING("onmessage"), ARRAY_SIZE(argv), argv);

@@ -34,10 +34,9 @@ When used in multi-tasking, every sub-instance has it’s own `jxcore.store` obj
 It can be considered as a static global per store context, which means, that sub-instances cannot share the same `jxcore.store` among themselves.
 But all of the tasks running inside a particular sub-instance have shared access to it.
 
-### store.exists(key, element)
+### store.exists(key)
 
 * `key` {String}
-* `element` {String}
 
 Returns boolean value: `true` if the element's value exists for specific key in the store and `false` otherwise.
 
@@ -169,9 +168,9 @@ the final stored value is the one that is updated last.
 
 Thread-safe `jxcore.store.shared` has exactly the same methods as single-instanced `jxcore.store`, but also implements some other members, specific for multi-tasking.
 
-### store.shared.exists(key, element)
+### store.shared.exists(key)
 
-See `store.exists(key, element)`.
+See `store.exists(key)`.
 
 ### store.shared.expires(key, timeout)
 
@@ -320,9 +319,8 @@ did not exists). Otherwise returns `false`.
 ### store.shared.setIfNotExists(key, element)
 
 * `key` {String}
-* `newValue` {String}
-* `checkValue` {String}
+* `element` {String} or {Buffer}
 
 Sets the element's value for specific key in the store, but only if the key does not exist yet.
 
-Returns `true` if `newValue` was set (the `key` did not exists). Otherwise returns `false`.
+Returns `true` if `element` was set (the `key` did not exists). Otherwise returns `false`.

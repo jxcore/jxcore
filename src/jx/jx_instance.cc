@@ -82,7 +82,7 @@ void JXInstance::runScript(void *x) {
 
       JS_NAME_SET(global, JS_STRING_ID("tools"), inner);
 
-      node::SetupProcessObject(threadId + 1);
+      node::SetupProcessObject(threadId + 1, false);
       JS_HANDLE_OBJECT process_l = com->getProcess();
 
       customUnlock(CSLOCK_NEWINSTANCE);

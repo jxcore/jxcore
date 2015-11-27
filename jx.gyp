@@ -87,6 +87,9 @@
       ['node_no_sqlite == 0', {
         'library_files':[ 'lib/external/sqlite3.js' ],
       }],
+      ['v8_is_3_28 == 1', {
+        'library_files':[ 'deps/v8_3_28/debugger-agent/lib/_debugger_agent.js' ],
+      }],
     ]
   },
 
