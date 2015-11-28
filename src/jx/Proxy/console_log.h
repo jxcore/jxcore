@@ -33,6 +33,7 @@ static inline void DebuggerOutput_(const char* ctstr, ...) {
 #define log_console(...) DebuggerOutput_(__VA_ARGS__)
 #define warn_console(...) DebuggerOutput_(__VA_ARGS__)
 #define error_console(...) DebuggerOutput_(__VA_ARGS__)
+#define flush_console(...) DebuggerOutput_(__VA_ARGS__)
 #else
 #define log_console(...) fprintf(stdout, __VA_ARGS__)
 #define flush_console(...)        \
