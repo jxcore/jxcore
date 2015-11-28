@@ -290,16 +290,22 @@
         ['target_arch in "x64 ia32"', {
           'defines': ['HAVE_VA_LIST_AS_ARRAY=1']
         }],
+        ['node_win_onecore==1', {
+          'defines': [
+            '_WIN32_WINNT=0x0A00',  # WIN10
+          ]
+        }],
         ['target_arch=="x64"', {
           'defines':[ 'JS_PUNBOX64', 'JS_CPU_X64=1' ],
           'conditions':[
-          ['OS=="ios"', {
-          'sources':[
-            'src/jit/none/Trampoline-none.cpp'   # ION DISABLED
-          ],
-          'defines':[
-            'JS_CODEGEN_NONE=1' # Interpreter only
-          ]},{ #X64 JIT
+          ['OS=="ios" or node_win_onecore==1', {
+            'sources':[
+              'src/jit/none/Trampoline-none.cpp'   # ION DISABLED
+            ],
+            'defines':[
+              'JS_CODEGEN_NONE=1' # Interpreter only
+            ]
+          },{ #X64 JIT
               'sources':[
                 'src/jit/x64/Assembler-x64.cpp',
                 'src/jit/x64/Bailouts-x64.cpp',
@@ -327,7 +333,7 @@
         ['target_arch=="ia32"', {
             'defines':[ 'JS_NUNBOX32', 'JS_CPU_X86=1' ],
             'conditions':[
-              ['OS=="ios"', {
+              ['OS=="ios" or node_win_onecore==1', {
                 'sources':[
                   'src/jit/none/Trampoline-none.cpp'   # ION DISABLED
                 ],
@@ -507,24 +513,23 @@
              'src/jit/ExecutableAllocatorWin.cpp',
            ],
            'include_dirs': [
-             'pre_built',
-       'incs/nss/nspr/pr/include',
+             'pre_built', 'incs/nss/nspr/pr/include',
            ],
-       'dependencies': [ 'incs/nss/nss.gyp:nspr' ],
-       'conditions':[
-         ['target_arch=="x64"', {
-         'defines':['_AMD64_']
-       }, {
-         'defines':['_X86_']
-       }]
-       ], 
-       'msvs_settings': {
-              'VCLibrarianTool': {
-                'AdditionalDependencies': [
-                  'winmm.lib',
-                ],
-              }
+           'dependencies': [ 'incs/nss/nss.gyp:nspr' ],
+           'conditions':[
+             ['target_arch=="x64"', {
+               'defines':['_AMD64_']
+             }, {
+               'defines':['_X86_']
+           }]
+         ], 
+         'msvs_settings': {
+            'VCLibrarianTool': {
+              'AdditionalDependencies': [
+                'winmm.lib',
+              ],
             }
+          }
          },
          { #no WIN
            'cflags': [
@@ -568,7 +573,7 @@
             '<@(_outputs)'
            ],
          }]
-        }]
+       }]
      ]  
   }]
 }
