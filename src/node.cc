@@ -1694,7 +1694,11 @@ static void DispatchMessagesDebugAgentCallback(node::commons* com) {
 void StartDebug(node::commons* com, bool wait) {
   node::debugger::Agent* agent = (node::debugger::Agent*)com->agent_;
   agent->set_dispatch_handler(DispatchMessagesDebugAgentCallback);
+#ifdef JS_ENGINE_CHAKRA
+  com->debugger_running = v8::Debug::EnableAgent();
+#else
   com->debugger_running = agent->Start(com->debug_port, wait);
+#endif
   if (com->debugger_running == false) {
     fprintf(stderr, "Starting debugger on port %d failed\n", com->debug_port);
     fflush(stderr);

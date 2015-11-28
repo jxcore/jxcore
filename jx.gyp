@@ -222,14 +222,18 @@
         'sources': [
           'src/jx/Proxy/V8_3_28/JXString.cc',
         ],
+        'dependencies' : [
+          'deps/v8_3_28/debugger-agent/debugger-agent.gyp:debugger-agent',
+        ],
         'conditions': [
           ['node_engine_v8==1', {
             'sources': [
               'deps/v8_3_28/v8/include/v8.h',
               'deps/v8_3_28/v8/include/v8-debug.h',
             ],
-            'dependencies': ['deps/v8_3_28/v8/tools/gyp/v8.gyp:v8',
-              'deps/v8_3_28/debugger-agent/debugger-agent.gyp:debugger-agent',],
+            'dependencies': [
+              'deps/v8_3_28/v8/tools/gyp/v8.gyp:v8',
+            ],
           }],
           ['node_engine_chakra==1', {
             'variables': {

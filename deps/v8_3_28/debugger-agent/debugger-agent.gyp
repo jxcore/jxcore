@@ -5,7 +5,6 @@
     "include_dirs": [
       "src",
       "include",
-      "../v8/include",
       "../../uv/include",
 
       # Private node.js folder and stuff needed to include from it
@@ -25,10 +24,22 @@
         # to avoid subtle bugs
         'cflags': [ '-fno-strict-aliasing' ],
       }],
+      [ 'node_engine_chakra==1', {
+        "defines": ['JS_ENGINE_CHAKRA', 'V8_IS_3_28'],  
+        "include_dirs" : [
+          '../../chakrashim/include',
+        ]
+      }, 
+      { # else if v8
+        "include_dirs" : [
+          "../v8/include",
+        ],
+      }
+      ],
     ],
+    "defines": [ 'JS_ENGINE_V8' ],
     "sources": [
       "src/agent.cc",
     ],
-    "defines": [ 'JS_ENGINE_V8' ]
   }],
 }
