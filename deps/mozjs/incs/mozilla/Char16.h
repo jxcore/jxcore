@@ -18,7 +18,7 @@
  */
 
 // do not force char16_t for VS2015+
-#ifdef _MSC_VER && _MSC_VER < 1900
+#if defined(_MSC_VER) && _MSC_VER < 1900
    /*
     * C++11 says char16_t is a distinct builtin type, but Windows's yvals.h
     * typedefs char16_t as an unsigned short. We would like to alias char16_t
@@ -36,6 +36,10 @@
 typedef wchar_t char16_t;
 typedef unsigned int char32_t;
 #else
+// VCC only [do not use WIN32]
+#ifdef _WIN32
+# include <windows.h>
+#endif
    /* C++11 has a builtin char16_t type. */
 #  define MOZ_UTF16_HELPER(s) u##s
    /**
