@@ -231,6 +231,7 @@
         'JSGC_INCREMENTAL=1',
         'IMPL_MFBT=1',
         'MOZILLA_VERSION="340"',
+        'STATIC_JS_API=1',
       ],
       'configurations': {
         'Debug': {
