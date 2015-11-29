@@ -597,9 +597,16 @@ uv_err_t uv_cpu_info(uv_cpu_info_t** cpu_infos_ptr, int* cpu_count_ptr) {
 
     if (RegQueryValueExW(processor_key, L"ProcessorNameString", NULL, NULL,
                          (BYTE*)&cpu_brand, &cpu_brand_size) != ERROR_SUCCESS) {
-      err = uv__new_sys_error(GetLastError());
-      RegCloseKey(processor_key);
-      goto error;
+      DWORD derr = GetLastError();
+      if (derr != 0) {
+        err = uv__new_sys_error(derr);
+        RegCloseKey(processor_key);
+        goto error;
+      } else {
+        memcpy(cpu_brand, L"None", sizeof(WCHAR) * 4);
+        cpu_brand[4] = 0;
+        cpu_brand_size = 4;
+      }
     }
 
     RegCloseKey(processor_key);
