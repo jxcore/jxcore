@@ -123,12 +123,14 @@ void Isolate::SetAddHistogramSampleFunction(AddHistogramSampleCallback) {
 }
 
 bool Isolate::IdleNotification(int idle_time_in_ms) {
-  CHAKRA_UNIMPLEMENTED();
+  // Skip smoothly
+  // CHAKRA_UNIMPLEMENTED();
   return false;
 }
 
 void Isolate::LowMemoryNotification() {
-  CHAKRA_UNIMPLEMENTED();
+  // Skip smoothly
+  // CHAKRA_UNIMPLEMENTED();
 }
 
 int Isolate::ContextDisposedNotification() {
