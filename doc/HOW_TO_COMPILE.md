@@ -37,14 +37,20 @@ make
 make
 ```
 
-On Windows:
-
+Windows:
 ```
 / $> vcbuild.bat
 ```
 
+Windows ARM:
+```
+/ $> vcbuild.bat arm --engine-chakra
+```
+
 To compile with SpiderMonkey, `--engine-mozilla` key also applies to Windows builds. 
 i.e. `vcbuild.bat --engine-mozilla`
+
+JXcore also supports Chakra engine on Windows10+. Use `--engine-chakra` as shown above.
 
 After a successful compilation process, you should have jxcore installed into `/jxcoreSM/bin` 
 or `/jxcoreV8/bin` folder (depending on the engine selection). (Check Release folder on 
@@ -72,6 +78,11 @@ make install
 Windows;
 ```
 / $> vcbuild.bat --compress-internals
+```
+
+Windows (Chakra engine);
+```
+/ $> vcbuild.bat --engine-chakra --compress-internals
 ```
 
 ##### Compile as a Static Library 
@@ -157,6 +168,13 @@ Then you can still build JXcore x32 on Windows x64:
 ```
 / $> vcbuild.bat ia32
 ```
+
+**For ARM build use** `--engine-chakra` option. 
+
+```
+/ $> vcbuild.bat arm --engine-chakra
+```
+When you build for `ARM` build script also includes `leveldown` native database support.
 
 #### Notes for CentOS/Red Hat
 
