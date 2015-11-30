@@ -11,7 +11,6 @@
     
       'include_dirs': [
         'incs/',
-        'incs/js',
         'incs/icu/source/common',
         'incs/mozilla/double-conversion',
         'src',
@@ -508,7 +507,7 @@
            ],
         }],
         ['OS=="win"', {
-           'defines': [ 'XP_WIN', '_CRT_RAND_S', 'WTF_COMPILER_MSVC', 'EXPORT_JS_API' ],  
+           'defines': [ 'XP_WIN', '_CRT_RAND_S', 'WTF_COMPILER_MSVC' ],  
            'sources': [
              'src/perf/pm_stub.cpp',
              'src/jit/ExecutableAllocatorWin.cpp',
