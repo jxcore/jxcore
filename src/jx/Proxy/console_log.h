@@ -44,7 +44,7 @@ static inline void DebuggerOutput_(const char* ctstr, ...) {
     CHAR Buffer[256];
     DWORD length = GetTempPathA(256, Buffer);
     if (length == 0) {
-      assert( 0 && "jxcore :: Could not get the temp folder\n");
+      printf("jxcore :: Could not get the temp folder\n");
       free(str);
       return;
     }
@@ -60,7 +60,7 @@ static inline void DebuggerOutput_(const char* ctstr, ...) {
       NULL);
 
     if (hFile == INVALID_HANDLE_VALUE) {
-      assert(0 && "jxcore :: Could not open jxcore-windows.log file\n");
+      printf("jxcore :: Could not open jxcore-windows.log file\n");
       free(str);
       return;
     }
