@@ -898,7 +898,8 @@ struct btree_internal_locate_plain_compare {
 };
 
 // Dispatch helper class for using btree::internal_locate with compare-to.
-struct btree_internal_locate_compare_to {
+class btree_internal_locate_compare_to {
+public:
   template <typename K, typename T, typename Iter>
   static std::pair<Iter, int> dispatch(const K &k, const T &t, Iter iter) {
     return t.internal_locate_compare_to(k, iter);
