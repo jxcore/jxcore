@@ -1,8 +1,10 @@
-JXcore is ready for `Android OS`. On this tutorial, we will give you step-by-step instruction on how to compile JXcore for Android target.
+JXcore is ready for `Android OS`. On this tutorial, we will give you a step-by-step instruction 
+on how to compile JXcore for Android targets.
 
 First, you need `Android NDK`. You can download the latest NDK from [here](https://developer.android.com/tools/sdk/ndk/index.html)
 
-Assuming you have already extracted `Android NDK` into `~/androidNDK` folder, next step is to use our prebuilt script file to create Android toolchains before the compilation process.
+Assuming you have already extracted `Android NDK` into `~/androidNDK` folder, next step is to use 
+our prebuilt script file to create Android toolchains before the compilation process.
 
 Before starting, please check the **prerequisites** from [this link](https://github.com/jxcore/jxcore/blob/master/doc/HOW_TO_COMPILE.md)
 
@@ -10,16 +12,19 @@ Go to root folder of jxcore project and;
 ```bash
 $> build_scripts/android-configure.sh ~/androidNDK/
 ```
-This should create `android-toolchain` and `android-toolchain-intel` folders under the project's root folder. We need this folders to prepare Android ARM, MIPS and Intel binaries. 
+This should create `android-toolchain` and `android-toolchain-intel` folders under the 
+project's root folder. 
 
 ### Compile as a Standalone Process
 
 ```bash
 $> build_scripts/android_standalone.sh ~/androidNDK/ intel sm
 ```
-Instead of 'intel' you can also set 'arm' for ARM target. sm symbolizes Spider Monkey, for V8 engine set 'v8'
+Instead of 'intel' you can also set 'arm' for ARM target. 
+`sm` symbolizes Spider Monkey, for V8 engine set `v8`
 
-When the compilation is completed, you can find the 'jx' binary is available under `out_android` folder.
+When the compilation process is completed, you can find the 'jx' binary is available 
+under `out_android` folder.
 
 ### Compile as a Static Library
 
@@ -28,6 +33,40 @@ Now we can compile jxcore for android. type;
 $> build_scripts/android_compile.sh ~/androidNDK/
 ```
 
-The previous script uses SpiderMonkey, if you want/need V8, please use android_compile_v8.sh instead.
+The sample above uses SpiderMonkey, if you want/need V8, better use `android_compile_v8.sh` instead.
 
-This one should take a while. When it's finished, you can find the binaries and include files for ARM and INTEL platforms inside `out_android/android` folder.
+Compilation will take some time. When it's finished, you can find the binaries and include files for 
+ARM and INTEL platforms under `out_android/android` folder.
+
+#### ARM64 or MIPSEL
+
+By default build script (SM - static library) doesn't compile for ARM64 and MIPSEL targets. In order
+to enable one or both of them, open `build_scripts/android_compile.sh` file and edit the lines below
+accordingly;
+
+By default;
+```
+MIPS=0 #out_mipsel_droid
+ARM64=0 #out_arm64_droid
+```
+
+Replace to;
+
+for MIPSEL
+```
+MIPS=out_mipsel_droid
+```
+
+for ARM64
+```
+ARM64=out_arm64_droid
+```
+
+#### Embedding LeveDB and Leveldown
+
+User `--embed-leveldown` argument.
+
+example
+```bash
+$> build_scripts/android_compile.sh ~/androidNDK/ --embed-leveldown
+```
