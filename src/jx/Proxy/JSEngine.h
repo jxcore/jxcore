@@ -37,11 +37,7 @@
 #include "V8_3_28/PMacro.h"
 #include "V8_3_28/PArguments.h"
 #include "V8_3_28/extern_string.h"
-
-#ifndef JS_ENGINE_CHAKRA
-#include "debugger-agent.h"
-#endif
-
+#include "../../../deps/v8_3_28/debugger-agent/include/debugger-agent.h"
 #include "V8_3_28/util-inl.h"
 
 #ifndef NODE_CONTEXT_EMBEDDER_DATA_INDEX

@@ -1,4 +1,6 @@
-This document focuses on jxcore's new public interface located under (`src/public`). We want this interface to be very easy to use and embedabble on any platform.  If you need to reach all the core features, you may want to check `src/public/jx.cc` to see how we have actually implemented this interface. So you can add your custom methods.
+This document focuses on jxcore's new public interface located under (`src/public`). We want this interface 
+to be very easy to use and embedabble on any platform.  If you need to reach all the core features, you may 
+want to check `src/public/jx.cc` to see how we have actually implemented this interface. So you can add your custom methods.
 
 In order to embed jxcore into your application, you should first compile it as a library.
 
@@ -11,7 +13,9 @@ Additional useful parameters
 --dest-os=ios     ->   (ios, android, or leave empty for your current platform)
 ```
 
-In the end you will have all the binaries and include files. The new public interface only expects `jx.h` and `jx_result.h` files in addition to the libraries under the `bin` folder. You can find the headers files under `include/node/src/public`
+In the end you will have all the binaries and include files. The new public interface only expects `jx.h` 
+and `jx_result.h` files in addition to the libraries under the `bin` folder. You can find the headers 
+files under `include/node/src/public`
 
 The sample below demonstrates a basic usage of the interface
 ```c++
@@ -158,6 +162,7 @@ result:  [ 1, 2, 3 ] length: 3
 end!
 ```
 
+####*NIX 
 In order to compile the source codes above (lets say you saved it into sample.cpp)
 
 OSX :
@@ -179,11 +184,21 @@ g++ sample.cpp -lstdc++ -std=c++11 -pthread -O3 -Wno-write-strings -I/targetFold
     -o sample
 ```
 
-Scripts above assumes you've compiled JXcore static libraries for x64 architecture. In case you did that for 32 bit, you should add `-m32` argument.
+Scripts above assumes you've compiled JXcore static libraries for x64 architecture. In case you did 
+that for 32 bit, you should add `-m32` argument.
 
-Besides the architecture, if you have compiled JXcore with V8 engine, you should replace `libmozjs.a` above to `libv8_base.a` and also add `libv8_nosnapshot.a`
+Besides the architecture, if you have compiled JXcore with V8 engine, you should 
+replace `libmozjs.a` above to `libv8_base.a` and also add `libv8_nosnapshot.a`
 
-That's It!
+
+####Sample Windows App: [Available here](https://github.com/obastemur/JXcoreWindowsEmbedded)
+
+**Additional Notes for Windows GUI / UWP Metro applications:**
+If there is no standard output is available, JXcore pushes console.log/error/warning into 
+either attached debugger or application's temporary folder.
+
+
+That's all you need to do to embed JXcore!
 
 [JXcore native interface - API Documentation](https://github.com/jxcore/jxcore/blob/master/doc/native/Embedding_API_Details.md)
 

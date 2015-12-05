@@ -714,7 +714,7 @@ double GetCPU(const int64_t msecs, double *last) {
 double commons::GetCPUUsage(const int64_t timer, const int64_t diff) {
   static int64_t before = 0;
   static double last = 0;
-  static int counter = 0;
+  static int64_t counter = 0;
 
   if (before > 0) {
     counter += timer - before;

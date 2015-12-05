@@ -356,6 +356,10 @@ int threadHasMessage(const int tid) {
 #define THREAD_ID_NOT_DEFINED -1
 #define THREAD_ID_ALREADY_DEFINED -2
 
+int uv_run(uv_loop_t* loop, uv_run_mode mode) {
+  return uv_run_jx(loop, mode, NULL, -1);
+}
+
 int uv_run_jx(uv_loop_t* loop, uv_run_mode mode, void (*triggerSync)(const int),
               const int tid) {
   int timeout;

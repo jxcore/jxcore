@@ -42,6 +42,7 @@ set compress_internals=
 set c_platform=
 set wincore=
 set no_asm=
+set leveldown=
 
 :next-arg
 if "%1"=="" goto args-done
@@ -70,10 +71,10 @@ if /i "%1"=="test"          set test=test&goto arg-ok
 if /i "%1"=="msi"           set msi=1&set licensertf=1&goto arg-ok
 if /i "%1"=="upload"        set upload=1&goto arg-ok
 if /i "%1"=="jslint"        set jslint=1&goto arg-ok
-if /i "%1"=="--win-onecore" set wincore=--win-onecore&set no_asm=--openssl-no-asm&goto arg-ok
+if /i "%1"=="--win-onecore" set wincore=--win-onecore&set no_asm=--openssl-no-asm&set leveldown=--embed-leveldown&goto arg-ok
 if /i "%1"=="--shared-library" set static_library=--shared-library&goto arg-ok
 if /i "%1"=="--engine-mozilla" set engine_=--engine-mozilla&goto arg-ok
-if /i "%1"=="--engine-chakra" set engine_=--engine-chakra&set WindowsTargetPlatformVersion=10.0.10240.0&goto arg-ok
+if /i "%1"=="--engine-chakra" set engine_=--engine-chakra&set WindowsTargetPlatformVersion=10.0.10586.0&goto arg-ok
 if /i "%1"=="--compress-internals" set compress_internals=--compress-internals&goto arg-ok
 
 echo Warning: ignoring invalid command line option `%1`.
@@ -158,7 +159,7 @@ SETLOCAL
   call :getpythonversion
   if errorlevel 1 goto exit
 
-  python configure %debug_arg% %nosnapshot_arg% %noetw_arg% %noperfctr_arg% %no_asm% --dest-cpu=%target_arch% --tag=%TAG% %wincore% %static_library% %engine_% %compress_internals%
+  python configure %debug_arg% %nosnapshot_arg% %noetw_arg% %noperfctr_arg% %no_asm% --dest-cpu=%target_arch% --tag=%TAG% %leveldown% %wincore% %static_library% %engine_% %compress_internals%
   if errorlevel 1 goto create-msvs-files-failed
   if not exist jx.sln goto create-msvs-files-failed
   echo Project files generated.
