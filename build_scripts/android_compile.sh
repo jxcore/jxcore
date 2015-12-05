@@ -42,13 +42,12 @@ fi
 export ANDROID_NDK=$1
 
 CONF_EXTRAS=
-MIPS=0
+MIPS=0 #out_mipsel_droid
+ARM64=0 #out_arm64_droid
 
 if [ $# -eq 2 ]
 then
   CONF_EXTRAS=$2
-else
-  MIPS=out_mipsel_droid
 fi
 
 ARM7=out_arm_droid
@@ -109,6 +108,10 @@ if [ $MIPS != 0 ]
 then
   mv "$MIPS/Release/$1_mipsel.a" "$FATBIN/bin/"
 fi
+if [ $ARM64 != 0 ]
+then
+  mv "$ARM64/Release/$1_arm64.a" "$FATBIN/bin/"
+fi
   mv "$ARM7/Release/$1_arm.a" "$FATBIN/bin/"
   mv "$INTEL64/Release/$1_x64.a" "$FATBIN/bin/"
   mv "$INTEL32/Release/$1_ia32.a" "$FATBIN/bin/"
@@ -118,6 +121,11 @@ fi
 if [ $MIPS != 0 ]
 then
   mkdir out_mipsel_droid
+fi
+
+if [ $ARM64 != 0 ]
+then
+  mkdir out_arm64_droid
 fi
 
 mkdir out_arm_droid
@@ -140,6 +148,20 @@ then
 
   LOG $GREEN_COLOR "Compiling Android MIPS\n"
   MAKE_INSTALL mipsel
+fi
+
+if [ $ARM64 != 0 ]
+then
+  export TOOLCHAIN=$PWD/android-toolchain-arm64
+  export PATH=$TOOLCHAIN/bin:$OLD_PATH
+  export AR=aarch64-linux-android-ar
+  export CC=aarch64-linux-android-gcc
+  export CXX=aarch64-linux-android-g++
+  export LINK=aarch64-linux-android-g++
+  export STRIP=aarch64-linux-android-strip
+
+  LOG $GREEN_COLOR "Compiling Android ARM64\n"
+  MAKE_INSTALL arm64
 fi
 
 export TOOLCHAIN=$PWD/android-toolchain-arm
