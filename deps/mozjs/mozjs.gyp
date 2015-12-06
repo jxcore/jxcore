@@ -254,7 +254,7 @@
         }],
         ['target_arch in "arm armv7 arm64 armv7s"', {
             'conditions':[
-              ['OS in "win ios"', {
+              ['OS in "win ios" or target_arch=="arm64"', {
                 'sources':[
                   'src/jit/none/Trampoline-none.cpp'   # ION DISABLED
                 ],
