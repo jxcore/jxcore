@@ -48,7 +48,7 @@ CachedPropertyIdRef GetProxyTrapCachedPropertyIdRef(ProxyTraps trap) {
 }
 
 JsErrorCode SetPropertyOnTrapConfig(
-    ProxyTraps trap, JsNativeFunction callback, _In_ JsValueRef configObj) {
+    ProxyTraps trap, JsNativeFunction callback, JsValueRef configObj) {
   if (callback == nullptr) {
     return JsNoError;
   }
@@ -70,7 +70,7 @@ JsErrorCode SetPropertyOnTrapConfig(
 
 JsErrorCode CreateProxyTrapConfig(
     const JsNativeFunction proxyConf[ProxyTraps::TrapCount],
-    _Out_ JsValueRef *confObj) {
+    JsValueRef *confObj) {
   JsErrorCode error = JsNoError;
 
   error = JsCreateObject(confObj);
@@ -93,38 +93,25 @@ JsErrorCode CreateProxyTrapConfig(
 }
 
 JsErrorCode CreateProxy(
-    _In_ JsValueRef target,
-    _In_ const JsNativeFunction config[ProxyTraps::TrapCount],
-    _Out_ JsValueRef *result) {
+    JsValueRef target,
+    const JsNativeFunction config[ProxyTraps::TrapCount],
+    JsValueRef *result) {
   JsErrorCode error;
 
   JsValueRef proxyConfigObj;
   error = CreateProxyTrapConfig(config, &proxyConfigObj);
-
   if (error != JsNoError) {
     return error;
   }
 
   JsValueRef proxyConstructorRef =
     ContextShim::GetCurrent()->GetProxyConstructor();
-
-  if (error != JsNoError) {
-    return error;
-  }
-
-  JsValueRef args[] = { nullptr, target, proxyConfigObj };
-
-  error = JsConstructObject(proxyConstructorRef, args, _countof(args), result);
-
+  error = ConstructObject(proxyConstructorRef, target, proxyConfigObj, result);
   return error;
 }
 
 JsErrorCode TryParseUInt32(
     JsValueRef strRef, bool* isUInt32, unsigned int *uint32Value) {
-  // since we are using proxies here, the value will always be of type string
-  // the fastest thing that we can do here is try and
-  // javascript max array size: 2^32-1 = 4,294,967,295 = 4.29:
-
   JsErrorCode error;
 
   *isUInt32 = false;
@@ -163,25 +150,26 @@ JsErrorCode TryParseUInt32(
     }
   }
 
-  *isUInt32 = true;
   // use std:stoull as it the most comprehenisve way to convert string to int
-  // there is some performance issue here, so we migth optimiaze this code using
+  // there is some performance issue here, so we might optimize this code using
   // the results in here: string to int conversion - naive approach is the
   // fastest:
   // http://tinodidriksen.com/2010/02/16/cpp-convert-string-to-int-speed/
 
-  wchar_t* strEnd = const_cast<wchar_t*>(strPtr) + strLength;
-
+  wchar_t* strEnd;
   unsigned long longVal = std::wcstoul(strPtr, &strEnd, 10);
+  if (strEnd != strPtr + strLength) {
+    return JsNoError;
+  }
 
   if (longVal == ULONG_MAX) {
     // check if errno is set:
     if (errno == ERANGE) {
-      *isUInt32 = false;
       return JsNoError;
     }
   }
 
+  *isUInt32 = true;
   *uint32Value = longVal;
   return JsNoError;
 }

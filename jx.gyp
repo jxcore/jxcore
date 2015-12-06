@@ -239,7 +239,8 @@
             'variables': {
               'node_engine_include_dir%': 'deps/chakrashim/include'
             },
-            'defines': ['JS_ENGINE_CHAKRA=1', 'JS_ENGINE_V8=1'],
+            'defines': [ 'JS_ENGINE_CHAKRA=1', 'JS_ENGINE_V8=1', 
+                         'BUILDING_CHAKRASHIM=1', 'USE_EDGEMODE_JSRT=1' ],
             'dependencies': [ 'deps/chakrashim/chakrashim.gyp:chakrashim', 
                               'deps/node-uwp/binding.gyp:uwp'],
              'conditions': [

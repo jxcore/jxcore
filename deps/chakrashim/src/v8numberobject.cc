@@ -24,36 +24,28 @@
 namespace v8 {
 
 using jsrt::IsolateShim;
+using jsrt::ContextShim;
 
 Local<Value> NumberObject::New(Isolate * isolate, double value) {
   JsValueRef numberObjectConstructor = IsolateShim::FromIsolate(isolate)
                         ->GetCurrentContextShim()->GetNumberObjectConstructor();
-  JsValueRef newNumberObjectRef;
+
   JsValueRef numberRef;
   if (JsDoubleToNumber(value, &numberRef) != JsNoError) {
     return Local<Value>();
   }
 
-  JsValueRef args[] = { nullptr, numberRef };
-
-  if (JsConstructObject(numberObjectConstructor,
-                        args,
-                        _countof(args),
-                        &newNumberObjectRef) != JsNoError) {
+  JsValueRef newNumberObjectRef;
+  if (jsrt::ConstructObject(numberObjectConstructor,
+                            numberRef, &newNumberObjectRef) != JsNoError) {
     return Local<Value>();
   }
 
-  return Local<NumberObject>::New(
-    static_cast<NumberObject*>(newNumberObjectRef));
+  return Local<NumberObject>::New(newNumberObjectRef);
 }
 
-NumberObject *NumberObject::Cast(v8::Value *obj) {
-  if (!obj->IsNumberObject()) {
-    // CHAKRA-TODO: what should we return in this case?
-    // just exit and print?
-    return nullptr;
-  }
-
+NumberObject* NumberObject::Cast(v8::Value* obj) {
+  CHAKRA_ASSERT(obj->IsNumberObject());
   return static_cast<NumberObject*>(obj);
 }
 

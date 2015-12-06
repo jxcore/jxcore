@@ -33,11 +33,11 @@ Handle<Primitive> Null(Isolate* isolate) {
 }
 
 Handle<Boolean> True(Isolate* isolate) {
-  return Handle<Primitive>(static_cast<Primitive *>(jsrt::GetTrue()));
+  return Handle<Boolean>(static_cast<Boolean *>(jsrt::GetTrue()));
 }
 
 Handle<Boolean> False(Isolate* isolate) {
-  return Handle<Primitive>(static_cast<Primitive *>(jsrt::GetFalse()));
+  return Handle<Boolean>(static_cast<Boolean *>(jsrt::GetFalse()));
 }
 
 bool SetResourceConstraints(ResourceConstraints *constraints) {

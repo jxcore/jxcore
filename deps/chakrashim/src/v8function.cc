@@ -36,38 +36,38 @@ Local<Object> Function::NewInstance() const {
 }
 
 Local<Object> Function::NewInstance(int argc, Handle<Value> argv[]) const {
-  std::unique_ptr<JsValueRef[]> args(new JsValueRef[argc + 1]);
-  args.get()[0] = nullptr;  // first argument is a null object
+  jsrt::JsArguments<> args(argc + 1);
+  args[0] = jsrt::GetUndefined();
 
   if (argc > 0) {
     for (int i = 0; i < argc; i++) {
-      args.get()[i + 1] = *argv[i];
+      args[i + 1] = *argv[i];
     }
   }
 
   JsValueRef newInstance;
   if (JsConstructObject((JsValueRef)this,
-                        args.get(), argc + 1, &newInstance) != JsNoError) {
+                        args, argc + 1, &newInstance) != JsNoError) {
     return Local<Object>();
   }
 
-  return Local<Object>::New(static_cast<Object*>(newInstance));
+  return Local<Object>::New(newInstance);
 }
 
-Local<Value> Function::Call(
-    Handle<Object> recv, int argc, Handle<Value> argv[]) {
-  std::unique_ptr<JsValueRef[]> args(new JsValueRef[argc + 1]);
-  args.get()[0] = *recv;
+Local<Value> Function::Call(Handle<Value> recv,
+                            int argc, Handle<Value> argv[]) {
+  jsrt::JsArguments<> args(argc + 1);
+  args[0] = *recv;
 
   for (int i = 0; i < argc; i++) {
-    args.get()[i + 1] = *argv[i];
+    args[i + 1] = *argv[i];
   }
 
   JsValueRef result;
   {
     TryCatch tryCatch;
     JsErrorCode error =
-      JsCallFunction((JsValueRef)this, args.get(), argc + 1, &result);
+      JsCallFunction((JsValueRef)this, args, argc + 1, &result);
 
     jsrt::SetOutOfMemoryErrorIfExist(error);
 
@@ -94,14 +94,14 @@ Local<Value> Function::Call(
   }
 
   for (int i = 0; i < argc + 1; i++) {
-    JsValueRef valueRef = args.get()[i];
+    JsValueRef valueRef = args[i];
     ContextShim * objectContextShim = isolateShim->GetObjectContext(valueRef);
     if (currentContextShim == objectContextShim) {
       continue;
     }
     if (objectContextShim != nullptr) {
       ContextShim::Scope scope(objectContextShim);
-      args.get()[i] = MarshalJsValueRefToContext(
+      args[i] = MarshalJsValueRefToContext(
         valueRef, objectContextShim, currentContextShim);
     } else {
       // Can't find a context
@@ -112,7 +112,7 @@ Local<Value> Function::Call(
   {
       TryCatch tryCatch;
       JsErrorCode error = JsCallFunction((JsValueRef)this,
-          args.get(), argc + 1, &result);
+          args, argc + 1, &result);
 
       jsrt::SetOutOfMemoryErrorIfExist(error);
 
@@ -120,29 +120,25 @@ Local<Value> Function::Call(
           tryCatch.CheckReportExternalException();
           return Local<Value>();
       }
-      return Local<Value>::New(static_cast<Value*>(result));
+    return Local<Value>::New(result);
   }
 }
 
 void Function::SetName(Handle<String> name) {
-  JsErrorCode error = DefineProperty((JsValueRef)this, L"name",
-                                     PropertyDescriptorOptionValues::False,
-                                     PropertyDescriptorOptionValues::False,
-                                     PropertyDescriptorOptionValues::False,
-                                     (JsValueRef)*name,
-                                     JS_INVALID_REFERENCE,
-                                     JS_INVALID_REFERENCE);
-  // CHAKRA-TODO: Check error?
+  JsErrorCode error = DefineProperty((JsValueRef)this,
+                 IsolateShim::GetCurrent()->GetCachedPropertyIdRef(
+                   jsrt::CachedPropertyIdRef::name),
+                 PropertyDescriptorOptionValues::False,
+                 PropertyDescriptorOptionValues::False,
+                 PropertyDescriptorOptionValues::False,
+                 (JsValueRef)*name,
+                 JS_INVALID_REFERENCE,
+                 JS_INVALID_REFERENCE);
+  CHAKRA_ASSERT(error == JsNoError);
 }
 
 Function *Function::Cast(Value *obj) {
-  if (!obj->IsFunction()) {
-    // CHAKRA-TODO: report an error here!
-    // CHAKRA-TODO: What is the best behavior here? Should we return a pointer
-    // to undefined/null instead?
-    return nullptr;
-  }
-
+  CHAKRA_ASSERT(obj->IsFunction());
   return static_cast<Function*>(obj);
 }
 

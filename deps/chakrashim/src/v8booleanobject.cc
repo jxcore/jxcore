@@ -18,38 +18,28 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
-#include "v8.h"
-#include "jsrtutils.h"
+#include "v8chakra.h"
 
 namespace v8 {
 
+using jsrt::ContextShim;
+
 Local<Value> BooleanObject::New(bool value) {
-  jsrt::ContextShim * contextShim = jsrt::ContextShim::GetCurrent();
-
   JsValueRef booleanObjectConstructor =
-    contextShim->GetBooleanObjectConstructor();
-  JsValueRef newBooleanObjectRef;
-  JsValueRef args[] =
-    { nullptr, value ? contextShim->GetTrue() : contextShim->GetFalse() };
+    ContextShim::GetCurrent()->GetBooleanObjectConstructor();
 
-  if (JsConstructObject(booleanObjectConstructor,
-                        args,
-                        _countof(args),
-                        &newBooleanObjectRef) != JsNoError) {
+  JsValueRef newBooleanObjectRef;
+  if (jsrt::ConstructObject(booleanObjectConstructor,
+                            *Boolean::From(value),
+                            &newBooleanObjectRef) != JsNoError) {
     return Local<Value>();
   }
 
-  return Local<BooleanObject>::New(
-    static_cast<BooleanObject*>(newBooleanObjectRef));
+  return Local<BooleanObject>::New(newBooleanObjectRef);
 }
 
 BooleanObject *BooleanObject::Cast(v8::Value *obj) {
-  if (!obj->IsBooleanObject()) {
-    // CHAKRA-TODO: what should we return in this case?
-    // just exit and print?
-    return nullptr;
-  }
-
+  CHAKRA_ASSERT(obj->IsBooleanObject());
   return static_cast<BooleanObject*>(obj);
 }
 

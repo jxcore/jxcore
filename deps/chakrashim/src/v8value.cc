@@ -18,36 +18,37 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
-#include "v8.h"
-#include "jsrt.h"
-#include "jsrtUtils.h"
+#include "v8chakra.h"
 #include <math.h>
 
 namespace v8 {
 
-using jsrt::IsOfGlobalType;
+using jsrt::ContextShim;
 
-bool Value::IsUndefined() const {
-  JsValueType type;
-  if (JsGetValueType((JsValueRef)this, &type) != JsNoError) {
+static bool IsOfType(const Value* ref, JsValueType type) {
+  JsValueType valueType;
+  if (JsGetValueType(const_cast<Value*>(ref), &valueType) != JsNoError) {
     return false;
   }
+  return valueType == type;
+}
 
-  return (type == JsValueType::JsUndefined);
+static bool IsOfType(const Value* ref, ContextShim::GlobalType index) {
+    return jsrt::InstanceOf(const_cast<Value*>(ref),
+                            ContextShim::GetCurrent()->GetGlobalType(index));
+}
+
+bool Value::IsUndefined() const {
+  return IsOfType(this, JsValueType::JsUndefined);
 }
 
 bool Value::IsNull() const {
-  JsValueType type;
-  if (JsGetValueType((JsValueRef)this, &type) != JsNoError) {
-    return false;
-  }
-
-  return (type == JsValueType::JsNull);
+  return IsOfType(this, JsValueType::JsNull);
 }
 
 bool Value::IsTrue() const {
   bool isTrue;
-  if (JsEquals(*True(), (JsValueRef)this, &isTrue) != JsNoError) {
+  if (JsEquals(jsrt::GetTrue(), (JsValueRef)this, &isTrue) != JsNoError) {
     return false;
   }
 
@@ -56,7 +57,7 @@ bool Value::IsTrue() const {
 
 bool Value::IsFalse() const {
   bool isFalse;
-  if (JsEquals(*False(), (JsValueRef)this, &isFalse) != JsNoError) {
+  if (JsEquals(jsrt::GetFalse(), (JsValueRef)this, &isFalse) != JsNoError) {
     return false;
   }
 
@@ -64,29 +65,15 @@ bool Value::IsFalse() const {
 }
 
 bool Value::IsString() const {
-  JsValueType type;
-  if (JsGetValueType((JsValueRef)this, &type) != JsNoError) {
-    return false;
-  }
-  return (type == JsValueType::JsString);
+  return IsOfType(this, JsValueType::JsString);
 }
 
 bool Value::IsFunction() const {
-  JsValueType type;
-  if (JsGetValueType((JsValueRef)this, &type) != JsNoError) {
-    return false;
-  }
-
-  return (type == JsValueType::JsFunction);
+  return IsOfType(this, JsValueType::JsFunction);
 }
 
 bool Value::IsArray() const {
-  JsValueType type;
-  if (JsGetValueType((JsValueRef)this, &type) != JsNoError) {
-    return false;
-  }
-
-  return (type == JsValueType::JsArray);
+  return IsOfType(this, JsValueType::JsArray);
 }
 
 bool Value::IsObject() const {
@@ -95,38 +82,31 @@ bool Value::IsObject() const {
     return false;
   }
 
-  return (type == JsValueType::JsObject || type == JsValueType::JsFunction ||
-      type == JsValueType::JsError);
+  return type >= JsValueType::JsObject && type != JsSymbol;
 }
 
 bool Value::IsExternal() const {
   return External::IsExternal(this);
 }
 
+bool Value::IsArrayBuffer() const {
+  return IsOfType(this, JsValueType::JsArrayBuffer);
+}
+
 bool Value::IsTypedArray() const {
-  JsValueType type;
-  if (JsGetValueType((JsValueRef)this, &type) != JsNoError) {
-    return false;
-  }
-  return (type == JsValueType::JsTypedArray);
+  return IsOfType(this, JsValueType::JsTypedArray);
+}
+
+bool Value::IsDataView() const {
+  return IsOfType(this, JsValueType::JsDataView);
 }
 
 bool Value::IsBoolean() const {
-  JsValueType type;
-  if (JsGetValueType((JsValueRef)this, &type) != JsNoError) {
-    return false;
-  }
-
-  return (type == JsValueType::JsBoolean);
+  return IsOfType(this, JsValueType::JsBoolean);
 }
 
 bool Value::IsNumber() const {
-  JsValueType type;
-  if (JsGetValueType((JsValueRef)this, &type) != JsNoError) {
-    return false;
-  }
-
-  return (type == JsValueType::JsNumber);
+  return IsOfType(this, JsValueType::JsNumber);
 }
 
 bool Value::IsInt32() const {
@@ -141,9 +121,7 @@ bool Value::IsInt32() const {
     return false;
   }
 
-  double second;
-
-  return (modf(value, &second) == 0.0);
+  return trunc(value) == value;
 }
 
 bool Value::IsUint32() const {
@@ -153,55 +131,41 @@ bool Value::IsUint32() const {
 
   double value = NumberValue();
   // check that the value is smaller than 32 bit maximum
-  if (value > UINT_MAX) {
+  if (value < 0 || value > UINT_MAX) {
     return false;
   }
 
-
-  double second;
-  // CHAKRA-TODO: nadavbar: replace this with trunc. Not used for since for some
-  // reason my math.h file does not contain it Probably a version problem
-  return (modf(value, &second) == 0.0 && value >= 0.0);
+  return trunc(value) == value;
 }
 
 bool Value::IsDate() const {
-  bool result;
-  if (IsOfGlobalType((JsValueRef)this, L"Date", &result) != JsNoError) {
-    return false;
-  }
-
-  return result;
+  return IsOfType(this, ContextShim::GlobalType::Date);
 }
 
 bool Value::IsBooleanObject() const {
-  return IsOfGlobalType((JsValueRef)this, L"Boolean");
+  return IsOfType(this, ContextShim::GlobalType::Boolean);
 }
 
 bool Value::IsNumberObject() const {
-  return IsOfGlobalType((JsValueRef)this, L"Number");
+  return IsOfType(this, ContextShim::GlobalType::Number);
 }
 
 bool Value::IsStringObject() const {
-  return IsOfGlobalType((JsValueRef)this, L"String");
+  return IsOfType(this, ContextShim::GlobalType::String);
 }
 
 bool Value::IsNativeError() const {
-  return IsOfGlobalType((JsValueRef)this, L"Error")
-    || IsOfGlobalType((JsValueRef)this, L"EvalError")
-    || IsOfGlobalType((JsValueRef)this, L"RangeError")
-    || IsOfGlobalType((JsValueRef)this, L"ReferenceError")
-    || IsOfGlobalType((JsValueRef)this, L"SyntaxError")
-    || IsOfGlobalType((JsValueRef)this, L"TypeError")
-    || IsOfGlobalType((JsValueRef)this, L"URIError");
+  return IsOfType(this, ContextShim::GlobalType::Error)
+    || IsOfType(this, ContextShim::GlobalType::EvalError)
+    || IsOfType(this, ContextShim::GlobalType::RangeError)
+    || IsOfType(this, ContextShim::GlobalType::ReferenceError)
+    || IsOfType(this, ContextShim::GlobalType::SyntaxError)
+    || IsOfType(this, ContextShim::GlobalType::TypeError)
+    || IsOfType(this, ContextShim::GlobalType::URIError);
 }
 
 bool Value::IsRegExp() const {
-  bool result;
-  if (IsOfGlobalType((JsValueRef)this, L"RegExp", &result) != JsNoError) {
-    return false;
-  }
-
-  return result;
+  return IsOfType(this, ContextShim::GlobalType::RegExp);
 }
 
 Local<Boolean> Value::ToBoolean() const {
@@ -210,7 +174,7 @@ Local<Boolean> Value::ToBoolean() const {
     return Local<Boolean>();
   }
 
-  return Local<Boolean>::New(static_cast<Boolean*>(value));
+  return Local<Boolean>::New(value);
 }
 
 Local<Number> Value::ToNumber() const {
@@ -219,7 +183,7 @@ Local<Number> Value::ToNumber() const {
     return Local<Number>();
   }
 
-  return Local<Number>::New(static_cast<Number*>(value));
+  return Local<Number>::New(value);
 }
 
 Local<String> Value::ToString() const {
@@ -228,7 +192,11 @@ Local<String> Value::ToString() const {
     return Local<String>();
   }
 
-  return Local<String>::New(static_cast<String*>(value));
+  return Local<String>::New(value);
+}
+
+Local<String> Value::ToDetailString() const {
+  return ToString();
 }
 
 Local<Object> Value::ToObject() const {
@@ -237,19 +205,19 @@ Local<Object> Value::ToObject() const {
     return Local<Object>();
   }
 
-  return Local<Object>::New(static_cast<Object*>(value));
+  return Local<Object>::New(value);
 }
 
 Local<Integer> Value::ToInteger() const {
   int64_t value = this->IntegerValue();
+  int intValue = static_cast<int>(value);
 
-  JsValueRef integerRef;
-
-  if (JsIntToNumber(static_cast<int>(value), &integerRef) != JsNoError) {
-    return Local<Integer>();
+  if (value == static_cast<int64_t>(intValue)) {
+    return Integer::New(nullptr, intValue);
   }
 
-  return Local<Integer>::New(static_cast<Integer*>(integerRef));
+  // does not fit int, use double
+  return Number::New(nullptr, value).As<Integer>();
 }
 
 
@@ -265,41 +233,39 @@ Local<Int32> Value::ToInt32() const {
   return Local<Int32>(static_cast<Int32*>(*jsValue));
 }
 
-bool Value::BooleanValue() const {
-  JsValueRef ref;
-  if (IsBoolean()) {
-    ref = (JsValueRef)this;
-  } else {
-    if (JsConvertValueToBoolean((JsValueRef)this, &ref) != JsNoError) {
-      return false;
-    }
+Local<Uint32> Value::ToArrayIndex() const {
+  if (IsNumber()) {
+    return ToUint32();
   }
 
-  bool value;
+  Local<String> maybeString = ToString();
+  bool isUint32;
+  uint32_t uint32Value;
+  if (maybeString.IsEmpty() ||
+      jsrt::TryParseUInt32(*maybeString,
+                           &isUint32, &uint32Value) != JsNoError) {
+    return Local<Uint32>();
+  }
 
-  if (JsBooleanToBool((JsValueRef)this, &value) != JsNoError) {
+  return static_cast<Uint32*>(*Integer::NewFromUnsigned(nullptr, uint32Value));
+}
+
+bool Value::BooleanValue() const {
+  bool value;
+  if (jsrt::ValueToNative</*LIKELY*/true>(JsConvertValueToBoolean,
+                                          JsBooleanToBool,
+                                          (JsValueRef)this,
+                                          &value) != JsNoError) {
     return false;
   }
-
   return value;
 }
 
 double Value::NumberValue() const {
-  JsValueRef ref;
-  if (IsNumber()) {
-    ref = (JsValueRef)this;
-  } else {
-    if (JsConvertValueToNumber((JsValueRef)this, &ref) != JsNoError) {
-      return 0;
-    }
-  }
-
   double value;
-
-  if (JsNumberToDouble(ref, &value) != JsNoError) {
-    return false;
+  if (jsrt::ValueToDoubleLikely((JsValueRef)this, &value) != JsNoError) {
+    return 0;
   }
-
   return value;
 }
 
@@ -312,16 +278,10 @@ uint32_t Value::Uint32Value() const {
 }
 
 int32_t Value::Int32Value() const {
-  JsValueRef ref;
-  if (JsConvertValueToNumber((JsValueRef)this, &ref) != JsNoError) {
-    return 0;
-  }
-
   int intValue;
-  if (JsNumberToInt(ref, &intValue) != JsNoError) {
+  if (jsrt::ValueToIntLikely((JsValueRef)this, &intValue) != JsNoError) {
     return 0;
   }
-
   return intValue;
 }
 

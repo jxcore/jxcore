@@ -27,6 +27,7 @@
 namespace v8 {
 
 bool g_exposeGC = false;
+bool g_useStrict = false;
 
 const char *V8::GetVersion() {
   static char versionStr[32] = {};
@@ -86,6 +87,11 @@ void V8::SetFlagsFromCommandLine(int *argc, char **argv, bool remove_flags) {
     char *arg = argv[i];
     if (equals("--expose-gc", arg) || equals("--expose_gc", arg)) {
       g_exposeGC = true;
+      if (remove_flags) {
+        argv[i] = nullptr;
+      }
+    } else if (equals("--use-strict", arg) || equals("--use_strict", arg)) {
+      g_useStrict = true;
       if (remove_flags) {
         argv[i] = nullptr;
       }

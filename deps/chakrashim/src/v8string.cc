@@ -18,30 +18,11 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
-#include "v8.h"
-#include "jsrtutils.h"
+#include "v8chakra.h"
 
 namespace v8 {
 
 using std::unique_ptr;
-
-String::AsciiValue::AsciiValue(Handle<v8::Value> obj)
-    : _str(nullptr), _length(0) {
-  Handle<String> str = obj->ToString();
-  if (str.IsEmpty()) {
-    return;
-  }
-
-  _length = str->Utf8Length();
-  _str = new char[_length + 1];
-  str->WriteUtf8(_str);
-}
-
-String::AsciiValue::~AsciiValue() {
-  if (_str != nullptr) {
-    delete _str;
-  }
-}
 
 String::Utf8Value::Utf8Value(Handle<v8::Value> obj)
     : _str(nullptr), _length(0) {
@@ -163,59 +144,6 @@ int String::Write(uint16_t *buffer, int start, int length, int options) const {
     options);
 }
 
-int String::WriteAscii(char *buffer, int start, int length, int options) const {
-  if (length == 0) {
-    // bail out if we are required to write no chars
-    return 0;
-  }
-
-  if (start < 0) {
-    // illegal bail out
-    return 0;
-  }
-
-  const wchar_t* str;
-  size_t stringLength;
-  if (JsStringToPointer((JsValueRef)this, &str, &stringLength) != JsNoError) {
-    // error
-    return 0;
-  }
-
-  if (stringLength == 0) {
-    if (!(options & String::NO_NULL_TERMINATION)) {
-      buffer[0] = '\0';
-    }
-    // bail out if string is empty
-    return 0;
-  }
-
-  if (length < 0) {
-    // in case length was not provided we want to copy the whole string
-    length = static_cast<int>(stringLength);
-  }
-  unsigned int count = (length + start) < static_cast<int>(stringLength) ?
-    length : static_cast<int>(stringLength) - start;
-
-  wchar_t* mutableStr = const_cast<wchar_t*>(str);
-
-  if (start > 0) {
-    // pointer arithmatic to start the copying from the 'start' parameter
-    mutableStr += start;
-  }
-
-  JsErrorCode convertResult =
-    jsrt::StringConvert::ToChar(mutableStr, count, buffer, count);
-  if (convertResult != JsNoError) {
-    return 0;
-  }
-
-  if (!(options & String::NO_NULL_TERMINATION)) {
-    buffer[count++] = '\0';
-  }
-
-  return count;
-}
-
 int String::WriteOneByte(
     uint8_t* buffer, int start, int length, int options) const {
   return WriteRaw(
@@ -283,12 +211,7 @@ Local<String> String::Empty(Isolate* isolate) {
 }
 
 String* String::Cast(v8::Value *obj) {
-  if (!obj->IsString()) {
-    // CHAKRA-TODO: What is the best behavior here? Should we return a pointer
-    // to undefined/null instead?
-    return nullptr;
-  }
-
+  CHAKRA_ASSERT(obj->IsString());
   return static_cast<String*>(obj);
 }
 
@@ -299,7 +222,7 @@ Local<String> String::New(const ToWide& toWide, const char *data, int length) {
   }
 
   if (length == 0) {
-    return Empty();
+    return Empty(nullptr);
   }
 
   unique_ptr<wchar_t[]> str(new wchar_t[length]);
@@ -321,78 +244,20 @@ Local<String> String::New(const wchar_t *data, int length) {
     return Local<String>();
   }
 
-  return Local<String>::New(static_cast<String*>(strRef));
-}
-
-Local<String> String::New(const uint16_t *data, int length) {
-  return New(reinterpret_cast<const wchar_t *>(data), length);
-}
-
-Local<String> String::NewSymbol(const char *data, int length) {
-  return New(jsrt::StringConvert::ToWChar, data, length);
-}
-
-Local<String> String::NewSymbol(const wchar_t *data, int length) {
-  return New(data, length);
-}
-
-Local<String> String::Concat(Handle<String> left, Handle<String> right) {
-  JsValueRef args[] = { *left, *right };
-  JsValueRef result;
-
-  JsValueRef stringContextFunction =
-    jsrt::ContextShim::GetCurrent()->GetStringConcatFunction();
-  JsErrorCode concatResult =
-    JsCallFunction(stringContextFunction, args, _countof(args), &result);
-  if (concatResult != JsNoError) {
-    return Local<String>();
-  }
-
-  return Local<String>::New(static_cast<String*>(result));
-}
-
-Local<String> String::NewExternal(
-    Isolate* isolate, ExternalStringResource* resource) {
-  if (resource->data() != nullptr) {
-    auto newStr = New(resource->data(), static_cast<int>(resource->length()));
-    delete resource;
-
-    return newStr;
-  }
-
-  // otherwise the resource is empty just delete it and return an empty string
-  delete resource;
-  return Empty();
-}
-
-Local<String> String::NewExternal(
-    Isolate* isolate, ExternalAsciiStringResource *resource) {
-  if (resource->data() != nullptr) {
-    auto newStr = New(
-      jsrt::StringConvert::ToWChar,
-      resource->data(),
-      static_cast<int>(resource->length()));
-    delete resource;
-
-    return newStr;
-  }
-
-  // otherwise the resource is empty just delete it and return an empty string
-  delete resource;
-  return Empty();
+  return Local<String>::New(strRef);
 }
 
 Local<String> String::NewFromUtf8(Isolate* isolate,
-                                  const char* data,
-                                  NewStringType type,
-                                  int length) {
+  const char* data,
+  NewStringType type,
+  int length) {
   return New(jsrt::StringConvert::ToWChar, data, length);
 }
 
 Local<String> String::NewFromOneByte(Isolate* isolate,
-                                     const uint8_t* data,
-                                     NewStringType type,
-                                     int length) {
+  const uint8_t* data,
+  NewStringType type,
+  int length) {
   return New(
     jsrt::StringConvert::CopyRaw<char,
     wchar_t>,
@@ -401,10 +266,58 @@ Local<String> String::NewFromOneByte(Isolate* isolate,
 }
 
 Local<String> String::NewFromTwoByte(Isolate* isolate,
-                                     const uint16_t* data,
-                                     NewStringType type,
-                                     int length) {
-  return New(data, length);
+  const uint16_t* data,
+  NewStringType type,
+  int length) {
+  return New(reinterpret_cast<const wchar_t *>(data), length);
+}
+
+Local<String> String::Concat(Handle<String> left, Handle<String> right) {
+  JsValueRef args[] = { *left, *right };
+  JsValueRef result;
+
+  JsValueRef stringConcatFunction =
+    jsrt::ContextShim::GetCurrent()->GetStringConcatFunction();
+  JsErrorCode error = JsCallFunction(stringConcatFunction,
+                                     args, _countof(args), &result);
+  if (error != JsNoError) {
+    return Local<String>();
+  }
+
+  return Local<String>::New(result);
+}
+
+Local<String> String::NewExternal(
+    Isolate* isolate, ExternalStringResource* resource) {
+  if (resource->data() != nullptr) {
+    auto newStr = NewFromTwoByte(nullptr, resource->data(),
+                                 NewStringType::kNormalString,
+                                 static_cast<int>(resource->length()));
+    delete resource;
+    return newStr;
+  }
+
+  // otherwise the resource is empty just delete it and return an empty string
+  delete resource;
+  return Empty(nullptr);
+}
+
+Local<String> String::NewExternal(
+    Isolate* isolate, ExternalAsciiStringResource *resource) {
+  if (resource->data() != nullptr) {
+    auto newStr = NewFromOneByte(
+      nullptr,
+      reinterpret_cast<const uint8_t*>(resource->data()),
+      NewStringType::kNormalString,
+      static_cast<int>(resource->length()));
+
+    delete resource;
+    return newStr;
+  }
+
+  // otherwise the resource is empty just delete it and return an empty string
+  delete resource;
+  return Empty(nullptr);
 }
 
 }  // namespace v8

@@ -18,42 +18,32 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
-#include "v8.h"
-#include "jsrtutils.h"
+#include "v8chakra.h"
 
 namespace v8 {
 
-using jsrt::IsolateShim;
 using jsrt::ContextShim;
 
 Local<Value> Date::New(Isolate * isolate, double time) {
-  JsValueRef dateConstructor = IsolateShim::FromIsolate(isolate)
-                                ->GetCurrentContextShim()->GetDateConstructor();
-  JsValueRef newDateRef;
-  JsValueRef numberRef;
+  JsValueRef dateConstructor = ContextShim::GetCurrent()->GetDateConstructor();
 
+  JsValueRef numberRef;
   if (JsDoubleToNumber(time, &numberRef) != JsNoError) {
     return Local<Value>();
   }
 
-  JsValueRef args[] = { nullptr, numberRef };
-
-  if (JsConstructObject(dateConstructor,
-                        args, _countof(args), &newDateRef) != JsNoError) {
+  JsValueRef newDateRef;
+  if (jsrt::ConstructObject(dateConstructor,
+                            numberRef, &newDateRef) != JsNoError) {
     return Local<Value>();
   }
 
-  return Local<Date>::New(static_cast<Date*>(newDateRef));
+  return Local<Date>::New(newDateRef);
 }
 
 // Not Implemented
 Date *Date::Cast(v8::Value *obj) {
-  if (!obj->IsDate()) {
-    // CHAKRA-TODO: what should we return in this case?
-    // just exit and print?
-    return nullptr;
-  }
-
+  CHAKRA_ASSERT(obj->IsDate());
   return static_cast<Date*>(obj);
 }
 

@@ -27,37 +27,41 @@
 
 #pragma once
 
-// CHAKRA-TODO: winsock2.h should be included before windows.h, otherwise you
-// get redefintion conflicts with winsock.h. Hack this here to avoid those
-// conflicts, but should look at how to fix in core Node.js code.
+// Stops windows.h from including winsock.h (conflicting with winsock2.h).
+#ifndef _WINSOCKAPI_
 #define _WINSOCKAPI_
+#endif
 
-// CHAKRA-TODO: Force the version here?
+#if defined(_WIN32_WINNT) && (_WIN32_WINNT < _WIN32_WINNT_WIN10)
+#pragma message("warning: chakrashim requires Windows 10 SDK. "\
+                "Redefine _WIN32_WINNT to _WIN32_WINNT_WIN10.")
 #undef _WIN32_WINNT
-#define _WIN32_WINNT 0x0601   // CHAKRA-TODO: should this be win10?
+#endif
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT _WIN32_WINNT_WIN10
+#endif
 
 #ifndef USE_EDGEMODE_JSRT
-#define USE_EDGEMODE_JSRT     // Only works wtih edge JSRT
+#define USE_EDGEMODE_JSRT     // Only works with edge JSRT
 #endif
 
 #include <jsrt.h>
 
 #ifndef _CHAKRART_H_
-// CHAKRA-TODO: Enable this check
-// #error Wrong Windows SDK version
+#error Wrong Windows SDK version
 #endif
 
 #include <stdio.h>
 #include <stdint.h>
 #include <memory>
+#include "v8config.h"
 
-// CHAKRA-TODO: This allows native modules to link against node. We should
-// investigate adding an option to compile this into a standalone DLL/LIB like
-// V8 does.
-#define EXPORT __declspec(dllexport)
+#define V8_EXPORT __declspec(dllexport)
 
-
-# define V8_DEPRECATED(message, declarator) declarator
+#define TYPE_CHECK(T, S)                                       \
+  while (false) {                                              \
+    *(static_cast<T* volatile*>(0)) = static_cast<S*>(0);      \
+  }
 
 namespace v8 {
 
@@ -80,16 +84,20 @@ class Number;
 class NumberObject;
 class Object;
 class ObjectTemplate;
+class Platform;
 class ResourceConstraints;
 class RegExp;
 class Script;
 class Signature;
+class StackFrame;
 class String;
 class StringObject;
 class Uint32;
 template <class T> class Handle;
 template <class T> class Local;
-template <class T> class Persistent;
+template<class T> struct CopyablePersistentTraits;
+template<class T> class PersistentBase;
+template<class T, class M = CopyablePersistentTraits<T> > class Persistent;
 template<typename T> class FunctionCallbackInfo;
 template<typename T> class PropertyCallbackInfo;
 
@@ -146,6 +154,7 @@ typedef void (*AccessorSetterCallback)(
   Local<String> property,
   Local<Value> value,
   const PropertyCallbackInfo<void>& info);
+
 typedef void (*NamedPropertyGetterCallback)(
   Local<String> property, const PropertyCallbackInfo<Value>& info);
 typedef void (*NamedPropertySetterCallback)(
@@ -158,6 +167,7 @@ typedef void (*NamedPropertyDeleterCallback)(
   Local<String> property, const PropertyCallbackInfo<Boolean>& info);
 typedef void (*NamedPropertyEnumeratorCallback)(
   const PropertyCallbackInfo<Array>& info);
+
 typedef void (*IndexedPropertyGetterCallback)(
   uint32_t index, const PropertyCallbackInfo<Value>& info);
 typedef void (*IndexedPropertySetterCallback)(
@@ -168,58 +178,179 @@ typedef void (*IndexedPropertyDeleterCallback)(
   uint32_t index, const PropertyCallbackInfo<Boolean>& info);
 typedef void (*IndexedPropertyEnumeratorCallback)(
   const PropertyCallbackInfo<Array>& info);
+
 typedef bool (*EntropySource)(unsigned char* buffer, size_t length);
 typedef void (*FatalErrorCallback)(const char *location, const char *message);
 typedef void (*JitCodeEventHandler)(const JitCodeEvent *event);
 
-EXPORT Handle<Primitive> Undefined(Isolate* isolate = nullptr);
-EXPORT Handle<Primitive> Null(Isolate* isolate = nullptr);
-EXPORT Handle<Boolean> True(Isolate* isolate = nullptr);
-EXPORT Handle<Boolean> False(Isolate* isolate = nullptr);
-EXPORT bool SetResourceConstraints(ResourceConstraints *constraints);
 
 template <class T>
-class EXPORT Handle {
- protected:
-  JsRef _ref;
-
+class Handle {
  public:
-  Handle();
-  Handle(T *val);
-  template <class S>
-  Handle(Handle<S> that);
-  bool IsEmpty() const;
-  void Clear();
-  T *operator->() const;
-  T *operator*() const;
-  template <class S>
-  bool operator==(Handle<S> that) const;
-  template <class S>
-  bool operator!=(Handle<S> that) const;
+  V8_INLINE Handle() : val_(0) {}
 
   template <class S>
-  Handle<S> As();
+  V8_INLINE Handle(Handle<S> that)
+      : val_(reinterpret_cast<T*>(*that)) {
+    TYPE_CHECK(T, S);
+  }
+
+  V8_INLINE bool IsEmpty() const { return val_ == 0; }
+  V8_INLINE void Clear() { val_ = 0; }
+  V8_INLINE T* operator->() const { return val_; }
+  V8_INLINE T* operator*() const { return val_; }
+
   template <class S>
-  static Handle<T> Cast(Handle<S> that);
+  V8_INLINE bool operator==(const Handle<S>& that) const {
+    return val_ == that.val_;
+  }
+
+  template <class S>
+  V8_INLINE bool operator==(const Persistent<S>& that) const {
+    return val_ == that.val_;
+  }
+
+  template <class S>
+  V8_INLINE bool operator!=(const Handle<S>& that) const {
+    return !operator==(that);
+  }
+
+  template <class S>
+  V8_INLINE bool operator!=(const Persistent<S>& that) const {
+    return !operator==(that);
+  }
+
+  template <class S>
+  V8_INLINE static Handle<T> Cast(Handle<S> that) {
+    return Handle<T>(T::Cast(*that));
+  }
+
+  template <class S>
+  V8_INLINE Handle<S> As() {
+    return Handle<S>::Cast(*this);
+  }
+
+  V8_INLINE static Handle<T> New(Isolate* isolate, Handle<T> that) {
+    return New(isolate, that.val_);
+  }
+
+  V8_INLINE static Handle<T> New(Isolate* isolate,
+                                 const PersistentBase<T>& that) {
+    return New(isolate, that.val_);
+  }
+
+ private:
+  friend struct FunctionCallbackData;
+  friend class FunctionTemplate;
+  friend class ObjectTemplate;
+  friend class Utils;
+  template<class F, class M> friend class Persistent;
+  template<class F> friend class PersistentBase;
+  template<class F> friend class Handle;
+  template<class F> friend class Local;
+  friend V8_EXPORT Handle<Primitive> Undefined(Isolate* isolate);
+  friend V8_EXPORT Handle<Primitive> Null(Isolate* isolate);
+  friend V8_EXPORT Handle<Boolean> True(Isolate* isolate);
+  friend V8_EXPORT Handle<Boolean> False(Isolate* isolate);
+
+  V8_INLINE explicit Handle(T* val) : val_(val) {}
+  V8_INLINE static Handle<T> New(Isolate* isolate, T* that) {
+    return New(that);
+  }
+
+  V8_INLINE Handle(const Persistent<T>& that)
+    : val_(*that) {
+  }
+  V8_INLINE static Handle<T> New(T* that);
+  V8_INLINE static Handle<T> New(JsValueRef ref) {
+    return New(static_cast<T*>(ref));
+  }
+
+  T* val_;
 };
 
-template <class T>
-class EXPORT Local : public Handle<T> {
+
+template <class T> class Local : public Handle<T> {
  public:
-  Local();
+  V8_INLINE Local();
+
   template <class S>
-  Local(S *that);
+  V8_INLINE Local(Local<S> that)
+      : Handle<T>(reinterpret_cast<T*>(*that)) {
+    TYPE_CHECK(T, S);
+  }
+
   template <class S>
-  Local(Local<S> that);
+  V8_INLINE static Local<T> Cast(Local<S> that) {
+    return Local<T>(T::Cast(*that));
+  }
+
   template <class S>
-  Local(Handle<S> that);
+  V8_INLINE Local(Handle<S> that)
+      : Handle<T>(reinterpret_cast<T*>(*that)) {
+    TYPE_CHECK(T, S);
+  }
+
   template <class S>
-  Local<S> As();
+  V8_INLINE Local<S> As() {
+    return Local<S>::Cast(*this);
+  }
+
+  V8_INLINE static Local<T> New(Isolate* isolate, Handle<T> that);
+  V8_INLINE static Local<T> New(Isolate* isolate,
+                                const PersistentBase<T>& that);
+
+ private:
+  friend struct AcessorExternalDataType;
+  friend class AccessorSignature;
+  friend class Array;
+  friend class Boolean;
+  friend class BooleanObject;
+  friend class Context;
+  friend class Date;
+  friend class External;
+  friend class Function;
+  friend struct FunctionCallbackData;
+  friend class FunctionTemplate;
+  friend struct FunctionTemplateData;
+  friend class HandleScope;
+  friend class Integer;
+  friend class Number;
+  friend class NumberObject;
+  friend class Object;
+  friend struct ObjectData;
+  friend class ObjectTemplate;
+  friend class Signature;
+  friend class Script;
+  friend class StackFrame;
+  friend class StackTrace;
+  friend class String;
+  friend class StringObject;
+  friend class Utils;
+  friend class TryCatch;
+  friend class UnboundScript;
+  friend class Value;
+  template <class F> friend class FunctionCallbackInfo;
+  template <class F> friend class PersistentBase;
+  template <class F, class M> friend class Persistent;
+
   template <class S>
-  static Local<T> Cast(Local<S> that);
-  static Local<T> New(Handle<T> that);
-  static Local<T> New(Isolate* isolate, Handle<T> that);
-  static Local<T> New(Isolate* isolate, const Persistent<T>& that);
+  V8_INLINE Local(S* that) : Handle<T>(that) { }
+
+  V8_INLINE static Local<T> New(Isolate* isolate, T* that) {
+    return New(that);
+  }
+
+  V8_INLINE Local(JsValueRef that)
+    : Handle<T>(static_cast<T*>(that)) {
+  }
+  V8_INLINE Local(const Persistent<T>& that)
+    : Handle<T>(*that) {
+  }
+  V8_INLINE static Local<T> New(T* that);
+  V8_INLINE static Local<T> New(JsValueRef ref) {
+    return New(static_cast<T*>(ref));
+  }
 };
 
 
@@ -228,130 +359,278 @@ class WeakCallbackData {
  public:
   typedef void (*Callback)(const WeakCallbackData<T, P>& data);
 
-  Isolate* GetIsolate() const { return isolate_; }
-  Local<T> GetValue() const { return handle_; }
-  P* GetParameter() const { return parameter_; }
+  V8_INLINE Isolate* GetIsolate() const { return isolate_; }
+  V8_INLINE Local<T> GetValue() const { return handle_; }
+  V8_INLINE P* GetParameter() const { return parameter_; }
 
-  WeakCallbackData(Isolate* isolate, Local<T> handle, P* parameter)
-    : isolate_(isolate), handle_(handle), parameter_(parameter) {
-  }
  private:
+  friend class Utils;
+  WeakCallbackData(Isolate* isolate, Local<T> handle, P* parameter)
+    : isolate_(isolate), handle_(handle), parameter_(parameter) { }
   Isolate* isolate_;
   Local<T> handle_;
   P* parameter_;
 };
 
+
 namespace chakrashim {
-class InternalMethods;
-struct WeakReferenceCallbackWrapper;
-template class EXPORT std::shared_ptr<WeakReferenceCallbackWrapper>;
+struct WeakReferenceCallbackWrapper {
+  void *parameters;
+  WeakCallbackData<Value, void>::Callback callback;
+};
+template class V8_EXPORT std::shared_ptr<WeakReferenceCallbackWrapper>;
 
 // A helper method for setting an object with a WeakReferenceCallback. The
 // callback will be called before the object is released.
-EXPORT void SetObjectWeakReferenceCallback(
+V8_EXPORT void SetObjectWeakReferenceCallback(
     JsValueRef object,
     WeakCallbackData<Value, void>::Callback callback,
     void* parameters,
     std::shared_ptr<WeakReferenceCallbackWrapper>* weakWrapper);
 // A helper method for turning off the WeakReferenceCallback that was set using
 // the previous method
-EXPORT void ClearObjectWeakReferenceCallback(JsValueRef object, bool revive);
+V8_EXPORT void ClearObjectWeakReferenceCallback(JsValueRef object, bool revive);
 
-EXPORT JsValueRef MarshalJsValueRefToContext(
+V8_EXPORT JsValueRef MarshalJsValueRefToContext(
   JsValueRef value, JsContextRef context);
 }
 
+
 template <class T>
-class EXPORT Persistent : public Handle<T> {
- private:
-  std::shared_ptr<chakrashim::WeakReferenceCallbackWrapper> _weakWrapper;
-
-  void SetNewRef(JsValueRef ref);
-
+class PersistentBase {
  public:
-  Persistent();
-  ~Persistent();
-  template <class S>
-  explicit Persistent(Persistent<S> that);
-  template <class S>
-  explicit Persistent(Isolate* isolate, Persistent<S> that);
+  V8_INLINE void Reset();
 
   template <class S>
-  explicit Persistent(S *that);
+  V8_INLINE void Reset(Isolate* isolate, const Handle<S>& other);
+
+  V8_INLINE Local<T> get();
 
   template <class S>
-  explicit Persistent(Handle<S> that);
-  template <class S>
-  explicit Persistent(Isolate* isolate, Handle<S> that);
+  V8_INLINE void Reset(Isolate* isolate, const PersistentBase<S>& other);
 
-  Persistent(const Persistent<T> &that);
-  explicit Persistent(const Handle<T> &that);
+  V8_INLINE bool IsEmpty() const { return val_ == NULL; }
+  V8_INLINE void Empty() { Reset(); }
 
   template <class S>
-  Persistent<S> As();
-  void Dispose();
+  V8_INLINE bool operator==(const PersistentBase<S>& that) const {
+    return val_ == that.val_;
+  }
 
-  Local<T> get() {
-    return (*this);
+  template <class S>
+  V8_INLINE bool operator==(const Handle<S>& that) const {
+    return val_ == that.val_;
+  }
+
+  template <class S>
+  V8_INLINE bool operator!=(const PersistentBase<S>& that) const {
+    return !operator==(that);
+  }
+
+  template <class S>
+  V8_INLINE bool operator!=(const Handle<S>& that) const {
+    return !operator==(that);
   }
 
   template<typename P>
-  void SetWeak(
-    P* parameter,
-    typename WeakCallbackData<T, P>::Callback callback);
+  V8_INLINE void SetWeak(
+      P* parameter,
+      typename WeakCallbackData<T, P>::Callback callback);
 
-  void ClearWeak();
-  void MarkIndependent();
-  bool IsNearDeath() const;
-  bool IsWeak() const;
-  void SetWrapperClassId(uint16_t class_id);
+  template<typename P>
+  V8_INLINE P* ClearWeak();
 
-  void Reset();
-  template <class S>
-  void Reset(Isolate* isolate, const Handle<S>& other);
-  template <class S>
-  void Reset(Isolate* isolate, const Persistent<S>& other);
+  V8_INLINE void ClearWeak() { ClearWeak<void>(); }
+  V8_INLINE void MarkIndependent();
+  // V8_INLINE void MarkPartiallyDependent();
+  // V8_INLINE bool IsIndependent() const;
+  V8_INLINE bool IsNearDeath() const;
+  V8_INLINE bool IsWeak() const;
+  V8_INLINE void SetWrapperClassId(uint16_t class_id);
 
-  // CHAKRA: Addition from v8 API
-  Persistent<T>& operator=(const Persistent<T> &rhs);
+ private:
+  template<class F> friend class Handle;
+  template<class F> friend class Local;
+  template<class F1, class F2> friend class Persistent;
 
-  // CHAKRA: Addition from v8 API
-  Persistent<T>& operator=(const Handle<T> &rhs);
+  explicit V8_INLINE PersistentBase(T* val) : val_(val) {}
+  PersistentBase(PersistentBase& other) = delete;  // NOLINT
+  void operator=(PersistentBase&) = delete;
+  V8_INLINE static T* New(Isolate* isolate, T* that);
 
-  // CHAKRA: Addition from v8 API
-  template <class S>
-  Persistent<T>& operator=(const Persistent<S> &rhs);
-
-  // CHAKRA: Addition from v8 API
-  template <class S>
-  Persistent<T>& operator=(const Handle<S> &rhs);
-
-  // CHAKRA: Addition from v8 API
-  template <class S>
-  Persistent<T>& operator=(S* that);
-
-  template <class S>
-  static Persistent<T> Cast(Persistent<S> that);
-  static Persistent<T> New(Handle<T> that);
+  T* val_;
+  std::shared_ptr<chakrashim::WeakReferenceCallbackWrapper> _weakWrapper;
 };
 
+
+template<class T>
+struct CopyablePersistentTraits {
+  typedef Persistent<T, CopyablePersistentTraits<T> > CopyablePersistent;
+  static const bool kResetInDestructor = true;
+  template<class S, class M>
+  static V8_INLINE void Copy(const Persistent<S, M>& source,
+                             CopyablePersistent* dest) {
+    // do nothing, just allow copy
+  }
+};
+
+
+template <class T, class M>
+class Persistent : public PersistentBase<T> {
+ public:
+  V8_INLINE Persistent() : PersistentBase<T>(0) { }
+
+  template <class S>
+  V8_INLINE Persistent(Isolate* isolate, Handle<S> that)
+      : PersistentBase<T>(PersistentBase<T>::New(isolate, *that)) {
+    TYPE_CHECK(T, S);
+  }
+
+  template <class S, class M2>
+  V8_INLINE Persistent(Isolate* isolate, const Persistent<S, M2>& that)
+    : PersistentBase<T>(PersistentBase<T>::New(isolate, *that)) {
+    TYPE_CHECK(T, S);
+  }
+
+  V8_INLINE Persistent(const Persistent& that) : PersistentBase<T>(0) {
+    Copy(that);
+  }
+
+  template <class S, class M2>
+  V8_INLINE Persistent(const Persistent<S, M2>& that) : PersistentBase<T>(0) {
+    Copy(that);
+  }
+
+  V8_INLINE Persistent& operator=(const Persistent& that) { // NOLINT
+    Copy(that);
+    return *this;
+  }
+
+  template <class S, class M2>
+  V8_INLINE Persistent& operator=(const Persistent<S, M2>& that) { // NOLINT
+    Copy(that);
+    return *this;
+  }
+
+  V8_INLINE ~Persistent() {
+    if (M::kResetInDestructor) this->Reset();
+  }
+
+  template <class S>
+  V8_INLINE static Persistent<T>& Cast(Persistent<S>& that) { // NOLINT
+    return reinterpret_cast<Persistent<T>&>(that);
+  }
+
+  template <class S>
+  V8_INLINE Persistent<S>& As() { // NOLINT
+    return Persistent<S>::Cast(*this);
+  }
+
+ private:
+  friend class Object;
+  friend struct ObjectData;
+  friend class ObjectTemplate;
+  friend struct ObjectTemplateData;
+  friend struct TemplateData;
+  friend struct FunctionCallbackData;
+  friend class FunctionTemplate;
+  friend struct FunctionTemplateData;
+  friend class Utils;
+  template<class F> friend class Handle;
+  template<class F> friend class Local;
+  template<class F> friend class ReturnValue;
+
+  V8_INLINE Persistent(T* that)
+    : PersistentBase<T>(PersistentBase<T>::New(nullptr, that)) { }
+
+  V8_INLINE T* operator*() const { return this->val_; }
+  V8_INLINE T* operator->() const { return this->val_; }
+
+  template<class S, class M2>
+  V8_INLINE void Copy(const Persistent<S, M2>& that);
+
+  template <class S>
+  V8_INLINE Persistent& operator=(const Handle<S>& other) {
+    Reset(nullptr, other);
+    return *this;
+  }
+  V8_INLINE Persistent& operator=(JsRef other) {
+    return operator=(Local<T>(static_cast<T*>(other)));
+  }
+};
+
+
 template <class T>
-class EXPORT Eternal : private Persistent<T> {
+class Eternal : private Persistent<T> {
  public:
   Eternal() {}
+
   template<class S>
   Eternal(Isolate* isolate, Local<S> handle) {
     Set(isolate, handle);
   }
 
   Local<T> Get(Isolate* isolate) {
-    return Local<T>::New(*this);
+    return Local<T>::New(isolate, *this);
   }
-  bool IsEmpty() { return __super::IsEmpty(); }
+
   template<class S> void Set(Isolate* isolate, Local<S> handle) {
     Reset(isolate, handle);
   }
 };
+
+
+template<class T>
+class UniquePersistent : public PersistentBase<T> {
+  struct RValue {
+    V8_INLINE explicit RValue(UniquePersistent* obj) : object(obj) {}
+    UniquePersistent* object;
+  };
+
+ public:
+  V8_INLINE UniquePersistent() : PersistentBase<T>(0) {}
+
+  template <class S>
+  V8_INLINE UniquePersistent(Isolate* isolate, Handle<S> that)
+    : PersistentBase<T>(PersistentBase<T>::New(isolate, *that)) {
+    TYPE_CHECK(T, S);
+  }
+
+  template <class S>
+  V8_INLINE UniquePersistent(Isolate* isolate, const PersistentBase<S>& that)
+    : PersistentBase<T>(PersistentBase<T>::New(isolate, that.val_)) {
+    TYPE_CHECK(T, S);
+  }
+
+  V8_INLINE UniquePersistent(RValue rvalue)
+      : PersistentBase<T>(rvalue.object->val_) {
+    this._weakWrapper = rvalue.object->_weakWrapper;
+    rvalue.object->val_ = 0;
+    rvalue.object->_weakWrapper.reset();
+  }
+
+  V8_INLINE ~UniquePersistent() { this->Reset(); }
+
+  template<class S>
+  V8_INLINE UniquePersistent& operator=(UniquePersistent<S> rhs) {
+    TYPE_CHECK(T, S);
+    this->Reset();
+    this->val_ = rhs.val_;
+    this->_weakWrapper = rhs._weakWrapper;
+    rhs.val_ = 0;
+    rhs._weakWrapper.reset();
+    return *this;
+  }
+
+  V8_INLINE operator RValue() { return RValue(this); }
+
+  UniquePersistent Pass() { return UniquePersistent(RValue(this)); }
+
+ private:
+  UniquePersistent(UniquePersistent&);
+  void operator=(UniquePersistent&);
+};
+
 
 // CHAKRA: Chakra's GC behavior does not exactly match up with V8's GC behavior.
 // V8 uses a HandleScope to keep Local references alive, which means that as
@@ -363,12 +642,21 @@ class EXPORT Eternal : private Persistent<T> {
 // will create a JS array and will hold that reference on the stack. Any local
 // values created will then be added to that array. So the GC will see the array
 // on the stack and then keep those local references alive.
-class EXPORT HandleScope {
-  template <class T>
-  friend class Local;
+class V8_EXPORT HandleScope {
+ public:
+  HandleScope(Isolate* isolate);
+  ~HandleScope();
+
+  static int NumberOfHandles(Isolate* isolate);
 
  private:
-  JsValueRef _refs;
+  friend class EscapableHandleScope;
+  template <class T> friend class Handle;
+  template <class T> friend class Local;
+  static const int kOnStackLocals = 5;  // Arbitrary number of refs on stack
+
+  JsValueRef _locals[kOnStackLocals];   // Save some refs on stack
+  JsValueRef _refs;                     // More refs go to a JS array
   int _count;
   HandleScope *_prev;
   JsContextRef _contextRef;
@@ -383,15 +671,11 @@ class EXPORT HandleScope {
 
   static HandleScope *GetCurrent();
 
- public:
-  HandleScope(Isolate* isolate = nullptr);
-  ~HandleScope();
-
   template <class T>
   Local<T> Close(Handle<T> value);
 };
 
-class EXPORT EscapableHandleScope : public HandleScope {
+class V8_EXPORT EscapableHandleScope : public HandleScope {
  public:
   EscapableHandleScope(Isolate* isolate) : HandleScope(isolate) {}
 
@@ -399,7 +683,7 @@ class EXPORT EscapableHandleScope : public HandleScope {
   Local<T> Escape(Handle<T> value) { return Close(value); }
 };
 
-class EXPORT Data {
+class V8_EXPORT Data {
  public:
 };
 
@@ -412,12 +696,12 @@ class ScriptOrigin {
   Handle<Value> resource_name_;
 };
 
-class EXPORT UnboundScript {
+class V8_EXPORT UnboundScript {
  public:
   Local<Script> BindToCurrentContext();
 };
 
-class EXPORT Script {
+class V8_EXPORT Script {
  public:
   static Local<Script> Compile(
     Handle<String> source, ScriptOrigin* origin = NULL);
@@ -426,7 +710,7 @@ class EXPORT Script {
   Local<UnboundScript> GetUnboundScript();
 };
 
-class EXPORT ScriptCompiler {
+class V8_EXPORT ScriptCompiler {
  public:
   struct CachedData {
     // CHAKRA-TODO: Not implemented
@@ -466,18 +750,60 @@ class EXPORT ScriptCompiler {
     CompileOptions options = kNoCompileOptions);
 };
 
-class EXPORT Message {
+class V8_EXPORT Message {
  public:
   Local<String> GetSourceLine() const;
   Handle<Value> GetScriptResourceName() const;
   int GetLineNumber() const;
   int GetStartColumn() const;
   int GetEndColumn() const;
+
+  static const int kNoLineNumberInfo = 0;
+  static const int kNoColumnInfo = 0;
+  static const int kNoScriptIdInfo = 0;
 };
 
 typedef void (*MessageCallback)(Handle<Message> message, Handle<Value> error);
 
-class EXPORT Value : public Data {
+class V8_EXPORT StackTrace {
+ public:
+  enum StackTraceOptions {
+    kLineNumber = 1,
+    kColumnOffset = 1 << 1 | kLineNumber,
+    kScriptName = 1 << 2,
+    kFunctionName = 1 << 3,
+    kIsEval = 1 << 4,
+    kIsConstructor = 1 << 5,
+    kScriptNameOrSourceURL = 1 << 6,
+    kScriptId = 1 << 7,
+    kExposeFramesAcrossSecurityOrigins = 1 << 8,
+    kOverview = kLineNumber | kColumnOffset | kScriptName | kFunctionName,
+    kDetailed = kOverview | kIsEval | kIsConstructor | kScriptNameOrSourceURL
+  };
+
+  Local<StackFrame> GetFrame(uint32_t index) const;
+  int GetFrameCount() const;
+  Local<Array> AsArray();
+
+  static Local<StackTrace> CurrentStackTrace(
+    Isolate* isolate,
+    int frame_limit,
+    StackTraceOptions options = kOverview);
+};
+
+class V8_EXPORT StackFrame {
+ public:
+  int GetLineNumber() const;
+  int GetColumn() const;
+  int GetScriptId() const;
+  Local<String> GetScriptName() const;
+  Local<String> GetScriptNameOrSourceURL() const;
+  Local<String> GetFunctionName() const;
+  bool IsEval() const;
+  bool IsConstructor() const;
+};
+
+class V8_EXPORT Value : public Data {
  public:
   bool IsUndefined() const;
   bool IsNull() const;
@@ -498,14 +824,30 @@ class EXPORT Value : public Data {
   bool IsNativeError() const;
   bool IsRegExp() const;
   bool IsExternal() const;
+  bool IsArrayBuffer() const;
   bool IsTypedArray() const;
+  bool IsUint8Array() const;
+  bool IsUint8ClampedArray() const;
+  bool IsInt8Array() const;
+  bool IsUint16Array() const;
+  bool IsInt16Array() const;
+  bool IsUint32Array() const;
+  bool IsInt32Array() const;
+  bool IsFloat32Array() const;
+  bool IsFloat64Array() const;
+  bool IsDataView() const;
+
   Local<Boolean> ToBoolean() const;
   Local<Number> ToNumber() const;
   Local<String> ToString() const;
+  Local<String> ToDetailString() const;
   Local<Object> ToObject() const;
   Local<Integer> ToInteger() const;
   Local<Uint32> ToUint32() const;
   Local<Int32> ToInt32() const;
+
+  Local<Uint32> ToArrayIndex() const;
+
   bool BooleanValue() const;
   double NumberValue() const;
   int64_t IntegerValue() const;
@@ -519,133 +861,73 @@ class EXPORT Value : public Data {
   }
 };
 
-class EXPORT Primitive : public Value {
+class V8_EXPORT Primitive : public Value {
  public:
 };
 
-class EXPORT Boolean : public Primitive {
+class V8_EXPORT Boolean : public Primitive {
  public:
   bool Value() const;
-
   static Handle<Boolean> New(Isolate* isolate, bool value);
+
+ private:
+  friend class BooleanObject;
+  template <class F> friend class ReturnValue;
+  static Local<Boolean> From(bool value);
 };
 
-class EXPORT String : public Primitive {
+class V8_EXPORT String : public Primitive {
  public:
-  class EXPORT AsciiValue {
-   public:
-    explicit AsciiValue(Handle<v8::Value> obj);
-    ~AsciiValue();
-    char *operator*() { return _str; }
-    const char *operator*() const { return _str; }
-    int length() const { return static_cast<int>(_length); }
-   private:
-    AsciiValue(const AsciiValue&);
-    void operator=(const AsciiValue&);
-
-    char* _str;
-    size_t _length;
-  };
-
-  class EXPORT ExternalAsciiStringResource {
-   public:
-    virtual ~ExternalAsciiStringResource() {}
-    virtual const char *data() const = 0;
-    virtual size_t length() const = 0;
-  };
-
-  class EXPORT ExternalStringResource {
-   public:
-    virtual ~ExternalStringResource() {}
-    virtual const uint16_t* data() const = 0;
-    virtual size_t length() const = 0;
-  };
-
-  class EXPORT Utf8Value {
-   public:
-    explicit Utf8Value(Handle<v8::Value> obj);
-    ~Utf8Value();
-    char *operator*() { return _str; }
-    const char *operator*() const { return _str; }
-    int length() const { return static_cast<int>(_length); }
-   private:
-    Utf8Value(const Utf8Value&);
-    void operator=(const Utf8Value&);
-
-    char* _str;
-    size_t _length;
-  };
-
-  class EXPORT Value {
-   public:
-    explicit Value(Handle<v8::Value> obj);
-    ~Value();
-    uint16_t *operator*() { return _str; }
-    const uint16_t *operator*() const { return _str; }
-    int length() const { return _length; }
-   private:
-    Value(const Value&);
-    void operator=(const Value&);
-
-    uint16_t* _str;
-    size_t _length;
-  };
+  int Length() const;
+  int Utf8Length() const;
+  bool IsOneByte() const { return false; }
+  bool ContainsOnlyOneByte() const { return false; }
 
   enum WriteOptions {
     NO_OPTIONS = 0,
     HINT_MANY_WRITES_EXPECTED = 1,
     NO_NULL_TERMINATION = 2,
     PRESERVE_ONE_BYTE_NULL = 4,
-    // Used by WriteUtf8 to replace orphan surrogate code units with the
-    // unicode replacement character. Needs to be set to guarantee valid UTF-8
-    // output.
     REPLACE_INVALID_UTF8 = 8
   };
 
-  int Length() const;
-  int Utf8Length() const;
-  bool inline MayContainNonAscii() const { return true; }
-  int Write(
-    uint16_t *buffer,
-    int start = 0,
-    int length = -1,
-    int options = NO_OPTIONS) const;
-  int WriteAscii(
-    char *buffer,
-    int start = 0,
-    int length = -1,
-    int options = NO_OPTIONS) const;
-  int WriteOneByte(
-    uint8_t* buffer,
-    int start = 0,
-    int length = -1,
-    int options = NO_OPTIONS) const;
-  int WriteUtf8(
-    char *buffer,
-    int length = -1,
-    int *nchars_ref = NULL,
-    int options = NO_OPTIONS) const;
+  int Write(uint16_t *buffer,
+            int start = 0,
+            int length = -1,
+            int options = NO_OPTIONS) const;
+  int WriteOneByte(uint8_t* buffer,
+                   int start = 0,
+                   int length = -1,
+                   int options = NO_OPTIONS) const;
+  int WriteUtf8(char *buffer,
+                int length = -1,
+                int *nchars_ref = NULL,
+                int options = NO_OPTIONS) const;
 
-  static Local<String> Empty(Isolate* isolate = nullptr);
-  static String *Cast(v8::Value *obj);
-  template <class ToWide> static Local<String> New(
-    const ToWide& toWide, const char *data, int length = -1);
-  static Local<String> New(const wchar_t *data, int length = -1);
-  static Local<String> New(const uint16_t *data, int length = -1);
-  static Local<String> NewSymbol(const char *data, int length = -1);
-  static Local<String> NewSymbol(const wchar_t *data, int length = -1);
-  static Local<String> Concat(Handle<String> left, Handle<String> right);
-  static Local<String> NewExternal(
-    Isolate* isolate, ExternalStringResource* resource);
-  static Local<String> NewExternal(
-    Isolate* isolate, ExternalAsciiStringResource *resource);
-
+  static Local<String> Empty(Isolate* isolate);
   bool IsExternal() const { return false; }
   bool IsExternalAscii() const { return false; }
+
+  class V8_EXPORT ExternalAsciiStringResource {
+   public:
+    virtual ~ExternalAsciiStringResource() {}
+    virtual const char *data() const = 0;
+    virtual size_t length() const = 0;
+  };
+
+  class V8_EXPORT ExternalStringResource {
+   public:
+    virtual ~ExternalStringResource() {}
+    virtual const uint16_t* data() const = 0;
+    virtual size_t length() const = 0;
+  };
+
   ExternalStringResource* GetExternalStringResource() const { return NULL; }
   const ExternalAsciiStringResource* GetExternalAsciiStringResource() const {
     return NULL;
   }
+
+  static String *Cast(v8::Value *obj);
 
   enum NewStringType {
     kNormalString, kInternalizedString, kUndetectableString
@@ -666,92 +948,158 @@ class EXPORT String : public Primitive {
                                       NewStringType type = kNormalString,
                                       int length = -1);
 
+  static Local<String> Concat(Handle<String> left, Handle<String> right);
+  static Local<String> NewExternal(
+    Isolate* isolate, ExternalStringResource* resource);
+  static Local<String> NewExternal(
+    Isolate* isolate, ExternalAsciiStringResource *resource);
+
+  class V8_EXPORT Utf8Value {
+   public:
+    explicit Utf8Value(Handle<v8::Value> obj);
+    ~Utf8Value();
+    char *operator*() { return _str; }
+    const char *operator*() const { return _str; }
+    int length() const { return static_cast<int>(_length); }
+   private:
+    Utf8Value(const Utf8Value&);
+    void operator=(const Utf8Value&);
+
+    char* _str;
+    int _length;
+  };
+
+  class V8_EXPORT Value {
+   public:
+    explicit Value(Handle<v8::Value> obj);
+    ~Value();
+    uint16_t *operator*() { return _str; }
+    const uint16_t *operator*() const { return _str; }
+    int length() const { return _length; }
+   private:
+    Value(const Value&);
+    void operator=(const Value&);
+
+    uint16_t* _str;
+    int _length;
+  };
+
+ private:
+  template <class ToWide>
+  static Local<String> New(const ToWide& toWide,
+                           const char *data, int length = -1);
+  static Local<String> New(const wchar_t *data, int length = -1);
+
   JsValueRef _ref;
 };
 
-class EXPORT Number : public Primitive {
+class V8_EXPORT Number : public Primitive {
  public:
   double Value() const;
-
   static Local<Number> New(Isolate* isolate, double value);
   static Number *Cast(v8::Value *obj);
+
+ private:
+  friend class Integer;
+  template <class F> friend class ReturnValue;
+  static Local<Number> From(double value);
 };
 
-class EXPORT Integer : public Number {
+class V8_EXPORT Integer : public Number {
  public:
   static Local<Integer> New(Isolate* isolate, int32_t value);
   static Local<Integer> NewFromUnsigned(Isolate* isolate, uint32_t value);
   static Integer *Cast(v8::Value *obj);
 
   int64_t Value() const;
+
+ private:
+  friend class Utils;
+  template <class F> friend class ReturnValue;
+  static Local<Integer> From(int32_t value);
+  static Local<Integer> From(uint32_t value);
 };
 
-class EXPORT Int32 : public Integer {
+class V8_EXPORT Int32 : public Integer {
  public:
   int32_t Value() const;
 };
 
-class EXPORT Uint32 : public Integer {
+class V8_EXPORT Uint32 : public Integer {
  public:
   uint32_t Value() const;
 };
 
-class EXPORT Object : public Value {
+class V8_EXPORT Object : public Value {
  public:
-  bool Set(
-    Handle<Value> key, Handle<Value> value, PropertyAttribute attribs = None);
+  bool Set(Handle<Value> key, Handle<Value> value);
   bool Set(uint32_t index, Handle<Value> value);
-  bool ForceSet(
-    Handle<Value> key, Handle<Value> value, PropertyAttribute attribs = None);
+  bool ForceSet(Handle<Value> key, Handle<Value> value,
+                PropertyAttribute attribs = None);
   Local<Value> Get(Handle<Value> key);
   Local<Value> Get(uint32_t index);
-  bool Has(Handle<String> key);
-  bool Delete(Handle<String> key);
+  PropertyAttribute GetPropertyAttributes(Handle<Value> key);
+  Local<Value> GetOwnPropertyDescriptor(Local<String> key);
+  bool Has(Handle<Value> key);
+  bool Delete(Handle<Value> key);
+  bool Has(uint32_t index);
   bool Delete(uint32_t index);
-  bool SetAccessor(
-    Handle<String> name,
-    AccessorGetterCallback getter,
-    AccessorSetterCallback setter = 0,
-    Handle<Value> data = Handle<Value>(),
-    AccessControl settings = DEFAULT,
-    PropertyAttribute attribute = None);
-  Local<Value> GetPrototype();
-  bool SetPrototype(Handle<Value> prototype);
-  Local<Value> GetConstructor();
+  bool SetAccessor(Handle<String> name,
+                   AccessorGetterCallback getter,
+                   AccessorSetterCallback setter = 0,
+                   Handle<Value> data = Handle<Value>(),
+                   AccessControl settings = DEFAULT,
+                   PropertyAttribute attribute = None);
   Local<Array> GetPropertyNames();
   Local<Array> GetOwnPropertyNames();
-  bool HasOwnProperty(Handle<String> key);
+  Local<Value> GetPrototype();
+  bool SetPrototype(Handle<Value> prototype);
+  Local<String> ObjectProtoToString();
   Local<String> GetConstructorName();
+
   int InternalFieldCount();
+  Local<Value> GetInternalField(int index);
+  void SetInternalField(int index, Handle<Value> value);
+  void* GetAlignedPointerFromInternalField(int index);
+  void SetAlignedPointerInInternalField(int index, void* value);
+
+  bool HasOwnProperty(Handle<String> key);
+  bool HasRealNamedProperty(Handle<String> key);
+  bool HasRealIndexedProperty(uint32_t index);
+  bool HasRealNamedCallbackProperty(Handle<String> key);
+
+  Local<Value> GetRealNamedPropertyInPrototypeChain(Handle<String> key);
+  Local<Value> GetRealNamedProperty(Handle<String> key);
+
   bool SetHiddenValue(Handle<String> key, Handle<Value> value);
   Local<Value> GetHiddenValue(Handle<String> key);
-  void SetIndexedPropertiesToExternalArrayData(
-    void *data, ExternalArrayType array_type, int number_of_elements);
+
+  Local<Object> Clone();
+  Local<Context> CreationContext();
+
+  void SetIndexedPropertiesToExternalArrayData(void *data,
+                                               ExternalArrayType array_type,
+                                               int number_of_elements);
   bool HasIndexedPropertiesInExternalArrayData();
   void *GetIndexedPropertiesExternalArrayData();
   ExternalArrayType GetIndexedPropertiesExternalArrayDataType();
   int GetIndexedPropertiesExternalArrayDataLength();
 
-  void* GetAlignedPointerFromInternalField(int index);
-  void SetAlignedPointerInInternalField(int index, void* value);
-  Local<Object> Clone();
-  Local<Context> CreationContext();
-  Local<Value> GetRealNamedProperty(Handle<String> key);
+  Local<Value> CallAsFunction(Handle<Value> recv,
+                              int argc,
+                              Handle<Value> argv[]);
+  Local<Value> CallAsConstructor(int argc, Handle<Value> argv[]);
 
   static Local<Object> New(Isolate* isolate = nullptr);
   static Object *Cast(Value *obj);
 
  private:
-  bool Set(Handle<Value> key,
-           Handle<Value> value,
-           PropertyAttribute attribs,
-           bool force);
-  JsErrorCode GetObjectData(struct ObjectData** objectData);
-  JsErrorCode InternalFieldHelper(void ***externalArray, int *count);
-  JsErrorCode ExternalArrayDataHelper(ExternalArrayData **data);
-  bool SupportsExternalArrayData(ExternalArrayData **data);
+  friend struct ObjectData;
+  friend class ObjectTemplate;
+  friend class Utils;
 
-  friend ObjectTemplate;
+  bool Set(Handle<Value> key, Handle<Value> value, PropertyAttribute attribs,
+           bool force);
   bool SetAccessor(Handle<String> name,
                    AccessorGetterCallback getter,
                    AccessorSetterCallback setter,
@@ -760,31 +1108,20 @@ class EXPORT Object : public Value {
                    PropertyAttribute attribute,
                    Handle<AccessorSignature> signature);
 
-  friend chakrashim::InternalMethods;
+  JsErrorCode GetObjectData(struct ObjectData** objectData);
   ObjectTemplate* GetObjectTemplate();
 };
 
-class EXPORT Array : public Object {
+class V8_EXPORT Array : public Object {
  public:
   uint32_t Length() const;
+  Local<Object> CloneElementAt(uint32_t index);
 
   static Local<Array> New(Isolate* isolate = nullptr, int length = 0);
   static Array *Cast(Value *obj);
 };
 
-
-class EXPORT ArrayBuffer : public Object {
- public:
-  class EXPORT Allocator {
-   public:
-    virtual ~Allocator() {}
-    virtual void* Allocate(size_t length) = 0;
-    virtual void* AllocateUninitialized(size_t length) = 0;
-    virtual void Free(void* data, size_t length) = 0;
-  };
-};
-
-class EXPORT BooleanObject : public Object {
+class V8_EXPORT BooleanObject : public Object {
  public:
   static Local<Value> New(bool value);
   bool ValueOf() const;
@@ -792,27 +1129,27 @@ class EXPORT BooleanObject : public Object {
 };
 
 
-class EXPORT StringObject : public Object {
+class V8_EXPORT StringObject : public Object {
  public:
   static Local<Value> New(Handle<String> value);
   Local<String> ValueOf() const;
   static StringObject* Cast(Value* obj);
 };
 
-class EXPORT NumberObject : public Object {
+class V8_EXPORT NumberObject : public Object {
  public:
   static Local<Value> New(Isolate * isolate, double value);
   double ValueOf() const;
   static NumberObject* Cast(Value* obj);
 };
 
-class EXPORT Date : public Object {
+class V8_EXPORT Date : public Object {
  public:
   static Local<Value> New(Isolate * isolate, double time);
   static Date *Cast(Value *obj);
 };
 
-class EXPORT RegExp : public Object {
+class V8_EXPORT RegExp : public Object {
  public:
   enum Flags {
     kNone = 0,
@@ -839,32 +1176,29 @@ class ReturnValue {
       chakrashim::MarshalJsValueRefToContext(*handle, *_context));
   }
   // Fast primitive setters
-  void Set(bool value) { Set(Boolean::New(Isolate::GetCurrent(), value)); }
-  void Set(double i) { Set(Number::New(Isolate::GetCurrent(), i)); }
-  void Set(int32_t i) { Set(Integer::New(Isolate::GetCurrent(), i)); }
-  void Set(uint32_t i) {
-    Set(Integer::NewFromUnsigned(Isolate::GetCurrent(), i));
-  }
+  void Set(bool value) { Set(Boolean::From(value)); }
+  void Set(double value) { Set(Number::From(value)); }
+  void Set(int32_t value) { Set(Integer::From(value)); }
+  void Set(uint32_t value) { Set(Integer::From(value)); }
   // Fast JS primitive setters
-  void SetNull() { Set(Null(Isolate::GetCurrent())); }
-  void SetUndefined() { Set(Undefined(Isolate::GetCurrent())); }
-  void SetEmptyString() { Set(String::New(L"", 0)); }
+  void SetNull() { Set(Null(nullptr)); }
+  void SetUndefined() { Set(Undefined(nullptr)); }
+  void SetEmptyString() { Set(String::Empty(nullptr)); }
   // Convenience getter for Isolate
   Isolate* GetIsolate() { return Isolate::GetCurrent(); }
 
   Value* Get() const { return *_value; }
+
  private:
+  template <typename F> friend class FunctionCallbackInfo;
+  template <typename F> friend class PropertyCallbackInfo;
+
   ReturnValue(Value** value, Handle<Context> context)
     : _value(value), _context(context) {
   }
 
   Value** _value;
   Local<Context> _context;
-
-  void SetCrossContext(JsValueRef valueRef);
-
-  template <typename F> friend class FunctionCallbackInfo;
-  template <typename F> friend class PropertyCallbackInfo;
 };
 
 template<typename T>
@@ -873,13 +1207,13 @@ class FunctionCallbackInfo {
   int Length() const { return _length; }
   Local<Value> operator[](int i) const {
     return (i >= 0 && i < _length) ?
-      Local<Value>(_args[i]) : Local<Value>(static_cast<Value*>(*Undefined()));
+      _args[i] : *Undefined(nullptr).As<Value>();
   }
+  Local<Function> Callee() const { return _callee; }
   Local<Object> This() const { return _thisPointer; }
   Local<Object> Holder() const { return _holder; }
-  Local<Function> Callee() const { return _callee; }
   bool IsConstructCall() const { return _isConstructorCall; }
-  //  V8_INLINE Local<Value> Data() const;
+  Local<Value> Data() const { return _data; }
   Isolate* GetIsolate() const { return Isolate::GetCurrent(); }
   ReturnValue<T> GetReturnValue() const {
     return ReturnValue<T>(
@@ -892,15 +1226,17 @@ class FunctionCallbackInfo {
     Local<Object> _this,
     Local<Object> holder,
     bool isConstructorCall,
+    Local<Value> data,
     Local<Function> callee)
        : _args(args),
          _length(length),
          _thisPointer(_this),
          _holder(holder),
          _isConstructorCall(isConstructorCall),
+         _data(data),
          _callee(callee),
          _returnValue(static_cast<Value*>(JS_INVALID_REFERENCE)),
-    _context(Context::GetCurrent()) {
+         _context(Context::GetCurrent()) {
   }
 
  private:
@@ -908,6 +1244,7 @@ class FunctionCallbackInfo {
   Local<Object> _thisPointer;
   Local<Object> _holder;
   Local<Function> _callee;
+  Local<Value> _data;
   bool _isConstructorCall;
   Value** _args;
   Value* _returnValue;
@@ -945,7 +1282,7 @@ class PropertyCallbackInfo {
 
 typedef void (*FunctionCallback)(const FunctionCallbackInfo<Value>& info);
 
-class EXPORT Function : public Object {
+class V8_EXPORT Function : public Object {
  public:
   static Local<Function> New(
     Isolate * isolate,
@@ -954,11 +1291,174 @@ class EXPORT Function : public Object {
     int length = 0);
   Local<Object> NewInstance() const;
   Local<Object> NewInstance(int argc, Handle<Value> argv[]) const;
-  Local<Value> Call(Handle<Object> recv, int argc, Handle<Value> argv[]);
+  Local<Value> Call(Handle<Value> recv, int argc, Handle<Value> argv[]);
   void SetName(Handle<String> name);
   // Handle<Value> GetName() const;
 
   static Function *Cast(Value *obj);
+};
+
+class V8_EXPORT Promise : public Object {
+ public:
+  class V8_EXPORT Resolver : public Object {
+   public:
+    static Local<Resolver> New(Isolate* isolate);
+    Local<Promise> GetPromise();
+    void Resolve(Handle<Value> value);
+    void Reject(Handle<Value> value);
+    V8_INLINE static Resolver* Cast(Value* obj);
+
+   private:
+    Resolver();
+    static void CheckCast(Value* obj);
+  };
+
+  Local<Promise> Chain(Handle<Function> handler);
+  Local<Promise> Catch(Handle<Function> handler);
+  Local<Promise> Then(Handle<Function> handler);
+
+  V8_INLINE static Promise* Cast(Value* obj);
+
+ private:
+  Promise();
+  static void CheckCast(Value* obj);
+};
+
+
+class V8_EXPORT ArrayBuffer : public Object {
+ public:
+  class V8_EXPORT Allocator {  // NOLINT
+   public:
+    virtual ~Allocator() {}
+    virtual void* Allocate(size_t length) = 0;
+    virtual void* AllocateUninitialized(size_t length) = 0;
+    virtual void Free(void* data, size_t length) = 0;
+  };
+
+  class V8_EXPORT Contents {  // NOLINT
+   public:
+    Contents() : data_(NULL), byte_length_(0) {}
+    void* Data() const { return data_; }
+    size_t ByteLength() const { return byte_length_; }
+
+   private:
+    void* data_;
+    size_t byte_length_;
+    friend class ArrayBuffer;
+  };
+
+  size_t ByteLength() const;
+  static Local<ArrayBuffer> New(Isolate* isolate, size_t byte_length);
+  static Local<ArrayBuffer> New(Isolate* isolate, void* data,
+                                size_t byte_length);
+
+  bool IsExternal() const;
+  void Neuter();
+  Contents Externalize();
+  static ArrayBuffer* Cast(Value* obj);
+
+ private:
+  ArrayBuffer();
+};
+
+class V8_EXPORT ArrayBufferView : public Object {
+ public:
+  Local<ArrayBuffer> Buffer();
+  size_t ByteOffset();
+  size_t ByteLength();
+
+  static ArrayBufferView* Cast(Value* obj);
+ private:
+  ArrayBufferView();
+};
+
+class V8_EXPORT TypedArray : public ArrayBufferView {
+ public:
+  size_t Length();
+  static TypedArray* Cast(Value* obj);
+ private:
+  TypedArray();
+};
+
+class V8_EXPORT Uint8Array : public TypedArray {
+ public:
+  static Local<Uint8Array> New(Handle<ArrayBuffer> array_buffer,
+                               size_t byte_offset, size_t length);
+  static Uint8Array* Cast(Value* obj);
+ private:
+  Uint8Array();
+};
+
+class V8_EXPORT Uint8ClampedArray : public TypedArray {
+ public:
+  static Local<Uint8ClampedArray> New(Handle<ArrayBuffer> array_buffer,
+                                      size_t byte_offset, size_t length);
+  static Uint8ClampedArray* Cast(Value* obj);
+ private:
+  Uint8ClampedArray();
+};
+
+class V8_EXPORT Int8Array : public TypedArray {
+ public:
+  static Local<Int8Array> New(Handle<ArrayBuffer> array_buffer,
+                              size_t byte_offset, size_t length);
+  static Int8Array* Cast(Value* obj);
+ private:
+  Int8Array();
+};
+
+class V8_EXPORT Uint16Array : public TypedArray {
+ public:
+  static Local<Uint16Array> New(Handle<ArrayBuffer> array_buffer,
+                                size_t byte_offset, size_t length);
+  static Uint16Array* Cast(Value* obj);
+ private:
+  Uint16Array();
+};
+
+class V8_EXPORT Int16Array : public TypedArray {
+ public:
+  static Local<Int16Array> New(Handle<ArrayBuffer> array_buffer,
+                               size_t byte_offset, size_t length);
+  static Int16Array* Cast(Value* obj);
+ private:
+  Int16Array();
+};
+
+class V8_EXPORT Uint32Array : public TypedArray {
+ public:
+  static Local<Uint32Array> New(Handle<ArrayBuffer> array_buffer,
+                                size_t byte_offset, size_t length);
+  static Uint32Array* Cast(Value* obj);
+ private:
+  Uint32Array();
+};
+
+class V8_EXPORT Int32Array : public TypedArray {
+ public:
+  static Local<Int32Array> New(Handle<ArrayBuffer> array_buffer,
+                               size_t byte_offset, size_t length);
+  static Int32Array* Cast(Value* obj);
+ private:
+  Int32Array();
+};
+
+class V8_EXPORT Float32Array : public TypedArray {
+ public:
+  static Local<Float32Array> New(Handle<ArrayBuffer> array_buffer,
+                                 size_t byte_offset, size_t length);
+  static Float32Array* Cast(Value* obj);
+ private:
+  Float32Array();
+};
+
+class V8_EXPORT Float64Array : public TypedArray {
+ public:
+  static Local<Float64Array> New(Handle<ArrayBuffer> array_buffer,
+                                 size_t byte_offset, size_t length);
+  static Float64Array* Cast(Value* obj);
+ private:
+  Float64Array();
 };
 
 enum AccessType {
@@ -974,7 +1474,7 @@ typedef bool (*NamedSecurityCallback)(
 typedef bool (*IndexedSecurityCallback)(
   Local<Object> host, uint32_t index, AccessType type, Local<Value> data);
 
-class EXPORT Template : public Data {
+class V8_EXPORT Template : public Data {
  public:
   void Set(Handle<String> name,
            Handle<Data> value,
@@ -986,7 +1486,7 @@ class EXPORT Template : public Data {
   Template();
 };
 
-class EXPORT FunctionTemplate : public Template {
+class V8_EXPORT FunctionTemplate : public Template {
  public:
   static Local<FunctionTemplate> New(
     Isolate* isolate,
@@ -1000,17 +1500,18 @@ class EXPORT FunctionTemplate : public Template {
   Local<ObjectTemplate> PrototypeTemplate();
   void SetClassName(Handle<String> name);
   void SetHiddenPrototype(bool value);
+  void SetCallHandler(FunctionCallback callback,
+                      Handle<Value> data = Handle<Value>());
   bool HasInstance(Handle<Value> object);
+  void Inherit(Handle<FunctionTemplate> parent);
 };
 
-class EXPORT ObjectTemplate : public Template {
+class V8_EXPORT ObjectTemplate : public Template {
  public:
   static Local<ObjectTemplate> New(Isolate* isolate);
 
   Local<Object> NewInstance();
-  Local<Object> NewInstance(Handle<Object> prototype);
   void SetClassName(Handle<String> name);
-  void SetSupportsOverrideToString();
 
   void SetAccessor(
     Handle<String> name,
@@ -1045,9 +1546,19 @@ class EXPORT ObjectTemplate : public Template {
     bool turned_on_by_default = true);
 
   void SetInternalFieldCount(int value);
+  void SetCallAsFunctionHandler(FunctionCallback callback,
+                                Handle<Value> data = Handle<Value>());
+
+ private:
+  friend struct FunctionCallbackData;
+  friend struct FunctionTemplateData;
+  friend class Utils;
+
+  Local<Object> NewInstance(Handle<Object> prototype);
+  Handle<String> GetClassName();
 };
 
-class EXPORT External : public Value {
+class V8_EXPORT External : public Value {
  public:
   static Local<Value> Wrap(void* data);
   static inline void* Unwrap(Handle<Value> obj);
@@ -1058,7 +1569,7 @@ class EXPORT External : public Value {
   void* Value() const;
 };
 
-class EXPORT Signature : public Data {
+class V8_EXPORT Signature : public Data {
  public:
   static Local<Signature> New(Isolate* isolate,
                               Handle<FunctionTemplate> receiver =
@@ -1069,21 +1580,31 @@ class EXPORT Signature : public Data {
   Signature();
 };
 
-class EXPORT AccessorSignature : public Data {
+class V8_EXPORT AccessorSignature : public Data {
  public:
   static Local<AccessorSignature> New(
     Isolate* isolate,
     Handle<FunctionTemplate> receiver = Handle<FunctionTemplate>());
 };
 
-class EXPORT ResourceConstraints {
+
+V8_EXPORT Handle<Primitive> Undefined(Isolate* isolate);
+V8_EXPORT Handle<Primitive> Null(Isolate* isolate);
+V8_EXPORT Handle<Boolean> True(Isolate* isolate);
+V8_EXPORT Handle<Boolean> False(Isolate* isolate);
+V8_EXPORT bool SetResourceConstraints(ResourceConstraints *constraints);
+
+
+class V8_EXPORT ResourceConstraints {
  public:
   void set_stack_limit(uint32_t *value) {}
 };
 
-class EXPORT Exception {
+class V8_EXPORT Exception {
  public:
   static Local<Value> RangeError(Handle<String> message);
+  static Local<Value> ReferenceError(Handle<String> message);
+  static Local<Value> SyntaxError(Handle<String> message);
   static Local<Value> TypeError(Handle<String> message);
   static Local<Value> Error(Handle<String> message);
 };
@@ -1105,7 +1626,7 @@ typedef void (*GCPrologueCallback)(GCType type, GCCallbackFlags flags);
 typedef void (*GCEpilogueCallback)(GCType type, GCCallbackFlags flags);
 
 
-class EXPORT HeapStatistics {
+class V8_EXPORT HeapStatistics {
  private:
   size_t heapSize;
 
@@ -1121,14 +1642,16 @@ class EXPORT HeapStatistics {
   size_t heap_size_limit() { return 0; }
 };
 
+typedef void(*FunctionEntryHook)(uintptr_t function,
+                                 uintptr_t return_addr_location);
 typedef int* (*CounterLookupCallback)(const char* name);
 typedef void* (*CreateHistogramCallback)(
   const char* name, int min, int max, size_t buckets);
 typedef void (*AddHistogramSampleCallback)(void* histogram, int sample);
 
-class EXPORT Isolate {
+class V8_EXPORT Isolate {
  public:
-  class EXPORT Scope {
+  class V8_EXPORT Scope {
    public:
     explicit Scope(Isolate* isolate) : isolate_(isolate) { isolate->Enter(); }
     ~Scope() { isolate_->Exit(); }
@@ -1140,9 +1663,6 @@ class EXPORT Isolate {
 
   static Isolate* New();
   static Isolate* GetCurrent();
-
-  typedef bool (*abort_on_uncaught_exception_t)();
-  void SetAbortOnUncaughtException(abort_on_uncaught_exception_t callback);
 
   void Enter();
   void Exit();
@@ -1179,7 +1699,7 @@ class EXPORT Isolate {
   int ContextDisposedNotification();
 };
 
-class EXPORT JitCodeEvent {
+class V8_EXPORT JitCodeEvent {
  public:
   enum EventType {
     CODE_ADDED,
@@ -1199,7 +1719,10 @@ class EXPORT JitCodeEvent {
   };
 };
 
-class EXPORT V8 {
+class V8_EXPORT StartupData {
+};
+
+class V8_EXPORT V8 {
  public:
   static void SetFatalErrorHandler(FatalErrorCallback that);
   static void SetArrayBufferAllocator(ArrayBuffer::Allocator* allocator);
@@ -1219,39 +1742,43 @@ class EXPORT V8 {
   static bool AddMessageListener(
     MessageCallback that, Handle<Value> data = Handle<Value>());
   static void RemoveMessageListeners(MessageCallback that);
+  static void InitializePlatform(Platform* platform) {}
 };
 
-class EXPORT TryCatch {
- private:
-  void GetAndClearException();
- private:
-  JsValueRef error;
-  TryCatch* prev;
-  bool rethrow;
-  bool verbose;
+class V8_EXPORT TryCatch {
  public:
   TryCatch();
   ~TryCatch();
+
   bool HasCaught() const;
+  bool CanContinue() const { return true;  }
   bool HasTerminated() const;
   Handle<Value> ReThrow();
   Local<Value> Exception() const;
   Local<Value> StackTrace() const;
   Local<v8::Message> Message() const;
+  void Reset();
   void SetVerbose(bool value);
+  void SetCaptureMessage(bool value);
+
+ private:
+  friend class Function;
+
+  void GetAndClearException();
   void CheckReportExternalException();
 
-  bool CanContinue() {
-    return HasTerminated() ? false : true;
-  }
+  JsValueRef error;
+  TryCatch* prev;
+  bool rethrow;
+  bool verbose;
 };
 
-class EXPORT ExtensionConfiguration {
+class V8_EXPORT ExtensionConfiguration {
 };
 
-class EXPORT Context {
+class V8_EXPORT Context {
  public:
-  class EXPORT Scope {
+  class V8_EXPORT Scope {
    private:
     Scope * previous;
     void * context;
@@ -1276,143 +1803,51 @@ class EXPORT Context {
   Handle<Value> GetSecurityToken();
 };
 
-class EXPORT Locker {
+class V8_EXPORT Locker {
   // Don't need to implement this for Chakra
  public:
   explicit Locker(Isolate* isolate) {}
 };
 
-//
-// Handle<T> members
-//
-
-template <class T>
-Handle<T>::Handle(T *val)
-    : _ref(val) {
-}
-
-template <class T>
-Handle<T>::Handle()
-    : _ref(JS_INVALID_REFERENCE) {
-}
-
-template <class T>
-template <class S>
-Handle<T>::Handle(Handle<S> that)
-    : _ref(*that) {
-}
-
-template <class T>
-bool Handle<T>::IsEmpty() const {
-  return _ref == JS_INVALID_REFERENCE;
-}
-
-template <class T>
-void Handle<T>::Clear() {
-  _ref = JS_INVALID_REFERENCE;
-}
-
-template <class T>
-T *Handle<T>::operator->() const {
-  return static_cast<T *>(_ref);
-}
-
-template <class T>
-T *Handle<T>::operator*() const {
-  return static_cast<T *>(_ref);
-}
-
-template <class T>
-template <class S>
-bool Handle<T>::operator==(Handle<S> that) const {
-  return _ref == *that;
-}
-
-template <class T>
-template <class S>
-bool Handle<T>::operator!=(Handle<S> that) const {
-  return _ref != *that;
-}
-
-template <class T>
-template <class S>
-Handle<S> Handle<T>::As() {
-  return Handle<S>::Cast(*this);
-}
-
-template <class T>
-template <class S>
-Handle<T> Handle<T>::Cast(Handle<S> that) {
-  return Handle<T>(T::Cast(*that));
-}
 
 //
 // Local<T> members
 //
 
 template <class T>
-Local<T>::Local() {
-}
+Local<T>::Local() : Handle<T>() {}
 
-// CHAKRA-TODO: This one is a little strange. It's used in a couple of places
-// outside of the class to cast from a Persistent<T> to a Local<T>. This seems
-// incorrect since the persistent handle could be released, and there would be
-// no scope holding on to the local handle. Something to look at later.
+
 template <class T>
-template <class S>
-Local<T>::Local(S *that)
-    : Handle<T>(that) {
+Local<T> Local<T>::New(Isolate* isolate, Handle<T> that) {
+  return New(isolate, that.val_);
 }
 
 template <class T>
-template <class S>
-Local<T>::Local(Local<S> that)
-    : Handle<T>(*that) {
+Local<T> Local<T>::New(Isolate* isolate, const PersistentBase<T>& that) {
+  return New(isolate, that.val_);
 }
 
 template <class T>
-template <class S>
-Local<T>::Local(Handle<S> that)
-    : Handle<T>(reinterpret_cast<T*>(*that)) {
-}
-
-template <class T>
-template <class S>
-Local<S> Local<T>::As() {
-  return Local<S>::Cast(*this);
-}
-
-template <class T>
-template <class S>
-Local<T> Local<T>::Cast(Local<S> that) {
-  return Local<T>(T::Cast(*that));
-}
-
-template <class T>
-Local<T> Local<T>::New(Handle<T> that) {
-  if (!HandleScope::GetCurrent()->AddLocal(*that)) {
-    return Local<T>();
+Handle<T> Handle<T>::New(T* that) {
+  if (!HandleScope::GetCurrent()->AddLocal(that)) {
+    return Handle<T>();
   }
-  return Local<T>(*that);
+  return Handle<T>(that);
 }
 
 // Context are not javascript values, so we need to specialize them
 template <>
-inline Local<Context> Local<Context>::New(Handle<Context> that) {
-  if (!HandleScope::GetCurrent()->AddLocalContext(*that)) {
-    return Local<Context>();
+Handle<Context> Handle<Context>::New(Context* that) {
+  if (!HandleScope::GetCurrent()->AddLocalContext(that)) {
+    return Handle<Context>();
   }
-  return Local<Context>(*that);
+  return Handle<Context>(that);
 }
 
 template <class T>
-Local<T> Local<T>::New(Isolate* isolate, Handle<T> that) {
-  return New(that);
-}
-
-template <class T>
-Local<T> Local<T>::New(Isolate* isolate, const Persistent<T>& that) {
-  return New(that);
+Local<T> Local<T>::New(T* that) {
+  return Local<T>(__super::New(that));
 }
 
 //
@@ -1420,245 +1855,118 @@ Local<T> Local<T>::New(Isolate* isolate, const Persistent<T>& that) {
 //
 
 template <class T>
-Persistent<T>::Persistent() {
-}
-
-template <class T>
-Persistent<T>::Persistent(const Persistent<T> &that)
-    : Handle<T>(*that), _weakWrapper(that._weakWrapper) {
-  // CONSIDER: Whether we need to do a type/inheritance check here
-  // CHAKRA-TODO: Handle error?
-  if (_ref != JS_INVALID_REFERENCE && !IsWeak()) {
-    JsAddRef(_ref, nullptr);
+T* PersistentBase<T>::New(Isolate* isolate, T* that) {
+  if (that) {
+    JsAddRef(static_cast<JsRef>(that), nullptr);
   }
+  return that;
 }
 
-template <class T>
-template <class S>
-Persistent<T>::Persistent(Persistent<S> that)
-    : Handle<T>(*that), _weakWrapper(that._weakWrapper) {
-  // CONSIDER: Whether we need to do a type/inheritance check here
-  // CHAKRA-TODO: Handle error?
-  if (_ref != JS_INVALID_REFERENCE && !IsWeak()) {
-    JsAddRef(_ref, nullptr);
-  }
-}
+template <class T, class M>
+template <class S, class M2>
+void Persistent<T, M>::Copy(const Persistent<S, M2>& that) {
+  TYPE_CHECK(T, S);
+  this->Reset();
+  if (that.IsEmpty()) return;
 
-template <class T>
-template <class S>
-Persistent<T>::Persistent(Isolate* isolate, Persistent<S> that)
-    : Handle<T>(*that), _weakWrapper(that._weakWrapper) {
-  // CONSIDER: Whether we need to do a type/inheritance check here
-  // CHAKRA-TODO: Handle error?
-  if (_ref != JS_INVALID_REFERENCE && !IsWeak()) {
-    JsAddRef(_ref, nullptr);
-  }
-}
-
-template <class T>
-template <class S>
-Persistent<T>::Persistent(S *that)
-    : Handle<T>(that) {
-  // CHAKRA-TODO: Handle error?
-  if (_ref != JS_INVALID_REFERENCE) {
-    JsAddRef(_ref, nullptr);
-  }
-}
-
-template <class T>
-Persistent<T>::Persistent(const Handle<T> &that)
-    : Handle<T>(*that) {
-  // CHAKRA-TODO: Handle error?
-  if (_ref != JS_INVALID_REFERENCE) {
-    JsAddRef(_ref, nullptr);
-  }
-}
-
-template <class T>
-template <class S>
-Persistent<T>::Persistent(Handle<S> that)
-    : Handle<T>(*that) {
-  // CHAKRA-TODO: Handle error?
-  if (_ref != JS_INVALID_REFERENCE) {
-    JsAddRef(_ref, nullptr);
-  }
-}
-
-template <class T>
-template <class S>
-Persistent<T>::Persistent(Isolate* isolate, Handle<S> that)
-    : Handle<T>(*that) {
-  // CHAKRA-TODO: Handle error?
-  if (_ref != JS_INVALID_REFERENCE) {
-    JsAddRef(_ref, nullptr);
-  }
-}
-
-// Note to code reviwer: We duplicate code here in order to prevent any
-
-template <class T>
-Persistent<T>::~Persistent() {
-  Dispose();
-}
-
-template <class T>
-Persistent<T>& Persistent<T>::operator=(const Persistent<T> &rhs) {
-  if (this != &rhs) {
-    if (!rhs.IsWeak()) {
-      SetNewRef(*rhs);
-    } else {
-      Dispose();
-      _ref = rhs._ref;
-      _weakWrapper = rhs._weakWrapper;
-    }
-  }
-  return *this;
-}
-
-template <class T>
-Persistent<T>& Persistent<T>::operator=(const Handle<T> &rhs) {
-  SetNewRef(*rhs);
-  return *this;
-}
-
-template <class T>
-template <class S>
-Persistent<T>& Persistent<T>::operator=(const Persistent<S> &rhs) {
-  if (!rhs.IsWeak()) {
-    SetNewRef(*rhs);
-  } else {
-    Dispose();
-    _ref = rhs._ref;
-    _weakWrapper = rhs._weakWrapper;
+  this->val_ = that.val_;
+  this->_weakWrapper = that._weakWrapper;
+  if (val_ && !IsWeak()) {
+    JsAddRef(val_, nullptr);
   }
 
-  return *this;
+  M::Copy(that, this);
 }
 
 template <class T>
-template <class S>
-Persistent<T>& Persistent<T>::operator=(const Handle<S> &rhs) {
-  SetNewRef(*rhs);
-  return *this;
-}
-
-template <class T>
-template <class S>
-Persistent<T>& Persistent<T>::operator=(S* that) {
-  SetNewRef(reinterpret_cast<JsValueRef>(that));
-  return *this;
-}
-
-template <class T>
-void Persistent<T>::SetNewRef(JsValueRef ref) {
-  Dispose();
-
-  _ref = ref;
-  if (_ref != JS_INVALID_REFERENCE) {
-    JsAddRef(_ref, nullptr);
-  }
-}
-
-template <class T>
-template <class S>
-Persistent<S> Persistent<T>::As() {
-  return Persistent<S>::Cast(*this);
-}
-
-template <class T>
-void Persistent<T>::Dispose() {
-  // CHAKRA-TODO: Handle error?
-  if (_ref != JS_INVALID_REFERENCE && !V8::IsDead()) {
-    if (IsWeak()) {
-      if (_weakWrapper.unique()) {
-        chakrashim::ClearObjectWeakReferenceCallback(_ref, /*revive*/false);
-      }
-      _weakWrapper.reset();
-    } else {
-      JsRelease(_ref, nullptr);
-    }
-
-    _ref = JS_INVALID_REFERENCE;
-  }
-}
-
-template <class T>
-void Persistent<T>::Reset() {
-  Dispose();
-}
-
-template <class T>
-template <class S>
-void Persistent<T>::Reset(Isolate* isolate, const Handle<S>& other) {
-  *this = other;
-}
-
-template <class T>
-template <class S>
-void Persistent<T>::Reset(Isolate* isolate, const Persistent<S>& other) {
-  *this = other;
-}
-
-template <class T>
-template<typename P>
-void Persistent<T>::SetWeak(
-  P* parameter,
-  typename WeakCallbackData<T, P>::Callback callback) {
-  if (_ref != JS_INVALID_REFERENCE) {
-    bool wasStrong = !IsWeak();
-    typedef typename WeakCallbackData<Value, void>::Callback Callback;
-    chakrashim::SetObjectWeakReferenceCallback(
-      _ref, reinterpret_cast<Callback>(callback), parameter, &_weakWrapper);
-    if (wasStrong) {
-      JsRelease(_ref, nullptr);
-    }
-  }
-}
-
-template <class T>
-void Persistent<T>::ClearWeak() {
-  if (_ref != JS_INVALID_REFERENCE && IsWeak()) {
-    if (_weakWrapper.unique()) {
-      chakrashim::ClearObjectWeakReferenceCallback(_ref, /*revive*/true);
-    }
-    _weakWrapper.reset();
-
-    JsAddRef(_ref, nullptr);
-  }
-}
-
-template <class T>
-void Persistent<T>::MarkIndependent() {
-  // CONSIDER: It's a little unclear from the documentation just what this is
-  // supposed to do...
-}
-
-template <class T>
-bool Persistent<T>::IsNearDeath() const {
-  // CHAKRA-TODO: Always return true for an assert for now, need to implement.
+bool PersistentBase<T>::IsNearDeath() const {
   return true;
 }
 
 template <class T>
-bool Persistent<T>::IsWeak() const {
+bool PersistentBase<T>::IsWeak() const {
   return static_cast<bool>(_weakWrapper);
 }
 
 template <class T>
-void Persistent<T>::SetWrapperClassId(uint16_t class_id) {
-  // CONSIDER: Ignore. We don't do anything with this.
+void PersistentBase<T>::Reset() {
+  if (this->IsEmpty()) return;
+
+  if (IsWeak()) {
+    if (_weakWrapper.unique()) {
+      chakrashim::ClearObjectWeakReferenceCallback(val_, /*revive*/false);
+    }
+    _weakWrapper.reset();
+  } else {
+    JsRelease(val_, nullptr);
+  }
+
+  val_ = nullptr;
 }
 
 template <class T>
 template <class S>
-Persistent<T> Persistent<T>::Cast(Persistent<S> that) {
-  return Persistent<T>(T::Cast(*that));
+void PersistentBase<T>::Reset(Isolate* isolate, const Handle<S>& other) {
+  TYPE_CHECK(T, S);
+  Reset();
+  if (other.IsEmpty()) return;
+  this->val_ = New(isolate, other.val_);
 }
 
 template <class T>
-Persistent<T> Persistent<T>::New(Handle<T> that) {
-  return Persistent<T>(that);
+template <class S>
+void PersistentBase<T>::Reset(Isolate* isolate,
+                              const PersistentBase<S>& other) {
+  TYPE_CHECK(T, S);
+  Reset();
+  if (other.IsEmpty()) return;
+  this->val_ = New(isolate, other.val_);
 }
+
+template <class T>
+Local<T> PersistentBase<T>::get() {
+  return this->val_;
+}
+
+template <class T>
+template <typename P>
+void PersistentBase<T>::SetWeak(
+    P* parameter,
+    typename WeakCallbackData<T, P>::Callback callback) {
+  if (this->IsEmpty()) return;
+
+  bool wasStrong = !IsWeak();
+  typedef typename WeakCallbackData<Value, void>::Callback Callback;
+  chakrashim::SetObjectWeakReferenceCallback(
+    val_, reinterpret_cast<Callback>(callback), parameter, &_weakWrapper);
+  if (wasStrong) {
+    JsRelease(val_, nullptr);
+  }
+}
+
+template <class T>
+template <typename P>
+P* PersistentBase<T>::ClearWeak() {
+  if (!IsWeak()) return nullptr;
+
+  P* parameters = reinterpret_cast<P*>(_weakWrapper->parameters);
+  if (_weakWrapper.unique()) {
+    chakrashim::ClearObjectWeakReferenceCallback(val_, /*revive*/true);
+  }
+  _weakWrapper.reset();
+
+  JsAddRef(val_, nullptr);
+  return parameters;
+}
+
+template <class T>
+void PersistentBase<T>::MarkIndependent() {
+}
+
+template <class T>
+void PersistentBase<T>::SetWrapperClassId(uint16_t class_id) {
+}
+
 
 //
 // HandleScope template members

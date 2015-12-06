@@ -31,7 +31,7 @@
 namespace v8 {
 
 // NOT IMPLEMENTED
-class EXPORT Debug {
+class V8_EXPORT Debug {
  public:
   class ClientData {
   };

@@ -25,7 +25,7 @@
         'cflags': [ '-fno-strict-aliasing' ],
       }],
       [ 'node_engine_chakra==1', {
-        "defines": ['JS_ENGINE_CHAKRA', 'V8_IS_3_28'],  
+        "defines": ['JS_ENGINE_CHAKRA', 'V8_IS_3_28', 'USE_EDGEMODE_JSRT=1', 'BUILDING_CHAKRASHIM=1'],  
         "include_dirs" : [
           '../../chakrashim/include',
         ]

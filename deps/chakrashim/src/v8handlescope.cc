@@ -27,6 +27,7 @@ __declspec(thread) HandleScope *current = nullptr;
 
 HandleScope::HandleScope(Isolate* isolate)
     : _prev(current),
+      _locals(),
       _refs(JS_INVALID_REFERENCE),
       _count(0),
       _contextRef(JS_INVALID_REFERENCE),
@@ -52,6 +53,11 @@ HandleScope *HandleScope::GetCurrent() {
 }
 
 bool HandleScope::AddLocal(JsValueRef value) {
+  if (_count < _countof(_locals)) {
+    _locals[_count++] = value;
+    return true;
+  }
+
   if (_refs == JS_INVALID_REFERENCE) {
     if (JsCreateArray(1, &_refs) != JsNoError) {
       return AddLocalAddRef(value);
@@ -60,7 +66,7 @@ bool HandleScope::AddLocal(JsValueRef value) {
 
   JsValueRef index;
 
-  if (JsIntToNumber(_count, &index) != JsNoError) {
+  if (JsIntToNumber(_count - _countof(_locals), &index) != JsNoError) {
     return AddLocalAddRef(value);
   }
 

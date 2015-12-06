@@ -24,30 +24,30 @@
       Object_getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor,
       Object_getOwnPropertyNames = Object.getOwnPropertyNames,
       Object_keys = Object.keys,
-      Reflect_apply = Reflect.apply,
       Reflect_construct = Reflect.construct;
 
+  // Simulate V8 JavaScript stack trace API
   function StackFrame(funcName, fileName, lineNumber, columnNumber) {
-    this.funcName = funcName;
-    this.fileName = fileName;
+    this.column = columnNumber;
     this.lineNumber = lineNumber;
-    this.columnNumber = columnNumber;
+    this.scriptName = fileName;
+    this.functionName = funcName;
   }
 
   StackFrame.prototype.getFunctionName = function() {
-    return this.funcName;
+      return this.functionName;
   };
 
-  StackFrame.prototype.getFileName = function() {
-    return this.fileName;
+  StackFrame.prototype.getFileName = function () {
+      return this.scriptName;
   };
 
   StackFrame.prototype.getLineNumber = function() {
     return this.lineNumber;
   };
 
-  StackFrame.prototype.getColumnNumber = function() {
-    return this.columnNumber;
+  StackFrame.prototype.getColumnNumber = function () {
+    return this.column;
   };
 
   StackFrame.prototype.isEval = function() {
@@ -55,111 +55,135 @@
     return false;
   };
 
-  StackFrame.prototype.toString = function() {
-    return (this.funcName ? this.funcName : 'Anonymous function') + ' (' +
-      this.fileName + ':' + this.lineNumber + ':' + this.columnNumber + ')';
+  StackFrame.prototype.toString = function () {
+    return (this.functionName || 'Anonymous function') + ' (' +
+      this.scriptName + ':' + this.lineNumber + ':' + this.column + ')';
+  };
+
+  function prepareStackTrace(error, stack) {
+    var stackString = (error.name ? error.name : 'Error') +
+      ': ' + error.message;
+
+    for (var i = 0; i < stack.length; i++) {
+      stackString += '\n   at ' + stack[i].toString();
+    }
+
+    return stackString;
+  }
+
+  function parseStack(stack, skipDepth, startFunc) {
+    // remove the first line so this function won't be seen
+    var splittedStack = stack.split('\n');
+    splittedStack.splice(0, 2);
+    var errstack = [];
+
+    var startName = skipDepth < 0 ? startFunc.name : undefined;
+    skipDepth = Math.max(0, skipDepth);
+
+    for (var i = skipDepth; i < splittedStack.length; i++) {
+      var parens = /\(/.exec(splittedStack[i]);
+      var funcName = splittedStack[i].substr(6, parens.index - 7);
+
+      if (startName) {
+        if (funcName === startName) {
+          startName = undefined;
+        }
+        continue;
+      }
+      if (funcName === 'Anonymous function') {
+        funcName = null;
+      }
+
+      var location = splittedStack[i].substr(parens.index + 1,
+          splittedStack[i].length - parens.index - 2);
+
+      var fileName = location;
+      var lineNumber = 0;
+      var columnNumber = 0;
+
+      var colonPattern = /:[0-9]+/g;
+      var firstColon = colonPattern.exec(location);
+      if (firstColon) {
+        fileName = location.substr(0, firstColon.index);
+
+        var secondColon = colonPattern.exec(location);
+        if (secondColon) {
+          lineNumber = parseInt(location.substr(firstColon.index + 1,
+              secondColon.index - firstColon.index - 1), 10);
+          columnNumber = parseInt(location.substr(secondColon.index + 1,
+              location.length - secondColon.index), 10);
+        }
+      }
+      errstack.push(
+          new StackFrame(funcName, fileName, lineNumber, columnNumber));
+    }
+    return errstack;
+  }
+
+  function findFuncDepth(func) {
+    try {
+      var curr = captureStackTrace.caller;
+      var limit = Error.stackTraceLimit;
+      var skipDepth = 0;
+      while (curr) {
+        skipDepth++;
+        if (curr === func) {
+          return skipDepth;
+        }
+        if (skipDepth > limit) {
+          return 0;
+        }
+        curr = curr.caller;
+      }
+    } catch (e) {
+      // Strict mode may throw on .caller. Will try to match by function name.
+      return -1;
+    }
+
+    return 0;
+  }
+
+  function captureStackTrace(err, func) {
+    var currentStack;
+    try { throw new Error; } catch (e) { currentStack = e.stack; }
+    var isPrepared = false;
+    var skipDepth = func ? findFuncDepth(func) : 0;
+
+    var currentStackTrace;
+    function ensureStackTrace() {
+      if (!currentStackTrace) {
+        currentStackTrace = parseStack(currentStack, skipDepth, func);
+      }
+      return currentStackTrace;
+    }
+
+    Object_defineProperty(err, 'stack', {
+      get: function () {
+        if (isPrepared) {
+          return currentStack;
+        }
+        var errstack = ensureStackTrace();
+        if (Error.prepareStackTrace) {
+          currentStack = Error.prepareStackTrace(err, errstack);
+        } else {
+          currentStack = prepareStackTrace(err, errstack);
+        }
+        isPrepared = true;
+        return currentStack;
+      },
+      set: function (value) {
+        currentStack = value;
+        isPrepared = true;
+      },
+      configurable: true,
+      enumerable: false
+    });
+
+    return ensureStackTrace;
   };
 
   function patchErrorStack() {
-    function prepareStackTrace(error, stack) {
-      var stackString = (error.name ? error.name : 'Error') +
-        ': ' + error.message;
-
-      for (var i = 0; i < stack.length; i++) {
-        stackString += '\n   at ' + stack[i].toString();
-      }
-
-      return stackString;
-    }
-
-    function parseStack(stack, skipDepth) {
-      // remove the first line so this function won't be seen
-      var splittedStack = stack.split('\n');
-      splittedStack.splice(0, 2);
-      var errstack = [];
-
-      for (var i = skipDepth; i < splittedStack.length; i++) {
-        var parens = /\(/.exec(splittedStack[i]);
-        var funcName = splittedStack[i].substr(6, parens.index - 7);
-        if (funcName === 'Anonymous function') {
-          funcName = null;
-        }
-
-        var location = splittedStack[i].substr(parens.index + 1,
-            splittedStack[i].length - parens.index - 2);
-
-        var fileName = location;
-        var lineNumber = 0;
-        var columnNumber = 0;
-
-        var colonPattern = /:[0-9]+/g;
-        var firstColon = colonPattern.exec(location);
-        if (firstColon) {
-          fileName = location.substr(0, firstColon.index);
-
-          var secondColon = colonPattern.exec(location);
-          if (secondColon) {
-            lineNumber = parseInt(location.substr(firstColon.index + 1,
-                secondColon.index - firstColon.index - 1), 10);
-            columnNumber = parseInt(location.substr(secondColon.index + 1,
-                location.length - secondColon.index), 10);
-          }
-        }
-        errstack.push(
-            new StackFrame(funcName, fileName, lineNumber, columnNumber));
-      }
-      return errstack;
-    }
-
-    function findFuncDepth(func) {
-      try {
-        var curr = Error.captureStackTrace.caller;
-        var limit = Error.stackTraceLimit;
-        var skipDepth = 0;
-        while (curr) {
-          skipDepth++;
-          if (curr === func) {
-            return skipDepth;
-          }
-          if (skipDepth > limit) {
-            return 0;
-          }
-          curr = curr.caller;
-        }
-      } catch (e) {
-        // Strict mode may throw on .caller
-      }
-
-      return 0;
-    }
-
-    Error.captureStackTrace = function(err, func) {
-      var currentStack;
-      try { throw new Error; } catch (e) { currentStack = e.stack; }
-      var isPrepared = false;
-      var skipDepth = func ? findFuncDepth(func) : 0;
-      Object_defineProperty(err, 'stack', {
-        get: function() {
-          if (isPrepared) {
-            return currentStack;
-          }
-          var errstack = parseStack(currentStack, skipDepth);
-          if (Error.prepareStackTrace) {
-            currentStack = Error.prepareStackTrace(err, errstack);
-          } else {
-            currentStack = prepareStackTrace(err, errstack);
-          }
-          isPrepared = true;
-          return currentStack;
-        },
-        set: function(value) {
-          currentStack = value;
-          isPrepared = true;
-        },
-        configurable: true,
-        enumerable: false
-      });
-    };
+    Error.captureStackTrace = captureStackTrace;
   }
 
   function cloneObject(source, target) {
@@ -186,31 +210,42 @@
       return e;
     }
 
+    var builtInError = Error;
+
     [Error, EvalError, RangeError, ReferenceError, SyntaxError, TypeError,
       URIError
-    ].forEach(function (builtInError) {
-      var name = builtInError.name;
-      this[name] = new Proxy(builtInError, {
-        apply: function(target, thisArg, argumentsList) {
+    ].forEach(function (type) {
+      var newType = (function () {
+        // Make anonymous function. It may appear in error.stack
+        return function () {
           return makePropertiesNonEnumerable(
-            Reflect_apply(target, thisArg, argumentsList));
-        },
-        construct: function(target, argumentsList) {
-          return makePropertiesNonEnumerable(
-            Reflect_construct(target, argumentsList));
-        }
-      });
+            Reflect_construct(type, arguments));
+        };
+      })();
+      cloneObject(type, newType);
+      newType.toString = function () {
+        return type.toString();
+      };
+      this[type.name] = newType;
+    });
+
+    // Delegate Error.stackTraceLimit to saved Error constructor
+    Object_defineProperty(this['Error'], 'stackTraceLimit', {
+      enumerable: false,
+      configurable: true,
+      get: function () { return builtInError.stackTraceLimit; },
+      set: function (value) { builtInError.stackTraceLimit = value; }
     });
   }
 
   function patchUtils(utils) {
     var isUintRegex = /^(0|[1-9]\\d*)$/;
-    var isUint = function(value) {
+    var isUint = function (value) {
       var result = isUintRegex.test(value);
       isUintRegex.lastIndex = 0;
       return result;
     };
-    utils.isInstanceOf = function(a, b) {
+    utils.isInstanceOf = function (a, b) {
       return (a instanceof b);
     };
     utils.cloneObject = cloneObject;
@@ -224,14 +259,14 @@
 
       return true;
     };
-    utils.getPropertyNames = function(a) {
+    utils.getPropertyNames = function (a) {
       var names = [];
-      for(var propertyName in a) {
+      for (var propertyName in a) {
         names.push(propertyName);
       }
       return names;
     };
-    utils.getEnumerableNamedProperties = function(obj) {
+    utils.getEnumerableNamedProperties = function (obj) {
       var props = [];
       for (var key in obj) {
         if (!isUint(key))
@@ -239,7 +274,7 @@
       }
       return props;
     };
-    utils.getEnumerableIndexedProperties = function(obj) {
+    utils.getEnumerableIndexedProperties = function (obj) {
       var props = [];
       for (var key in obj) {
         if (isUint(key))
@@ -247,36 +282,36 @@
       }
       return props;
     };
-    utils.createEnumerationIterator = function(props) {
+    utils.createEnumerationIterator = function (props) {
       var i = 0;
       return {
-        next: function() {
+        next: function () {
           if (i === props.length)
             return { done: true }
-          return { value : props[i++] };
+          return { value: props[i++] };
         }
       };
     };
-    utils.createPropertyDescriptorsEnumerationIterator = function(props) {
+    utils.createPropertyDescriptorsEnumerationIterator = function (props) {
       var i = 0;
       return {
-        next: function() {
+        next: function () {
           if (i === props.length) return { done: true }
-          return { name : props[i++], enumerable : true };
+          return { name: props[i++], enumerable: true };
         }
       };
     };
-    utils.getNamedOwnKeys = function(obj) {
+    utils.getNamedOwnKeys = function (obj) {
       var props = [];
-      Object_keys(obj).forEach(function(item) {
+      Object_keys(obj).forEach(function (item) {
         if (!isUint(item))
           props.push(item);
       });
       return props;
     };
-    utils.getIndexedOwnKeys = function(obj) {
+    utils.getIndexedOwnKeys = function (obj) {
       var props = [];
-      Object_keys(obj).forEach(function(item) {
+      Object_keys(obj).forEach(function (item) {
         if (isUint(item))
           props.push(item);
       });
@@ -336,7 +371,7 @@
       }
 
       var desc = Object_getOwnPropertyDescriptor(func, 'caller');
-      return (desc && desc.get) ? STRICTMODE_FUNCTION: NORMAL_FUNCTION;
+      return (desc && desc.get) ? STRICTMODE_FUNCTION : NORMAL_FUNCTION;
     };
     utils.createTargetFunction = function (type) {
       switch (type & TYPE_MASK) {
@@ -348,19 +383,31 @@
       return createEmptyLambdaFunction();
     };
 
+    function getOwnNamedDescriptor(fnc, name) {
+      var desc = Object_getOwnPropertyDescriptor(fnc, name);
+      if (typeof desc !== 'undefined')
+        return desc.get;
+      else
+        return function () { throw Error('Given descriptor was `undefined`'); };
+    }
+
     utils.throwAccessorErrorFunctions = (function () {
       var arr = [];
 
-      var x = createEmptyLambdaFunction(0);
-      arr.push(Object_getOwnPropertyDescriptor(x, 'caller').get);
+      var fnc = createEmptyLambdaFunction(0);
+      arr.push(getOwnNamedDescriptor(fnc, 'caller'));
 
-      var x = createEmptyStrictModeFunction();
-      arr.push(Object_getOwnPropertyDescriptor(x, 'caller').get);
-      arr.push(Object_getOwnPropertyDescriptor(x, 'arguments').get);
-      arr.push(Object_getOwnPropertyDescriptor(x(), 'callee').get);
+      fnc = createEmptyStrictModeFunction();
+      arr.push(getOwnNamedDescriptor(fnc, 'caller'));
+      arr.push(getOwnNamedDescriptor(fnc, 'arguments'));
+      arr.push(getOwnNamedDescriptor(fnc(), 'callee'));
 
       return arr;
     })();
+
+    utils.getStackTrace = function () {
+      return captureStackTrace({}, utils.getStackTrace)();
+    };
   }
 
   // patch console
@@ -370,4 +417,3 @@
   // this is the keepAlive object that we will put some utilities function on
   patchUtils(this);
 })
-
