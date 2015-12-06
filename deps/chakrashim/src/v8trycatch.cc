@@ -104,7 +104,7 @@ Handle<Value> TryCatch::ReThrow() {
   }
   rethrow = true;
 
-  return Local<Value>::New(static_cast<Value *>(error));
+  return Local<Value>::New(error);
 }
 
 Local<Value> TryCatch::Exception() const {
@@ -116,7 +116,7 @@ Local<Value> TryCatch::Exception() const {
     return Local<Value>();
   }
 
-  return Local<Value>::New(static_cast<Value *>(error));
+  return Local<Value>::New(error);
 }
 
 Local<Value> TryCatch::StackTrace() const {
@@ -128,8 +128,9 @@ Local<Value> TryCatch::StackTrace() const {
     return Local<Value>();
   }
 
-  JsPropertyIdRef stack;
-  if (JsGetPropertyIdFromName(L"stack", &stack) != JsNoError) {
+  JsPropertyIdRef stack = jsrt::IsolateShim::GetCurrent()
+    ->GetCachedPropertyIdRef(jsrt::CachedPropertyIdRef::stack);
+  if (stack == JS_INVALID_REFERENCE) {
     return Local<Value>();
   }
 
@@ -138,7 +139,7 @@ Local<Value> TryCatch::StackTrace() const {
     return Local<Value>();
   }
 
-  return Local<Value>::New(static_cast<Value *>(trace));
+  return Local<Value>::New(trace);
 }
 
 Local<v8::Message> TryCatch::Message() const {
@@ -153,9 +154,10 @@ void TryCatch::SetVerbose(bool value) {
 }
 
 void TryCatch::CheckReportExternalException() {
-  // This is only used by Function::Call. If caller explictly uses a TryCatch
-  // and SetVerbose, we'll report the external exception message.
-  if (prev != nullptr && prev->verbose) {
+  // This is only used by Function::Call. If caller does not use TryCatch to
+  // handle external exceptions, or uses a TryCatch and SetVerbose(),
+  // we'll report the external exception message (triggers uncaughtException).
+  if (prev == nullptr || prev->verbose) {
     jsrt::IsolateShim::GetCurrent()->ForEachMessageListener([this](
         void * messageListener) {
       ((v8::MessageCallback)messageListener)(Message(), Exception());

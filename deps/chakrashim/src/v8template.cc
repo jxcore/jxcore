@@ -37,7 +37,7 @@ void Template::Set(
   TemplateData *templateData = reinterpret_cast<TemplateData*>(externalData);
   Object* properties = templateData->EnsureProperties();
   if (properties != nullptr) {
-    properties->Set(name, value, attributes);
+    properties->ForceSet(name, value.As<Value>(), attributes);
   }
 }
 

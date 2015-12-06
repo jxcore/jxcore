@@ -18,8 +18,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
-#include "v8.h"
-#include "jsrt.h"
+#include "v8chakra.h"
 
 namespace v8 {
 
@@ -27,12 +26,12 @@ bool Boolean::Value() const {
   return BooleanValue();
 }
 
+Local<Boolean> Boolean::From(bool value) {
+  return value ? jsrt::GetTrue() : jsrt::GetFalse();
+}
+
 Handle<Boolean> Boolean::New(Isolate* isolate, bool value) {
-  if (value) {
-    return True();
-  } else {
-    return False();
-  }
+  return From(value);
 }
 
 }  // namespace v8

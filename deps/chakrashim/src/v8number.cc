@@ -18,8 +18,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
-#include "v8.h"
-#include "jsrt.h"
+#include "jsrtutils.h"
 
 namespace v8 {
 
@@ -28,23 +27,21 @@ double Number::Value() const {
 }
 
 Local<Number> Number::New(Isolate* isolate, double value) {
-  JsValueRef ref;
+  return Local<Number>::New(isolate, From(value));
+}
 
+Local<Number> Number::From(double value) {
+  JsValueRef ref;
   if (JsDoubleToNumber(value, &ref) != JsNoError) {
     return Local<Number>();
   }
 
-  return Local<Number>::New(static_cast<Number*>(ref));
+  // For perf reason, this doesn't allocate a real Handle
+  return Local<Number>(ref);
 }
 
 Number *Number::Cast(v8::Value *obj) {
-  if (!obj->IsNumber()) {
-    // CHAKRA-TODO: report an error here!
-    // CHAKRA-TODO: What is the best behavior here? Should we return a pointer
-    // to undefined/null instead?
-    return nullptr;
-  }
-
+  CHAKRA_ASSERT(obj->IsNumber());
   return static_cast<Number*>(obj);
 }
 

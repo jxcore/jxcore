@@ -35,11 +35,6 @@ Isolate *Isolate::GetCurrent() {
   return jsrt::IsolateShim::GetCurrentAsIsolate();
 }
 
-void Isolate::SetAbortOnUncaughtException(
-    abort_on_uncaught_exception_t callback) {
-  // CHAKRA-TODO
-}
-
 void Isolate::Enter() {
   return jsrt::IsolateShim::FromIsolate(this)->Enter();
 }
@@ -123,13 +118,12 @@ void Isolate::SetAddHistogramSampleFunction(AddHistogramSampleCallback) {
 }
 
 bool Isolate::IdleNotification(int idle_time_in_ms) {
-  // Skip smoothly
   // CHAKRA_UNIMPLEMENTED();
   return false;
 }
 
 void Isolate::LowMemoryNotification() {
-  // Skip smoothly
+  // TODO implement
   // CHAKRA_UNIMPLEMENTED();
 }
 

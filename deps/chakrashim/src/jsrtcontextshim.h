@@ -73,6 +73,7 @@ class ContextShim {
   JsValueRef GetDateConstructor();
   JsValueRef GetRegExpConstructor();
   JsValueRef GetProxyConstructor();
+  JsValueRef GetGlobalType(GlobalType index);
   JsValueRef GetGetOwnPropertyDescriptorFunction();
   JsValueRef GetStringConcatFunction();
   JsValueRef GetGlobalPrototypeFunction(GlobalPrototypeFunction index);
@@ -90,6 +91,7 @@ class ContextShim {
   JsValueRef GetCreatePropertyDescriptorsEnumerationIteratorFunction();
   JsValueRef GetGetNamedOwnKeysFunction();
   JsValueRef GetGetIndexedOwnKeysFunction();
+  JsValueRef GetGetStackTraceFunction();
 
   void EnsureThrowAccessorErrorFunctions();
   bool FindThrowAccessorErrorFunction(JsValueRef func, int* index);
@@ -182,6 +184,7 @@ class ContextShim {
   JsValueRef createPropertyDescriptorsEnumerationIteratorFunction;
   JsValueRef getNamedOwnKeysFunction;
   JsValueRef getIndexedOwnKeysFunction;
+  JsValueRef getStackTraceFunction;
 
   static const int THROWACCESSORERRORFUNCTIONS = 4;
   JsValueRef throwAccessorErrorFunctions[THROWACCESSORERRORFUNCTIONS];

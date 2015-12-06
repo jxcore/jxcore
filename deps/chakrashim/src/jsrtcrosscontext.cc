@@ -310,11 +310,11 @@ struct CloneNonConfigurablePropertyTarget {
 };
 
 static JsValueRef CALLBACK CloneNonConfigurablePropertyCallback(
-    _In_ JsValueRef callee,
-    _In_ bool isConstructCall,
-    _In_ JsValueRef *arguments,
-    _In_ unsigned short argumentCount,
-    _In_opt_ void *callbackState) {
+    JsValueRef callee,
+    bool isConstructCall,
+    JsValueRef *arguments,
+    unsigned short argumentCount,
+    void *callbackState) {
   CloneNonConfigurablePropertyTarget* tgt =
     static_cast<CloneNonConfigurablePropertyTarget*>(callbackState);
   ContextShim* fromContext = ContextShim::GetCurrent();
@@ -377,11 +377,11 @@ static bool CloneNonConfigurableProperties(JsValueRef source,
 
 template <ProxyTraps trap, unsigned short reflectArgumentCount>
 static JsValueRef CALLBACK CrossContextCallback(
-    _In_ JsValueRef callee,
-    _In_ bool isConstructCall,
-    _In_ JsValueRef *arguments,
-    _In_ unsigned short argumentCount,
-    _In_opt_ void *callbackState) {
+    JsValueRef callee,
+    bool isConstructCall,
+    JsValueRef *arguments,
+    unsigned short argumentCount,
+    void *callbackState) {
   ContextShim * currentContextShim = ContextShim::GetCurrent();
   JsValueRef fakeTargetObject = arguments[1];
   if (trap == ProxyTraps::GetOwnPropertyDescriptorTrap) {
@@ -490,11 +490,11 @@ static void CALLBACK CrossContextInfoFinalizeCallback(void * data) {
   delete static_cast<CrossContextInfo *>(data);
 }
 
-static JsValueRef CALLBACK DummyCallback(_In_ JsValueRef callee,
-                                         _In_ bool isConstructCall,
-                                         _In_ JsValueRef *arguments,
-                                         _In_ unsigned short argumentCount,
-                                         _In_opt_ void *callbackState) {
+static JsValueRef CALLBACK DummyCallback(JsValueRef callee,
+                                         bool isConstructCall,
+                                         JsValueRef *arguments,
+                                         unsigned short argumentCount,
+                                         void *callbackState) {
   return GetUndefined();
 }
 

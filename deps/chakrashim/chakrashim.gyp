@@ -32,6 +32,7 @@
       'defines': [
         'USE_EDGEMODE_JSRT=1',
         '_WIN32_WINNT=0x0A00',  # WIN10
+        'BUILDING_CHAKRASHIM=1',
       ],
       'conditions': [
         [ 'target_arch=="arm"', {
@@ -51,9 +52,12 @@
         }]
       ],
       'msvs_disabled_warnings': [4091],
+      'msvs_use_library_dependency_inputs': 1,
+      'msvs_windows_target_platform_version': 'v10.0',
     },
     'sources': [
       'include/v8.h',
+      'include/v8config.h',
       'include/v8-debug.h',
       'include/v8-profiler.h',
       'src/jsrtcachedpropertyidref.inc',
@@ -96,6 +100,7 @@
       'src/v8returnvalue.cc',
       'src/v8script.cc',
       'src/v8signature.cc',
+      'src/v8stacktrace.cc',
       'src/v8string.cc',
       'src/v8stringobject.cc',
       'src/v8template.cc',

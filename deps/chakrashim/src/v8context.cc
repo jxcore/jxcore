@@ -71,7 +71,7 @@ Local<Context> Context::New(Isolate* external_isolate,
     return Local<Context>();
   }
 
-  return Local<Context>::New(static_cast<Context *>(context));
+  return Local<Context>::New(external_isolate, static_cast<Context *>(context));
 }
 
 Local<Context> Context::GetCurrent() {

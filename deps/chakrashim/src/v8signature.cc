@@ -39,19 +39,16 @@ Local<AccessorSignature> AccessorSignature::New(
   return reinterpret_cast<AccessorSignature*>(*receiver);
 }
 
-namespace chakrashim {
-
-bool CheckSignature(Local<FunctionTemplate> receiver,
-                    Local<Object> thisPointer,
-                    Local<Object>* holder) {
+bool Utils::CheckSignature(Local<FunctionTemplate> receiver,
+                           Local<Object> thisPointer,
+                           Local<Object>* holder) {
   *holder = thisPointer;
 
   Local<ObjectTemplate> receiverInstanceTemplate = receiver->InstanceTemplate();
 
   // v8 signature check walks hidden prototype chain to find holder. Chakra
   // doesn't support hidden prototypes. Just check the receiver itself.
-  bool matched = InternalMethods::IsInstanceOf(*thisPointer,
-                                               *receiverInstanceTemplate);
+  bool matched = Utils::IsInstanceOf(*thisPointer, *receiverInstanceTemplate);
 
   if (!matched) {
     const wchar_t txt[] = L"Illegal invocation";
@@ -65,5 +62,4 @@ bool CheckSignature(Local<FunctionTemplate> receiver,
   return matched;
 }
 
-}  // namespace chakrashim
 }  // namespace v8

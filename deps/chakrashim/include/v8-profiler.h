@@ -31,7 +31,7 @@
 namespace v8 {
 
 // NOT IMPLEMENTED
-class EXPORT CpuProfiler {
+class V8_EXPORT CpuProfiler {
  public:
   // void SetSamplingInterval(int us);
   // void StartProfiling(Handle<String> title, bool record_samples = false);
@@ -40,7 +40,7 @@ class EXPORT CpuProfiler {
 };
 
 // NOT IMPLEMENTED
-class EXPORT HeapProfiler {
+class V8_EXPORT HeapProfiler {
  public:
   typedef RetainedObjectInfo *(*WrapperInfoCallback)(
     uint16_t class_id, Handle<Value> wrapper);
@@ -49,7 +49,7 @@ class EXPORT HeapProfiler {
 };
 
 // NOT IMPLEMENTED
-class EXPORT RetainedObjectInfo {
+class V8_EXPORT RetainedObjectInfo {
  public:
   virtual void Dispose() = 0;
   virtual bool IsEquivalent(RetainedObjectInfo *other) = 0;

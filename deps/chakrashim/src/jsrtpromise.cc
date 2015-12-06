@@ -23,15 +23,13 @@
 
 namespace jsrt {
 
-static void CALLBACK PromiseContinuationCallback(
-    JsValueRef task, void *callbackState) {
-  // CHAKRA-REVIEW: We have a current context here?
+static void CALLBACK PromiseContinuationCallback(JsValueRef task,
+                                                 void *callbackState) {
   JsValueRef promiseContinuationFunction =
-    jsrt::ContextShim::GetCurrent()->GetPromiseContinuationFunction();
+    ContextShim::GetCurrent()->GetPromiseContinuationFunction();
 
-  JsValueRef args[] = { *v8::Undefined(), task };
   JsValueRef result;
-  JsCallFunction(promiseContinuationFunction, args, _countof(args), &result);
+  jsrt::CallFunction(promiseContinuationFunction, task, &result);
 }
 
 JsErrorCode InitializePromise() {
