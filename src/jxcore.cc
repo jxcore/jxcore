@@ -433,7 +433,7 @@ JXEngine::JXEngine(int argc, char **argv, bool self_hosted) {
   jscomp_ = NULL;
 #endif
 
-  assert(!jxcore_was_shutdown_);
+  assert(!jxcore_was_shutdown_ && "JXcore engine was already shutdown\n");
 
   argc_ = argc;
   argv_ = argv;
