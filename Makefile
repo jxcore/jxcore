@@ -3,7 +3,7 @@
 BUILDTYPE ?= Release
 PYTHON ?= python
 NINJA ?= ninja
-DESTDIR ?= ./
+DESTDIR ?=
 SIGN ?=
 PREFIX ?= /usr/local
 

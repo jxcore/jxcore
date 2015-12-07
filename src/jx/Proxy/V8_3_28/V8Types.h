@@ -150,7 +150,7 @@ static inline v8::Local<v8::Context> __JS_NEW_EMPTY_CONTEXT() {
 
 #define JS_STRING_ID(X) STD_TO_STRING(X)
 #define JS_INDEX_SET(name, index, value) \
-  (name)->Set(STD_TO_INTEGER(index), value)
+  (name)->Set((uint32_t)index, value)
 #define JS_NAME_SET(obj, name, value) (obj)->Set(name, value)
 #define JS_NAME_SET_HIDDEN(obj, name, value) (obj)->SetHiddenValue(name, value)
 #define JS_NAME_DELETE(obj, name) (obj)->Delete(name)
@@ -186,7 +186,7 @@ static inline v8::Local<v8::Context> __JS_NEW_EMPTY_CONTEXT() {
 #define NUMBER_TO_STD(x) (x)->NumberValue()
 
 #define JS_HAS_NAME(x, y) (x)->Has(y)
-#define JS_GET_INDEX(x, y) (x)->Get(y)
+#define JS_GET_INDEX(x, y) (x)->Get((uint32_t)y)
 #define JS_GET_NAME(x, y) (x)->Get(y)
 #define JS_GET_NAME_HIDDEN(x, y) (x)->GetHiddenValue(y)
 #define JS_GET_FUNCTION(x) (x)->GetFunction()

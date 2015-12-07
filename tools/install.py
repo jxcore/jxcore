@@ -186,7 +186,13 @@ def run(args):
 
   # argv[2] is a custom install prefix for packagers (think DESTDIR)
   dst_dir = node_prefix = variables.get('node_prefix') or '/usr/local'
-  if len(args) > 2: dst_dir = abspath(args[2] + '/' + dst_dir)
+  if len(args) > 2:
+    arg2 = args[2]
+    # when path is not absolute, prepend cwd
+    if arg2 == '' and abspath(dst_dir) != dst_dir:
+      arg2 = os.getcwd()
+    if arg2 != '':
+      dst_dir = abspath(arg2 + '/' + dst_dir)
 
   cmd = args[1] if len(args) > 1 else 'install'
   if cmd == 'install': return files(install)
