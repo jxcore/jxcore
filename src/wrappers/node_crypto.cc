@@ -3335,7 +3335,7 @@ public:
     }
 
     Buffer *buff = Buffer::New(reinterpret_cast<char*>(out_value), out_len, com);
-    RETURN_POINTER(buff->handle_);
+    RETURN_POINTER(JS_TYPE_TO_LOCAL_OBJECT(buff->handle_));
     delete[] out_value;
   }
 };
