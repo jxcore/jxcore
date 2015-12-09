@@ -138,8 +138,6 @@ retry:
 }
 
 mz_uint8 *UncompressNative(node::commons *com, const char *str, const unsigned long ub64_len) {
-  JS_ENTER_SCOPE_WITH(com->node_isolate);
-
   mz_ulong lenf = ub64_len * (((int)str[0]) + 1);
   const uint8 *ucmp = reinterpret_cast<const uint8 *>(str);
 
