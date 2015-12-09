@@ -86,11 +86,8 @@ node::Buffer *UncompressString(node::commons *com, JS_HANDLE_OBJECT obj,
   const char *str = BUFFER__DATA(obj);
 
   mz_ulong lenf = ub64_len * (((int)str[0]) + 1);
-  // first char holds the compression ratio
-  // any ratio better than 1:100 (event 1:100 though)
-  // is not possible. There must be something wrong
-  // return NULL (it will turn into 'Package corrupted' exception
-  if (lenf < 0 || lenf > ub64_len * 100) return NULL;
+
+  if (lenf < 0) return NULL;
 
   const uint8 *ucmp = reinterpret_cast<const uint8 *>(str);
 
@@ -138,8 +135,6 @@ retry:
 }
 
 mz_uint8 *UncompressNative(node::commons *com, const char *str, const unsigned long ub64_len) {
-  JS_ENTER_SCOPE_WITH(com->node_isolate);
-
   mz_ulong lenf = ub64_len * (((int)str[0]) + 1);
   const uint8 *ucmp = reinterpret_cast<const uint8 *>(str);
 
