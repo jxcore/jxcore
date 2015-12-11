@@ -577,10 +577,13 @@ def configure_arm(o):
 
   if is_arch_armv7():
     o['variables']['arm_version'] = '7'
+    o['variables']['armv7'] = 1
   elif is_arch_armv6():
     o['variables']['arm_version'] = '6'
+    o['variables']['armv6'] = 1 
   else:
     o['variables']['arm_version'] = 'default'
+    o['variables']['armv7'] = 1
 
   o['variables']['arm_fpu'] = 'vfpv3'  # V8 3.18 no longer supports VFP2.
   o['variables']['arm_neon'] = int(is_arm_neon())
