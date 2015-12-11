@@ -1,11 +1,14 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
+// disable this test on travis [timeouts etc]
+if (process.cwd().indexOf('travis/')>0)
+  return;
 
 var reset = true;
+var counter = 0;
 
 jxcore.tasks.setThreadCount(2);
 
-  var counter = 0;
 function test() {
   reset = false;
   for (var i = 0; i < 10; i++) {
@@ -17,9 +20,9 @@ function test() {
           process.release();
       });
 
-      var str = "";
+      var str = '';
       for(var o in process.env) {
-        str += o + " : " + process.env[o];
+        str += o + ' : ' + process.env[o];
       }
       var buffer = new Buffer(str);
       buffer.fill(65);
@@ -35,19 +38,19 @@ function test() {
         jxcore.tasks.unloadThreads();
         
         // we need a callback for threads unloaded!
-        setTimeout(function(){
+        setTimeout(function() {
           reset = true;
         }, 500);
-        console.log("RESET", Date.now());
+        console.log('RESET', Date.now());
       }
     });
   }
 }
 
 var ll = 0;
-var inter = setInterval(function(){
+var inter = setInterval(function() {
   if (reset) {
-    ll ++;
+    ll++;
     if(ll>10) {
       clearInterval(inter);
       process.exit(0);
@@ -55,4 +58,4 @@ var inter = setInterval(function(){
       test();
     }
   }
-},10);
+}, 10);
