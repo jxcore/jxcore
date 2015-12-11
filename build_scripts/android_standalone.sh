@@ -8,9 +8,9 @@ GREEN_COLOR='\033[0;32m'
 GRAY_COLOR='\033[0;37m'
 
 LOG() {
-    COLOR="$1"
-    TEXT="$2"
-    echo -e "${COLOR}$TEXT ${NORMAL_COLOR}"
+  COLOR="$1"
+  TEXT="$2"
+  echo -e "${COLOR}$TEXT ${NORMAL_COLOR}"
 }
 
 
