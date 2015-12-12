@@ -1,76 +1,5 @@
-#include "../jx/commons.h"
-#include "../jxcore.h"
+#include "../jx/jx_private.h"
 #include "jx_result.h"
-#include "node_buffer.h"
-#ifdef JS_ENGINE_MOZJS
-#include <limits>  // INT_MAX
-#endif
-
-class auto_state {
-  jxcore::JXEngine *engine_;
-  node::commons *com_;
-
- public:
-  auto_state(jxcore::JXEngine *engine, node::commons *com)
-      : engine_(engine), com_(com) {
-    engine_->EnterScope();
-#ifdef JS_ENGINE_V8
-    com->node_isolate->Enter();
-#endif
-  }
-
-  ~auto_state() {
-    engine_->LeaveScope();
-#ifdef JS_ENGINE_V8
-    com_->node_isolate->Exit();
-#endif
-  }
-};
-
-#define _FREE_MEM_(x)                                             \
-  jxcore::JXValueWrapper *wrap##x_ = (jxcore::JXValueWrapper *)x; \
-  delete wrap##x_
-
-#define UNWRAP_COM(arg)                            \
-  assert(arg->com_ && "com_ can not be NULL");     \
-  node::commons *com = (node::commons *)arg->com_; \
-  JS_DEFINE_STATE_MARKER(com);                     \
-  jxcore::JXEngine *engine =                       \
-      jxcore::JXEngine::GetInstanceByThreadId(com->threadId)
-
-#ifdef JS_ENGINE_V8
-#ifdef V8_IS_3_14
-#define ENTER_ENGINE_SCOPE()         \
-  JS_ENGINE_LOCKER();                \
-  auto_state __state__(engine, com); \
-  v8::Context::Scope context_scope(engine->getContext())
-#else
-#define ENTER_ENGINE_SCOPE()         \
-  JS_ENGINE_LOCKER();                \
-  auto_state __state__(engine, com); \
-  v8::Context::Scope context_scope(engine->getContext())
-#endif
-
-#define RUN_IN_SCOPE(x)                         \
-  if (engine != NULL && !engine->IsInScope()) { \
-    ENTER_ENGINE_SCOPE();                       \
-    x                                           \
-  } else {                                      \
-    x                                           \
-  }
-#elif JS_ENGINE_MOZJS
-#define ENTER_ENGINE_SCOPE()
-#define RUN_IN_SCOPE(x)                         \
-  if (engine != NULL && !engine->IsInScope()) { \
-    auto_state __state__(engine, com);          \
-    x                                           \
-  } else {                                      \
-    x                                           \
-  }
-#endif
-
-#define NULL_CHECK \
-  if (value == NULL) return false;
 
 JXCORE_EXTERN(bool)
 JX_IsFunction(JXValue *value) {
@@ -141,19 +70,14 @@ JX_IsObject(JXValue *value) {
   return value->type_ == RT_Object;
 }
 
-#define EMPTY_CHECK(x)         \
-  if (value == NULL) return x; \
-  if (value->type_ == RT_Null || value->type_ == RT_Undefined) return x
-
-#define UNWRAP_RESULT(x) \
-  jxcore::JXValueWrapper *wrap = (jxcore::JXValueWrapper *)x
-
 JXCORE_EXTERN(int32_t)
 JX_GetInt32(JXValue *value) {
   EMPTY_CHECK(0);
 
   UNWRAP_RESULT(value->data_);
   UNWRAP_COM(value);
+  jxcore::JXEngine *engine =
+      jxcore::JXEngine::GetInstanceByThreadId(com->threadId);
 
   int32_t ret;
 
@@ -168,6 +92,8 @@ JX_GetDouble(JXValue *value) {
 
   UNWRAP_RESULT(value->data_);
   UNWRAP_COM(value);
+  jxcore::JXEngine *engine =
+      jxcore::JXEngine::GetInstanceByThreadId(com->threadId);
 
   double ret;
 
@@ -182,6 +108,8 @@ JX_GetBoolean(JXValue *value) {
 
   UNWRAP_RESULT(value->data_);
   UNWRAP_COM(value);
+  jxcore::JXEngine *engine =
+      jxcore::JXEngine::GetInstanceByThreadId(com->threadId);
 
   bool ret;
 
@@ -211,6 +139,8 @@ JX_GetString(JXValue *value) {
   EMPTY_CHECK(0);
 
   UNWRAP_COM(value);
+  jxcore::JXEngine *engine =
+      jxcore::JXEngine::GetInstanceByThreadId(com->threadId);
   UNWRAP_RESULT(value->data_);
 
   char *ret;
@@ -270,6 +200,8 @@ JX_GetBuffer(JXValue *value) {
   EMPTY_CHECK(NULL);
 
   UNWRAP_COM(value);
+  jxcore::JXEngine *engine =
+      jxcore::JXEngine::GetInstanceByThreadId(com->threadId);
   UNWRAP_RESULT(value->data_);
 
   char *data = NULL;
@@ -290,6 +222,8 @@ JX_Free(JXValue *value) {
   if (value->persistent_) return;
 
   UNWRAP_COM(value);
+  jxcore::JXEngine *engine =
+      jxcore::JXEngine::GetInstanceByThreadId(com->threadId);
 
   if (value->data_ == NULL || value->type_ == RT_Undefined ||
       value->type_ == RT_Null)
@@ -323,6 +257,8 @@ JX_Free(JXValue *value) {
 JXCORE_EXTERN(bool)
 JX_CallFunction(JXValue *fnc, JXValue *params, const int argc, JXValue *out) {
   UNWRAP_COM(fnc);
+  jxcore::JXEngine *engine =
+      jxcore::JXEngine::GetInstanceByThreadId(com->threadId);
 
   out->com_ = fnc->com_;
   out->data_ = NULL;
@@ -363,7 +299,7 @@ JX_CallFunction(JXValue *fnc, JXValue *params, const int argc, JXValue *out) {
       JX_SetUndefined(out);
       ret = false;
     } else {
-      ret = jxcore::JXEngine::ConvertToJXResult(com, res, out);
+      ret = jxcore::JXEngine::ConvertToJXValue(com, res, out);
     }
   });
 
@@ -373,6 +309,8 @@ JX_CallFunction(JXValue *fnc, JXValue *params, const int argc, JXValue *out) {
 JXCORE_EXTERN(void)
 JX_SetInt32(JXValue *value, const int32_t val) {
   UNWRAP_COM(value);
+  jxcore::JXEngine *engine =
+      jxcore::JXEngine::GetInstanceByThreadId(com->threadId);
   UNWRAP_RESULT(value->data_);
 
   if (wrap == NULL) {
@@ -391,6 +329,8 @@ JX_SetInt32(JXValue *value, const int32_t val) {
 JXCORE_EXTERN(void)
 JX_SetDouble(JXValue *value, const double val) {
   UNWRAP_COM(value);
+  jxcore::JXEngine *engine =
+      jxcore::JXEngine::GetInstanceByThreadId(com->threadId);
   UNWRAP_RESULT(value->data_);
 
   if (wrap == NULL) {
@@ -409,6 +349,8 @@ JX_SetDouble(JXValue *value, const double val) {
 JXCORE_EXTERN(void)
 JX_SetBoolean(JXValue *value, const bool val) {
   UNWRAP_COM(value);
+  jxcore::JXEngine *engine =
+      jxcore::JXEngine::GetInstanceByThreadId(com->threadId);
   UNWRAP_RESULT(value->data_);
 
   if (wrap == NULL) {
@@ -426,6 +368,8 @@ JX_SetBoolean(JXValue *value, const bool val) {
 
 #define SET_STRING(type, ct)                                         \
   UNWRAP_COM(value);                                                 \
+  jxcore::JXEngine *engine =                                         \
+      jxcore::JXEngine::GetInstanceByThreadId(com->threadId);        \
   UNWRAP_RESULT(value->data_);                                       \
                                                                      \
   if (wrap == 0) {                                                   \
@@ -492,6 +436,8 @@ JX_SetUCString(JXValue *value, const uint16_t *val, const int32_t _length) {
 JXCORE_EXTERN(void)
 JX_SetJSON(JXValue *value, const char *val, const int32_t length) {
   UNWRAP_COM(value);
+  jxcore::JXEngine *engine =
+      jxcore::JXEngine::GetInstanceByThreadId(com->threadId);
   UNWRAP_RESULT(value->data_);
 
   if (wrap == NULL) {
@@ -518,6 +464,8 @@ JX_SetError(JXValue *value, const char *val, const int32_t length) {
 JXCORE_EXTERN(void)
 JX_SetBuffer(JXValue *value, const char *val, const int32_t length) {
   UNWRAP_COM(value);
+  jxcore::JXEngine *engine =
+      jxcore::JXEngine::GetInstanceByThreadId(com->threadId);
   UNWRAP_RESULT(value->data_);
 
   if (wrap == NULL) {
@@ -546,6 +494,8 @@ JX_SetNull(JXValue *value) { value->type_ = RT_Null; }
 JXCORE_EXTERN(void)
 JX_SetObject(JXValue *value_to, JXValue *value_from) {
   UNWRAP_COM(value_to);
+  jxcore::JXEngine *engine =
+      jxcore::JXEngine::GetInstanceByThreadId(com->threadId);
   UNWRAP_RESULT(value_to->data_);
 
   assert(value_from->type_ == RT_Object && "value_from must be an Object");
@@ -658,6 +608,8 @@ JX_CreateArrayObject(JXValue *value) {
 JXCORE_EXTERN(void)
 JX_SetNamedProperty(JXValue *object, const char *name, JXValue *prop) {
   UNWRAP_COM(object);
+  jxcore::JXEngine *engine =
+      jxcore::JXEngine::GetInstanceByThreadId(com->threadId);
   UNWRAP_RESULT(object->data_);
 
   assert(object->type_ == RT_Object && "object must be an Object");
@@ -681,6 +633,8 @@ JX_SetNamedProperty(JXValue *object, const char *name, JXValue *prop) {
 JXCORE_EXTERN(void)
 JX_SetIndexedProperty(JXValue *object, const unsigned index, JXValue *prop) {
   UNWRAP_COM(object);
+  jxcore::JXEngine *engine =
+      jxcore::JXEngine::GetInstanceByThreadId(com->threadId);
   UNWRAP_RESULT(object->data_);
 
   assert(object->type_ == RT_Object && "object must be an Object");
@@ -704,6 +658,8 @@ JX_SetIndexedProperty(JXValue *object, const unsigned index, JXValue *prop) {
 JXCORE_EXTERN(void)
 JX_GetNamedProperty(JXValue *object, const char *name, JXValue *out) {
   UNWRAP_COM(object);
+  jxcore::JXEngine *engine =
+      jxcore::JXEngine::GetInstanceByThreadId(com->threadId);
   UNWRAP_RESULT(object->data_);
 
   assert(object->type_ == RT_Object && "object must be an Object");
@@ -718,7 +674,7 @@ JX_GetNamedProperty(JXValue *object, const char *name, JXValue *out) {
 
     out->data_ = NULL;
     out->size_ = 0;
-    jxcore::JXEngine::ConvertToJXResult(com, sub_obj, out);
+    jxcore::JXEngine::ConvertToJXValue(com, sub_obj, out);
     out->com_ = com;
     out->was_stored_ = false;
     out->persistent_ = false;
@@ -728,6 +684,8 @@ JX_GetNamedProperty(JXValue *object, const char *name, JXValue *out) {
 JXCORE_EXTERN(void)
 JX_GetIndexedProperty(JXValue *object, const int index, JXValue *out) {
   UNWRAP_COM(object);
+  jxcore::JXEngine *engine =
+      jxcore::JXEngine::GetInstanceByThreadId(com->threadId);
   UNWRAP_RESULT(object->data_);
 
   assert(object->type_ == RT_Object && "object must be an Object");
@@ -738,7 +696,7 @@ JX_GetIndexedProperty(JXValue *object, const int index, JXValue *out) {
 
     out->data_ = NULL;
     out->size_ = 0;
-    jxcore::JXEngine::ConvertToJXResult(com, sub_obj, out);
+    jxcore::JXEngine::ConvertToJXValue(com, sub_obj, out);
     out->com_ = com;
     out->was_stored_ = false;
     out->persistent_ = false;
@@ -766,7 +724,7 @@ JX_GetGlobalObject(JXValue *out) {
 
     out->data_ = NULL;
     out->size_ = 0;
-    jxcore::JXEngine::ConvertToJXResult(com, obj, out);
+    jxcore::JXEngine::ConvertToJXValue(com, obj, out);
     out->com_ = com;
     out->was_stored_ = false;
     out->persistent_ = false;
@@ -786,7 +744,7 @@ JX_GetProcessObject(JXValue *out) {
 
     out->data_ = NULL;
     out->size_ = 0;
-    jxcore::JXEngine::ConvertToJXResult(com, obj, out);
+    jxcore::JXEngine::ConvertToJXValue(com, obj, out);
     out->com_ = com;
     out->was_stored_ = false;
     out->persistent_ = false;
@@ -796,6 +754,8 @@ JX_GetProcessObject(JXValue *out) {
 JXCORE_EXTERN(void)
 JX_WrapObject(JXValue *object, void *ptr) {
   UNWRAP_COM(object);
+  jxcore::JXEngine *engine =
+      jxcore::JXEngine::GetInstanceByThreadId(com->threadId);
   UNWRAP_RESULT(object->data_);
 
   assert(object->type_ == RT_Object && "object must be an Object");
@@ -810,6 +770,8 @@ JX_WrapObject(JXValue *object, void *ptr) {
 JXCORE_EXTERN(void *)
 JX_UnwrapObject(JXValue *object) {
   UNWRAP_COM(object);
+  jxcore::JXEngine *engine =
+      jxcore::JXEngine::GetInstanceByThreadId(com->threadId);
   UNWRAP_RESULT(object->data_);
 
   assert(object->type_ == RT_Object && "object must be an Object");

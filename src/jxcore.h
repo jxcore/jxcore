@@ -16,8 +16,6 @@ class JXEngine {
   static bool JS_engine_inited_;
   std::string entry_file_name_;
 
-  std::map<std::string, JXMethod> methods_to_initialize_;
-
   void InitializeEngine(int argc, char **argv);
   void InitializeEmbeddedEngine(int argc, char **argv);
   void ParseDebugOpt(const char *arg);
@@ -78,9 +76,12 @@ class JXEngine {
   JXEngine(int argc, char *argv[], bool self_hosted = true);
 
   // initializes the locks, memory maps etc. call it once per app.
-  static void Init();
+  static void DefineGlobals();
 
-  // Literally starts the JavaScript engine and executes the entry file
+  // initialize the engine - embedded or standalone
+  void Initialize();
+
+  // Literally starts the JavaScript execution of the entry file
   void Start();
 
   // Runs libuv loop (NO_WAIT)
@@ -111,11 +112,8 @@ class JXEngine {
   // Evaluates JS
   bool Evaluate(const char *script, const char *filename, JXResult *result);
 
-  // Defines a native method under process.natives (returns true if it succeeds)
-  bool DefineNativeMethod(const char *name, JS_NATIVE_METHOD method);
-
-  bool DefineProxyMethod(const char *name, const int interface_id,
-                         JS_NATIVE_METHOD method);
+  void DefineProxyMethod(JS_HANDLE_OBJECT obj, const char *name,
+                         const int interface_id, JS_NATIVE_METHOD method);
 
   // returns the JXEngine instance for the actual thread
   static JXEngine *ActiveInstance();
@@ -132,8 +130,8 @@ class JXEngine {
 
   ~JXEngine() { ENGINE_PRINT_LOGS(); }
 
-  static bool ConvertToJXResult(node::commons *com, JS_HANDLE_VALUE_REF ret_val,
-                                JXValue *result);
+  static bool ConvertToJXValue(node::commons *com, JS_HANDLE_VALUE_REF ret_val,
+                               JXValue *result);
 };
 
 char *JX_Stringify(node::commons *com, JS_HANDLE_OBJECT obj,

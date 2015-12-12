@@ -22,8 +22,10 @@ JX_InitializeNewEngine();
 
 // Evaluates a JavaScript code on the fly.
 // Remarks:
-// 1 - returns false if compilation fails or an internal issue happens (i.e. no memory)
-// 2 - result is a return value from the running code. i.e. "var x=4; x+1" returns 5
+// 1 - returns false if compilation fails or an internal issue happens (i.e. no
+// memory)
+// 2 - result is a return value from the running code. i.e. "var x=4; x+1"
+// returns 5
 // 3 - script_name represents the script's file name
 // 4 - script_code expects a JavaScript code with null ending
 JXCORE_EXTERN(bool)
@@ -33,7 +35,8 @@ JX_Evaluate(const char *script_code, const char *script_name, JXValue *result);
 JXCORE_EXTERN(void)
 JX_DefineMainFile(const char *data);
 
-// Define a JavaScript file with it's contents, so you can require it from JS land
+// Define a JavaScript file with it's contents, so you can require it from JS
+// land
 // i.e.
 // native code: JX_DefineFile("test.js", "exports.x=4");
 // js code: require('test.js').x -> 4
@@ -48,8 +51,21 @@ JX_StartEngine();
 // i.e.
 // native code: JX_DefineExtension("testMethod", my_callback);
 // js code: process.natives.testMethod(1, true);
+//
+// !Important!
+// Defined native methods (process.natives) will be also available
+// under sub threads
 JXCORE_EXTERN(void)
 JX_DefineExtension(const char *name, JX_CALLBACK callback);
+
+// define a native method that can be called from the JS land
+// i.e.
+// native code: JX_DefineMethod(obj, "testMethod", my_callback);
+// js code: obj.testMethod(1, true);
+//
+// Defined method is only accessible from the current thread/instance
+JXCORE_EXTERN(void)
+JX_SetNativeMethod(JXValue *obj, const char *name, JX_CALLBACK callback);
 
 // loop io events for once. If there is any action left to do
 // this method returns 1 otherwise 0
@@ -86,8 +102,10 @@ JXCORE_EXTERN(void)
 JX_StopEngine();
 
 // store JXValue and return a corresponding identifier for a future reference
-// This feature is especially designed for JNI like interfaces where carrying JXValue
-// type around may not be the best option. You can simply deliver the id (long) and
+// This feature is especially designed for JNI like interfaces where carrying
+// JXValue
+// type around may not be the best option. You can simply deliver the id (long)
+// and
 // using other methods, you can get the contents async.
 JXCORE_EXTERN(long)
 JX_StoreValue(JXValue *value);

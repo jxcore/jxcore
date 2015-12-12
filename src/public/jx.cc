@@ -1,10 +1,8 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-#include "../jx/extend.h"
-#include "../jxcore.h"
-#include "../jx/job.h"
 #include <stdio.h>
 #include <string.h>
+#include "../jx/jx_private.h"
 #include "jx.h"
 
 using namespace jxcore;
@@ -14,25 +12,25 @@ char *app_args[2];
 
 // allocates one extra JXResult memory at the end of the array
 // Uses that one for a return value
-#define CONVERT_ARG_TO_RESULT(results, context)                   \
-  JXValue *results = NULL;                                        \
-  const int len = args.Length() - start_arg;                      \
-  {                                                               \
-    results = (JXValue *)malloc(sizeof(JXValue) * (len + 1));     \
-    for (int i = 0; i < len; i++) {                               \
-      JS_HANDLE_VALUE val = args.GetItem(i + start_arg);          \
-      results[i].com_ = context;                                  \
-      results[i].data_ = NULL;                                    \
-      results[i].size_ = 0;                                       \
-      results[i].type_ = RT_Undefined;                            \
-      results[i].was_stored_ = false;                             \
-      jxcore::JXEngine::ConvertToJXResult(com, val, &results[i]); \
-    }                                                             \
-    results[len].com_ = context;                                  \
-    results[len].data_ = NULL;                                    \
-    results[len].size_ = 0;                                       \
-    results[len].type_ = RT_Undefined;                            \
-    results[len].was_stored_ = false;                             \
+#define CONVERT_ARG_TO_RESULT(results, context)                  \
+  JXValue *results = NULL;                                       \
+  const int len = args.Length() - start_arg;                     \
+  {                                                              \
+    results = (JXValue *)malloc(sizeof(JXValue) * (len + 1));    \
+    for (int i = 0; i < len; i++) {                              \
+      JS_HANDLE_VALUE val = args.GetItem(i + start_arg);         \
+      results[i].com_ = context;                                 \
+      results[i].data_ = NULL;                                   \
+      results[i].size_ = 0;                                      \
+      results[i].type_ = RT_Undefined;                           \
+      results[i].was_stored_ = false;                            \
+      jxcore::JXEngine::ConvertToJXValue(com, val, &results[i]); \
+    }                                                            \
+    results[len].com_ = context;                                 \
+    results[len].data_ = NULL;                                   \
+    results[len].size_ = 0;                                      \
+    results[len].type_ = RT_Undefined;                           \
+    results[len].was_stored_ = false;                            \
   }
 
 JS_LOCAL_METHOD(asyncCallback) {
@@ -118,7 +116,41 @@ void JX_DefineExtension(const char *name, JX_CALLBACK callback) {
         "this thread?\n");
     return;
   }
-  engine->DefineProxyMethod(name, id, extensionCallback);
+
+  node::commons *com = engine->getCommons();
+  JS_DEFINE_STATE_MARKER(com);
+
+  RUN_IN_SCOPE({
+    JS_HANDLE_OBJECT empty;
+    engine->DefineProxyMethod(empty, name, id, extensionCallback);
+  });
+}
+
+void JX_SetNativeMethod(JXValue *value, const char *name,
+                        JX_CALLBACK callback) {
+  auto_lock locker_(CSLOCK_RUNTIME);
+  int id = extension_id++;
+  assert(id < MAX_CALLBACK_ID &&
+         "Maximum amount of extension methods reached.");
+  callbacks[id] = callback;
+  JXEngine *engine = JXEngine::ActiveInstance();
+  if (engine == NULL) {
+    warn_console(
+        "(JX_DefineExtension) Did you initialize the JXEngine instance for "
+        "this thread?\n");
+    return;
+  }
+
+  EMPTY_CHECK(assert(
+      0 && "JX_DefineExtension target object can not be NULL or Undefined"));
+
+  UNWRAP_RESULT(value->data_);
+  UNWRAP_COM(value);
+
+  RUN_IN_SCOPE({
+    JS_LOCAL_OBJECT objl = JS_OBJECT_FROM_PERSISTENT(wrap->value_);
+    engine->DefineProxyMethod(objl, name, id, extensionCallback);
+  });
 }
 
 void JX_InitializeNewEngine() {
@@ -132,7 +164,9 @@ void JX_InitializeNewEngine() {
         "thread?\n");
     return;
   }
+
   engine = new jxcore::JXEngine(2, app_args, false);
+  engine->Initialize();
 }
 
 int JX_GetThreadId() {
@@ -144,7 +178,7 @@ int JX_GetThreadId() {
 
 void JX_Initialize(const char *home_folder, JX_CALLBACK callback) {
   jx_callback = callback;
-  JXEngine::Init();
+  JXEngine::DefineGlobals();
 #if defined(__IOS__) || defined(__ANDROID__) || defined(DEBUG)
   warn_console("Initializing JXcore engine\n");
 #endif
@@ -219,8 +253,6 @@ void JX_StartEngine() {
         "thread?\n");
     return;
   }
-
-  engine->DefineNativeMethod("asyncCallback", asyncCallback);
 
 #if defined(__IOS__) || defined(__ANDROID__) || defined(DEBUG)
   warn_console("Starting JXcore engine\n");

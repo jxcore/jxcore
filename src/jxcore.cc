@@ -388,7 +388,6 @@ char **JXEngine::Init(int argc, char *argv[], bool engine_inited_already) {
 static bool jxcore_first_instance = true;
 bool JXEngine::jxcore_was_shutdown_ = false;
 bool JXEngine::JS_engine_inited_ = false;
-static std::map<std::string, JXMethod> methods_archive;
 
 #define jx_engine_map std::map<int, JXEngine *>
 jx_engine_map jx_engine_instances;
@@ -442,7 +441,7 @@ JXEngine::JXEngine(int argc, char **argv, bool self_hosted) {
   entry_file_name_ = "";
 }
 
-void JXEngine::Init() {
+void JXEngine::DefineGlobals() {
   ENGINE_LOG_THIS("JXEngine", "Init");
   static bool instance_inited_ = false;
 
@@ -459,8 +458,8 @@ void JXEngine::Init() {
   jx_init_locks();
 }
 
-void JXEngine::Start() {
-  ENGINE_LOG_THIS("JXEngine", "Start");
+void JXEngine::Initialize() {
+  ENGINE_LOG_THIS("JXEngine", "Initialize");
   node::commons::process_status_ = node::JXCORE_INSTANCE_ALIVE;
   if (self_hosted_)
     InitializeEngine(argc_, argv_);
@@ -471,6 +470,10 @@ void JXEngine::Start() {
 void JXEngine::MemoryMap(const char *filename, const char *content,
                          const size_t len, bool entry_file) {
   ENGINE_LOG_THIS("JXEngine", "MemoryMap");
+  assert(main_node_ != NULL && "Did you forget initializing JXcore?");
+  assert(filename != NULL && content != NULL &&
+         "filename or content can not be NULL");
+
   if (entry_file) {
     if (entry_file_name_.length() != 0) {
       error_console(
@@ -484,6 +487,14 @@ void JXEngine::MemoryMap(const char *filename, const char *content,
 #endif
     }
     entry_file_name_ = filename;
+    {
+      AutoScope _scope_(this, true);
+      JS_ENGINE_SCOPE(main_node_, threadId_ != 0);
+
+      JS_HANDLE_OBJECT process_l = main_node_->getProcess();
+      JS_NAME_SET(process_l, JS_STRING_ID("entry_file_name_"),
+                  STD_TO_STRING(entry_file_name_.c_str()));
+    }
   }
 
   node::MemoryWrap::SharedSet(filename, content, len);
@@ -543,14 +554,7 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
 
       node::SetupProcessObject(actual_thread_id, false);
       JS_HANDLE_OBJECT process_l = main_node_->getProcess();
-      if (entry_file_name_.length() != 0) {
-        JS_DEFINE_STATE_MARKER(main_node_);
-        JS_NAME_SET(process_l, JS_STRING_ID("entry_file_name_"),
-                    STD_TO_STRING(entry_file_name_.c_str()));
-      }
-
       main_node_->loop->loopId = main_node_->threadId;
-
       node::Load(process_l);
 
       // All our arguments are loaded. We've evaluated all of the scripts. We
@@ -674,11 +678,6 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
 
       node::SetupProcessObject(actual_thread_id, false);
       JS_HANDLE_OBJECT process_l = main_node_->getProcess();
-      if (entry_file_name_.length() != 0) {
-        JS_DEFINE_STATE_MARKER(main_node_);
-        JS_NAME_SET(process_l, JS_STRING_ID("entry_file_name_"),
-                    STD_TO_STRING(entry_file_name_.c_str()));
-      }
 
 #ifdef V8_IS_3_14
       v8_typed_array::AttachBindings(context->Global());
@@ -784,23 +783,17 @@ void DeclareProxy(node::commons *com, JS_HANDLE_OBJECT_REF methods,
   JS_METHOD_CALL(defineProxy, JS_GET_GLOBAL(), 2, args);
 }
 
-void JXEngine::InitializeProxyMethods(node::commons *com) {
-  ENGINE_LOG_THIS("JXEngine", "InitializeProxyMethods");
-  JS_ENTER_SCOPE_WITH(com->node_isolate);
-  JS_DEFINE_STATE_MARKER(com);
-  JS_HANDLE_OBJECT process_l = com->getProcess();
+void JXEngine::Start() {
+  ENGINE_LOG_THIS("JXEngine", "Start");
 
-  JS_LOCAL_OBJECT methods = JS_NEW_EMPTY_OBJECT();
-  for (std::map<std::string, JXMethod>::iterator it = methods_archive.begin();
-       it != methods_archive.end(); ++it) {
-    if (it->second.is_native_method_)
-      NODE_SET_METHOD(methods, it->first.c_str(), it->second.native_method_);
-    else
-      DeclareProxy(com, methods, it->first.c_str(), it->second.interface_id_,
-                   it->second.native_method_);
-  }
+  // no need to call node::Load for self_hosted engine
+  if (self_hosted_) return;
 
-  JS_NAME_SET(process_l, JS_STRING_ID("natives"), methods);
+  AutoScope _scope_(this, true);
+  JS_ENGINE_SCOPE(main_node_, threadId_ != 0);
+
+  JS_HANDLE_OBJECT process_l = main_node_->getProcess();
+  node::Load(process_l);
 }
 
 #if defined(JS_ENGINE_MOZJS)
@@ -821,8 +814,8 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
 
   argc_ = argc;
   const int actual_thread_id = threadId_;
-
   bool was_inited = JS_engine_inited_;
+
   if (!JS_engine_inited_) {
     assert(actual_thread_id == 0);
     JS_engine_inited_ = true;
@@ -860,21 +853,6 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
   node::SetupProcessObject(actual_thread_id, false);
   JS_HANDLE_OBJECT process_l = main_node_->getProcess();
   JS_DEFINE_STATE_MARKER(main_node_);
-  if (entry_file_name_.length() != 0) {
-    JS_NAME_SET(process_l, JS_STRING_ID("entry_file_name_"),
-                STD_TO_STRING(entry_file_name_.c_str()));
-  }
-
-  for (std::map<std::string, JXMethod>::iterator it =
-           methods_to_initialize_.begin();
-       it != methods_to_initialize_.end(); ++it) {
-    methods_archive[it->first] = it->second;
-  }
-
-  InitializeProxyMethods(main_node_);
-  methods_to_initialize_.clear();
-
-  node::Load(process_l);
 
   if (argc > 0) free(argv_copy);
 }
@@ -1048,22 +1026,6 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
     v8_typed_array::AttachBindings(context_->Global());
 #endif
 
-    JS_DEFINE_STATE_MARKER(main_node_);
-    if (entry_file_name_.length() != 0) {
-      JS_NAME_SET(process_l, JS_STRING_ID("entry_file_name_"),
-                  STD_TO_STRING(entry_file_name_.c_str()));
-    }
-
-    for (std::map<std::string, JXMethod>::iterator it =
-             methods_to_initialize_.begin();
-         it != methods_to_initialize_.end(); ++it) {
-      methods_archive[it->first] = it->second;
-    }
-    InitializeProxyMethods(main_node_);
-    methods_to_initialize_.clear();
-
-    node::Load(process_l);
-
     if (argc > 0) free(argv_copy);
   }
 }
@@ -1217,10 +1179,9 @@ JS_HANDLE_VALUE JX_Parse(node::commons *com, const char *str,
   result->size_ = 1;                                  \
   return true;
 
-bool JXEngine::ConvertToJXResult(node::commons *com,
-                                 JS_HANDLE_VALUE_REF ret_val,
-                                 JXResult *result) {
-  ENGINE_LOG_THIS("JXEngine", "ConvertToJXResult");
+bool JXEngine::ConvertToJXValue(node::commons *com, JS_HANDLE_VALUE_REF ret_val,
+                                JXValue *result) {
+  ENGINE_LOG_THIS("JXEngine", "ConvertToJXValue");
   assert(result->com_ && "JXResult object wasn't initialized");
   result->persistent_ = false;
   result->was_stored_ = false;
@@ -1324,11 +1285,11 @@ bool Evaluate_(const char *source, const char *filename, JXResult *result,
     MANAGE_EXCEPTION
   }
 
-  return JXEngine::ConvertToJXResult(com, scr_return, result);
+  return JXEngine::ConvertToJXValue(com, scr_return, result);
 }
 
 bool JXEngine::Evaluate(const char *source, const char *filename,
-                        JXResult *result) {
+                        JXValue *result) {
   ENGINE_LOG_THIS("JXEngine", "Evaluate");
   bool ret_val = false;
   if (!this->IsInScope()) {
@@ -1343,60 +1304,56 @@ bool JXEngine::Evaluate(const char *source, const char *filename,
   return ret_val;
 }
 
-bool JXEngine::DefineProxyMethod(const char *name, const int interface_id,
-                                 JS_NATIVE_METHOD method) {
-  ENGINE_LOG_THIS("JXEngine", "DefineProxyMethod");
-  bool ret_val = true;
-  if (main_node_ == NULL) {
-    methods_to_initialize_[name].native_method_ = method;
-    methods_to_initialize_[name].is_native_method_ = false;
-    methods_to_initialize_[name].interface_id_ = interface_id;
-  } else {
-    AutoScope _scope_(this, true);
-    JS_ENGINE_SCOPE(main_node_, threadId_ != 0);
+static std::map<std::string, JXMethod> methods_archive;
 
-    JS_HANDLE_OBJECT process = main_node_->getProcess();
-    JS_LOCAL_OBJECT natives =
-        JS_VALUE_TO_OBJECT(JS_GET_NAME(process, JS_STRING_ID("natives")));
-    if (JS_IS_EMPTY(natives) || JS_IS_NULL_OR_UNDEFINED(natives)) {
-      error_console(
-          "JXEngine::DefineProxyMethod, could not find 'natives' object "
-          "under "
-          "process\n");
-      ret_val = false;
-    } else {
-      DeclareProxy(main_node_, natives, name, interface_id, method);
-    }
+void JXEngine::InitializeProxyMethods(node::commons *com) {
+  ENGINE_LOG_THIS("JXEngine", "InitializeProxyMethods");
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
+  JS_DEFINE_STATE_MARKER(com);
+  JS_HANDLE_OBJECT process_l = com->getProcess();
+
+  JS_LOCAL_OBJECT methods = JS_NEW_EMPTY_OBJECT();
+  for (std::map<std::string, JXMethod>::iterator it = methods_archive.begin();
+       it != methods_archive.end(); ++it) {
+    if (it->second.is_native_method_)
+      NODE_SET_METHOD(methods, it->first.c_str(), it->second.native_method_);
+    else
+      DeclareProxy(com, methods, it->first.c_str(), it->second.interface_id_,
+                   it->second.native_method_);
   }
-exit_:
-  return ret_val;
+
+  JS_NAME_SET(process_l, JS_STRING_ID("natives"), methods);
 }
 
-bool JXEngine::DefineNativeMethod(const char *name, JS_NATIVE_METHOD method) {
-  ENGINE_LOG_THIS("JXEngine", "DefineNativeMethod");
-  bool ret_val = true;
-  if (main_node_ == NULL) {
-    methods_to_initialize_[name].native_method_ = method;
-    methods_to_initialize_[name].is_native_method_ = true;
-  } else {
-    AutoScope _scope_(this, true);
-    JS_ENGINE_SCOPE(main_node_, threadId_ != 0);
+void JXEngine::DefineProxyMethod(JS_HANDLE_OBJECT obj, const char *name,
+                                 const int interface_id,
+                                 JS_NATIVE_METHOD method) {
+  ENGINE_LOG_THIS("JXEngine", "DefineProxyMethod");
 
-    JS_HANDLE_OBJECT process = main_node_->getProcess();
-    JS_LOCAL_OBJECT natives =
-        JS_VALUE_TO_OBJECT(JS_GET_NAME(process, JS_STRING_ID("natives")));
-    if (JS_IS_EMPTY(natives) || JS_IS_NULL_OR_UNDEFINED(natives)) {
-      error_console(
-          "JXEngine::DefineNativeMethod, could not find 'natives' object "
-          "under "
-          "process\n");
-      ret_val = false;
+  assert(main_node_ != NULL && "Did you forget initializing JXcore ?");
+  {
+    JS_DEFINE_STATE_MARKER(main_node_);
+    JS_LOCAL_OBJECT natives;
+
+    if (JS_IS_EMPTY(obj)) {
+      methods_archive[name].native_method_ = method;
+      methods_archive[name].is_native_method_ = false;
+      methods_archive[name].interface_id_ = interface_id;
+
+      JS_HANDLE_OBJECT process = main_node_->getProcess();
+      if (!JS_HAS_NAME(process, JS_STRING_ID("natives"))) {
+        natives = JS_NEW_EMPTY_OBJECT();
+        JS_NAME_SET(process, JS_STRING_ID("natives"), natives);
+      } else {
+        natives =
+            JS_VALUE_TO_OBJECT(JS_GET_NAME(process, JS_STRING_ID("natives")));
+      }
     } else {
-      NODE_SET_METHOD(natives, name, method);
+      natives = JS_VALUE_TO_OBJECT(obj);
     }
-  }
 
-  return ret_val;
+    DeclareProxy(main_node_, natives, name, interface_id, method);
+  }
 }
 
 int JXEngine::Loop() {
