@@ -16,6 +16,7 @@
     'node_engine_chakra%': 0,
     'node_engine_mozilla%': 0,
     'node_engine_v8%': 0,
+    'v8_postmortem_support': 'false',
     
     'node_win_onecore%' : 0,
 
@@ -28,38 +29,24 @@
         'defines':['POSIX_UCLIBC_DEFINED'],
       }], 
       ['OS == "win"', {
-        'os_posix': 0,
-        'v8_postmortem_support': 'false'
+        'os_posix%': 0,
       }, {
-        'os_posix': 1,
-        'v8_postmortem_support': 'true'
+        'os_posix%': 1,
       }],
       ['(GENERATOR == "ninja" or OS == "mac") and node_engine_v8==1', {
         'OBJ_DIR': '<(PRODUCT_DIR)/obj',
         'V8_BASE': '<(PRODUCT_DIR)/libv8_base.a',
       }],
-      ['GENERATOR != "ninja" and node_engine_v8==1', {
+      ['GENERATOR != "ninja" and OS != "mac" and node_engine_v8==1', {
         'OBJ_DIR': '<(PRODUCT_DIR)/obj.target',
-      }],
-      ['GENERATOR != "ninja" and v8_is_3_14==1', {
         'V8_BASE': '<(PRODUCT_DIR)/obj.target/deps/v8/tools/gyp/libv8_base.a',
       }],
-      ['GENERATOR != "ninja" and v8_is_3_28==1 and node_engine_v8==1', {
-        'V8_BASE': '<(PRODUCT_DIR)/libv8_base.a',
+      # A flag for BSD platforms
+      ['OS=="freebsd" or OS=="openbsd"', {
+        'os_bsd%': 1,
+      }, {
+        'os_bsd%': 0,
       }],
-      # A flag for POSIX platforms
-        ['OS=="win"', {
-          'os_posix%': 0,
-        }, {
-          'os_posix%': 1,
-        }],
-
-        # A flag for BSD platforms
-        ['OS=="freebsd" or OS=="openbsd"', {
-          'os_bsd%': 1,
-        }, {
-          'os_bsd%': 0,
-        }],
     ],
   },
 
