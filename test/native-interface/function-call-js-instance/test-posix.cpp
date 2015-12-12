@@ -62,6 +62,7 @@ int main(int argc, char **args) {
 
   JXValue result;
   JX_Evaluate(eval_str, "myscript", &result);
+  JX_Free(&result);
 
   // loop for possible IO
   // or JX_Loop() without usleep / while
