@@ -755,7 +755,7 @@ JX_GetThreadIdByValue(JXValue *value) {
 
 JXCORE_EXTERN(void)
 JX_GetGlobalObject(JXValue *out) {
-  JS_ENTER_SCOPE_COM();
+  node::commons *com = node::commons::getInstance();
   JS_DEFINE_STATE_MARKER(com);
 
   jxcore::JXEngine *engine =
@@ -775,7 +775,7 @@ JX_GetGlobalObject(JXValue *out) {
 
 JXCORE_EXTERN(void)
 JX_GetProcessObject(JXValue *out) {
-  JS_ENTER_SCOPE_COM();
+  node::commons *com = node::commons::getInstance();
   JS_DEFINE_STATE_MARKER(com);
 
   jxcore::JXEngine *engine =
