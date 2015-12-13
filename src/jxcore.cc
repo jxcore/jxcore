@@ -410,6 +410,37 @@ class AutoScope {
   }
 };
 
+JXEngine::~JXEngine() {
+  if (threadId_ != 0) {
+    customLock(CSLOCK_JOBS);
+    jx_engine_map::iterator it = jx_engine_instances.find(threadId_);
+    if (it != jx_engine_instances.end()) jx_engine_instances.erase(it);
+    customUnlock(CSLOCK_JOBS);
+  }
+
+  ENGINE_PRINT_LOGS();
+}
+
+JXEngine::JXEngine(node::commons *com) {
+  ENGINE_LOG_THIS("JXEngine", "JXEngine(com)");
+
+  assert(com->threadId != 0 &&
+         "Do not use this constructor for the first JXcore instance");
+
+  inside_scope_ = false;
+  threadId_ = com->threadId;
+  main_node_ = com;
+
+  customLock(CSLOCK_JOBS);
+  jx_engine_instances[threadId_] = this;
+  customUnlock(CSLOCK_JOBS);
+
+  assert(!jxcore_was_shutdown_ && "JXcore engine was already shutdown\n");
+  self_hosted_ = jx_engine_instances[0]->self_hosted_;
+  argc_ = jx_engine_instances[0]->argc_;
+  argv_ = jx_engine_instances[0]->argv_;
+}
+
 JXEngine::JXEngine(int argc, char **argv, bool self_hosted) {
   ENGINE_LOG_THIS("JXEngine", "JXEngine");
   if (jxcore_first_instance) {

@@ -29,6 +29,8 @@ void JXInstance::runScript(void *x) {
   Job::fillTasks(threadId);
 
   node::commons *com = node::commons::newInstance(threadId + 1);
+  jxcore::JXEngine engine(com);
+
   int resetCount = 0;
   bool reset;
 
@@ -36,8 +38,8 @@ void JXInstance::runScript(void *x) {
   do {
 #elif defined(JS_ENGINE_MOZJS)
   ENGINE_NS::Isolate *isolate = com->node_isolate;
-  JSContext *ctx = isolate->GetRaw();
-  JSRuntime *rt = JS_GetRuntime(ctx);
+  JSContext *context = isolate->GetRaw();
+  JSRuntime *rt = JS_GetRuntime(context);
   do {
 #endif
     do {
@@ -54,14 +56,22 @@ void JXInstance::runScript(void *x) {
 #endif
       JS_LOCAL_OBJECT global = context->Global();
 #elif defined(JS_ENGINE_MOZJS)
-      JSAutoRequest ar(ctx);
-      JS::RootedObject _global(ctx);
-      jxcore::NewGlobalObject(ctx, &_global);
+      JSAutoRequest ar(context);
+      JS::RootedObject _global(context);
+      jxcore::NewGlobalObject(context, &_global);
       assert(_global != NULL);
-      JSAutoCompartment ac(ctx, _global);
-      JS_LOCAL_OBJECT global(_global, ctx);
+      JSAutoCompartment ac(context, _global);
+      JS_LOCAL_OBJECT global(_global, context);
       JS_DEFINE_STATE_MARKER(com);
-      JS_SetErrorReporter(ctx, node::OnFatalError);
+      JS_SetErrorReporter(context, node::OnFatalError);
+#endif
+
+#if defined(JS_ENGINE_V8)
+#ifndef V8_IS_3_14
+      engine.pContext_.Reset(isolate, context);
+#else
+      engine.pContext_ = context;
+#endif
 #endif
       uv_idle_t *t = com->tick_spinner;
       uv_idle_init(com->loop, t);
@@ -72,7 +82,7 @@ void JXInstance::runScript(void *x) {
 
       JS_LOCAL_OBJECT inner = JS_NEW_EMPTY_OBJECT();
 #ifdef JS_ENGINE_MOZJS
-      JS::RootedObject r_inner(ctx, inner.GetRawObjectPointer());
+      JS::RootedObject r_inner(context, inner.GetRawObjectPointer());
 #endif
 
       JS_METHOD_SET(inner, "compiler", Compiler);
@@ -111,7 +121,7 @@ void JXInstance::runScript(void *x) {
 #ifdef JS_ENGINE_V8
     com->node_isolate->Dispose();
 #elif defined(JS_ENGINE_MOZJS)
-    JS_DestroyContext(ctx);
+    JS_DestroyContext(context);
 
     com->instance_status_ = node::JXCORE_INSTANCE_EXITED;
 
