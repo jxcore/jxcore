@@ -427,14 +427,6 @@
           'src/node_mdb.cc',
         ],
       } ],
-      [ 'v8_postmortem_support=="true" and node_engine_v8==1 and v8_is_3_28==1', {
-         'dependencies': [ 'deps/v8_3_28/v8/tools/gyp/v8.gyp:postmortem-metadata' ],
-         'xcode_settings': {
-           'OTHER_LDFLAGS': [
-             '-Wl,-force_load,<(V8_BASE)',
-           ],
-         },
-      }],
       ['node_use_etw=="true" and node_engine_v8==1',
       {
         'defines': ['HAVE_ETW=1'],

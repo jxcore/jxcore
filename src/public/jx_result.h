@@ -108,7 +108,8 @@ JX_GetString(JXValue *value);
 JXCORE_EXTERN(int32_t)
 JX_GetDataLength(JXValue *value);
 
-// for Buffer, it returns a direct pointer to the underlying data. no copying involved
+// for Buffer, it returns a direct pointer to the underlying data. no copying
+// involved
 // don't hold to it longer than necessary, it may be gc'd away
 JXCORE_EXTERN(char *)
 JX_GetBuffer(JXValue *value);

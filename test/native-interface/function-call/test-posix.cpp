@@ -13,7 +13,7 @@ void sampleMethod(JXValue *results, int argc) {
          "both parameters supposed to be a function");
 
   assert(JX_IsString(&results[2]) && JX_IsString(&results[3]) &&
-         "both parameters supposed to be a function");
+         "both parameters supposed to be a string");
 
   JXValue out;
   assert(JX_CallFunction(&results[0], &results[2], 1, &out) &&
@@ -21,7 +21,7 @@ void sampleMethod(JXValue *results, int argc) {
   assert(JX_IsUndefined(&out) &&
          "return value from console.log should be undefined");
 
-  assert(JX_CallFunction(&results[0], &results[3], 1, &out) &&
+  assert(JX_CallFunction(&results[1], &results[3], 1, &out) &&
          "failed while calling console.error");
   assert(JX_IsUndefined(&out) &&
          "return value from console.error should be undefined");

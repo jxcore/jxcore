@@ -8,11 +8,10 @@ GREEN_COLOR='\033[0;32m'
 GREY_COLOR='\033[0;37m'
 
 LOG() {
-    COLOR="$1"
-    TEXT="$2"
-    echo -e "${COLOR}$TEXT ${NORMAL_COLOR}"
+  COLOR="$1"
+  TEXT="$2"
+  echo -e "${COLOR}$TEXT ${NORMAL_COLOR}"
 }
-
 
 ERROR_ABORT() {
   if [[ $? != 0 ]]
