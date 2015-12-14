@@ -24,7 +24,7 @@ var minor =  getNumber(/#define JXCORE_MINOR_VERSION (\d)/);
 var patch =  getNumber(/#define JXCORE_PATCH_VERSION (\d)/);
 
 if (major !== null && minor !== null && patch !== null) {
-  expectedVersion = "v 0." + major + '.' + minor + '.' + patch;
+  expectedVersion = "v0." + major + '.' + minor + '.' + patch;
 } else {
   // older versions
   var index = vers.indexOf('0.3.');

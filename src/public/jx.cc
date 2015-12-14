@@ -171,7 +171,9 @@ void JX_InitializeNewEngine() {
 
 int JX_GetThreadId() {
   JXEngine *engine = JXEngine::ActiveInstance();
-  if (engine == NULL) return -1;
+
+  // this might be an inner JXcore sub instance try Commons
+  if (engine == NULL) return node::commons::threadIdFromThreadPrivate();
 
   return engine->threadId_;
 }

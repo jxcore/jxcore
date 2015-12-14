@@ -73,6 +73,10 @@ class JXEngine {
   // internal
   static void InitializeProxyMethods(node::commons *com);
 
+  // for jx_instance
+  JXEngine(node::commons *com);
+
+  // for public interface
   JXEngine(int argc, char *argv[], bool self_hosted = true);
 
   // initializes the locks, memory maps etc. call it once per app.
@@ -128,7 +132,7 @@ class JXEngine {
     return (main_node_ != NULL) ? main_node_->threadId : -1;
   }
 
-  ~JXEngine() { ENGINE_PRINT_LOGS(); }
+  ~JXEngine();
 
   static bool ConvertToJXValue(node::commons *com, JS_HANDLE_VALUE_REF ret_val,
                                JXValue *result);
