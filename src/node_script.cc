@@ -604,9 +604,6 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(
       JS_LOCAL_VALUE err_val = try_catch.Exception();
       THROW_EXCEPTION_OBJECT(err_val);
     }
-
-    mscript = jxcore::GetScriptMemory(__contextORisolate,
-                                      script.GetRawScriptPointer());
   } else {
     WrappedScript *n_script = ObjectWrap::Unwrap<WrappedScript>(_this);
     if (!n_script) {
@@ -639,6 +636,12 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(
 
       comp = JS_EnterCompartment(context, fake_sandbox);
       try_catch.ctx_ = context;
+
+      if (mscript.length() == 0) {
+        mscript = jxcore::GetScriptMemory(__contextORisolate,
+                                          script.GetRawScriptPointer());
+      }
+
       JSScript *new_script = jxcore::GetScript(context, mscript);
       MozJS::Script script_pr(new_script, context);
 
@@ -705,6 +708,9 @@ JS_NATIVE_RETURN_TYPE WrappedScript::EvalMachine(
       THROW_EXCEPTION("Must be called as a method of Script.");
     }
 
+    if (mscript.length() == 0)
+      mscript = jxcore::GetScriptMemory(__contextORisolate,
+                                        script.GetRawScriptPointer());
     n_script->script_ = mscript;
   }
 
