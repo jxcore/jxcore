@@ -721,7 +721,7 @@ void indexed_finalize(JSFreeOp *fop, JSObject *obj) {
 }
 
 static JSClass empty_class_definition = {
-    "JXObject",
+    "Object",
     JSCLASS_HAS_PRIVATE | JSCLASS_HAS_RESERVED_SLOTS(JS_OBJECT_SLOT_COUNT) |
         JSCLASS_NEW_RESOLVE,
     JS_PropertyStub, JS_DeletePropertyStub, JS_PropertyStub,
