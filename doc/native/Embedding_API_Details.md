@@ -2,7 +2,7 @@
 
 #### Types
 
-Supported types are listed below;
+Supported Types
 ```c
 enum JXType {
   RT_Int32 = 1,
@@ -18,8 +18,8 @@ enum JXType {
 };
 ```
 
-`JXValue` struct represents the common wrapper for all the supported types. Unless you know what you are doing, you shouldn't
-reach the members of JXValue struct directly.
+`JXValue` struct represents the common wrapper for all the supported types. Unless 
+you know what you are doing, you shouldn't reach the members of JXValue directly.
 
 Example native String;
 ```c
@@ -35,7 +35,11 @@ JX_SetString(&nativeString, "Hello", 5); // => nativeString = "Hello";
 assert( JX_IsString(&nativeString) ); // => typeof nativeString === "string"
 
 // Let's release it
-JX_Free(&nativeString); // You should call JX_Free on every variable you've called JX_New
+JX_Free(&nativeString); 
+// You should call JX_Free on every variable you've called JX_New, JX_Create...
+// Calling JX_Free on a JSObject, JSString.. doesn't garbage collect that from JS land!
+// It just removes the hard reference on that variable. So if that particular variable is
+// no longer needed on JS land, JS engine may garbage collect that
 ```
 
 Related methods; (Each of the methods given below also have their corresponding JX_Is.... checkers)
@@ -56,8 +60,9 @@ Related methods; (Each of the methods given below also have their corresponding 
  
 #### Objects / Arrays
 
-JXcore native interface (jx-ni) provides additional methods to create a Javascript Object or Array on the native side. `JX_New` 
-mentioned above is not needed to create an empty object or an array. 
+JXcore native interface (jx-ni) provides additional methods to create a Javascript Object or 
+Array on the native side. `JX_New` mentioned above is not needed to create an empty 
+object or an array. 
 
 To create an empty object and rest;
 ```
@@ -74,7 +79,9 @@ JX_SetInt32(&number, 6); // => number = 6;
 // Set property
 JX_SetNamedProperty(&js_object, "x", &number); // => js_object.x = 6
 
-// Now we are done with number variable, lets free it's memory
+// Now we are done with number variable. So lets remove
+// the reference from native land
+// Free'ing it won't be remove that variable from JS land
 JX_Free(&number);
 
 // Get property 
@@ -124,14 +131,14 @@ js code: require('test.js').x -> 4
 ```
 
 ##### void JX_StartEngine();
-Starts a JXcore engine instance. You may have multiple JXcore engine instances under a single application. However, you need 
-to make sure;
+Starts a JXcore engine instance. You may have multiple JXcore engine instances under a single application. However, you need to make sure;
  - each instance should have it's own thread. They can't share threads
  - interact with an instance only under it's thread. Remember, JS is single threaded
  - do not destroy the initial JXcore engine instance. i.e. SpiderMonkey sub runtimes are based on initial runtime.
  
 ##### void JX_DefineExtension(const char *name, JX_CALLBACK callback)
-Define a native method that can be called from the JS land
+Define a native method that can be called from the JS land.
+This method will be available on each and every single `jxcore.tasks` sub instances
 
 ```
 native code: 
@@ -147,11 +154,35 @@ js code:
 process.natives.testMethod(1, true);
 ```
 
+##### void JX_SetNativeMethod(JXValue *obj, const char *name, JX_CALLBACK callback)
+Proxy a native method to a JS object with name. As hosting JS Object, the defined
+method will only be available to actual JXcore instance (thread)
+
+```
+native code: 
+  JXValue obj;
+  JX_CreateEmptyObject(&obj);
+
+  JXValue global;
+  JX_GetGlobalObject(&global);
+
+  JX_SetNamedProperty(&global, "MyObject", &obj);
+
+  JX_SetNativeMethod(&obj, "sampleMethod", sampleMethod);
+
+  // Free'ing object here doesn't destroy it on JS land
+  JX_Free(&obj);
+
+js code: 
+  MyObject.sampleMethod(...);
+```
+
 ##### int JX_LoopOnce()
-Loop io events for once. If there is any action left to do this method returns 1 otherwise 0
+Loop io events once. If there is any action left to do this method returns 1 otherwise 0
 
 ##### int JX_Loop()
-Loop io events until there is nothing left to do.
+Loop io events until there is nothing left to do. 
+Reminder: `If the application is hosting a HTTP server, this method would loop forever.`
 
 ##### bool JX_IsSpiderMonkey()
 Returns true if the underlying engine is SpiderMonkey
@@ -159,18 +190,23 @@ Returns true if the underlying engine is SpiderMonkey
 ##### bool JX_IsV8()
 Returns true if the underlying engine is V8
 
+##### bool JX_IsChakra()
+Returns true if the underlying engine is Chakra
+
 ##### int JX_GetThreadId()
 Returns threadId for the actual instance
  - -1 : there is no active instance for the current thread
  - 0 to 63 threadIds. (JS side: process.threadId + 1)
 
 ##### void JX_StopEngine()
-Stops the actual JXcore engine (under the thread). Call this only for the sub engines. In other words, when you destroy 
-the first engine instance, you can not create the additional instances.
+Stops the actual JXcore engine (under the thread). Call this only for the sub engines. 
+In other words, when you destroy the first engine instance, you can not create 
+the additional instances.
 
 ##### long JX_StoreValue(JXValue *value)
-Store JXValue and return a corresponding identifier for a future reference. This feature is especially designed for 
-JNI like interfaces where carrying JXValue type around may not be the best option. You can simply deliver the id (long) and
+Store JXValue and return a corresponding identifier for a future reference. 
+This feature is especially designed for JNI like interfaces where carrying JXValue 
+type around may not be the best option. You can simply deliver the id (long) and 
 using other methods, you can get the contents async.
 
 ##### JXValueType JX_GetStoredValueType(const int threadId, const long id)

@@ -1,21 +1,27 @@
-This document focuses on jxcore's new public interface located under (`src/public`). We want this interface 
-to be very easy to use and embedabble on any platform.  If you need to reach all the core features, you may 
-want to check `src/public/jx.cc` to see how we have actually implemented this interface. So you can add your custom methods.
+This document focuses on jxcore's new public interface located under (`src/public`). 
+We want this interface to be very easy to use and embedabble on any platform.  
+If you need to reach all the core features, you may want to check `src/public/jx.cc` 
+to see how we have actually implemented this interface. So you can add your custom 
+methods.
 
-In order to embed jxcore into your application, you should first compile it as a library.
+In order to embed jxcore into an application, you should first compile it as a library.
 
-`./configure --static-library --prefix=/targetFolder --engine-mozilla` (for V8 remove --engine-mozilla)
+**Posix**
+`./configure --static-library --prefix=/targetFolder --engine-mozilla` (for V8 remove `--engine-mozilla`)
 `./make install`
 
-Additional useful parameters
+**Windows**
+`vcbuild.bat --shared-library --engine-mozilla` (for V8 remove `--engine-mozilla`)
+
+**Additional useful parameters**
 ```
 --dest-cpu=ia32   ->  32 bit  (ia32, arm, armv7s, arm64, x86_64)
 --dest-os=ios     ->   (ios, android, or leave empty for your current platform)
 ```
 
-In the end you will have all the binaries and include files. The new public interface only expects `jx.h` 
-and `jx_result.h` files in addition to the libraries under the `bin` folder. You can find the headers 
-files under `include/node/src/public`
+In the end you will have all the binaries and include files. The new public interface only 
+expects `jx.h` and `jx_result.h` files in addition to the libraries under the `bin` or 
+`Release` folder. You can find the headers files under `src/public`
 
 The sample below demonstrates a basic usage of the interface
 ```c++
