@@ -1,6 +1,7 @@
-### Evented I/O for (SpiderMonkey, V8, and..) JavaScript
+### Evented I/O for (Chakra, SpiderMonkey, V8, and..) JavaScript
 
-JXcore extends Node.JS™ with additional features for developing mobile and embedded applications using JavaScript and leveraging the Node ecosystem.
+JXcore extends Node.JS™ with additional features for developing mobile and 
+embedded applications using JavaScript and leveraging the Node ecosystem.
 
 Master build status: [![Build Status](https://travis-ci.org/jxcore/jxcore.svg?branch=master)](https://travis-ci.org/jxcore/jxcore)
 
@@ -63,7 +64,8 @@ See [How to Compile](doc/HOW_TO_COMPILE.md) document.
 
 ### To install:
 
-If you don't want to build JXcore by yourself, you can use pre-compiled binaries. See [Installation](doc/INSTALLATION.md) document.
+If you don't want to build JXcore by yourself, you can use pre-compiled binaries. 
+See [Installation](doc/INSTALLATION.md) document.
 
 ### Start hacking the native core:
 
