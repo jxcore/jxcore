@@ -11,8 +11,11 @@ extern "C" {
 
 typedef void (*JX_CALLBACK)(JXValue *result, int argc);
 
-// You should call below method only once per application to
-// initialize JXcore
+// Call method below only once per app. to initialize JXcore
+JXCORE_EXTERN(void)
+JX_InitializeOnce(const char *home_folder);
+
+// DEPRECATED
 JXCORE_EXTERN(void)
 JX_Initialize(const char *home_folder, JX_CALLBACK callback);
 
@@ -22,10 +25,10 @@ JX_InitializeNewEngine();
 
 // Evaluates a JavaScript code on the fly.
 // Remarks:
-// 1 - returns false if compilation fails or an internal issue happens (i.e. no
-// memory)
-// 2 - result is a return value from the running code. i.e. "var x=4; x+1"
-// returns 5
+// 1 - returns false if compilation fails or an internal issue happens
+// (i.e. no memory)
+// 2 - result is a return value from the running code.
+// i.e. "var x=4; x+1" returns 5
 // 3 - script_name represents the script's file name
 // 4 - script_code expects a JavaScript code with null ending
 JXCORE_EXTERN(bool)
@@ -35,8 +38,8 @@ JX_Evaluate(const char *script_code, const char *script_name, JXValue *result);
 JXCORE_EXTERN(void)
 JX_DefineMainFile(const char *data);
 
-// Define a JavaScript file with it's contents, so you can require it from JS
-// land
+// Define a JavaScript file with it's contents,
+// so you could require it from JS land
 // i.e.
 // native code: JX_DefineFile("test.js", "exports.x=4");
 // js code: require('test.js').x -> 4
@@ -44,10 +47,11 @@ JXCORE_EXTERN(void)
 JX_DefineFile(const char *name, const char *script);
 
 // Starts JXcore engine instance
+// Executes the main.js file
 JXCORE_EXTERN(void)
 JX_StartEngine();
 
-// define a native method that can be called from the JS land
+// define a native method that can be called from JS land
 // i.e.
 // native code: JX_DefineExtension("testMethod", my_callback);
 // js code: process.natives.testMethod(1, true);
@@ -58,7 +62,7 @@ JX_StartEngine();
 JXCORE_EXTERN(void)
 JX_DefineExtension(const char *name, JX_CALLBACK callback);
 
-// define a native method that can be called from the JS land
+// define a native method that can be called from JS land
 // i.e.
 // native code: JX_DefineMethod(obj, "testMethod", my_callback);
 // js code: obj.testMethod(1, true);
@@ -88,16 +92,20 @@ JX_IsSpiderMonkey();
 JXCORE_EXTERN(bool)
 JX_IsV8();
 
-// returns threadId for the actual instance
+// returns true if the underlying engine is Chakra
+JXCORE_EXTERN(bool)
+JX_IsChakra();
+
+// returns threadId for actual engine instance
 // -1 : there is no active instance for the current thread
 // 0 to 63 threadIds. (JS side: process.threadId + 1)
 JXCORE_EXTERN(int)
 JX_GetThreadId();
 
-// Stops the actual JXcore engine (under the thread)
+// Stops the actual JXcore engine
 // Call this only for the sub engines. In other words,
 // When you destroy the first engine instance, you can not
-// create the additional instances.
+// create any additional instances.
 JXCORE_EXTERN(void)
 JX_StopEngine();
 
@@ -105,8 +113,7 @@ JX_StopEngine();
 // This feature is especially designed for JNI like interfaces where carrying
 // JXValue
 // type around may not be the best option. You can simply deliver the id (long)
-// and
-// using other methods, you can get the contents async.
+// and using other methods, you can get the contents async.
 JXCORE_EXTERN(long)
 JX_StoreValue(JXValue *value);
 

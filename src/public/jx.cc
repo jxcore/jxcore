@@ -6,7 +6,6 @@
 #include "jx.h"
 
 using namespace jxcore;
-JX_CALLBACK jx_callback;
 char *argv = NULL;
 char *app_args[2];
 
@@ -32,19 +31,6 @@ char *app_args[2];
     results[len].type_ = RT_Undefined;                           \
     results[len].was_stored_ = false;                            \
   }
-
-JS_LOCAL_METHOD(asyncCallback) {
-  const int start_arg = 0;
-  CONVERT_ARG_TO_RESULT(results, com);
-  jx_callback(results, len);
-
-  for (int i = 0; i < len; i++) {
-    JX_Free(&results[i]);
-  }
-
-  free(results);
-}
-JS_METHOD_END
 
 static int extension_id = 0;
 #define MAX_CALLBACK_ID 1024
@@ -178,8 +164,7 @@ int JX_GetThreadId() {
   return engine->threadId_;
 }
 
-void JX_Initialize(const char *home_folder, JX_CALLBACK callback) {
-  jx_callback = callback;
+void JX_InitializeOnce(const char *home_folder) {
   JXEngine::DefineGlobals();
 #if defined(__IOS__) || defined(__ANDROID__) || defined(DEBUG)
   warn_console("Initializing JXcore engine\n");
@@ -204,6 +189,11 @@ void JX_Initialize(const char *home_folder, JX_CALLBACK callback) {
 #if defined(__IOS__) || defined(__ANDROID__) || defined(DEBUG)
   warn_console("JXcore engine is ready\n");
 #endif
+}
+
+// DEPRECATED
+void JX_Initialize(const char *home_folder, JX_CALLBACK callback) {
+  JX_InitializeOnce(home_folder);
 }
 
 bool JX_Evaluate(const char *data, const char *script_name, JXValue *jxresult) {
@@ -312,6 +302,14 @@ bool JX_IsV8() {
 
 bool JX_IsSpiderMonkey() {
 #ifdef JS_ENGINE_MOZJS
+  return true;
+#else
+  return false;
+#endif
+}
+
+bool JX_IsChakra() {
+#ifdef JS_ENGINE_CHAKRA
   return true;
 #else
   return false;
