@@ -236,7 +236,8 @@ void StreamWrap::OnReadCommon(uv_stream_t* handle, ssize_t nread, uv_buf_t buf,
       JS_LOCAL_VALUE this_parser =
           JS_GET_NAME(owner, JS_PREDEFINED_STRING(parser));
 
-      if (!JS_IS_EMPTY(this_parser) && !JS_IS_NULL(this_parser)) {
+      if (!JS_IS_EMPTY(this_parser) && !JS_IS_NULL(this_parser) &&
+          !JS_IS_UNDEFINED(this_parser)) {
         size_t bl = BUFFER__LENGTH(slab);
         int ret_val = 0;
 #if defined(JS_ENGINE_V8)
@@ -244,7 +245,7 @@ void StreamWrap::OnReadCommon(uv_stream_t* handle, ssize_t nread, uv_buf_t buf,
         JS_HANDLE_VALUE val = ExecuteDirect(com, parser_object, buffer_data, bl,
                                             started, nread, &ret_val);
         if (ret_val > 0 || ret_val == -2) {
-          JS_LOCAL_OBJECT ret = JS_VALUE_TO_OBJECT(val);
+          JS_LOCAL_VALUE ret = JS_TYPE_TO_LOCAL_VALUE(val);
 #elif defined(JS_ENGINE_MOZJS)
         JS_HANDLE_VALUE ret = ExecuteDirect(com, this_parser, buffer_data, bl,
                                             started, nread, &ret_val);
@@ -451,8 +452,8 @@ void StreamWrap::AfterWrite(uv_write_t* req, int status) {
   WriteWrap* req_wrap = (WriteWrap*)req->data;
   StreamWrap* wrap = (StreamWrap*)req->handle->data;
 
-  JS_ENTER_SCOPE();
   node::commons* com = wrap->com;
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
 
   // The wrap and request objects should still be there.
@@ -489,8 +490,6 @@ void StreamWrap::AfterWrite(uv_write_t* req, int status) {
 }
 
 JS_METHOD_NO_COM(StreamWrap, Shutdown) {
-  // ENGINE_LOG_THIS("StreamWrap", "Shutdown"); //already logged in
-  // JS_METHOD_NO_COM
   ENGINE_UNWRAP(StreamWrap);
 
   ShutdownWrap* req_wrap = new ShutdownWrap(wrap->com);

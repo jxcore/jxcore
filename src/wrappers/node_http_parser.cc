@@ -511,7 +511,7 @@ JS_HANDLE_VALUE ExecuteDirect(node::commons* com,
                               JS_HANDLE_OBJECT_REF this_parser,
                               char* buffer_data, size_t buffer_len, size_t off,
                               size_t len, int* return_value) {
-  JS_ENTER_SCOPE();
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
 
   Parser* parser = ObjectWrap::Unwrap<Parser>(this_parser);

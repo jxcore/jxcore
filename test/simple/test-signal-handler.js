@@ -3,7 +3,8 @@
 
 
 // SIGUSR1 and SIGHUP are not supported on Windows
-if (process.platform === 'win32') {
+if (process.platform === 'win32' || 
+    parseFloat(process.versions.v8) > 3.15) {
   process.exit(0);
 }
 

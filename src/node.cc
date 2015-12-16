@@ -457,7 +457,7 @@ MakeCallback(node::commons* com, const JS_HANDLE_OBJECT_REF object,
   JS_LOCAL_FUNCTION callback = JS_TYPE_AS_FUNCTION(JS_GET_NAME(object, symbol));
 
   if (com->using_domains) {
-    JS_LOCAL_OBJECT objl = JS_VALUE_TO_OBJECT(
+    JS_LOCAL_VALUE objl = JS_TYPE_TO_LOCAL_VALUE(
         MakeDomainCallback(com, object, callback, argc, argv));
     return JS_LEAVE_SCOPE(objl);
   }
@@ -1725,44 +1725,44 @@ static void DispatchDebugMessagesAsyncCallback(uv_async_t* handle, int status) {
 }
 #endif  // V8_IS_3_28
 
-void EnableDebug(bool wait_connect, node::commons* node) {
+void EnableDebug(bool wait_connect, node::commons* com) {
 #if defined(JS_ENGINE_V8) || defined(JS_ENGINE_CHAKRA)
   // If we're called from another thread, make sure to enter the right
   // v8 isolate.
-  if (node->node_isolate == NULL)
-    node->node_isolate = v8::Isolate::GetCurrent();
+  if (com->node_isolate == NULL)
+    com->node_isolate = v8::Isolate::GetCurrent();
 
-  uv_async_init(node->loop, node->dispatch_debug_messages_async,
+  uv_async_init(com->loop, com->dispatch_debug_messages_async,
                 DispatchDebugMessagesAsyncCallback);
-  uv_unref((uv_handle_t*)node->dispatch_debug_messages_async);
+  uv_unref((uv_handle_t*)com->dispatch_debug_messages_async);
 #if defined(V8_IS_3_28)
   // Send message to enable debug in workers
-  JS_ENTER_SCOPE_WITH(node->node_isolate);
-  JS_DEFINE_STATE_MARKER_(node->node_isolate);
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
+  JS_DEFINE_STATE_MARKER_(com->node_isolate);
 
   // Enabled debugger, possibly making it wait on a semaphore
-  node::debugger::Agent* agent = new node::debugger::Agent(node);
-  node->agent_ = (void*)agent;
+  node::debugger::Agent* agent = new node::debugger::Agent(com);
+  com->agent_ = (void*)agent;
   agent->Enable();
 #elif defined(V8_IS_3_14)
-  node->node_isolate->Enter();
+  com->node_isolate->Enter();
 
   v8::Debug::SetDebugMessageDispatchHandler(DispatchMessagesDebugAgentCallback,
                                             false);
 
   // Start the debug thread and it's associated TCP server on port 5858.
-  if (!v8::Debug::EnableAgent("node " NODE_VERSION, node->debug_port,
+  if (!v8::Debug::EnableAgent("node " NODE_VERSION, com->debug_port,
                               wait_connect)) {
     flush_console("Unable to enable debugger agent\n");
     abort();
   }
   // Print out some information.
-  fprintf(stderr, "debugger listening on port %d\n", node->debug_port);
+  fprintf(stderr, "debugger listening on port %d\n", com->debug_port);
   fflush(stderr);
 
-  node->debugger_running = true;
+  com->debugger_running = true;
 
-  node->node_isolate->Exit();
+  com->node_isolate->Exit();
 #endif
 #elif defined(JS_ENGINE_MOZJS)
 // TODO(obastemur) DEBUG!!
