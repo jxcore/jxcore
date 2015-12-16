@@ -125,39 +125,72 @@
 
     var origError = Error;
 
+    function New_Error(cons, args) {
+      function tmp() {
+        var err = cons.apply(this, args);
+        Error.captureStackTrace(err);
+        err.stack = err.stack.slice(3).join('\n');
+        return err;
+      }
+      
+      tmp.prototype = cons.prototype;
+      return new tmp();
+    }
+    
     [ Error, RangeError, SyntaxError, TypeError ].forEach(function(err) {
-      var newError = (function() {
-        return function() {
-          var obj = Reflect.constructor(err, arguments);
-          Object.keys(obj).forEach(function(key) {
-            Object.defineProperty(obj, key, {
-              enumerable : false
-            });
-          });
-
-          Object.defineProperty(obj, 'stack', {
-            enumerable : true,
-            configurable : true,
-            get : function() {
-              if (!this.stack_) {
-                this.stack_ = new origError().stack;
-                origError.captureStackTrace(this);
-                this.stack.shift();
-                this.stack_ = this.stack;
+      var newError = function() {
+        var obj = New_Error(err, arguments);
+        obj.stack_ = obj.stack;
+        obj.stack_reached_ = false;
+        
+        Object.defineProperty(obj, 'stack', {
+          enumerable : true,
+          configurable : true,
+          get : function() {
+            if (!this.stack_reached_) {
+              if (Error.prepareStackTrace) {
+                var tmp = { message: this.message, stack: this.stack_ };
+                
+                try {
+                  origError.captureStackTrace(tmp);
+                  var newStack = Error.prepareStackTrace(this, tmp.stack);
+                  if (newStack)
+                    this.stack_ = newStack;
+                } catch (e) {
+                  // silly but do not let Error.prepareStackTrace throwing
+                }
               }
-              return this.stack_;
-            },
-            set : function(value) {
-              this.stack_ = value;
+              this.stack_reached_ = true;
             }
+            return this.stack_;
+          },
+          set : function(value) {
+            this.stack_ = value;
+          }
+        });
+        
+        Object.keys(obj).forEach(function(key) {
+          Object.defineProperty(obj, key, {
+            enumerable : false
           });
-          return obj;
-        };
-      })();
+        });
+        
+        return obj;
+      };
+      
       clone__(err, newError);
+      
       newError.toString = function() {
         return err.toString();
       };
+      
+      err.prototype.toString = function() {
+        if (!this.message)
+          return this.name;
+        
+        return this.name + ": " + this.message;
+      };
+
       global[err.name] = newError;
     });
 
