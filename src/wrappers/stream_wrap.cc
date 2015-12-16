@@ -236,7 +236,8 @@ void StreamWrap::OnReadCommon(uv_stream_t* handle, ssize_t nread, uv_buf_t buf,
       JS_LOCAL_VALUE this_parser =
           JS_GET_NAME(owner, JS_PREDEFINED_STRING(parser));
 
-      if (!JS_IS_EMPTY(this_parser) && !JS_IS_NULL(this_parser)) {
+      if (!JS_IS_EMPTY(this_parser) && !JS_IS_NULL(this_parser) &&
+          !JS_IS_UNDEFINED(this_parser)) {
         size_t bl = BUFFER__LENGTH(slab);
         int ret_val = 0;
 #if defined(JS_ENGINE_V8)
@@ -244,7 +245,7 @@ void StreamWrap::OnReadCommon(uv_stream_t* handle, ssize_t nread, uv_buf_t buf,
         JS_HANDLE_VALUE val = ExecuteDirect(com, parser_object, buffer_data, bl,
                                             started, nread, &ret_val);
         if (ret_val > 0 || ret_val == -2) {
-          JS_LOCAL_OBJECT ret = JS_VALUE_TO_OBJECT(val);
+          JS_LOCAL_VALUE ret = JS_TYPE_TO_LOCAL_VALUE(val);
 #elif defined(JS_ENGINE_MOZJS)
         JS_HANDLE_VALUE ret = ExecuteDirect(com, this_parser, buffer_data, bl,
                                             started, nread, &ret_val);
