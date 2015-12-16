@@ -451,8 +451,8 @@ void StreamWrap::AfterWrite(uv_write_t* req, int status) {
   WriteWrap* req_wrap = (WriteWrap*)req->data;
   StreamWrap* wrap = (StreamWrap*)req->handle->data;
 
-  JS_ENTER_SCOPE();
   node::commons* com = wrap->com;
+  JS_ENTER_SCOPE_WITH(com->node_isolate);
   JS_DEFINE_STATE_MARKER(com);
 
   // The wrap and request objects should still be there.
@@ -489,8 +489,6 @@ void StreamWrap::AfterWrite(uv_write_t* req, int status) {
 }
 
 JS_METHOD_NO_COM(StreamWrap, Shutdown) {
-  // ENGINE_LOG_THIS("StreamWrap", "Shutdown"); //already logged in
-  // JS_METHOD_NO_COM
   ENGINE_UNWRAP(StreamWrap);
 
   ShutdownWrap* req_wrap = new ShutdownWrap(wrap->com);
