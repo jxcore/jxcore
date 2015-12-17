@@ -1,3 +1,6 @@
+// Copyright Nubisa Inc. and JXcore contributors
+// Added JXcore MT support
+//
 // Copyright Microsoft. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,7 +22,6 @@
 // IN THE SOFTWARE.
 
 #include "uwp.h"
-#include "commons.h"
 
 UWPAddOn UWPAddOn::s_instance;
 DWORD Async::threadId;
@@ -48,7 +50,7 @@ void UWPAddOn::EnsureCoUninitialized() {
 bool UWPAddOn::EnsureKeepAlive() {
   if (_keepAliveToken == nullptr) {
     // Open an active async handler to keep Node alive
-    _keepAliveToken = Async::GetAsyncToken();
+    _keepAliveToken = Async::GetAsyncToken(node::commons::getInstance());
   }
 
   return _keepAliveToken != nullptr;
@@ -76,9 +78,8 @@ void UWPAddOn::Init(JS_HANDLE_OBJECT_REF target) {
   JsErrorCode err = JsSetProjectionEnqueueCallback(
       [](JsProjectionCallback jsCallback, JsProjectionCallbackContext jsContext,
          void *context) {
-        Async::RunOnMain([jsCallback, jsContext]() { jsCallback(jsContext); });
-      },
-      /*projectionEnqueueContext*/ nullptr);
+        Async::RunOnMain((node::commons*)context, [jsCallback, jsContext]() { jsCallback(jsContext); });
+      }, com);
 
   if (err != JsNoError) {
     THROW_EXCEPTION("JsSetProjectionEnqueueCallback failed");
