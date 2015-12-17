@@ -5,7 +5,7 @@
 
   if (!Error.captureStackTrace) {
     var _stackProto = function(msg, fileName, lineNumber, columnNumber) {
-      if (fileName.indexOf('@') >= 0) {
+      if (fileName && fileName.indexOf('@') >= 0) {
         var spl = fileName.split('@');
         this._fileName = spl[1];
         this._functionName = spl[0];
@@ -22,19 +22,24 @@
     _stackProto.prototype.getFileName = function() {
       return this._fileName;
     };
+    
     _stackProto.prototype.getColumnNumber = function() {
       return this._columnNumber;
     };
+    
     _stackProto.prototype.getLineNumber = function() {
       return this._lineNumber;
     };
+    
     _stackProto.prototype.toString = function() {
       return this._msg;
     };
+    
     _stackProto.prototype.isEval = function() {
       // TODO(obastemur) fix this!
       return false;
     };
+    
     _stackProto.prototype.getFunctionName = function() {
       return this._functionName;
     };
@@ -105,6 +110,89 @@
         }
       }
     };
+    
+    function clone__(s, t) {
+      Object.getOwnPropertyNames(s).forEach(function(name) {
+        try {
+          var obj = Object.getOwnPropertyDescriptor(s, name);
+          if (obj.value === s)
+            obj.value = t;
+          Object.defineProperty(t, name, obj);
+        } catch (e) {
+        }
+      });
+    }
+
+    var origError = Error;
+
+    function New_Error(cons, args) {
+      function tmp() {
+        var err = cons.apply(this, args);
+        Error.captureStackTrace(err);
+        err.stack = err.stack.slice(3).join('\n');
+        return err;
+      }
+      
+      tmp.prototype = cons.prototype;
+      return new tmp();
+    }
+    
+    [ Error, RangeError, SyntaxError, TypeError ].forEach(function(err) {
+      var newError = function() {
+        var obj = New_Error(err, arguments);
+        obj.stack_ = obj.stack;
+        obj.stack_reached_ = false;
+        
+        Object.defineProperty(obj, 'stack', {
+          enumerable : true,
+          configurable : true,
+          get : function() {
+            if (!this.stack_reached_) {
+              if (Error.prepareStackTrace) {
+                var tmp = { message: this.message, stack: this.stack_ };
+                
+                try {
+                  origError.captureStackTrace(tmp);
+                  var newStack = Error.prepareStackTrace(this, tmp.stack);
+                  if (newStack)
+                    this.stack_ = newStack;
+                } catch (e) {
+                  // silly but do not let Error.prepareStackTrace throwing
+                }
+              }
+              this.stack_reached_ = true;
+            }
+            return this.stack_;
+          },
+          set : function(value) {
+            this.stack_ = value;
+          }
+        });
+        
+        Object.keys(obj).forEach(function(key) {
+          Object.defineProperty(obj, key, {
+            enumerable : false
+          });
+        });
+        
+        return obj;
+      };
+      
+      clone__(err, newError);
+      
+      newError.toString = function() {
+        return err.toString();
+      };
+      
+      err.prototype.toString = function() {
+        if (!this.message)
+          return this.name;
+        
+        return this.name + ": " + this.message;
+      };
+
+      global[err.name] = newError;
+    });
 
     if (!global.gc) {
       global.gc = function() {

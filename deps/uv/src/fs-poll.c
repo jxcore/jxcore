@@ -124,7 +124,7 @@ static void poll_cb(uv_fs_t* req) {
   uv_statbuf_t* statbuf;
   struct poll_ctx* ctx;
   uint64_t interval;
-  const int tid = uv_getThreadKeyId() + 1;
+  int tid;
 
   ctx = container_of(req, struct poll_ctx, fs_req);
 
@@ -140,6 +140,7 @@ static void poll_cb(uv_fs_t* req) {
     if (ctx->busy_polling != -req->errorno) {
       uv__set_artificial_error(ctx->loop, req->errorno);
 
+      tid = uv_getThreadKeyId() + 1;
       ctx->poll_cb(ctx->parent_handle, -1, &ctx->statbuf, &zero_statbuf[tid]);
       ctx->busy_polling = -req->errorno;
     }

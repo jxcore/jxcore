@@ -1,3 +1,6 @@
+// Copyright Nubisa Inc. and JXcore contributors
+// Added JXcore MT support
+//
 // Copyright Microsoft. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,6 +28,7 @@
 //
 
 #include "node.h"
+#include "jx/commons.h"
 #include <functional>
 
 namespace NodeUtils {
@@ -37,9 +41,9 @@ class Async {
     friend Async;
 
    public:
-    static uv_async_t* NewAsyncToken() {
+    static uv_async_t* NewAsyncToken(node::commons *com) {
       uv_async_t* asyncHandle = new uv_async_t;
-      uv_async_init(uv_default_loop(), asyncHandle, AsyncCb);
+      uv_async_init(com == NULL ? uv_default_loop() : com->loop, asyncHandle, AsyncCb);
       asyncHandle->data = new TokenData();
 
       return asyncHandle;
@@ -49,8 +53,8 @@ class Async {
  public:
   static DWORD threadId;
 
-  static uv_async_t* GetAsyncToken() {
-    return TokenData::NewAsyncToken();
+  static uv_async_t* GetAsyncToken(node::commons *com) {
+    return TokenData::NewAsyncToken(com);
   }
 
   static void ReleaseAsyncToken(uv_async_t* handle) {
@@ -65,11 +69,12 @@ class Async {
     uv_async_send(async);
   }
 
-  static void RunOnMain(std::function<void()> func) {
-    if (threadId == GetCurrentThreadId()) {
+  static void RunOnMain(node::commons *com, std::function<void()> func) {
+    const DWORD currentThreadId = GetCurrentThreadId();
+    if (threadId == currentThreadId) {
       func();
     } else {
-      uv_async_t *async = GetAsyncToken();
+      uv_async_t *async = GetAsyncToken(com);
       RunOnMain(async, func);
     }
   }
