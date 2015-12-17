@@ -190,6 +190,8 @@ uv_loop_t* uv_default_loop(void) {
   int tid;
 
   tid = uv_getThreadKeyId();
+  assert(tid >= -1 && "ThreadKey wasn't defined. Looks like libUV wasn't initialized for this thread\n");
+
   if (tid == -1) {
     return uv_default_loop_ex();
   }
@@ -229,6 +231,8 @@ void uv_loop_delete(uv_loop_t* loop) {
     }
 
     tid = uv_getThreadKeyId();
+    assert(tid >= -1 && "ThreadKey wasn't defined. Looks like libUV wasn't initialized for this thread\n");
+
     loops[tid] = NULL;
     JX_FREE(core, loop);
   }
