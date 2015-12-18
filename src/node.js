@@ -1554,7 +1554,7 @@
 				checkBuffer[14]
 				);
 			fs.closeSync(fd);
-			process.appBuffer = buffer.toString('base64');
+			process.appBuffer = buffer;
 			buffer = null;
 			process._EmbeddedSource = true;
 			}
