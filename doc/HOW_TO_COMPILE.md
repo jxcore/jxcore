@@ -50,7 +50,7 @@ Windows ARM:
 To compile with SpiderMonkey, `--engine-mozilla` key also applies to Windows builds. 
 i.e. `vcbuild.bat --engine-mozilla`
 
-JXcore also supports Chakra engine on Windows10+. Use `--engine-chakra` as shown above.
+JXcore also supports Chakra engine on Windows10+. Use `--engine-chakra` as shown above. With chakra engine JXcore has built-in uwp support (through `jxcore.uwp` property).
 
 After a successful compilation process, you should have jxcore installed into `/jxcoreSM/bin` 
 or `/jxcoreV8/bin` folder (depending on the engine selection). (Check Release folder on 
