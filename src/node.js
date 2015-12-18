@@ -51,37 +51,40 @@
       }
 
       if (!err.stack) {
-        // TODO(obastemur) there must be a better way to do this
-        try {
-          throw new Error('');
-        } catch (e) {
-          err.stack = e.stack;
-          err.fileName = e.fileName;
-          err.lineNumber = e.lineNumber;
-          err.columnNumber = e.columnNumber;
-        }
+        clone__(new Error(''), err);
 
         if (!err.stack)
-          err.stack = '\n'; // silly but we don't want to throw here no matter
-        // what
+          err.stack = new Error('').stack; 
+          // silly but we don't want it to throw here no matter what
 
-        st = err.stack.split('\n');
-        st.shift();
+        if (err.stack.split) {
+          st = err.stack.split('\n');
+          st.shift();
+        } else if (err.stack.shift){
+          err.stack.shift();
+        }
       } else {
         if (!Array.isArray(err.stack))
           st = err.stack.split('\n');
       }
 
-      if (Array.isArray(err.stack) && err.stack[0] && err.stack[0]._msg) {
+      if (Array.isArray(err.stack)) {
         // TODO(obastemur) bug ? app gives back an object that was already
         // processed
       } else {
         err.stack = new Array();
         var stackLimit = Error.stackTraceLimit ? Error.stackTraceLimit : 9;
         var max = Math.min(stackLimit, st.length);
+
         for (var i = 0; i < max; i++) {
-          var arr = st[i].split(':');
-          var msg = '    at ' + st[i];
+          var arr = [], msg;
+          if (st[i].trim().length == 0)
+            msg = "";
+          else {
+            arr = st[i].split(':');
+            msg = '    at ' + st[i];
+          }
+          
           if (arr.length == 3) {
             err.stack[i] = new _stackProto(msg, arr[0], arr[1], arr[2]);
           } else {
@@ -129,7 +132,11 @@
       function tmp() {
         var err = cons.apply(this, args);
         Error.captureStackTrace(err);
-        err.stack = err.stack.slice(3).join('\n');
+        err.fileName = err.stack[3]._fileName;
+        err.lineNumber = err.stack[3]._lineNumber;
+        err.columnNumber = err.stack[3]._columnNumber;
+        
+        err.stack = err.stack.slice(3).join('\n').replace(/    at /g, '');
         return err;
       }
       
