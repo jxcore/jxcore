@@ -130,8 +130,17 @@
 
     function New_Error(cons, args) {
       function tmp() {
+        var old = null;
+        if (Error.stackTraceLimit || Error.stackTraceLimit === 0) {
+          old = Error.stackTraceLimit;
+          Error.stackTraceLimit += 3;
+        }
         var err = cons.apply(this, args);
         Error.captureStackTrace(err);
+
+        if (old !== null)
+          Error.stackTraceLimit = old;
+
         err.fileName = err.stack[3]._fileName;
         err.lineNumber = err.stack[3]._lineNumber;
         err.columnNumber = err.stack[3]._columnNumber;
