@@ -1,5 +1,100 @@
 JXcore (http://jxcore.io)
 
+----JXcore 3.1.0
+
+- Crypto publicEncrypt and privateDecrypt (ported from 0.12)
+- stream._writev method added (ported from 0.12) GH #571
+- Reset event added to repl (ported from 0.12) GH #571
+- Lookup event added to net (ported from 0.12) GH #571
+- path.isAbsolute method added (ported from 0.12) GH #571
+- setDefaultEncoding method added to writable stream (ported from 0.12) GH #571
+- cork and uncork methods added in writable stream (ported from 0.12) GH #571
+- ECDH support (ported from 0.12) GH #619
+- Shared Memory Store, Buffer Type Support GH #716
+- Additional engines supported: V8 3.28 and Microsoft Chakra 
+- Packaging format changed to binary GH #508
+- Windows UWP support
+- Windows IOT and Mobile support
+- Sqlite is updated to 3.9.1.0
+- Added arch build scripts (@Marc McIntosh)
+- jx-ni: Log to VS debugger and file system support
+- jx-ni: add JXEngine reference for internal sub instances
+- jx-ni: New Method - JX_SetNativeMethod
+- jx-ni: fix GetGlobal and GetProcess scoping
+- jx-ni: handle zero-length Buffer(0) (@Zsolt Szatmari)
+- SM: Error tooling compatibility updates GH #728
+  With this commit, SM Error tooling should be fairly compatible with v8
+- deprecate jx-ni: JX_Initialize GH #723
+- SM: ghost cannot start due to sqlite error GH #540
+- Segfault (asm.js + spidermonkey) GH #624
+- HTTP IncomingMessage constructor not recognized GH #681
+- Subthreads waiting for package to load. Fixes GH #709
+- Remove max compression ratio limit GH #703
+- allow --prefix to be both relative and absolute. Applies to GH #657. Closes GH #675
+- async readFile catches sync exception. Closes GH #634
+- Fix when stdout and stderr don't use file descriptors 1 & 2, issue GH #608. (Dustin Long)
+- More detailed stack traces from threads GH #655
+- SM: fixes unicode issue GH #641
+- Android warning for global modules installation as root. Applies to GH #628
+- ~/.jx and ~/.npm proper ownership with `sudo jx install`. Closes GH #645
+- Fix finding jx.config / node.config on Windows. Closes GH #642
+- Fix for jx --debug GH #623
+- _cmp() accept buffer GH #508
+- Efficiently repair reading of signed files GH #583 (@Gray1989)
+- Test: handle error message from new V8 engine in test-domain.js (ref: GH #585) (Christopher J. Brody)
+- src: fix possible crash in node_crypto.cc:EIO_PBKDF2After() variants (GH #585) (Christopher J. Brody)
+- src: fix TCPWrap::InstantiateCOM() in case of NULL argument (ref: GH #585) (Christopher J. Brody)
+- Command line --sign support restored. Applies to GH #583
+- net-tcp test much improved. Applies to GH #205
+- uv: assert for a wrongly initialized instance
+- v8: use isolate from commons
+- module: minor perf. update
+    - proxy debug output to console.error
+    - do not pre-compile(JSON.stringify) the arguments
+- Remove customLogInterface from console
+- fix leaking nanosecond issue on Posix
+- omit space in version string (@Jason Karns)
+- define CC and CCX explicitly from node 4.x
+- v8-328: Use prime type index for indexedProperties
+- jx-ni: add assert message (initialize after shutdown)
+- Add Android ARM64 compilation option
+- SM build no longer needs `which` installation
+- uv-unix: implement proxy uv_run for ABI compatibility
+- Windows: log to temp folder if no std or debugger available
+- Prevent crash WinIOT failing to get processor name
+    double check the result for GetLastError
+- WinOneCore: interface compatibility for logging
+- Chakra: Enable debugger [initial]
+- SM: force static JS API [for method signatures on Windows]
+- SM: win-onecore use trampoline-none
+- SM: do not force char16_t redefinition for VS2015+ [fix condition]
+- Add leveldown-mobile to win-onecore builds by default
+- Update test_rsa_privkey_encrypted.pem (@Kakhaber)
+- v8-328: Debugger support
+- Use char pointer for memory store
+- jx install: support spaces in HOME_PATH
+- open-wrt: simplify apt-get install
+- open-wrt: use exec() instead of cmdSync() for git clone
+- v8: fix isolate deadlock
+- Windows: share path conf. with WinRT
+- WinRT: module boost resolve
+- WinRT: fs basic simulate realpathSync
+- WinRT: redirect core.console to debug window
+- vcbuilt.bat: win-onecore, —engine-chakra, arm command line switches
+- jxcore now has built-in uwp interface
+- uv-pipe: prevent assert crash for winonecore not supported
+- Run simple test suite on both engines in Travis CI (@Christopher J. Brody)
+    Skip a couple of troublesome tests in Travis CI
+    NOTE: A shell trick is used here since Travis CI only seems to check the result
+    of the last command in the script: section.
+- added JX_GetBuffer() to native interface for accessing Buffers directly (@Zsolt Szatmari)
+- jxcore runs on WindowsARM
+- vcbuild: WinARM doesn't support openssl-asm
+- uv: force define __arm__ for WinARM
+- uv: winthreads pthread force cancel sync form ARM
+- lib: cleanup trailing whitespace in lib/jx/_jx_incoming.js (@Christopher J. Brody)
+- lib: fix jslint errors (also exclude lib/jx/_jx_marker.js from jslint again) (@Christopher J. Brody)
+
 ----JXcore 3.0.7
 
 - npm handling for prebuilt node binaries
