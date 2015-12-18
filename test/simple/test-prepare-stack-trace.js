@@ -18,3 +18,7 @@ function getCallerFile() {
 }
 
 assert.equal(getCallerFile(), "module.js")
+
+var err = new Error('error');
+
+assert.strictEqual(err.stack.indexOf('   at '), -1, "SM Error stack parser is leaking");
