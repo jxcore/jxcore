@@ -59,12 +59,13 @@ JS_METHOD(ModuleWrap, LoadInternal) {
   }
 #endif
 
-#ifdef JS_ENGINE_CHAKRA
   if (!strcmp(*filename, "node-uwp")) {
+#ifdef JS_ENGINE_CHAKRA
     UWPAddOn::Init(module);
     RETURN();
-  }
 #endif
+    THROW_EXCEPTION("Not Implemented: jxcore.uwp feature is limited to Chakra builds.");
+  }
 
   THROW_EXCEPTION("Requested native module wasn't embedded.");
 }
