@@ -1,6 +1,6 @@
 {
     "name": "npmjx",
-    "version": "1.9",
+    "version": "3.1.0",
     "author": "JXcore contributors",
     "description": "NPM wrapper for JXcore",
     "company": "Nubisa Inc.",
@@ -9,7 +9,7 @@
     "startup": "index.js",
     "execute": "index.js",
     "extract": false,
-    "output": "npmjxv1_9.jx",
+    "output": "npmjxv310.jx",
 	"files": [
 		"index.js",
 		"node_modules/tar.gz/example/example.js",
