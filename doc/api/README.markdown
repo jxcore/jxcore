@@ -72,3 +72,5 @@
     * [Debugging](jxcore-3rd-party-sqlite3-Debugging.markdown)
     * [Extensions](jxcore-3rd-party-sqlite3-Extensions.markdown)
     * [Caching](jxcore-3rd-party-sqlite3-Caching.markdown)
+
+* [Universal Windows Platform (uwp)](jxcore-uwp.markdown)

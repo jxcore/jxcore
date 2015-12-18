@@ -16,6 +16,7 @@ Master build status: [![Build Status](https://travis-ci.org/jxcore/jxcore.svg?br
   - In-memory File System
   - Application Packaging
   - Support for the latest JavaScript features (ES6, [ASM.JS](https://github.com/jxcore/jxcore/blob/master/doc/api/globals.markdown#require) ...)
+  - Support for Universal Windows Platform (uwp) api
 
 ### Which architectures are supported
 
