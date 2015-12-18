@@ -568,10 +568,12 @@ def compiler_version():
 
 
 def configure_arm(o):
+  hard_float = 0
   if options.arm_float_abi:
     arm_float_abi = options.arm_float_abi
   elif is_arm_hard_float_abi():
     arm_float_abi = 'hard'
+    hard_float = 1
   else:
     arm_float_abi = 'default'
 
@@ -589,7 +591,9 @@ def configure_arm(o):
   o['variables']['arm_neon'] = int(is_arm_neon())
   o['variables']['arm_thumb'] = 0      # -marm
   o['variables']['arm_float_abi'] = arm_float_abi
-
+  
+  # v8 3.14
+  o['variables']['v8_use_arm_eabi_hardfloat'] = b(hard_float)
 
 def configure_node(o):
   if options.dest_os == 'openwrt':
