@@ -97,7 +97,7 @@ function lifecycle_ (pkg, stage, wd, env, unsafe, failOk, cb) {
 
     if (typeof scr === "string") {
       if (scr.slice(0,5).toLowerCase() === "node ")
-        scr = process.execPath + " " + scr.slice(5)
+        scr = "\"" + process.execPath + "\" " + scr.slice(5)
 
       // this is to prevent `prebuild` module to download prebuilt binaries
       // and force building against jx
