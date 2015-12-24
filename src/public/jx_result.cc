@@ -286,6 +286,10 @@ JX_CallFunction(JXValue *fnc, JXValue *params, const int argc, JXValue *out) {
       if (params[i].type_ == RT_Undefined || params[i].type_ == RT_Null ||
           params[i].data_ == NULL) {
         arr[i] = params[i].type_ == RT_Undefined ? JS_UNDEFINED() : JS_NULL();
+      } else if (params[i].type_ == RT_Function) {
+        jxcore::JXFunctionWrapper *fnc_wrap =
+            (jxcore::JXFunctionWrapper *)params[i].data_;
+        arr[i] = fnc_wrap->GetFunction();
       } else {
         jxcore::JXValueWrapper *wrap =
             (jxcore::JXValueWrapper *)params[i].data_;

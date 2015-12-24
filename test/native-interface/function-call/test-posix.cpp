@@ -38,12 +38,17 @@ const char *contents =
 
 const char *eval_str = "webview.call(console.log, console.error);";
 
+void crash(JXValue *results, int argc) {
+  assert(0 && "Something went wrong with function callback");
+}
+
 int main(int argc, char **args) {
   JX_Initialize(args[0], callback);
   JX_InitializeNewEngine();
 
   JX_DefineMainFile(contents);
   JX_DefineExtension("sampleMethod", sampleMethod);
+  JX_DefineExtension("crash", crash);
   JX_StartEngine();
 
   // loop for possible IO
@@ -52,6 +57,19 @@ int main(int argc, char **args) {
 
   JXValue result;
   JX_Evaluate(eval_str, "myscript", &result);
+  
+  JXValue cb;
+  JXValue fn;
+  JXValue out;
+
+  JX_Evaluate("(function (x) { console.error(x); })", "", &cb);
+  JX_Evaluate("(function (cb) { if(typeof cb !== 'function') process.natives.crash(); })", "", &fn);
+
+  JX_CallFunction(&fn, &cb, 1, &out);
+
+  JX_Free(&cb);
+  JX_Free(&fn);
+  JX_Free(&out); 
 
   // loop for possible IO
   // or JX_Loop() without usleep / while
