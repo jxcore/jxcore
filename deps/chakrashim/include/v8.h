@@ -1898,7 +1898,9 @@ void PersistentBase<T>::Reset() {
     }
     _weakWrapper.reset();
   } else {
-    JsRelease(val_, nullptr);
+    Isolate *is = Isolate::GetCurrent();
+    if (is != nullptr)
+      JsRelease(val_, nullptr);
   }
 
   val_ = nullptr;

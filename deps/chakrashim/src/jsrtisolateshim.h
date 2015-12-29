@@ -121,8 +121,6 @@ class IsolateShim {
   bool isDisposing;
 
   ContextShim::Scope * contextScopeStack;
-  IsolateShim ** prevnext;
-  IsolateShim * next;
 
   friend class v8::TryCatch;
   v8::TryCatch * tryCatchStackTop;
@@ -133,11 +131,6 @@ class IsolateShim {
 
   // Node only has 4 slots (internals::Internals::kNumIsolateDataSlots = 4)
   void * embeddedData[4];
-
-  // CHAKRA-TODO: support multiple shims
-  static IsolateShim * s_isolateList;
-
-  static __declspec(thread) IsolateShim * s_currentIsolate;
 };
 
 }  // namespace jsrt
