@@ -23,11 +23,10 @@
 #include <assert.h>
 #include <vector>
 #include <algorithm>
+#include <map>
 
 namespace jsrt {
-
-/* static */ __declspec(thread) IsolateShim * IsolateShim::s_currentIsolate;
-/* static */ IsolateShim * IsolateShim::s_isolateList = nullptr;
+static std::map<DWORD, IsolateShim *> isolateMap;
 
 IsolateShim::IsolateShim(JsRuntimeHandle runtime)
     : runtime(runtime),
@@ -37,26 +36,21 @@ IsolateShim::IsolateShim(JsRuntimeHandle runtime)
       embeddedData(),
       isDisposing(false),
       tryCatchStackTop(nullptr) {
-  // CHAKRA-TODO: multithread locking for s_isolateList?
-  this->prevnext = &s_isolateList;
-  this->next = s_isolateList;
-  s_isolateList = this;
+  DWORD th = GetCurrentThreadId();
+  isolateMap[th] = this;
 }
 
 IsolateShim::~IsolateShim() {
   // Nothing to do here, Dispose already did everything
   assert(runtime == JS_INVALID_REFERENCE);
-  assert(this->next == nullptr);
-  assert(this->prevnext == nullptr);
+
+  DWORD th = GetCurrentThreadId();
+  std::map<DWORD, IsolateShim *>::iterator it = isolateMap.find(th);
+
+  if (it != isolateMap.end()) isolateMap.erase(it);
 }
 
-/* static */ v8::Isolate * IsolateShim::New() {
-  // CHAKRA-TODO: Disable multiple isolate for now until it is fully implemented
- // if (s_isolateList != nullptr) {
- //   CHAKRA_UNIMPLEMENTED_("multiple isolate");
- //   return nullptr;
- // }
-
+/* static */ v8::Isolate *IsolateShim::New() {
   JsRuntimeHandle runtime;
   JsErrorCode error =
     JsCreateRuntime(JsRuntimeAttributeAllowScriptInterrupt, nullptr, &runtime);
@@ -67,41 +61,37 @@ IsolateShim::~IsolateShim() {
   return ToIsolate(new IsolateShim(runtime));
 }
 
-/* static */ IsolateShim * IsolateShim::FromIsolate(v8::Isolate * isolate) {
+/* static */ IsolateShim *IsolateShim::FromIsolate(v8::Isolate *isolate) {
   return reinterpret_cast<jsrt::IsolateShim *>(isolate);
 }
 
-/* static */ v8::Isolate * IsolateShim::ToIsolate(IsolateShim * isolateShim) {
+/* static */ v8::Isolate *IsolateShim::ToIsolate(IsolateShim *isolateShim) {
   // v8::Isolate has no data member, so we can just pretend
   return reinterpret_cast<v8::Isolate *>(isolateShim);
 }
 
-/* static */ v8::Isolate * IsolateShim::GetCurrentAsIsolate() {
-  return ToIsolate(s_currentIsolate);
+/* static */ v8::Isolate *IsolateShim::GetCurrentAsIsolate() {
+  IsolateShim *is = GetCurrent();
+
+  if (!is) return nullptr;
+
+  return ToIsolate(is);
 }
 
 /* static */ IsolateShim *IsolateShim::GetCurrent() {
-  assert(s_currentIsolate);
-  return s_currentIsolate;
+  DWORD th = GetCurrentThreadId();
+  std::map<DWORD, IsolateShim *>::iterator it = isolateMap.find(th);
+
+  if (it == isolateMap.end()) return nullptr;
+
+  return it->second;
 }
 
-void IsolateShim::Enter() {
-  // CHAKRA-TODO: we don't support multiple isolate currently, this also doesn't
-  // support reentrence
-  assert(s_currentIsolate == nullptr);
-  s_currentIsolate = this;
-}
+void IsolateShim::Enter() {}
 
-void IsolateShim::Exit() {
-  // CHAKRA-TODO: we don't support multiple isolate currently, this also doesn't
-  // support reentrence
-  assert(s_currentIsolate == this);
-  s_currentIsolate = nullptr;
-}
+void IsolateShim::Exit() {}
 
-JsRuntimeHandle IsolateShim::GetRuntimeHandle() {
-  return runtime;
-}
+JsRuntimeHandle IsolateShim::GetRuntimeHandle() { return runtime; }
 
 bool IsolateShim::Dispose() {
   isDisposing = true;
@@ -114,43 +104,32 @@ bool IsolateShim::Dispose() {
     }
   }
 
-  // CHAKRA-TODO: multithread locking for s_isolateList?
-  if (this->next) {
-    this->next->prevnext = this->prevnext;
-  }
-  *this->prevnext = this->next;
-
   runtime = JS_INVALID_REFERENCE;
-  this->next = nullptr;
-  this->prevnext = nullptr;
 
   delete this;
   return true;
 }
 
-bool IsolateShim::IsDisposing() {
-  return isDisposing;
-}
+bool IsolateShim::IsDisposing() { return isDisposing; }
 
-void CALLBACK IsolateShim::JsContextBeforeCollectCallback(JsRef contextRef,
-                                                          void *data) {
-  IsolateShim * isolateShim = reinterpret_cast<IsolateShim *>(data);
-  ContextShim * contextShim = isolateShim->contextShimMap[contextRef];
+void CALLBACK
+    IsolateShim::JsContextBeforeCollectCallback(JsRef contextRef, void *data) {
+  IsolateShim *isolateShim = reinterpret_cast<IsolateShim *>(data);
+  ContextShim *contextShim = isolateShim->contextShimMap[contextRef];
   isolateShim->contextShimMap.erase(contextRef);
   delete contextShim;
 }
 
-bool IsolateShim::NewContext(JsContextRef * context, bool exposeGC,
+bool IsolateShim::NewContext(JsContextRef *context, bool exposeGC,
                              JsValueRef globalObjectTemplateInstance) {
-  ContextShim * contextShim =
-    ContextShim::New(this, exposeGC, globalObjectTemplateInstance);
+  ContextShim *contextShim =
+      ContextShim::New(this, exposeGC, globalObjectTemplateInstance);
   if (contextShim == nullptr) {
     return false;
   }
   JsContextRef contextRef = contextShim->GetContextRef();
-  if (JsSetObjectBeforeCollectCallback(contextRef,
-                                this,
-                                JsContextBeforeCollectCallback) != JsNoError) {
+  if (JsSetObjectBeforeCollectCallback(
+          contextRef, this, JsContextBeforeCollectCallback) != JsNoError) {
     delete contextShim;
     return false;
   }
@@ -159,33 +138,29 @@ bool IsolateShim::NewContext(JsContextRef * context, bool exposeGC,
   return true;
 }
 
-ContextShim * IsolateShim::GetContextShim(JsContextRef contextRef) {
+ContextShim *IsolateShim::GetContextShim(JsContextRef contextRef) {
   assert(contextRef != JS_INVALID_REFERENCE);
   return contextShimMap[contextRef];
 }
 
-bool IsolateShim::GetMemoryUsage(size_t * memoryUsage) {
+bool IsolateShim::GetMemoryUsage(size_t *memoryUsage) {
   return (JsGetRuntimeMemoryUsage(runtime, memoryUsage) == JsNoError);
 }
 
 void IsolateShim::DisposeAll() {
-  // CHAKRA-TODO: multithread locking for s_isolateList?
-  IsolateShim * curr = s_isolateList;
-  s_isolateList = nullptr;
-  while (curr) {
-    // CHAKRA-TODO: Handle error?
-    curr->Dispose();
-    curr = curr->next;
+  std::map<DWORD, IsolateShim *>::iterator it = isolateMap.begin();
+  for (; it != isolateMap.end(); it++) {
+    it->second->Dispose();
   }
 }
 
-void IsolateShim::PushScope(
-    ContextShim::Scope * scope, JsContextRef contextRef) {
+void IsolateShim::PushScope(ContextShim::Scope *scope,
+                            JsContextRef contextRef) {
   PushScope(scope, GetContextShim(contextRef));
 }
 
-void IsolateShim::PushScope(
-    ContextShim::Scope * scope, ContextShim * contextShim) {
+void IsolateShim::PushScope(ContextShim::Scope *scope,
+                            ContextShim *contextShim) {
   scope->contextShim = contextShim;
   scope->previous = this->contextScopeStack;
   this->contextScopeStack = scope;
@@ -199,19 +174,18 @@ void IsolateShim::PushScope(
   }
 }
 
-void IsolateShim::PopScope(ContextShim::Scope * scope) {
+void IsolateShim::PopScope(ContextShim::Scope *scope) {
   assert(this->contextScopeStack == scope);
-  ContextShim::Scope * prevScope = scope->previous;
+  ContextShim::Scope *prevScope = scope->previous;
   if (prevScope != nullptr) {
     // Marshal the pending exception
     JsValueRef exception = JS_INVALID_REFERENCE;
     bool hasException;
     if (scope->contextShim != prevScope->contextShim &&
-        JsHasException(&hasException) == JsNoError &&
-        hasException &&
+        JsHasException(&hasException) == JsNoError && hasException &&
         JsGetAndClearException(&exception) == JsNoError) {
-      exception = MarshalJsValueRefToContext(
-        exception, scope->contextShim, prevScope->contextShim);
+      exception = MarshalJsValueRefToContext(exception, scope->contextShim,
+                                             prevScope->contextShim);
     }
 
     JsSetCurrentContext(prevScope->contextShim->GetContextRef());
@@ -226,7 +200,7 @@ void IsolateShim::PopScope(ContextShim::Scope * scope) {
   this->contextScopeStack = prevScope;
 }
 
-ContextShim * IsolateShim::GetCurrentContextShim() {
+ContextShim *IsolateShim::GetCurrentContextShim() {
   return this->contextScopeStack->contextShim;
 }
 
@@ -236,7 +210,7 @@ JsPropertyIdRef IsolateShim::GetSelfSymbolPropertyIdRef() {
 
 JsPropertyIdRef IsolateShim::GetCrossContextTargetSymbolPropertyIdRef() {
   return GetCachedSymbolPropertyIdRef(
-    CachedSymbolPropertyIdRef::crossContextTarget);
+      CachedSymbolPropertyIdRef::crossContextTarget);
 }
 
 JsPropertyIdRef IsolateShim::GetKeepAliveObjectSymbolPropertyIdRef() {
@@ -256,7 +230,7 @@ JsPropertyIdRef IsolateShim::GetFinalizerSymbolPropertyIdRef() {
 template <class Index, class CreatePropertyIdFunc>
 JsPropertyIdRef GetCachedPropertyId(
     JsPropertyIdRef cache[], Index index,
-    const CreatePropertyIdFunc& createPropertyId) {
+    const CreatePropertyIdFunc &createPropertyId) {
   JsPropertyIdRef propIdRef = cache[index];
   if (propIdRef == JS_INVALID_REFERENCE) {
     if (createPropertyId(index, &propIdRef)) {
@@ -270,27 +244,29 @@ JsPropertyIdRef GetCachedPropertyId(
 JsPropertyIdRef IsolateShim::GetCachedSymbolPropertyIdRef(
     CachedSymbolPropertyIdRef cachedSymbolPropertyIdRef) {
   CHAKRA_ASSERT(this->GetCurrentContextShim() != nullptr);
-  return GetCachedPropertyId(symbolPropertyIdRefs, cachedSymbolPropertyIdRef,
-                    [](CachedSymbolPropertyIdRef, JsPropertyIdRef* propIdRef) {
-      JsValueRef newSymbol;
-      return JsCreateSymbol(JS_INVALID_REFERENCE, &newSymbol) == JsNoError &&
-        JsGetPropertyIdFromSymbol(newSymbol, propIdRef) == JsNoError;
-  });
+  return GetCachedPropertyId(
+      symbolPropertyIdRefs, cachedSymbolPropertyIdRef,
+      [](CachedSymbolPropertyIdRef, JsPropertyIdRef *propIdRef) {
+        JsValueRef newSymbol;
+        return JsCreateSymbol(JS_INVALID_REFERENCE, &newSymbol) == JsNoError &&
+               JsGetPropertyIdFromSymbol(newSymbol, propIdRef) == JsNoError;
+      });
 }
 
-static wchar_t const *
-const s_cachedPropertyIdRefNames[CachedPropertyIdRef::Count] = {
+static wchar_t const *const
+    s_cachedPropertyIdRefNames[CachedPropertyIdRef::Count] = {
 #define DEF(x) L#x,
 #include "jsrtcachedpropertyidref.inc"
 };
 
 JsPropertyIdRef IsolateShim::GetCachedPropertyIdRef(
     CachedPropertyIdRef cachedPropertyIdRef) {
-  return GetCachedPropertyId(cachedPropertyIdRefs, cachedPropertyIdRef,
-                    [](CachedPropertyIdRef index, JsPropertyIdRef* propIdRef) {
-    return JsGetPropertyIdFromName(s_cachedPropertyIdRefNames[index],
-                                   propIdRef) == JsNoError;
-  });
+  return GetCachedPropertyId(
+      cachedPropertyIdRefs, cachedPropertyIdRef,
+      [](CachedPropertyIdRef index, JsPropertyIdRef *propIdRef) {
+        return JsGetPropertyIdFromName(s_cachedPropertyIdRefNames[index],
+                                       propIdRef) == JsNoError;
+      });
 }
 
 JsPropertyIdRef IsolateShim::GetProxyTrapPropertyIdRef(ProxyTraps trap) {
@@ -305,12 +281,12 @@ void IsolateShim::UnregisterJsValueRefContextShim(JsValueRef valueRef) {
   jsValueRefToContextShimMap.erase(valueRef);
 }
 
-ContextShim * IsolateShim::GetJsValueRefContextShim(JsValueRef valueRef) {
+ContextShim *IsolateShim::GetJsValueRefContextShim(JsValueRef valueRef) {
   auto i = jsValueRefToContextShimMap.find(valueRef);
   return i != jsValueRefToContextShimMap.end() ? i->second : nullptr;
 }
 
-ContextShim * IsolateShim::GetObjectContext(JsValueRef valueRef) {
+ContextShim *IsolateShim::GetObjectContext(JsValueRef valueRef) {
   // CHAKRA-REVIEW: Chakra doesn't have an API to tell what context an object is
   // in. HACK: Go thru the list of context and see which one works
   JsValueType valueType;
@@ -322,7 +298,7 @@ ContextShim * IsolateShim::GetObjectContext(JsValueRef valueRef) {
 
   auto i = this->contextShimMap.begin();
   for (; i != this->contextShimMap.end(); i++) {
-    ContextShim * contextShim = (*i).second;
+    ContextShim *contextShim = (*i).second;
     ContextShim::Scope scope(contextShim);
     if (JsGetValueType(valueRef, &valueType) == JsNoError) {
       return contextShim;
@@ -343,14 +319,14 @@ void IsolateShim::EnableExecution() {
 
 bool IsolateShim::IsExeuctionDisabled() {
   bool isDisabled;
-  if (JsIsRuntimeExecutionDisabled(this->GetRuntimeHandle(),
-                                   &isDisabled) == JsNoError) {
+  if (JsIsRuntimeExecutionDisabled(this->GetRuntimeHandle(), &isDisabled) ==
+      JsNoError) {
     return isDisabled;
   }
   return false;
 }
 
-bool IsolateShim::AddMessageListener(void * that) {
+bool IsolateShim::AddMessageListener(void *that) {
   try {
     messageListeners.push_back(that);
     return true;
@@ -359,12 +335,12 @@ bool IsolateShim::AddMessageListener(void * that) {
   }
 }
 
-void IsolateShim::RemoveMessageListeners(void * that) {
+void IsolateShim::RemoveMessageListeners(void *that) {
   auto i = std::remove(messageListeners.begin(), messageListeners.end(), that);
   messageListeners.erase(i, messageListeners.end());
 }
 
-void IsolateShim::SetData(uint32_t slot, void* data) {
+void IsolateShim::SetData(uint32_t slot, void *data) {
   if (slot >= _countof(this->embeddedData)) {
     CHAKRA_NOT_IMPLEMENTED("Invalid embedded data index", 0);
     return;
@@ -372,7 +348,7 @@ void IsolateShim::SetData(uint32_t slot, void* data) {
   embeddedData[slot] = data;
 }
 
-void* IsolateShim::GetData(uint32_t slot) {
+void *IsolateShim::GetData(uint32_t slot) {
   return slot < _countof(this->embeddedData) ? embeddedData[slot] : nullptr;
 }
 
