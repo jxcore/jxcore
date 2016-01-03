@@ -77,6 +77,9 @@ JS_LOCAL_METHOD(extensionCallback) {
       JX_Free(&results[len]);
 
       RETURN_PARAM(fnc);
+    } else if (results[len].type_ == RT_Null) {
+      JX_Free(&results[len]);
+      RETURN_PARAM(JS_NULL());
     }
 
     JXValueWrapper *wrap = (JXValueWrapper *)results[len].data_;
