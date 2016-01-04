@@ -8,9 +8,9 @@
  */
  
 // SpiderMonkey, V8 3.28+ implementation has native TypedArray support
-if(process.versions.sm){ return; } 
-if(process.versions.v8)
-  if(parseFloat(process.versions.v8) > 3.14) return;
+var ver = process.versions;
+if (ver.sm || ver.ch) return; 
+if (parseFloat(ver.v8) > 3.15) return;
 
 var common = require('../common');
 var assert = require('assert');
