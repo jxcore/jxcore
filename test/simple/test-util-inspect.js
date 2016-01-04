@@ -1,9 +1,5 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
-
-
-
 var common = require('../common');
 var assert = require('assert');
 var util = require('util');
@@ -53,7 +49,10 @@ assert.equal(util.inspect(new SyntaxError('FAIL')), '[SyntaxError: FAIL]');
 try {
   undef();
 } catch (e) {
-  assert.equal(util.inspect(e), '[ReferenceError: undef is not defined]');
+  if (process.versions.ch)
+    assert.equal(util.inspect(e), '[ReferenceError: \'undef\' is undefined]');
+  else
+    assert.equal(util.inspect(e), '[ReferenceError: undef is not defined]');
 }
 var ex = util.inspect(new Error('FAIL'), true);
 assert.ok(ex.indexOf('[Error: FAIL]') != -1);

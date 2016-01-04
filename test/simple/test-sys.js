@@ -25,7 +25,12 @@ assert.equal('[ 1, [ 2, 3 ] ]', common.inspect([1, [2, 3]]));
 
 assert.equal('{}', common.inspect({}));
 assert.equal('{ a: 1 }', common.inspect({a: 1}));
-assert.equal('{ a: [Function] }', common.inspect({a: function() {}}));
+
+if (!process.versions.ch)
+  assert.equal('{ a: [Function] }', common.inspect({a: function() {}}));
+else
+  assert.equal('{ a: [Function: a] }', common.inspect({a: function() {}}));
+
 assert.equal('{ a: 1, b: 2 }', common.inspect({a: 1, b: 2}));
 assert.equal('{ a: {} }', common.inspect({'a': {}}));
 assert.equal('{ a: { b: 2 } }', common.inspect({'a': {'b': 2}}));
