@@ -202,7 +202,7 @@ then
     LOG $GRAY_COLOR "$(unzip -qq -u "$zip_file.zip")"
     rasp_check=$(uname -msrn)
 
-    mv "$zip_file/jx" "${INSTALL_DIR}jx"
+    mv -f "$zip_file/jx" "${INSTALL_DIR}jx"
     if [[ $LOCAL_INSTALL == "no" ]]; then
         LOG $MAGENTA_COLOR "JXcore installed globally in: ${INSTALL_DIR}jx"
     else

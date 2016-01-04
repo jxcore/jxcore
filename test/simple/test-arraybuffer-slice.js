@@ -1,16 +1,15 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
 /*
  * Tests to verify slice functionality of ArrayBuffer.
  * (http://www.khronos.org/registry/typedarray/specs/latest/#5)
  */
  
-// SpiderMonkey && v8 3.15+ implementation has native TypedArray support
+// Chakra, SpiderMonkey && v8 3.15+ implementation has native TypedArray support
 
-if(process.versions.sm) return;
-if(process.versions.v8 && parseFloat(process.versions.v8)>3.14) return;
-
+var ver = process.versions;
+if (ver.sm || ver.ch) return;
+if (parseFloat(ver.v8)>3.14) return;
 
 var common = require('../common');
 var assert = require('assert');
