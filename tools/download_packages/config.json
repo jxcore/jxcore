@@ -1,0 +1,105 @@
+{
+  "builds": [
+    {
+      "header": "Android 4+",
+      "name": "Android",
+      "files": [
+        "jx_android32sm.zip",
+        "jx_android32v8.zip",
+        "jx_androidARMsm.zip",
+        "jx_androidARMv8.zip",
+        "jx_androidFATsm.zip",
+        "jx_androidFATv8.zip"
+      ],
+      "props": {
+        "jx_androidFATsm.zip": {"caption": "Android FAT"},
+        "jx_androidFATv8.zip": {"caption": "Android FAT"}
+      }
+    },
+    {
+      "name": "FreeBSD",
+      "files": [
+        "jx_bsd964sm.zip",
+        "jx_bsd964v8.zip",
+        "jx_bsd1064sm.zip",
+        "jx_bsd1064v8.zip"
+      ],
+      "props": {
+        "jx_bsd964sm.zip": {"caption": "FreeBSD 9"},
+        "jx_bsd964v8.zip": {"caption": "FreeBSD 9"},
+        "jx_bsd1064sm.zip": {"caption": "FreeBSD 10"},
+        "jx_bsd1064v8.zip": {"caption": "FreeBSD 10"}
+      }
+    },
+    {
+      "name": "Debian",
+      "files": [
+        "jx_deb32sm.zip",
+        "jx_deb32v8.zip",
+        "jx_deb64sm.zip",
+        "jx_deb64v8.zip",
+        "jx_debARMsm.zip",
+        "jx_debARMv8.zip",
+        "jx_debMIPSsm.zip",
+        "jx_debMIPSv8.zip"
+      ]
+    },
+    {
+      "name": "OSX INTEL",
+      "files": [
+        "jx_osx64sm.zip",
+        "jx_osx64v8.zip"
+      ]
+    },
+    {
+      "name": "iOS",
+      "files": ["jx_iosFATsm.zip"],
+      "props": {
+        "jx_iosFATsm.zip": {"caption": "iOS FAT"}
+      }
+    },
+    {
+      "name": "RH/Centos/Fedora",
+      "files": [
+        "jx_rh64sm.zip",
+        "jx_rh64v8.zip"
+      ]
+    },
+    {
+      "name": "Suse",
+      "files": [
+        "jx_suse64sm.zip",
+        "jx_suse64v8.zip"
+      ]
+    },
+    {
+      "name": "Ubuntu/Mint",
+      "files": [
+        "jx_ub32sm.zip",
+        "jx_ub32v8.zip",
+        "jx_ub64sm.zip",
+        "jx_ub64v8.zip"
+      ]
+    },
+    {
+      "name": "Windows",
+      "files": [
+        "jx_win32sm.zip",
+        "jx_win32v8.zip",
+        "jx_win64sm.zip",
+        "jx_win64v8.zip",
+        "jx_win32ch.zip",
+        "jx_win64ch.zip",
+        "jx_winARMch.zip",
+        "jx_winsetup.zip"
+      ],
+      "props": {
+        "jx_winsetup.zip": {"caption": "Windows Setup (32/64/SM/V8/CH)"},
+        "jx_win32ch.zip": {"caption": "Windows ia32 Chakra with builtin UWP"},
+        "jx_win64ch.zip": {"caption": "Windows x64 Chakra with builtin UWP"},
+        "jx_winARMch.zip": {"caption": "RPI WinIOT"}
+      },
+      "footNote": "Windows XP/2003 and below is NOT supported."
+    }
+  ]
+}
