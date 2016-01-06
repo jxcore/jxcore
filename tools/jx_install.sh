@@ -99,15 +99,15 @@ find_os() {
       fi
     fi
 
-    rasp_check=$(uname -msrn)
-    if [[ "$rasp_check" =~ 'raspberrypi' ]]
+    if [[ "$1" =~ 'linaro' ]] || [[ "$1" =~ 'Linaro' ]]
     then
       OT=$(apt-get install -y unzip)
       echo "jx_deb$arch"
       return
     fi
     
-    if [[ "$rasp_check" =~ 'linaro' ]]
+    rasp_check=$(uname -msrn)
+    if [[ "$rasp_check" =~ 'raspberrypi' ]]
     then
       OT=$(apt-get install -y unzip)
       echo "jx_deb$arch"
