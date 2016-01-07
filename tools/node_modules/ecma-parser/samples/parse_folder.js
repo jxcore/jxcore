@@ -14,13 +14,13 @@ function test(dir) {
     files = [dir];
     loc = "";
   }
-  for(var i= 0, ln=files.length; i < ln; i++) {
+  for (var i = 0, ln = files.length; i < ln; i++) {
     var file = path.join(loc, files[i]);
     var stat = fs.statSync(file);
     if (stat.isDirectory()) {
       isFirst = false;
       test(file);
-    } else if(path.extname(file) == '.js') {
+    } else if (path.extname(file) == '.js') {
       try {
         var bl = parser.parse(file, fs.readFileSync(file) + "");
 

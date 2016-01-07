@@ -5,7 +5,7 @@ Ecmascript, Javascript instruction parser. Tested on popular Javascript modules 
 ### How it works
 
 - Download [JXcore](https://jxcore.com/downloads)
-- type `jx install ecma-parser`
+- type `jx install ecma-parser` or `npm install ecma-parser`
 - You can also use `npm` directly to install
 
 #### Sample Code:
@@ -79,7 +79,10 @@ Return source code for the instruction block
 `.dataType` : Data type of the instruction block  
 `.rowIndex` : Row index of the instruction  
 `.columnIndex` : Column index of the instruction  
-`.getData()` : Get the string data from the instruction  
+`.getData()` : Get the string data from the instruction (name of the variable for WORDs)
+`.isNewDefinition()` : Is this block represents a new named definition?
+`.isProperty()` : Is this block represents an Object property ?
+`.updateName(name)` : Update the variable name (only for the current instance)
 `.getPreviousBlock(noskip)` : Returns previous instruction block (None space, comment, new line or semi colon)  
 `.getNextBlock(noskip)` : Returns previous instruction block (None space, comment, new line or semi colon)  
 

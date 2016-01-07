@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-var minimize = require('./node_modules/ecma-parser/samples/minimize').minimize;
+var minimize = require('./node_modules/ecma-parser/minimize').minimize;
 var fs = require('fs');
 var path = require('path');
 
@@ -32,8 +32,8 @@ else
   cmp = process.binding('jxutils_wrap')._cmp;
 
 if (!cmp) {
-  jxcore.utils.console.log("You need 'jx' binary is on the path for the minified build.",
-      "red");
+  jxcore.utils.console.log(
+      "You need 'jx' binary is on the path for the minified build.", "red");
   process.exit(1);
 }
 
@@ -45,16 +45,18 @@ if (!"".startsWith) {
 }
 
 for (var o = 3, ln = process.argv.length; o < ln; o++) {
-  var file_name = process.argv[o];
-  var extname = path.extname(file_name);
+  var file_path = process.argv[o];
+  var extname = path.extname(file_path);
   if (extname == '.py')
     continue;
 
-  var buffer = fs.readFileSync(file_name);
-
-  var name = path.basename(file_name).replace('.js', '').replace('.gypi', '');
+  var buffer = fs.readFileSync(file_path);
+  var file_name = path.basename(file_path);
+  var name = file_name.replace('.js', '').replace('.gypi', '');
+  
   if (name != '_jx_marker') {
-    buffer = cmp((minimize(file_name, buffer + '')) + " ");
+    var minf = minimize(file_name, buffer + '', true);
+    buffer = cmp(minf + " ");
   }
 
   buffers[name] = buffer;
@@ -93,8 +95,9 @@ stream.once('open',
       stream.write('static const struct _native natives[] = {\n');
 
       for ( var o in buffers) {
-        if (!buffers.hasOwnProperty(o)) continue;
-        
+        if (!buffers.hasOwnProperty(o))
+          continue;
+
         var buffer = buffers[o];
         if (o == '_jx_marker')
           str = '  {"' + o + '", ' + o + '_native, 0},\n';

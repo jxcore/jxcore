@@ -216,7 +216,8 @@
         'ldflags': [ '-fPIC' ],
       }],
       [ 'OS in "linux freebsd openbsd solaris android"', {
-        'cflags': [ '-Wall', '-Wextra', '-Wno-unused-parameter', ],
+        'cflags': [ '-Wall', '-Wextra', '-Wno-unused-parameter', 
+                    '-Wno-inconsistent-missing-override' ],
         'cflags_cc': [ '-fno-rtti', '-fno-exceptions' ],
         'ldflags': [ '-rdynamic' ],
         'target_conditions': [
@@ -271,6 +272,7 @@
             '-Wendif-labels',
             '-W',
             '-Wno-unused-parameter',
+            '-Wno-inconsistent-missing-override'
           ],
         },
         'target_conditions': [

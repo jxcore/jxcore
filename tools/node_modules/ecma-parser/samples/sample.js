@@ -9,4 +9,4 @@ var js_code = "\
 ";
 
 var bl = parser.parse("test.js", js_code);
-parser.printBlocks(bl.subs[bl.subs.length-2]);
+parser.printBlocks(bl.subs[bl.subs.length - 2]);
