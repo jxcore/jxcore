@@ -25,17 +25,6 @@ var str = '#ifndef ' + header_name + '\n' + '#define ' + header_name + '\n'
     + 'namespace jxcore {\n\n';
 
 var buffers = {};
-var cmp;
-if (process.versions.node == "0.10.31") // old jxcore
-  cmp = process.binding('jxtimers_wrap')._cmp;
-else
-  cmp = process.binding('jxutils_wrap')._cmp;
-
-if (!cmp) {
-  jxcore.utils.console.log(
-      "You need 'jx' binary is on the path for the minified build.", "red");
-  process.exit(1);
-}
 
 // check startsWith implementation
 if (!"".startsWith) {
@@ -53,10 +42,9 @@ for (var o = 3, ln = process.argv.length; o < ln; o++) {
   var buffer = fs.readFileSync(file_path);
   var file_name = path.basename(file_path);
   var name = file_name.replace('.js', '').replace('.gypi', '');
-  
+
   if (name != '_jx_marker') {
-    var minf = minimize(file_name, buffer + '', true);
-    buffer = cmp(minf + " ");
+    buffer = new Buffer(minimize(file_name, buffer + '', true));
   }
 
   buffers[name] = buffer;
@@ -67,7 +55,7 @@ stream.once('open',
     function(fd) {
       stream.write(str);
 
-      for ( var o in buffers) {
+      for (var o in buffers) {
         var buffer = buffers[o];
         str = '  const char ' + o + '_native[]={';
         for (var o = 0, ln = buffer.length; o < ln; o++) {
@@ -94,11 +82,7 @@ stream.once('open',
 
       stream.write('static const struct _native natives[] = {\n');
 
-      for ( var o in buffers) {
-        if (!buffers.hasOwnProperty(o))
-          continue;
-
-        var buffer = buffers[o];
+      for (var o in buffers) {
         if (o == '_jx_marker')
           str = '  {"' + o + '", ' + o + '_native, 0},\n';
         else
