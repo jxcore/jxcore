@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-var minimize = require('./node_modules/ecma-parser/samples/minimize').minimize;
+var minimize = require('./node_modules/ecma-parser/minimize').minimize;
 var fs = require('fs');
 var path = require('path');
 
@@ -25,17 +25,6 @@ var str = '#ifndef ' + header_name + '\n' + '#define ' + header_name + '\n'
     + 'namespace jxcore {\n\n';
 
 var buffers = {};
-var cmp;
-if (process.versions.node == "0.10.31") // old jxcore
-  cmp = process.binding('jxtimers_wrap')._cmp;
-else
-  cmp = process.binding('jxutils_wrap')._cmp;
-
-if (!cmp) {
-  jxcore.utils.console.log("You need 'jx' binary is on the path for the minified build.",
-      "red");
-  process.exit(1);
-}
 
 // check startsWith implementation
 if (!"".startsWith) {
@@ -45,16 +34,17 @@ if (!"".startsWith) {
 }
 
 for (var o = 3, ln = process.argv.length; o < ln; o++) {
-  var file_name = process.argv[o];
-  var extname = path.extname(file_name);
+  var file_path = process.argv[o];
+  var extname = path.extname(file_path);
   if (extname == '.py')
     continue;
 
-  var buffer = fs.readFileSync(file_name);
+  var buffer = fs.readFileSync(file_path);
+  var file_name = path.basename(file_path);
+  var name = file_name.replace('.js', '').replace('.gypi', '');
 
-  var name = path.basename(file_name).replace('.js', '').replace('.gypi', '');
   if (name != '_jx_marker') {
-    buffer = cmp((minimize(file_name, buffer + '')) + " ");
+    buffer = new Buffer(minimize(file_name, buffer + '', true));
   }
 
   buffers[name] = buffer;
@@ -65,7 +55,7 @@ stream.once('open',
     function(fd) {
       stream.write(str);
 
-      for ( var o in buffers) {
+      for (var o in buffers) {
         var buffer = buffers[o];
         str = '  const char ' + o + '_native[]={';
         for (var o = 0, ln = buffer.length; o < ln; o++) {
@@ -92,10 +82,7 @@ stream.once('open',
 
       stream.write('static const struct _native natives[] = {\n');
 
-      for ( var o in buffers) {
-        if (!buffers.hasOwnProperty(o)) continue;
-        
-        var buffer = buffers[o];
+      for (var o in buffers) {
         if (o == '_jx_marker')
           str = '  {"' + o + '", ' + o + '_native, 0},\n';
         else

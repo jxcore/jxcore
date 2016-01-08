@@ -1,3 +1,8 @@
+/*
+ * The MIT License (MIT)
+ * Copyright (c) 2015 Oguz Bastemur
+ */
+
 var colors = ['green', 'yellow'];
 var printBlocks = function (bl, depth) {
   if (!depth) {
