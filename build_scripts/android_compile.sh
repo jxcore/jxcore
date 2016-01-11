@@ -58,7 +58,7 @@ FATBIN=out_android/android
 MAKE_INSTALL() {
   TARGET_DIR="out_$1_droid"
   mv $TARGET_DIR out
-  ./configure --static-library --dest-os=android --dest-cpu=$1 --engine-mozilla $CONF_EXTRAS
+  ./configure --static-library --dest-os=android --dest-cpu=$1 --engine-mozilla --compress-internals $CONF_EXTRAS
   ERROR_ABORT_MOVE "mv out $TARGET_DIR" $1
   make -j 2
   ERROR_ABORT_MOVE "mv out $TARGET_DIR" $1
