@@ -84,7 +84,8 @@
         },
       },
       'Release': {
-        'cflags': [ '-O3', '-ffunction-sections', '-fdata-sections' ],
+        'cflags': [ '-O2', '-ffunction-sections', '-fdata-sections', '-fno-strict-aliasing' ],
+        'cflags!': [ '-O3', '-fstrict-aliasing' ],
         'variables': {
           'v8_enable_handle_zapping%': 0,
         },
