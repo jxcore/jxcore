@@ -22,11 +22,11 @@ LOG() {
 
 
 ERROR_ABORT() {
-	if [[ $? != 0 ]]
-	then
-		LOG $RED_COLOR "compilation aborted\n"
-		exit	
-	fi
+  if [[ $? != 0 ]]
+  then
+    LOG $RED_COLOR "compilation aborted\n"
+    exit	
+  fi
 }
 
 
@@ -63,7 +63,7 @@ MAKE_INSTALL() {
   TARGET_DIR="out_$1_ios"
   PREFIX_DIR="out_ios/$1"
   mv $TARGET_DIR out
-  ./configure --prefix=$PREFIX_DIR --static-library --dest-os=ios --dest-cpu=$1 --engine-mozilla $CONF_EXTRAS
+  ./configure --prefix=$PREFIX_DIR --static-library --dest-os=ios --dest-cpu=$1 --engine-mozilla --compress-internals $CONF_EXTRAS
   ERROR_ABORT_MOVE "mv out $TARGET_DIR" $1
   rm -rf $PREFIX_DIR/bin
   make -j 2 install

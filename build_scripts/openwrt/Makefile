@@ -28,7 +28,7 @@ endef
 # remove --no-sqlite for sqlite3 embedded
 # add --embed-leveldown for embedded leveldown native 
 define Build/Configure
-	cd $(PKG_BUILD_DIR) ; ./configure --prefix=out_mips_wrt --dest-cpu=mipsel --no-sqlite --engine-mozilla --dest-os=openwrt
+	cd $(PKG_BUILD_DIR) ; ./configure --prefix=out_mips_wrt --dest-cpu=mipsel --no-sqlite --engine-mozilla --dest-os=openwrt --compress-internals
 endef
 
 define Package/jxcore/install
