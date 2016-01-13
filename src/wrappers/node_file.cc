@@ -219,14 +219,14 @@ struct fs_req_wrap {
   int result = uv_fs_##func(com->loop, &req_wrap.req, __VA_ARGS__, NULL);  \
   if (result < 0) {                                                        \
     int code = uv_last_error(com->loop).code;                              \
+    JS_LOCAL_VALUE __err;                                                  \
     if (dest != NULL &&                                                    \
         (code == UV_EEXIST || code == UV_ENOTEMPTY || code == UV_EPERM)) { \
-      JS_LOCAL_VALUE __err = UVException(code, #func, "", dest);           \
-      THROW_EXCEPTION_OBJECT(__err);                                       \
+      __err = UVException(code, #func, "", dest);                          \
     } else {                                                               \
-      JS_LOCAL_VALUE __err = UVException(code, #func, "", path);           \
-      THROW_EXCEPTION_OBJECT(__err);                                       \
+      __err = UVException(code, #func, "", path);                          \
     }                                                                      \
+    THROW_EXCEPTION_OBJECT(__err);                                         \
   }
 
 #define SYNC_CALL(func, path, ...) SYNC_DEST_CALL(func, path, NULL, __VA_ARGS__)

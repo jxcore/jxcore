@@ -55,9 +55,9 @@ MAKE_INSTALL() {
   mv $TARGET_DIR out
   if [[ $2 == 'v8' ]]
   then
-    ./configure --prefix=$TARGET_DIR/__/ --dest-os=android --dest-cpu=$1 --without-snapshot
+    ./configure --prefix=$TARGET_DIR/__/ --dest-os=android --dest-cpu=$1 --without-snapshot --compress-internals
   else
-    ./configure --prefix=$TARGET_DIR/__/ --dest-os=android --dest-cpu=$1 --engine-mozilla
+    ./configure --prefix=$TARGET_DIR/__/ --dest-os=android --dest-cpu=$1 --engine-mozilla --compress-internals
   fi
   
   ERROR_ABORT_MOVE "mv out $TARGET_DIR" $1

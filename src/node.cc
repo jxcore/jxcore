@@ -2193,6 +2193,10 @@ void SetupProcessObject(const int threadId, bool debug_worker) {
     JS_NAME_SET(process, JS_STRING_ID("execPath"),
                 STD_TO_STRING(active_engine->argv_[0]));
   } else {
+    JS_NAME_SET(process, JS_STRING_ID("execPath"),
+                STD_TO_STRING_WITH_LENGTH(execPath, size));
+  }
+
 #if defined(__IOS__) || defined(__ANDROID__)
     if (app_sandbox_folder != NULL) {
       free(app_sandbox_folder);
@@ -2213,9 +2217,6 @@ void SetupProcessObject(const int threadId, bool debug_worker) {
       app_sandbox_folder[size] = '\0';
     }
 #endif
-    JS_NAME_SET(process, JS_STRING_ID("execPath"),
-                STD_TO_STRING_WITH_LENGTH(execPath, size));
-  }
 
 #if defined(__IOS__) || defined(__ANDROID__)
   // mobile app delivers the full path via argv[0]
