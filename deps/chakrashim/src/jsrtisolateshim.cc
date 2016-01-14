@@ -53,7 +53,9 @@ IsolateShim::~IsolateShim() {
 /* static */ v8::Isolate *IsolateShim::New() {
   JsRuntimeHandle runtime;
   JsErrorCode error =
-    JsCreateRuntime(JsRuntimeAttributeAllowScriptInterrupt, nullptr, &runtime);
+    JsCreateRuntime(
+      (JsRuntimeAttributes)(JsRuntimeAttributeAllowScriptInterrupt | 
+        JsRuntimeAttributeEnableExperimentalFeatures), nullptr, &runtime);
   if (error != JsNoError) {
     return nullptr;
   }
