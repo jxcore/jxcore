@@ -1211,7 +1211,7 @@ static int uv__read_start_common(uv_stream_t* stream, uv_alloc_cb alloc_cb,
   assert(stream->type == UV_TCP || stream->type == UV_NAMED_PIPE ||
          stream->type == UV_TTY);
 
-  if (stream->flags & UV_CLOSING)
+  if (uv__stream_fd(stream) < 0 || (stream->flags & UV_CLOSING))
     return uv__set_sys_error(stream->loop, EINVAL);
 
   /* The UV_STREAM_READING flag is irrelevant of the state of the tcp - it just
@@ -1224,11 +1224,6 @@ static int uv__read_start_common(uv_stream_t* stream, uv_alloc_cb alloc_cb,
   if (stream->select != NULL) uv__stream_osx_interrupt_select(stream);
 #endif /* defined(__APPLE__) */
 
-  /* TODO: try to do the read inline? */
-  /* TODO: keep track of tcp state. If we've gotten a EOF then we should
-   * not start the IO watcher.
-   */
-  assert(uv__stream_fd(stream) >= 0);
   assert(alloc_cb);
 
   stream->read_cb = read_cb;
