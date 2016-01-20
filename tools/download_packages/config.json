@@ -101,5 +101,16 @@
       },
       "footNote": "Windows XP/2003 and below is NOT supported."
     }
-  ]
+  ],
+  "npmjx" : {
+    "0.3.0.0" : "https://s3.amazonaws.com/nodejx/npmjx300.tar.gz",
+    "0.3.0.1" : "https://s3.amazonaws.com/nodejx/npmjx300.tar.gz",
+    "0.3.0.2" : "https://s3.amazonaws.com/nodejx/npmjx300.tar.gz",
+    "0.3.0.3" : "https://s3.amazonaws.com/nodejx/npmjx303.tar.gz",
+    "0.3.0.4" : "https://s3.amazonaws.com/nodejx/npmjx304.tar.gz",
+    "0.3.0.5" : "https://s3.amazonaws.com/nodejx/npmjx305.tar.gz",
+    "0.3.0.6" : "https://s3.amazonaws.com/nodejx/npmjx305.tar.gz",
+    "0.3.0.7" : "https://s3.amazonaws.com/nodejx/npmjx307.tar.gz",
+    "0.3.1.0" : "https://s3.amazonaws.com/nodejx/npmjx310.tar.gz"
+  }
 }

@@ -286,7 +286,8 @@ The JXP project file is a simple text file that contains package description wri
         "where" : "my_folder",
         "message" : "Extracting now...",
         "verbose" : true,
-        "overwrite" : true
+        "overwrite" : true,
+        "chmod" : false
     },
     "output": "helloWorld.jx",
     "files": [
@@ -407,7 +408,8 @@ or an object with extended data:
     "where" : "my_folder",
     "message" : "Extracting now...",
     "verbose" : true,
-    "overwrite" : true
+    "overwrite" : true,
+    "chmod: false
 }
 ```
 
@@ -416,6 +418,17 @@ Default value for `extract` is `false` (or when parameter is not provided).
 When it's set to `true` or an object, all package contents will be extracted at first run of the compiled package.
 By default there will be a new folder created with the `name` parameter.
 All files and assets embedded inside the package will be saved with full directory structure preserved.
+
+##### chmod
+
+Boolean value. Default is `true`.
+Can be also used from the command-line: `--extract-chmod`. See also [boolean values](#boolean-values).
+
+    > jx package helloWorld.js --extract --extract-chmod false
+
+When it's omitted or set to `true`, the package extraction preserves original chmod attributes of packaged files and folders.
+
+When it's `false`, the packaging process will not even collect/store in package mode values for directories thus for larger projects this may result in slightly smaller package sizes.
 
 ##### message
 
