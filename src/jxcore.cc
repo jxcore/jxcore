@@ -1063,6 +1063,7 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
 
 void JXEngine::Destroy() {
   ENGINE_LOG_THIS("JXEngine", "Destroy");
+  {
   AutoScope _scope_(this, true);
   {
     customLock(CSLOCK_JOBS);
@@ -1109,7 +1110,7 @@ void JXEngine::Destroy() {
   jx_engine_map::iterator it = jx_engine_instances.find(main_node_->threadId);
   if (it != jx_engine_instances.end()) jx_engine_instances.erase(it);
   customUnlock(CSLOCK_JOBS);
-
+  }
   node::removeCommons();
 }
 #endif
