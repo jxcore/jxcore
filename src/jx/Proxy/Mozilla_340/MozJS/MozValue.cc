@@ -1504,7 +1504,7 @@ Value Value::NewInstance(int argc, Value *_args) {
   rval.ctx_ = ctx_;
   rval.value_ = JS::ObjectOrNullValue(NewInstance(argc, args));
 
-  if (args != NULL) delete args;
+  if (args != NULL) delete []args;
   return rval;
 }
 
@@ -1528,14 +1528,14 @@ Value Value::Call(const char *name, int argc, Value *_args) const {
   JS::RootedValue rov(ctx_);
   JS::MutableHandle<JS::Value> mt_rval(&rov);
   if (!Call(name, argc, args, mt_rval)) {
-    if (args != NULL) delete args;
+    if (args != NULL) delete[] args;
     return Value();
   }
 
   rval.empty_ = false;
   rval.value_ = mt_rval.get();
 
-  if (args != NULL) delete args;
+  if (args != NULL) delete[] args;
 
   return rval;
 }
@@ -1609,6 +1609,9 @@ Value Value::Call(const Value &host, int argc, Value *_args) const {
 
   Value rval;
   rval.ctx_ = ctx_;
+  
+  if (!host.value_.isObject() || host.value_.isNullOrUndefined()) return rval;
+
   JS::RootedValue prop(ctx_, value_);
 
   jsval *args = NULL;
@@ -1616,8 +1619,6 @@ Value Value::Call(const Value &host, int argc, Value *_args) const {
     args = new jsval[argc];
     for (int i = 0; i < argc; i++) args[i] = _args[i].value_;
   }
-
-  if (!host.value_.isObject() || host.value_.isNullOrUndefined()) return rval;
 
   JS::RootedObject rob(ctx_, host.value_.toObjectOrNull());
 
@@ -1629,7 +1630,7 @@ Value Value::Call(const Value &host, int argc, Value *_args) const {
                        mt_rval);
   rval.value_ = mt_rval.get();
 
-  if (args != NULL) delete args;
+  if (args != NULL) delete []args;
 
   return rval;
 }
