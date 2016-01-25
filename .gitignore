@@ -45,6 +45,9 @@ out_v8/
 out_ios/
 out_android/
 
+.pbxproj/
+*.xcodeproj/
+
 # various stuff that VC++ produces/uses
 Debug/
 Release/

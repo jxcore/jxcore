@@ -66,7 +66,6 @@ void JXTimersWrap::checkKeys() {
 
 void JXTimersWrap::Watcher(void *w) {
   int timer = 25;
-  bool follow = false;
   int counter = 0;
   while (true) {
     commons::CheckMemoryLimit();

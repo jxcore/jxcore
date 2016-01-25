@@ -573,7 +573,6 @@ void JXEngine::InitializeEngine(int argc, char **argv) {
   }
 
   JSContext *ctx = main_iso_.GetRaw();
-  JSRuntime *rt = JS_GetRuntime(ctx);
   do {
     Init(argc, argv_copy, was_inited);
     do {
@@ -869,7 +868,6 @@ void JXEngine::InitializeEmbeddedEngine(int argc, char **argv) {
   }
 
   JSContext *ctx = main_iso_.GetRaw();
-  JSRuntime *rt = JS_GetRuntime(ctx);
 
   Init(argc, argv_copy, was_inited);
 
@@ -955,7 +953,6 @@ void JXEngine::Destroy() {
         main_node_->free_context_list_.begin();
 
     while (itc != main_node_->free_context_list_.end()) {
-      JSContext *ctx_sub = *itc;
       JS_DestroyContext(*itc);
       itc++;
     }
