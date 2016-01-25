@@ -417,7 +417,6 @@ JS_METHOD(MemoryWrap, SourceSet) {
   jxcore::JXString str_key;
   args.GetString(0, &str_key);
 
-  MAP_HOST_DATA data;
   if (!args.IsString(1)) {
     JS_LOCAL_OBJECT obj = JS_VALUE_TO_OBJECT(args.GetItem(1));
     SharedSet(*str_key, BUFFER__DATA(obj), BUFFER__LENGTH(obj));

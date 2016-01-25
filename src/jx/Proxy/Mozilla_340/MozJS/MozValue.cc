@@ -59,7 +59,7 @@ void StringTools::JS_ConvertToJSChar(JSContext *cx, const char *source,
     out->str_[out->length_] = char16_t(0);
   } else {
     // force ascii to char16_t
-    for (int i = 0; i < sz_source; i++) {
+    for (unsigned i = 0; i < sz_source; i++) {
       char buffer[2] = {source[i], 0};
       char16_t *ref = (char16_t *)buffer;
       out->str_[i] = *ref;
@@ -566,11 +566,11 @@ void Value::RemoveRoot() {
   } else {                                        \
     JS::RootedValue rv(ctx_, value_);             \
     JS_ValueToObject(ctx_, rv, &name##rt);        \
-  }                                               \
-  JSObject *name = name##rt
+  }
 
 void Value::SetPrivate(void *data) {
   INNER_VALUE_TO_OBJECT(object_, false);
+  JSObject *object_ = object_rt;
 
   assert(object_ != nullptr &&
          "Can not set private data into none object JS variable");
@@ -589,6 +589,7 @@ void Value::SetPrivate(void *data) {
 
 void *Value::GetPointerFromInternalField(const int index) {
   INNER_VALUE_TO_OBJECT(object_, false);
+  JSObject *object_ = object_rt;
 
   JS::RootedObject ret_val(ctx_);
   if (object_ != nullptr) {
@@ -766,6 +767,7 @@ void Value::SetIndexedPropertiesToExternalArrayData(void *data,
                                                     const int data_type,
                                                     const int32_t length) {
   INNER_VALUE_TO_OBJECT(object_, false);
+  JSObject *object_ = object_rt;
 
   assert(object_ != nullptr);
 
@@ -869,6 +871,7 @@ bool Value::HasBufferSignature() const {
 bool Value::HasInstance(const Value &val) {
   if (!val.IsObject() || value_.isNullOrUndefined()) return false;
   INNER_VALUE_TO_OBJECT(object_, false);
+  JSObject *object_ = object_rt;
 
   JS::RootedValue rv_val(ctx_, val.value_);
   JS::RootedObject rv_obj(ctx_);
@@ -1114,6 +1117,7 @@ void Value::Natify(JS::HandleObject object_rt, const bool force_create,
 void Value::SetFinalizer(JS_FINALIZER_METHOD method) {
   if (!value_.isObject()) return;
   INNER_VALUE_TO_OBJECT(object_, false);
+  JSObject *object_ = object_rt;
 
   JS::RootedObject ret_val(ctx_);
   if (!JS_HasReservedSlot(object_, GC_SLOT_GC_CALL)) {
@@ -1213,6 +1217,7 @@ void Value::SetReserved(const int index, const Value &value) {
   assert(index <= JS_OBJECT_SLOT_MAX_INDEX);
 
   INNER_VALUE_TO_OBJECT(object_, false);
+  JSObject *object_ = object_rt;
 
   JS::RootedObject ret_val(ctx_);
   if (object_ != nullptr) {
@@ -1233,6 +1238,7 @@ Value Value::GetReserved(const int index) {
   assert(index <= JS_OBJECT_SLOT_MAX_INDEX);
 
   INNER_VALUE_TO_OBJECT(object_, false);
+  JSObject *object_ = object_rt;
 
   JS::RootedObject ret_val(ctx_);
   if (object_ == nullptr) {
@@ -1318,6 +1324,7 @@ Value Value::GetIndex(const int index) {
   val.empty_ = false;
 
   INNER_VALUE_TO_OBJECT(object_, false);
+  JSObject *object_ = object_rt;
 
   if (object_ == nullptr) return Value();
 

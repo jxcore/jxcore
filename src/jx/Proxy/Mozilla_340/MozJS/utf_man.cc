@@ -54,18 +54,18 @@ uint32_t Utf8ToOneUcs4Char(const uint8_t *utf8Buffer, int utf8Length) {
   return ucs4Char;
 }
 
-#ifdef DEBUG
 #define ReportInvalidCharacter 1
 #define ReportBufferTooSmall 2
 #define ReportTooBigCharacter 2
 
+#ifdef DEBUG
 #define INVALID(report, arg, n2)                                     \
   do {                                                               \
     if (report == 2)                                                 \
       flush_console(                                                 \
           "Error while converting UTF8 (Please report this at "      \
           "https://github.com/jxcore/jxcore) - Err: %s\n",           \
-          ##report);                                                 \
+          #report);                                                  \
     else                                                             \
       flush_console("!! Invalid Character while converting UTF8\n"); \
     dst[j] = jschar(REPLACE_UTF8);                                   \
