@@ -52,3 +52,4 @@
 @include jxcore-process
 @include jxcore-utils
 @include jxconfig
+@include jxcore-uwp
