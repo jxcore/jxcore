@@ -1075,7 +1075,7 @@ void Value::empty_finalize(JSFreeOp *fop, JSObject *obj) {
         JSContext *ctx = Isolate::GetByThreadId(*tid)->GetRaw();
         Value val(obj, ctx);
         ff->target(val, JS_GetPrivate(obj));
-        delete (ff);
+        delete ff;
         val.rooted_ = true;
         val.RemoveRoot();
         return;
@@ -1511,7 +1511,7 @@ Value Value::NewInstance(int argc, Value *_args) {
   rval.ctx_ = ctx_;
   rval.value_ = JS::ObjectOrNullValue(NewInstance(argc, args));
 
-  if (args != NULL) delete []args;
+  delete[] args;
   return rval;
 }
 
@@ -1535,14 +1535,14 @@ Value Value::Call(const char *name, int argc, Value *_args) const {
   JS::RootedValue rov(ctx_);
   JS::MutableHandle<JS::Value> mt_rval(&rov);
   if (!Call(name, argc, args, mt_rval)) {
-    if (args != NULL) delete[] args;
+    delete[] args;
     return Value();
   }
 
   rval.empty_ = false;
   rval.value_ = mt_rval.get();
 
-  if (args != NULL) delete[] args;
+  delete[] args;
 
   return rval;
 }
@@ -1637,7 +1637,7 @@ Value Value::Call(const Value &host, int argc, Value *_args) const {
                        mt_rval);
   rval.value_ = mt_rval.get();
 
-  if (args != NULL) delete []args;
+  delete[] args;
 
   return rval;
 }

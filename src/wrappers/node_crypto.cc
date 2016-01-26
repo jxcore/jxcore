@@ -2145,7 +2145,7 @@ class Cipher : public ObjectWrap {
     JS_LOCAL_VALUE outString;
     outString = Encode(out, out_len, BUFFER);
 
-    if (out) delete[] out;
+    delete[] out;
 
     RETURN_PARAM(outString);
   }
@@ -2433,7 +2433,7 @@ class Decipher : public ObjectWrap {
     JS_LOCAL_VALUE outString;
     outString = Encode(out, out_len, BUFFER);
 
-    if (out) delete[] out;
+    delete[] out;
 
     RETURN_PARAM(outString);
   }
