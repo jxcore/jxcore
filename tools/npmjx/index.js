@@ -103,8 +103,8 @@ var download = function (url, target, cb) {
   req.end();
 };
 
-var npmloc = __dirname + path.sep + "npm";
-var npmrcPath = npmloc + path.sep + "npmrc";
+var npmloc = path.join(__dirname, process.env.JX_NPM_USE_MAIN ? "npm" : 'npm/bin/npm-cli.js');
+var npmrcPath = path.join(__dirname, "npm/npmrc");
 var exec = require('child_process').exec;
 
 function clear_files(folder) {
