@@ -103,7 +103,7 @@ var download = function (url, target, cb) {
   req.end();
 };
 
-var npmloc = path.join(__dirname, process.env.JX_NPM_USE_MAIN ? "npm" : 'npm/bin/npm-cli.js');
+var npmloc = path.join(__dirname, "npm");
 var npmrcPath = path.join(__dirname, "npm/npmrc");
 var exec = require('child_process').exec;
 
@@ -162,7 +162,8 @@ var gonpm = function () {
 
   console.log("executing... please wait.");
 
-  var arr = [npmloc].concat(process.argv.slice(2));
+  var cli = path.join(__dirname, process.env.JX_NPM_USE_MAIN ? "npm" : 'npm/bin/npm-cli.js');
+  var arr = [cli].concat(process.argv.slice(2));
   var found = false;
 
   // copying npm settings, if available
