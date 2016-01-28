@@ -1,6 +1,7 @@
 #!/bin/sh
-tar -zcvf npmjx310.tar.gz npm
-cp npmjx310.tar.gz ~/.jx/
+VER=311
+tar -zcvf npmjx$VER.tar.gz npm
+cp npmjx$VER.tar.gz ~/.jx/
 cd ~/.jx/
 rm -rf npm
-tar -xvf npmjx310.tar.gz
+tar -xvf npmjx$VER.tar.gz
