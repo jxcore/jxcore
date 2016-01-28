@@ -111,6 +111,7 @@
     "0.3.0.5" : "https://s3.amazonaws.com/nodejx/npmjx305.tar.gz",
     "0.3.0.6" : "https://s3.amazonaws.com/nodejx/npmjx305.tar.gz",
     "0.3.0.7" : "https://s3.amazonaws.com/nodejx/npmjx307.tar.gz",
-    "0.3.1.0" : "https://s3.amazonaws.com/nodejx/npmjx310.tar.gz"
+    "0.3.1.0" : "https://s3.amazonaws.com/nodejx/npmjx310.tar.gz",
+    "0.3.1.1" : "https://s3.amazonaws.com/nodejx/npmjx311.tar.gz"
   }
 }
