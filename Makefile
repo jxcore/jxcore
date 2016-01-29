@@ -185,7 +185,7 @@ website_files = \
 	out/doc/sh_main.js    \
 	out/doc/sh_javascript.min.js
 
-doc: $(apidoc_dirs) $(website_files) $(apiassets) $(apidocs) tools/doc/ out/doc/changelog.html jx
+doc: $(apidoc_dirs) $(website_files) $(apiassets) $(apidocs) tools/doc/ jx
 
 doc-branch: NODE_DOC_VERSION = v$(shell $(PYTHON) tools/getnodeversion.py | cut -f1,2 -d.)
 doc-branch: doc

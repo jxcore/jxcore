@@ -6,7 +6,7 @@ If you build JXcore with `--engine-chakra` on Windows 10, uwp is accessible from
 var uwp = jxcore.uwp;
 ```
 
-### Example
+## Example
 
 ```javascript
 var uwp = jxcore.uwp;
@@ -31,11 +31,11 @@ uwp.close();
 
 Full Windows api description is available on [msdn](https://msdn.microsoft.com/en-us/library/windows/apps/br211377.aspx).
 
-### API
+## API
 
 `jxcore.uwp` has 2 functions.
 
-### projectNamespace(name)
+## projectNamespace(name)
 
 Project a UWP namespace of given name.
 
@@ -44,6 +44,7 @@ Project a UWP namespace of given name.
   [close()](#close) when UWP usage is completed.
 
 <a name="close"></a>
-### close()
+
+## close()
 
 Close all UWP handles. Call this when all UWP usage is completed.

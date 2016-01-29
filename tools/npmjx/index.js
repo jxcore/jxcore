@@ -103,8 +103,8 @@ var download = function (url, target, cb) {
   req.end();
 };
 
-var npmloc = __dirname + path.sep + "npm";
-var npmrcPath = npmloc + path.sep + "npmrc";
+var npmloc = path.join(__dirname, "npm");
+var npmrcPath = path.join(__dirname, "npm/npmrc");
 var exec = require('child_process').exec;
 
 function clear_files(folder) {
@@ -162,7 +162,8 @@ var gonpm = function () {
 
   console.log("executing... please wait.");
 
-  var arr = [npmloc].concat(process.argv.slice(2));
+  var cli = path.join(__dirname, process.env.JX_NPM_USE_MAIN ? "npm" : 'npm/bin/npm-cli.js');
+  var arr = [cli].concat(process.argv.slice(2));
   var found = false;
 
   // copying npm settings, if available
@@ -195,7 +196,7 @@ var gonpm = function () {
 
 jxcore.utils.console.log("Downloading NPM for JXcore", "yellow");
 
-download("https://s3.amazonaws.com/nodejx/npmjx310.tar.gz", npmloc + ".tar.gz", function () {
+download("https://s3.amazonaws.com/nodejx/npmjx311.tar.gz", npmloc + ".tar.gz", function () {
   try {
     var targz = require('tar.gz');
   } catch (ex) {
