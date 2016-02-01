@@ -189,7 +189,13 @@
       {
         'defines!': ['HAVE_DTRACE'],
         'defines': ['JXCORE_EMBEDDED'],
-        'type': 'loadable_module'
+        'conditions': [
+          ['OS=="win"', {
+            'type': 'loadable_module'
+          }, {
+            'type': 'shared_library'
+          }]
+        ]
       }],
       ['node_shared_library==1 and node_win_onecore==1', {
         'type': 'loadable_module'
