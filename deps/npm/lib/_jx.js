@@ -15,7 +15,11 @@ var arg_useExecPath = null;
 // sets multiple env variables
 exports.setVariables = function() {
 
-  var cmd = process.argv[2];
+  var p = jxcore.utils.argv.parse()
+  if (!p || !p._.withoutPrefix || !p._.withoutPrefix.length)
+    return
+
+  var cmd = p._.withoutPrefix[0]
 
   if (typeof jxcore === 'undefined' || !cmd)
     return;
