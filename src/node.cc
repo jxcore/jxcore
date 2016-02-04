@@ -2031,19 +2031,20 @@ void SetupProcessObject(const int threadId, bool debug_worker) {
   JS_NAME_SET(versions, JS_STRING_ID("node"), STD_TO_STRING(NODE_VERSION + 1));
   JS_NAME_SET(versions, JS_STRING_ID("jxcore"),
               STD_TO_STRING(JXCORE_VERSION + 1));
+
+  JS_NAME_SET(versions, JS_STRING_ID("v8"), STD_TO_INTEGER(0));
+  JS_NAME_SET(versions, JS_STRING_ID("ch"), STD_TO_INTEGER(0));
+  JS_NAME_SET(versions, JS_STRING_ID("sm"), STD_TO_INTEGER(0));
+
 #ifdef JS_ENGINE_V8
 #ifdef JS_ENGINE_CHAKRA
-  JS_NAME_SET(versions, JS_STRING_ID("v8"), STD_TO_INTEGER(0));
   JS_NAME_SET(versions, JS_STRING_ID("ch"),
               STD_TO_STRING(v8::V8::GetVersion()));
 #else
-  JS_NAME_SET(versions, JS_STRING_ID("ch"), STD_TO_INTEGER(0));
   JS_NAME_SET(versions, JS_STRING_ID("v8"),
               STD_TO_STRING(v8::V8::GetVersion()));
 #endif
-  JS_NAME_SET(versions, JS_STRING_ID("sm"), STD_TO_INTEGER(0));
 #elif defined(JS_ENGINE_MOZJS)
-  JS_NAME_SET(versions, JS_STRING_ID("v8"), STD_TO_INTEGER(0));
   JS_NAME_SET(versions, JS_STRING_ID("sm"), STD_TO_INTEGER(MOZJS_VERSION));
 #endif
 
