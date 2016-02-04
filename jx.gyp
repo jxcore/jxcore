@@ -190,10 +190,10 @@
         'defines!': ['HAVE_DTRACE'],
         'defines': ['JXCORE_EMBEDDED'],
         'conditions': [
-          ['OS=="win"', {
-            'type': 'loadable_module'
-          }, {
+          ['OS in "mac ios"', {
             'type': 'shared_library'
+          }, {
+            'type': 'loadable_module'
           }]
         ]
       }],
