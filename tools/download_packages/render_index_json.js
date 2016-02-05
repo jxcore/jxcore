@@ -1,6 +1,6 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-// This code renders index.json with jxcore releases basic information
+// This code renders releases.json with jxcore releases basic information
 // for each zip package present in jxcore/out_binaries.
 // Also, if you have git release file present under out_binaries/Releases,
 // e.g. jxcore-0.3.0.1.tar.gz and jxcore-0.3.0.1.zip
@@ -18,7 +18,7 @@ var repoPath = path.join(__dirname, "../../");
 var jxtools = require(path.join(repoPath,  "test/node_modules/jxtools"));
 
 var out_dir = null;
-var out_file = path.join(__dirname, "index.json");
+var out_file = path.join(__dirname, "releases.json");
 
 var parsedArgv = jxcore.utils.argv.parse();
 
@@ -78,6 +78,14 @@ var jxrun = function(cmd, silent) {
   }
 };
 
+var downloadFile = function(dir, url) {
+  console.log('Downloading', url);
+  var cmd = 'cd "' + dir + '" && wget ' + url;
+  var ret = jxrun(cmd);
+  if (!ret) process.exit();
+  console.log('OK');
+};
+
 var get_npmjx_info = function(version) {
   var v = version.replace(/v|-|\s|beta/gi, "");
   if (!config.npmjx[v])
@@ -94,13 +102,8 @@ var get_npmjx_info = function(version) {
     if (!ret) process.exit();
   }
 
-  if (!fs.existsSync(expectedFile)) {
-    console.log('Downloading', url);
-    var cmd = 'cd "' + expectedDir + '" && wget ' + url;
-    var ret = jxrun(cmd);
-    if (!ret) process.exit();
-    console.log('OK');
-  }
+  if (!fs.existsSync(expectedFile))
+    downloadFile(expectedDir, url);
 
   if (!fs.existsSync(expectedFile))
     return jxcore.utils.console.error('Cannot find', expectedFile);
@@ -145,7 +148,9 @@ manifestEntry.source = {
   tar : { url : 'https://github.com/jxcore/jxcore/archive/v' + v + '.tar.gz' }
 };
 
-var zipball = path.join(__dirname, '../../out_binaries/Releases', 'jxcore-' + v + '.zip');
+var zipball = path.join(__dirname, '../../out_binaries/Releases', 'v' + v + '.zip');
+if (!fs.existsSync(zipball))
+  downloadFile(path.dirname(zipball), manifestEntry.source.zip.url);
 if (fs.existsSync(zipball)) {
   var ret1 = jxrun("shasum -a 256 " + zipball);
   if (ret1) manifestEntry.source.zip.sha256 = ret1.split(" ")[0];
@@ -153,7 +158,9 @@ if (fs.existsSync(zipball)) {
   jxcore.utils.console.error('Cannot calculate sha256 for manifestEntry.source.zip.sha256. No file:\n', zipball);
 }
 
-var tarball = path.join(__dirname, '../../out_binaries/Releases', 'jxcore-' + v + '.tar.gz');
+var tarball = path.join(__dirname, '../../out_binaries/Releases', 'v' + v + '.tar.gz');
+if (!fs.existsSync(tarball))
+  downloadFile(path.dirname(tarball), manifestEntry.source.tar.url);
 if (fs.existsSync(tarball)) {
   var ret1 = jxrun("shasum -a 256 " + tarball);
   if (ret1) manifestEntry.source.tar.sha256 = ret1.split(" ")[0];
