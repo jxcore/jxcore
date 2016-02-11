@@ -2258,7 +2258,7 @@ void SetupProcessObject(const int threadId, bool debug_worker) {
   // Check if the process has standard stream file descriptors, needed for
   // allocating a normal console object.
   JS_NAME_SET(process, JS_STRING_ID("hasStdFds"),
-              STD_TO_BOOLEAN(uv_guess_handle(1) == UV_UNKNOWN_HANDLE));
+              STD_TO_BOOLEAN(uv_guess_handle(1) != UV_UNKNOWN_HANDLE));
 
   JS_NAME_SET(process, JS_STRING_ID("isPackaged"),
               STD_TO_BOOLEAN(com->is_packaged_));
