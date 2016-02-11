@@ -491,6 +491,7 @@ commons::commons(const int tid) {
   } else {
     loop = uv_loop_new();
     uv_setThreadLoop(threadId - 1, loop);
+    loop->loopId = threadId;
 
 #ifndef _MSC_VER
     threadPing = new uv_async_t;
