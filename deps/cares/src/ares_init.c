@@ -15,6 +15,8 @@
  * without express or implied warranty.
  */
 
+#include "android_api21.h"
+
 #include "ares_setup.h"
 
 #ifdef HAVE_SYS_PARAM_H
