@@ -1,5 +1,3 @@
-#include <android/log.h>
-#include <dlfcn.h>
 
 /*
  * http://stackoverflow.com/questions/28413530/api-to-get-android-system-properties-is-removed-in-arm64-platforms
@@ -10,6 +8,10 @@
  */
 
 #if (__ANDROID_API__ >= 21)
+
+#include <android/log.h>
+#include <dlfcn.h>
+
 /* 
  * Android 'L' makes __system_property_get a non-global symbol.
  * Here we provide a stub which loads the symbol from libc via dlsym.
