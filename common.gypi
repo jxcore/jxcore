@@ -11,13 +11,13 @@
     'clang%': 1,
     'python%': 'python',
     'uclibc_defined%': 0,
-    
+
     # engines
     'node_engine_chakra%': 0,
     'node_engine_mozilla%': 0,
     'node_engine_v8%': 0,
     'v8_postmortem_support': 'false',
-    
+
     'node_win_onecore%' : 0,
 
     # Enable disassembler for `--print-code` v8 options
@@ -27,7 +27,7 @@
     'conditions': [
       ['uclibc_defined == 1', {
         'defines':['POSIX_UCLIBC_DEFINED'],
-      }], 
+      }],
       ['OS == "win"', {
         'os_posix%': 0,
       }, {
@@ -127,9 +127,6 @@
             ],
           },
           'VCLibrarianTool': {
-            'AdditionalOptions': [
-              '/LTCG', # link time code generation
-            ],
           },
           'VCLinkerTool': {
             'LinkTimeCodeGeneration': 1, # link-time code generation
@@ -151,6 +148,9 @@
         'WarnAsError': 'false',
       },
       'VCLibrarianTool': {
+        'AdditionalOptions': [
+          '/LTCG', # link time code generation
+        ],
       },
       'VCLinkerTool': {
         'conditions': [
@@ -217,7 +217,7 @@
         'ldflags': [ '-fPIC' ],
       }],
       [ 'OS in "linux freebsd openbsd solaris android"', {
-        'cflags': [ '-Wall', '-Wextra', '-Wno-unused-parameter', 
+        'cflags': [ '-Wall', '-Wextra', '-Wno-unused-parameter',
                     '-Wno-inconsistent-missing-override' ],
         'cflags_cc': [ '-fno-rtti', '-fno-exceptions' ],
         'ldflags': [ '-rdynamic' ],
@@ -304,7 +304,7 @@
           'EMBED_BITCODE': 'YES',
           'IPHONEOS_DEPLOYMENT_TARGET': '6.0',
           'GCC_GENERATE_DEBUGGING_SYMBOLS': 'NO',
-          
+
           'USE_HEADERMAP': 'NO',
           'OTHER_CFLAGS': [
             '-fno-strict-aliasing',
