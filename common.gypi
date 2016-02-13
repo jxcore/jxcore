@@ -127,9 +127,6 @@
             ],
           },
           'VCLibrarianTool': {
-            'AdditionalOptions': [
-              '/LTCG', # link time code generation
-            ],
           },
           'VCLinkerTool': {
             'LinkTimeCodeGeneration': 1, # link-time code generation
@@ -151,6 +148,9 @@
         'WarnAsError': 'false',
       },
       'VCLibrarianTool': {
+        'AdditionalOptions': [
+          '/LTCG', # link time code generation
+        ],
       },
       'VCLinkerTool': {
         'conditions': [
