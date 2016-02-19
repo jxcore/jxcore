@@ -72,6 +72,7 @@ if /i "%1"=="msi"           set msi=1&set licensertf=1&goto arg-ok
 if /i "%1"=="upload"        set upload=1&goto arg-ok
 if /i "%1"=="jslint"        set jslint=1&goto arg-ok
 if /i "%1"=="--win-onecore" set wincore=--win-onecore&set no_asm=--openssl-no-asm&set leveldown=--embed-leveldown&goto arg-ok
+if /i "%1"=="--static-library" set static_library=--static-library&goto arg-ok
 if /i "%1"=="--shared-library" set static_library=--shared-library&goto arg-ok
 if /i "%1"=="--engine-mozilla" set engine_=--engine-mozilla&goto arg-ok
 if /i "%1"=="--engine-chakra" set engine_=--engine-chakra&set WindowsTargetPlatformVersion=10.0.10586.0&goto arg-ok
