@@ -151,7 +151,7 @@ run the following instead:
 
 #### Download JXcore 
 You can download (latest stable) binaries for various operating systems from  
-[http://jxcore.com/downloads/](http://jxcore.com/downloads/)  
+[jxcore/jxcore-release](https://github.com/jxcore/jxcore-release)
 (Future `jxcore.io` releases will be shared from `http://jxcore.io`)
 
 #### Notes for Windows

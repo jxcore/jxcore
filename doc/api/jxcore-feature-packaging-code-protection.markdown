@@ -243,7 +243,7 @@ JX packages can be executed as follows:
 
     > jx my_project.jx
 
-Obviously, you need to have JXcore installed first. For this, please visit [Downloads](http://jxcore.com/downloads/) page.
+Obviously, you need to have JXcore installed first. For this, please visit [jxcore/jxcore-release](https://github.com/jxcore/jxcore-release) page.
 
 You can also run the package in multiple instances.
 

@@ -1,5 +1,5 @@
 
-The pre-compiled binaries of JXcore available from [jxcore.com/downloads](http://jxcore.com/downloads).
+The pre-compiled binaries of JXcore available from [jxcore/jxcore-release](https://github.com/jxcore/jxcore-release)  .
 You can also use bash script (for Unix platforms), or setup (for Windows) that can do the installation 
 for you.
 

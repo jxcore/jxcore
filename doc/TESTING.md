@@ -91,7 +91,7 @@ support for the tests. This is indeed not necessary. JXcore native interface 'jx
 for Windows applications.)
 
 In order to run JX-ni tests you need JXcore is installed on your system. Either compile from the 
-sources or download it from [here](http://jxcore.com/Downloads) 
+sources or download it from [jxcore/jxcore-release](https://github.com/jxcore/jxcore-release)
 
 Assuming you are under the root folder of the project; first you should compile the project as a 
 static library. Let's say you want to do it for SpiderMonkey build. 

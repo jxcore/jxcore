@@ -3,7 +3,7 @@
 
 if (typeof jxcore === 'undefined') {
   console.error("This script requires JXcore to run. \n" +
-  "Please visit http://jxcore.com/downloads to download JXcore for your platform");
+  "Please visit https://github.com/jxcore/jxcore-release to download JXcore for your platform");
   process.exit(1);
 }
 
