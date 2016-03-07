@@ -3,7 +3,6 @@
 JXcore introduces a unique feature for packaging of source files and other assets into JX packages.
 
 Let’s assume you have a large project consisting of many files. This feature packs them all into a single file to simplify the distribution.
-It also protects your server side JavaScript code by keeping all source files inside a package, which makes them more difficult to reach.
 
 JX packages can be easily executed with JXcore, just like regular JavaScript applications:
 
