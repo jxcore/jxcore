@@ -12,12 +12,6 @@ downloads the latest release.
 $ curl https://raw.githubusercontent.com/jxcore/jxcore/master/tools/jx_install.sh | bash
 ```
 
-The same script can be taken also from the shorter URL: [http://jxcore.com/xil.sh](http://jxcore.com/xil.sh), so the command would look this way:
-
-```bash
-$ curl http://jxcore.com/xil.sh | bash
-```
-
 ## Script options
 
 Several options are available for customizing the installation process. 
@@ -26,7 +20,7 @@ Example usages given below:
 
 ```bash
 # with curl:
-$ curl http://jxcore.com/xil.sh | bash -s force sm local
+$ curl https://github.com/jxcore/jxcore/blob/master/tools/jx_install.sh | bash -s force sm local
 # by calling the script directly:
 $ ./jx_install.sh force sm local
 ```
@@ -36,7 +30,7 @@ $ ./jx_install.sh force sm local
 Installs SpiderMonkey build instead of default V8.
 
 ```bash
-$ curl http://jxcore.com/xil.sh | bash -s sm
+$ curl https://github.com/jxcore/jxcore/blob/master/tools/jx_install.sh | bash -s sm
 ```
 
 ### v8
@@ -45,8 +39,8 @@ Specifying the engine for V8 is not necessary (as this is the default engine), b
 Thus both of the following calls are equivalent:
 
 ```bash
-$ curl http://jxcore.com/xil.sh | bash
-$ curl http://jxcore.com/xil.sh | bash -s v8
+$ curl https://github.com/jxcore/jxcore/blob/master/tools/jx_install.sh | bash
+$ curl https://github.com/jxcore/jxcore/blob/master/tools/jx_install.sh | bash -s v8
 ```
 
 ### local
@@ -55,7 +49,7 @@ Installs jx binary into the current directory `./` rather than into global path 
 JXcore is installed into global `/usr/local/bin/jx`).
 
 ```bash
-$ curl http://jxcore.com/xil.sh | bash -s local
+$ curl https://github.com/jxcore/jxcore/blob/master/tools/jx_install.sh | bash -s local
 ```
 
 ### force
@@ -65,9 +59,9 @@ This may be useful in case when you want to switch from one engine to another:
 
 ```bash
 # installs v8:
-$ curl http://jxcore.com/xil.sh | bash
+$ curl https://github.com/jxcore/jxcore/blob/master/tools/jx_install.sh | bash
 # forces to install SpiderMonkey
-$ curl http://jxcore.com/xil.sh | bash -s force sm
+$ curl https://github.com/jxcore/jxcore/blob/master/tools/jx_install.sh | bash -s force sm
 ```
 
 ## Notes:
@@ -77,7 +71,7 @@ $ curl http://jxcore.com/xil.sh | bash -s force sm
 Try executing the command as `su`, or `sudo`:
 
     ```bash
-    $ curl http://jxcore.com/xil.sh | sudo bash
+    $ curl https://github.com/jxcore/jxcore/blob/master/tools/jx_install.sh | sudo bash
     ```
 
 # For Windows:
