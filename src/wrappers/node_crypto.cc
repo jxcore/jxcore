@@ -239,6 +239,11 @@ JS_METHOD(SecureContext, Init) {
   SSL_CTX_sess_set_new_cb(sc->ctx_, NewSessionCallback);
 
   sc->ca_store_ = NULL;
+
+  // Establish a back link from the SSL_CTX struct to the SecureContext object
+  // using OpenSSL's application-specific data storage. Used by PSK support.
+  SSL_CTX_set_app_data(sc->ctx_, sc);
+
   RETURN_TRUE();
 }
 JS_METHOD_END
@@ -696,6 +701,73 @@ JS_METHOD(SecureContext, LoadPKCS12) {
 }
 JS_METHOD_END
 
+JS_METHOD(SecureContext, SetPskHint) {
+  SecureContext* sc = ObjectWrap::Unwrap<SecureContext>(args.Holder());
+
+  if (args.Length() != 1 || !args.IsString(0)) {
+    THROW_TYPE_EXCEPTION("Bad parameter");
+  }
+
+  jxcore::JXString str1(args.GetAsString(0));
+
+  if (SSL_CTX_use_psk_identity_hint(sc->ctx_, *str1))
+    RETURN_TRUE();
+  else
+    RETURN_FALSE();
+
+}
+JS_METHOD_END
+
+
+JS_METHOD(SecureContext, SetPskServerCallback) {
+
+  JS_LOCAL_VALUE _item = GET_ARG(0);
+  if (args.Length() < 1 || !JS_IS_FUNCTION(_item)) {
+    THROW_TYPE_EXCEPTION("Must give a Function as first argument");
+  }
+
+  SecureContext* sc = ObjectWrap::Unwrap<SecureContext>(args.Holder());
+
+  JS_LOCAL_FUNCTION fnc = TO_LOCAL_FUNCTION(args.GetAsFunction(0));
+  JS_NEW_PERSISTENT_FUNCTION(sc->psk_server_cb_, fnc);
+  
+  SSL_CTX_set_psk_server_callback(sc->ctx_, SecureContext::PskServerCallback_);
+
+  RETURN_TRUE();
+}
+JS_METHOD_END
+
+unsigned int SecureContext::PskServerCallback_(SSL *ssl, const char *identity, unsigned char *psk, unsigned int max_psk_len) {
+  node::commons* com = node::commons::getInstance();
+  JS_DEFINE_STATE_MARKER(com);
+
+  // translate back from the connection to the context
+  SSL_CTX *ctx = SSL_get_SSL_CTX(ssl);
+
+  // then from the SSL_CTX to the SecureContext
+  SecureContext *sc = static_cast<SecureContext*>(SSL_CTX_get_app_data(ctx));
+
+  JS_LOCAL_VALUE(argv[1]);
+
+  argv[0] = STD_TO_STRING(identity);
+
+  JS_LOCAL_VALUE(result) = sc->psk_server_cb_->Call(JS_GET_GLOBAL(), 1, argv);
+
+  //// The result is expected to be a buffer containing the key. If this
+  //// isn't the case then return 0, indicating that the identity isn't found.
+  if (Buffer::HasInstance(result)) {
+    // write the key into the buffer provided
+    JS_LOCAL_OBJECT(keyBuffer) = JS_VALUE_TO_OBJECT(result);
+    int len = Buffer::Length(keyBuffer);
+    if (len <= max_psk_len) {
+      memcpy(psk, Buffer::Data(keyBuffer), len);
+      return len;
+    }
+ }
+  return 0;
+}
+
+
 size_t ClientHelloParser::Write(const uint8_t* data, size_t len) {
   JS_ENTER_SCOPE_COM();
   JS_DEFINE_STATE_MARKER(com);
@@ -812,6 +884,7 @@ size_t ClientHelloParser::Write(const uint8_t* data, size_t len) {
       argv[0] = hello;
       JS_LOCAL_OBJECT objk = JS_OBJECT_FROM_PERSISTENT(conn_->handle_);
       MakeCallback(com, objk, JS_PREDEFINED_STRING(onclienthello), 1, argv);
+
     } break;
 
     default:
@@ -1657,10 +1730,16 @@ JS_METHOD_END
 JS_METHOD(Connection, IsInitFinished) {
   Connection* ss = Connection::Unwrap(args.GetHolder());
 
+  const char* pskId = SSL_get_psk_identity(ss->ssl_);
+
+  if (pskId) {
+    JS_HANDLE_OBJECT sshandle_ = ss->handle_;
+    JS_NAME_SET((sshandle_), STD_TO_STRING("pskIdentity"), STD_TO_STRING(pskId));
+  }
+
   if (ss->ssl_ == NULL || SSL_is_init_finished(ss->ssl_) == false) {
     RETURN_FALSE();
   }
-
   RETURN_TRUE();
 }
 JS_METHOD_END
@@ -1919,6 +1998,94 @@ JS_METHOD(Connection, SetSNICallback) {
 }
 JS_METHOD_END
 #endif
+
+
+JS_METHOD(Connection, SetPskClientCallback) {
+  Connection* ss = Connection::Unwrap(args.GetHolder());
+
+  JS_LOCAL_VALUE _item = GET_ARG(0);
+  if (args.Length() < 1 || !JS_IS_FUNCTION(_item)) {
+    THROW_TYPE_EXCEPTION("Must give a Function as first argument");
+  }
+
+  JS_NEW_PERSISTENT_FUNCTION(ss->psk_client_cb_, JS_TYPE_AS_FUNCTION(_item));
+
+  SSL_set_psk_client_callback(ss->ssl_, Connection::PskClientCallback_);
+
+  RETURN_TRUE();
+}
+JS_METHOD_END
+
+
+unsigned int node::crypto::
+  Connection::PskClientCallback_( SSL * ssl, 
+                                  const char * hint, 
+                                  char * identity, 
+                                  unsigned int max_identity_len, 
+                                  unsigned char * psk, 
+                                  unsigned int max_psk_len)
+{
+
+  node::commons* com = node::commons::getInstance();
+  JS_DEFINE_STATE_MARKER(com);
+
+  Connection *ss = static_cast<Connection*>(SSL_get_app_data(ssl));
+
+  JS_LOCAL_VALUE(argv[1]);
+
+  if (hint) {
+    argv[0] = STD_TO_STRING(hint);
+  }
+  else {
+    argv[0] = JS_UNDEFINED();
+  }
+  
+  if ( JS_IS_NULL(ss->psk_client_cb_)) {
+    return 0;
+  }
+
+  // call the JS callback. It's wrapped in a TryCatch because otherwise if it throws
+  // we wind up with a segfault. Eating the error isn't great; it would be better to
+  // put the Connection into an error state and hopefully get the message back to the
+  // application code somehow.
+  JS_TRY_CATCH(try_catch);
+  JS_LOCAL_VALUE(result) = ss->psk_client_cb_->Call(JS_GET_GLOBAL(), 1, argv);
+
+  if (try_catch.HasCaught()) {
+    if (try_catch.CanContinue()) node::ReportException(try_catch, true);
+    return 0;
+  }
+
+  // The result is expected to be an object with "identity" string and "key"
+  // buffer values. If this isn't the case then return 0, indicating that the
+  // identity isn't found.
+  if (result->IsObject()) {
+    node::commons* com = node::commons::getInstance();
+    JS_DEFINE_STATE_MARKER(com);
+
+    JS_LOCAL_OBJECT(idAndKey) = JS_VALUE_TO_OBJECT(result);
+
+    JS_LOCAL_VALUE(id) = idAndKey->Get(STD_TO_STRING("identity"));
+    JS_LOCAL_VALUE(key) = idAndKey->Get(STD_TO_STRING("key"));
+
+    if (JS_IS_STRING(id) && Buffer::HasInstance(key)) {
+      // write the chosen client identity string into the buffer provided
+      ssize_t hlen = StringBytes::JXSize(id, ASCII, false);
+      StringBytes::JXWrite(identity, hlen, id, ASCII, false);
+
+      // write the id's binary key into the buffer provided
+      JS_LOCAL_OBJECT(keyBuffer) = JS_VALUE_TO_OBJECT(key);
+      int len = Buffer::Length(keyBuffer);
+      if (len <= max_psk_len) {
+        memcpy(psk, Buffer::Data(keyBuffer), len);
+        return len;
+      }
+    }
+  }
+
+  return 0;
+}
+
 
 class Cipher : public ObjectWrap {
  public:

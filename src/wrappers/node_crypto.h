@@ -56,6 +56,9 @@ class SecureContext : ObjectWrap {
   static DEFINE_JS_METHOD(SetSessionIdContext);
   static DEFINE_JS_METHOD(Close);
   static DEFINE_JS_METHOD(LoadPKCS12);
+  static DEFINE_JS_METHOD(SetPskHint);
+  static DEFINE_JS_METHOD(SetPskServerCallback);
+
 
   static SSL_SESSION* GetSessionCallback(SSL* s, unsigned char* key, int len,
                                          int* copy);
@@ -85,6 +88,9 @@ class SecureContext : ObjectWrap {
 
   ~SecureContext() { FreeCTXMem(); }
 
+ private:
+  JS_PERSISTENT_FUNCTION(psk_server_cb_);
+
   INIT_NAMED_CLASS_MEMBERS(SecureContext, SecureContext) {
     NODE_SET_PROTOTYPE_METHOD(constructor, "init", SecureContext::Init);
     NODE_SET_PROTOTYPE_METHOD(constructor, "setKey", SecureContext::SetKey);
@@ -106,8 +112,17 @@ class SecureContext : ObjectWrap {
 
     JS_NEW_PERSISTENT_FUNCTION_TEMPLATE(com->secure_context_constructor,
                                         constructor);
+
+    NODE_SET_PROTOTYPE_METHOD(constructor, "setPskHint", SecureContext::SetPskHint);
+    NODE_SET_PROTOTYPE_METHOD(constructor, "setPskServerCallback", SecureContext::SetPskServerCallback);
+
   }
   END_INIT_NAMED_MEMBERS(SecureContext)
+
+
+    static unsigned int PskServerCallback_(SSL *ssl, const char *identity,
+      unsigned char *psk, unsigned int max_psk_len);
+
 };
 
 class ClientHelloParser {
@@ -210,6 +225,10 @@ class Connection : ObjectWrap {
   static int SelectSNIContextCallback_(SSL* s, int* ad, void* arg);
 #endif
 
+  static DEFINE_JS_METHOD(SetPskClientCallback);
+  static unsigned int PskClientCallback_(SSL *ssl, const char *hint, char *identity, unsigned int max_identity_len, unsigned char *psk, unsigned int max_psk_len);
+  JS_PERSISTENT_FUNCTION(psk_client_cb_);
+
   int HandleBIOError(BIO* bio, const char* func, int rv);
 
   enum ZeroStatus { kZeroIsNotAnError, kZeroIsAnError };
@@ -268,6 +287,7 @@ class Connection : ObjectWrap {
   bool is_server_; /* coverity[member_decl] */
   SSL_SESSION* next_sess_;
 
+
   friend class ClientHelloParser;
   friend class SecureContext;
 
@@ -313,6 +333,8 @@ class Connection : ObjectWrap {
     NODE_SET_PROTOTYPE_METHOD(constructor, "setSNICallback",
                               Connection::SetSNICallback);
 #endif
+
+    NODE_SET_PROTOTYPE_METHOD(constructor, "setPskClientCallback", Connection::SetPskClientCallback);
   }
   END_INIT_NAMED_MEMBERS(Connection)
 };
