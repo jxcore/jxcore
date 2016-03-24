@@ -751,7 +751,9 @@ unsigned int SecureContext::PskServerCallback_(SSL *ssl, const char *identity, u
 
   argv[0] = STD_TO_STRING(identity);
 
-  JS_LOCAL_VALUE(result) = sc->psk_server_cb_->Call(JS_GET_GLOBAL(), 1, argv);
+  JS_LOCAL_FUNCTION jlf = JS_TYPE_TO_LOCAL_FUNCTION(sc->psk_server_cb_);
+  
+  JS_LOCAL_VALUE(result) = jlf->Call(JS_GET_GLOBAL(), 1, argv);
 
   //// The result is expected to be a buffer containing the key. If this
   //// isn't the case then return 0, indicating that the identity isn't found.
@@ -1733,8 +1735,8 @@ JS_METHOD(Connection, IsInitFinished) {
   const char* pskId = SSL_get_psk_identity(ss->ssl_);
 
   if (pskId) {
-    JS_HANDLE_OBJECT sshandle_ = ss->handle_;
-    JS_NAME_SET((sshandle_), STD_TO_STRING("pskIdentity"), STD_TO_STRING(pskId));
+    JS_HANDLE_OBJECT sshandle_ = JS_TYPE_TO_LOCAL_OBJECT(ss->handle_);
+    JS_NAME_SET(sshandle_, JS_STRING_ID("pskIdentity"), STD_TO_STRING(pskId));
   }
 
   if (ss->ssl_ == NULL || SSL_is_init_finished(ss->ssl_) == false) {
@@ -2040,7 +2042,8 @@ unsigned int node::crypto::
     argv[0] = JS_UNDEFINED();
   }
   
-  if ( JS_IS_NULL(ss->psk_client_cb_)) {
+  JS_LOCAL_FUNCTION jlf = JS_TYPE_TO_LOCAL_FUNCTION(ss->psk_client_cb_);
+  if (JS_IS_NULL(jlf)) {
     return 0;
   }
 
@@ -2049,7 +2052,7 @@ unsigned int node::crypto::
   // put the Connection into an error state and hopefully get the message back to the
   // application code somehow.
   JS_TRY_CATCH(try_catch);
-  JS_LOCAL_VALUE(result) = ss->psk_client_cb_->Call(JS_GET_GLOBAL(), 1, argv);
+  JS_LOCAL_VALUE(result) = jlf->Call(JS_GET_GLOBAL(), 1, argv);
 
   if (try_catch.HasCaught()) {
     if (try_catch.CanContinue()) node::ReportException(try_catch, true);
