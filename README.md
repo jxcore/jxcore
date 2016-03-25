@@ -5,6 +5,9 @@ embedded applications using JavaScript and leveraging the Node ecosystem.
 
 Master build status: [![Build Status](https://travis-ci.org/jxcore/jxcore.svg?branch=master)](https://travis-ci.org/jxcore/jxcore)
 
+#### Important
+[Nubisa halting active development on JXcore platform](http://www.nubisa.com/nubisa-halting-active-development-on-jxcore-platform/)
+
 ### Features include
 
   - Support for core Node.JS features
