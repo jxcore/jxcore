@@ -48,9 +48,9 @@ var serverOptions = {
   pskCallback: function (id) {
     assert(id == identity);
     return pskKey ;
-  },
-  key: loadPEM('agent2-key'),
-  cert: loadPEM('agent2-cert')
+  }
+  // key: loadPEM('agent2-key'),
+  // cert: loadPEM('agent2-cert')
 };
 
 var server = tls.createServer(serverOptions, function (c) {
