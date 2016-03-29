@@ -138,7 +138,8 @@ Sample Usage
 int my_int = INTEGER_TO_STD(js_int);
 double my_double = NUMBER_TO_STD(js_number);
 bool my_bool = BOOLEAN_TO_STD(js_bool);
-const char *my_str = STRING_TO_STD(js_str);
+std::string my_str = STRING_TO_STD(js_str); // attention: std::string copies the value! 
+                                            //            STRING_TO_STD's return value is freed next line
 
 // you could also use jxcore::JXString class
 jxcore::JXString my_str(js_str);
