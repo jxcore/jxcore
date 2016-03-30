@@ -2073,8 +2073,8 @@ unsigned int node::crypto::
 
     if (JS_IS_STRING(id) && Buffer::HasInstance(key)) {
       // write the chosen client identity string into the buffer provided
-      ssize_t hlen = StringBytes::JXSize(id, ASCII, false);
-      StringBytes::JXWrite(identity, hlen, id, ASCII, false);
+      ssize_t hlen = StringBytes::JXSize(id, UTF8, false);
+      StringBytes::JXWrite(identity, hlen, id, UTF8, false);
 
       // write the id's binary key into the buffer provided
       JS_LOCAL_OBJECT(keyBuffer) = JS_VALUE_TO_OBJECT(key);
