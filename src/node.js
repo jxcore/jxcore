@@ -451,6 +451,13 @@
           if (process._MTED) {
             process.argv[2] = path.resolve(process.argv[2]);
           } else {
+            // Fix for Android release builds
+            if (!process.cwd()) {
+              process.cwd = function() {
+                return "/system/bin/";
+              }
+            }
+            // Fix end
             process.argv[1] = path.resolve(process.argv[1]);
           }
 
