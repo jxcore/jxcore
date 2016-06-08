@@ -397,10 +397,8 @@ commons::~commons() {
   delete threadPing;
 #endif
 
-  if (_ares_channel != NULL) {
-    clear_ares(_ares_channel);
-    free(_ares_channel);
-  }
+  if (_ares_channel != NULL)
+    ares_destroy(_ares_channel);
 }
 
 void commons::TriggerDummy(uv_async_t *handle, int status) {
