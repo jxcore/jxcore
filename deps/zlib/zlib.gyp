@@ -13,21 +13,17 @@
           'target_name': 'zlib',
           'type': 'static_library',
           'sources': [
-            'contrib/minizip/ioapi.c',
-            'contrib/minizip/ioapi.h',
-            'contrib/minizip/iowin32.c',
-            'contrib/minizip/iowin32.h',
-            'contrib/minizip/unzip.c',
-            'contrib/minizip/unzip.h',
-            'contrib/minizip/zip.c',
-            'contrib/minizip/zip.h',
             'adler32.c',
             'compress.c',
             'crc32.c',
             'crc32.h',
             'deflate.c',
             'deflate.h',
-            'gzio.c',
+            'gzclose.c',
+            'gzguts.h',
+            'gzlib.c',
+            'gzread.c',
+            'gzwrite.c',
             'infback.c',
             'inffast.c',
             'inffast.h',
@@ -36,7 +32,6 @@
             'inflate.h',
             'inftrees.c',
             'inftrees.h',
-            'mozzconf.h',
             'trees.c',
             'trees.h',
             'uncompr.c',
@@ -47,10 +42,7 @@
           ],
           'include_dirs': [
             '.',
-            # For contrib/minizip
-            './contrib/minizip',
           ],
-          'defines!': [ 'DEBUG' ], # disable ZLib debugging (MozJS 431950)
           'direct_dependent_settings': {
             'include_dirs': [
               '.',
@@ -58,78 +50,15 @@
           },
           'conditions': [
             ['OS!="win"', {
-              'product_name': 'chrome_zlib',
               'cflags!': [ '-ansi' ],
-              'sources!': [
-                'contrib/minizip/iowin32.c'
-              ],
+              'defines': [ 'Z_HAVE_UNISTD_H' ],
             }],
-            ['OS=="ios"', {
-              'xcode_settings': {
-                'ALWAYS_SEARCH_USER_PATHS': 'NO',
-                'GCC_CW_ASM_SYNTAX': 'NO',                # No -fasm-blocks
-                'GCC_DYNAMIC_NO_PIC': 'NO',               # No -mdynamic-no-pic
-                                                          # (Equivalent to -fPIC)
-                'GCC_ENABLE_CPP_EXCEPTIONS': 'NO',        # -fno-exceptions
-                'GCC_ENABLE_CPP_RTTI': 'NO',              # -fno-rtti
-                'GCC_ENABLE_PASCAL_STRINGS': 'NO',        # No -mpascal-strings
-                'GCC_THREADSAFE_STATICS': 'NO',           # -fno-threadsafe-statics
-                'PREBINDING': 'NO',                       # No -Wl,-prebind
-                'EMBED_BITCODE': 'YES',
-                'IPHONEOS_DEPLOYMENT_TARGET': '6.0',
-                'GCC_GENERATE_DEBUGGING_SYMBOLS': 'NO',
-          
-                'USE_HEADERMAP': 'NO',
-                'OTHER_CFLAGS': [
-                  '-fno-strict-aliasing',
-                  '-fno-standalone-debug'
-                ],
-                'OTHER_CPLUSPLUSFLAGS': [
-                  '-fno-strict-aliasing',
-                  '-fno-standalone-debug'
-                ],
-                'OTHER_LDFLAGS': [
-                  '-s'
-                ],
-                'WARNING_CFLAGS': [
-                  '-Wall',
-                  '-Wendif-labels',
-                  '-W',
-                  '-Wno-unused-parameter',
-                ],
-              },
-              'defines':[ '__IOS__' ],
-              'conditions': [
-                ['target_arch=="ia32"', {
-                  'xcode_settings': {'ARCHS': ['i386']},
-                }],
-                ['target_arch=="x64"', {
-                  'xcode_settings': {'ARCHS': ['x86_64']},
-                }],
-                [ 'target_arch in "arm64 arm armv7s"', {
-                  'xcode_settings': {
-                    'OTHER_CFLAGS': [
-                      '-fembed-bitcode'
-                    ],
-                    'OTHER_CPLUSPLUSFLAGS': [
-                      '-fembed-bitcode'
-                    ],
-                  }
-                }],
-                [ 'target_arch=="arm64"', {
-                  'xcode_settings': {'ARCHS': ['arm64']},
-                }],
-                [ 'target_arch=="arm"', {
-                  'xcode_settings': {'ARCHS': ['armv7']},
-                }],
-                [ 'target_arch=="armv7s"', {
-                  'xcode_settings': {'ARCHS': ['armv7s']},
-                }],
-                [ 'target_arch=="x64" or target_arch=="ia32"', {
-                  'xcode_settings': { 'SDKROOT': 'iphonesimulator', 'ENABLE_BITCODE': 'YES'  },
-                }, {
-                  'xcode_settings': { 'SDKROOT': 'iphoneos', 'ENABLE_BITCODE': 'YES'},
-                }]
+            ['OS=="mac" or OS=="ios" or OS=="freebsd" or OS=="android"', {
+              # Mac, Android and the BSDs don't have fopen64, ftello64, or
+              # fseeko64. We use fopen, ftell, and fseek instead on these
+              # systems.
+              'defines': [
+                'USE_FILE32API'
               ],
             }],
           ],
@@ -147,14 +76,6 @@
           },
           'defines': [
             'USE_SYSTEM_ZLIB',
-          ],
-          'sources': [
-            'contrib/minizip/ioapi.c',
-            'contrib/minizip/ioapi.h',
-            'contrib/minizip/unzip.c',
-            'contrib/minizip/unzip.h',
-            'contrib/minizip/zip.c',
-            'contrib/minizip/zip.h',
           ],
           'link_settings': {
             'libraries': [
