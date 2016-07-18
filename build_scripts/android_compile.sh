@@ -170,7 +170,8 @@ export AR=arm-linux-androideabi-ar
 export CC=arm-linux-androideabi-gcc
 export CXX=arm-linux-androideabi-g++
 export LINK=arm-linux-androideabi-g++
-export STRIP=arm-linux-androideabi-strip
+#export STRIP=arm-linux-androideabi-strip
+export STRIP=true
 
 LOG $GREEN_COLOR "Compiling Android ARM7\n"
 MAKE_INSTALL arm
@@ -181,7 +182,8 @@ export AR=x86_64-linux-android-ar
 export CC=x86_64-linux-android-gcc
 export CXX=x86_64-linux-android-g++
 export LINK=x86_64-linux-android-g++
-export STRIP=x86_64-linux-android-strip
+#export STRIP=x86_64-linux-android-strip
+export STRIP=true
 
 LOG $GREEN_COLOR "Compiling Android INTEL64\n"
 MAKE_INSTALL x64
@@ -192,7 +194,8 @@ export AR=i686-linux-android-ar
 export CC=i686-linux-android-gcc
 export CXX=i686-linux-android-g++
 export LINK=i686-linux-android-g++
-export STRIP=i686-linux-android-strip
+#export STRIP=i686-linux-android-strip
+export STRIP=true
 
 LOG $GREEN_COLOR "Compiling Android INTEL32\n"
 MAKE_INSTALL ia32
