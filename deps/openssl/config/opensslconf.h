@@ -90,7 +90,15 @@
 # define OPENSSL_LINUX 1
 #endif
 
-#if defined(OPENSSL_LINUX) && defined(__i386__)
+#if defined(__ANDROID___) && defined(__i386__)
+# include "./archs/android-x86/opensslconf.h"
+#elif defined(__ANDROID__) && defined(__x86_64__)
+# include "./archs/android-x86_64/opensslconf.h"
+#elif defined(__ANDROID__) && defined(__mips__)
+# include "./archs/android-mips/opensslconf.h"
+#elif defined(__ANDROID__) && defined(__arm__)
+# include "./archs/android-armv7/opensslconf.h"
+#elif defined(OPENSSL_LINUX) && defined(__i386__)
 # include "./archs/linux-elf/opensslconf.h"
 #elif defined(OPENSSL_LINUX) && defined(__ILP32__)
 # include "./archs/linux-x32/opensslconf.h"

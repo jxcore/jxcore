@@ -18,7 +18,7 @@ ERROR_ABORT() {
   if [[ $? != 0 ]]
   then
     LOG $RED_COLOR "compilation aborted\n"
-    exit  
+    exit
   fi
 }
 
@@ -28,7 +28,7 @@ ERROR_ABORT_MOVE() {
   then
     $($1)
     LOG $RED_COLOR "compilation aborted for $2 target\n"
-    exit  
+    exit
   fi
 }
 
@@ -54,7 +54,7 @@ ARM7=out_arm_droid
 INTEL64=out_x64_droid
 INTEL32=out_ia32_droid
 FATBIN=out_android/android
-    
+
 MAKE_INSTALL() {
   TARGET_DIR="out_$1_droid"
   mv $TARGET_DIR out
@@ -62,44 +62,44 @@ MAKE_INSTALL() {
   ERROR_ABORT_MOVE "mv out $TARGET_DIR" $1
   make -j 2
   ERROR_ABORT_MOVE "mv out $TARGET_DIR" $1
-  
+
   PREFIX_DIR="out/Release"
   $STRIP -d $PREFIX_DIR/libcares.a
   mv $PREFIX_DIR/libcares.a "$PREFIX_DIR/libcares_$1.a"
-  
-  $STRIP -d $PREFIX_DIR/libchrome_zlib.a
-  mv $PREFIX_DIR/libchrome_zlib.a "$PREFIX_DIR/libchrome_zlib_$1.a"
-  
+
+  $STRIP -d $PREFIX_DIR/libzlib.a
+  mv $PREFIX_DIR/libzlib.a "$PREFIX_DIR/libzlib_$1.a"
+
   $STRIP -d $PREFIX_DIR/libhttp_parser.a
   mv $PREFIX_DIR/libhttp_parser.a "$PREFIX_DIR/libhttp_parser_$1.a"
-  
+
   $STRIP -d $PREFIX_DIR/libjx.a
   mv $PREFIX_DIR/libjx.a "$PREFIX_DIR/libjx_$1.a"
-  
+
   $STRIP -d $PREFIX_DIR/libmozjs.a
   mv $PREFIX_DIR/libmozjs.a "$PREFIX_DIR/libmozjs_$1.a"
-  
+
   $STRIP -d $PREFIX_DIR/libopenssl.a
   mv $PREFIX_DIR/libopenssl.a "$PREFIX_DIR/libopenssl_$1.a"
-  
+
   $STRIP -d $PREFIX_DIR/libuv.a
   mv $PREFIX_DIR/libuv.a "$PREFIX_DIR/libuv_$1.a"
-  
+
   $STRIP -d $PREFIX_DIR/libsqlite3.a
   mv $PREFIX_DIR/libsqlite3.a "$PREFIX_DIR/libsqlite3_$1.a"
-  
+
 if [ "$CONF_EXTRAS" == "--embed-leveldown" ]
 then
   $STRIP -d $PREFIX_DIR/libleveldown.a
   mv $PREFIX_DIR/libleveldown.a "$PREFIX_DIR/libleveldown_$1.a"
-  
+
   $STRIP -d $PREFIX_DIR/libsnappy.a
   mv $PREFIX_DIR/libsnappy.a "$PREFIX_DIR/libsnappy_$1.a"
-  
+
   $STRIP -d $PREFIX_DIR/libleveldb.a
   mv $PREFIX_DIR/libleveldb.a "$PREFIX_DIR/libleveldb_$1.a"
 fi
-  
+
   mv out $TARGET_DIR
 }
 
@@ -202,7 +202,7 @@ rm -rf $FATBIN
 mkdir -p $FATBIN/bin
 
 COMBINE "libcares"
-COMBINE "libchrome_zlib"
+COMBINE "libzlib"
 COMBINE "libhttp_parser"
 COMBINE "libjx"
 COMBINE "libmozjs"
