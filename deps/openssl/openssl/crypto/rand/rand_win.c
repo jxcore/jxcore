@@ -198,11 +198,7 @@ typedef NET_API_STATUS(NET_API_FUNCTION *NETFREE) (LPBYTE);
 
 int RAND_poll(void)
 {
-# ifndef WINONECORE
     MEMORYSTATUS m;
-# else
-    MEMORYSTATUSEX m;
-# endif
     HCRYPTPROV hProvider = 0;
     DWORD w;
     int good = 0;
@@ -570,11 +566,7 @@ int RAND_poll(void)
     readtimer();
 
     /* memory usage statistics */
-# ifndef WINONECORE
     GlobalMemoryStatus(&m);
-# else
-    GlobalMemoryStatusEx(&m);
-# endif
     RAND_add(&m, sizeof(m), 1);
 
     /* process ID */
@@ -690,7 +682,6 @@ static void readtimer(void)
 
 static void readscreen(void)
 {
-# ifndef WINONECORE
 # if !defined(OPENSSL_SYS_WINCE) && !defined(OPENSSL_SYS_WIN32_CYGWIN)
     HDC hScrDC;                 /* screen DC */
     HDC hMemDC;                 /* memory DC */
@@ -755,7 +746,6 @@ static void readscreen(void)
     DeleteDC(hMemDC);
     DeleteDC(hScrDC);
 # endif                         /* !OPENSSL_SYS_WINCE */
-# endif /* WINONECORE */
 }
 
 #endif

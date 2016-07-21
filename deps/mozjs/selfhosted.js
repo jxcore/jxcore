@@ -104,9 +104,9 @@ function TypedObjectGet(descr, typedObj, offset) {
   case 3:
     return TypedObjectGetDerived(descr, typedObj, offset);
   case 0:
-                                                              ;
+    ;
   }
-                                                       ;
+  ;
   return undefined;
 }
 function TypedObjectGetDerived(descr, typedObj, offset) {
@@ -146,7 +146,7 @@ function TypedObjectGetScalar(descr, typedObj, offset) {
   case 7:
     return Load_float64(typedObj, offset);
   }
-                                                 ;
+  ;
   return undefined;
 }
 function TypedObjectGetReference(descr, typedObj, offset) {
@@ -159,7 +159,7 @@ function TypedObjectGetReference(descr, typedObj, offset) {
   case 2:
     return Load_string(typedObj, offset);
   }
-                                                 ;
+  ;
   return undefined;
 }
 function TypedObjectGetX4(descr, typedObj, offset) {
@@ -178,7 +178,7 @@ function TypedObjectGetX4(descr, typedObj, offset) {
     var w = Load_int32(typedObj, offset + 12);
     return GetInt32x4TypeDescr()(x, y, z, w);
   }
-                                             ;
+  ;
   return undefined;
 }
 function TypedObjectSet(descr, typedObj, offset, fromValue) {
@@ -278,7 +278,7 @@ function TypedObjectSetScalar(descr, typedObj, offset, fromValue) {
   case 7:
     return Store_float64(typedObj, offset, +fromValue);
   }
-                                                 ;
+  ;
   return undefined;
 }
 function TypedObjectSetReference(descr, typedObj, offset, fromValue) {
@@ -292,7 +292,7 @@ function TypedObjectSetReference(descr, typedObj, offset, fromValue) {
   case 2:
     return Store_string(typedObj, offset, ToString(fromValue));
   }
-                                                 ;
+  ;
   return undefined;
 }
 function TypedObjectSetX4(descr, typedObj, offset, fromValue) {
@@ -372,7 +372,7 @@ function X4ProtoString(type) {
   case 1:
     return "float32x4";
   }
-                                          ;
+  ;
   return undefined;
 }
 function X4ToSource() {
@@ -385,8 +385,8 @@ function X4ToSource() {
   return X4ProtoString(type)+"("+this.x+", "+this.y+", "+this.z+", "+this.w+")";
 }
 function DescrsEquiv(descr1, descr2) {
-                                                                           ;
-                                                                           ;
+  ;
+  ;
   return UnsafeGetReservedSlot(descr1, 1) === UnsafeGetReservedSlot(descr2, 1);
 }
 function DescrToSource() {
@@ -582,7 +582,7 @@ function GET_BIT(data, index) {
   return (data[word] & mask) != 0;
 }
 function BuildTypedSeqImpl(arrayType, len, depth, func) {
-                                                                                                ;
+  ;
   if (depth <= 0 || ((depth) | 0) !== depth)
     ThrowError(329);
   var [iterationSpace, grainType, totalLength] =
@@ -609,9 +609,9 @@ function BuildTypedSeqImpl(arrayType, len, depth, func) {
   return result;
 }
 function ComputeIterationSpace(arrayType, depth, len) {
-                                                                                                                ;
-                                                                                           ;
-                                                                         ;
+  ;
+  ;
+  ;
   var iterationSpace = NewDenseArray(depth);
   iterationSpace[0] = len;
   var totalLength = len;
@@ -643,10 +643,10 @@ function IncrementIterationSpace(indices, iterationSpace) {
   }
 }
 function MapUntypedSeqImpl(inArray, outputType, maybeFunc) {
-                                                                             ;
-                                                                                           ;
+  ;
+  ;
   inArray = ToObject(inArray);
-                                                                                          ;
+  ;
   if (!IsCallable(maybeFunc))
     ThrowError(9, DecompileArg(0, maybeFunc));
   var func = maybeFunc;
@@ -670,9 +670,9 @@ function MapUntypedSeqImpl(inArray, outputType, maybeFunc) {
   return result;
 }
 function MapTypedSeqImpl(inArray, depth, outputType, func) {
-                                                                                                                   ;
-                                                                                                                    ;
-                                                                                          ;
+  ;
+  ;
+  ;
   if (depth <= 0 || ((depth) | 0) !== depth)
     ThrowError(329);
   var inputType = TypeOfTypedObject(inArray);
@@ -787,14 +787,15 @@ function MapTypedParImplDepth1(inArray, inArrayType, outArrayType, func) {
   const outGrainTypeIsTransparent = ObjectIsTransparentTypedObject(outArray);
   const slicesInfo = ComputeSlicesInfo(length);
   const numWorkers = ForkJoinNumWorkers();
-                                                                ;
+  ;
   const pointers = [];
   for (var i = 0; i < numWorkers; i++) {
     const inTypedObject = TypedObjectGetDerivedIf(inGrainType, inArray, 0,
                                                   inGrainTypeIsComplex);
     const outTypedObject = TypedObjectGetOpaqueIf(outGrainType, outArray, 0,
                                                   outGrainTypeIsComplex);
-    callFunction(std_Array_push, pointers, ({ inTypedObject: inTypedObject, outTypedObject: outTypedObject }));;
+    callFunction(std_Array_push, pointers, ({ inTypedObject: inTypedObject, outTypedObject: outTypedObject }));
+                                                              ;
   }
   const inBaseOffset = ((UnsafeGetReservedSlot(inArray, 0)) | 0);
   ForkJoin(mapThread, 0, slicesInfo.count, ForkJoinMode(mode), outArray);
@@ -842,8 +843,8 @@ function MapTypedParImplDepth1(inArray, inArrayType, outArrayType, func) {
 }
 SetScriptHints(MapTypedParImplDepth1, { cloneAtCallsite: true });
 function ReduceTypedSeqImpl(array, outputType, func, initial) {
-                                                                                                              ;
-                                                                                                              ;
+  ;
+  ;
   var start, value;
   if (initial === undefined && array.length < 1)
     ThrowError(328);
@@ -871,10 +872,10 @@ function ReduceTypedSeqImpl(array, outputType, func, initial) {
   return value;
 }
 function ScatterTypedSeqImpl(array, outputType, indices, defaultValue, conflictFunc) {
-                                                                                                               ;
-                                                                                                               ;
-                                                                                         ;
-                                                                                                                      ;
+  ;
+  ;
+  ;
+  ;
   var result = new outputType();
   var bitvec = new Uint8Array(result.length);
   var elemType = outputType.elementType;
@@ -898,8 +899,8 @@ function ScatterTypedSeqImpl(array, outputType, indices, defaultValue, conflictF
   return result;
 }
 function FilterTypedSeqImpl(array, func) {
-                                                                                                              ;
-                                                                                 ;
+  ;
+  ;
   var arrayType = TypeOfTypedObject(array);
   if (!TypeDescrIsArrayType(arrayType))
     ThrowError(329);
@@ -1310,7 +1311,7 @@ function ArrayIteratorNext() {
         result.value = pair;
         return result;
     }
-                                                ;
+    ;
     result.value = index;
     return result;
 }
@@ -1676,7 +1677,7 @@ function ErrorToString()
   return name + ": " + msg;
 }
 function toASCIIUpperCase(s) {
-                                                     ;
+    ;
     var result = "";
     for (var i = 0; i < s.length; i++) {
         var c = s[i];
@@ -1742,7 +1743,7 @@ var duplicateSingletonRE = (function () {
     return new RegExp(duplicateSingleton);
 }());
 function IsStructurallyValidLanguageTag(locale) {
-                                                                        ;
+    ;
     if (!regexp_test_no_statics(languageTagRE, locale))
         return false;
     if (callFunction(std_String_startsWith, locale, "x-"))
@@ -1754,7 +1755,7 @@ function IsStructurallyValidLanguageTag(locale) {
            !regexp_test_no_statics(duplicateSingletonRE, locale);
 }
 function CanonicalizeLanguageTag(locale) {
-                                                                             ;
+    ;
     locale = callFunction(std_String_toLowerCase, locale);
     if (callFunction(std_Object_hasOwnProperty, langTagMappings, locale))
         return langTagMappings[locale];
@@ -1873,9 +1874,9 @@ function CanonicalizeLocaleList(locales) {
     return seen;
 }
 function BestAvailableLocale(availableLocales, locale) {
-                                                                                                  ;
-                                                                                                  ;
-                                                                                                  ;
+    ;
+    ;
+    ;
     var candidate = locale;
     while (true) {
         if (availableLocales[candidate])
@@ -2029,7 +2030,7 @@ function GetOption(options, property, type, values, fallback) {
         else if (type === "string")
             value = ToString(value);
         else
-                                      ;
+            ;
         if (values !== undefined && callFunction(std_Array_indexOf, values, value) === -1)
             ThrowError(312, property, value);
         return value;
@@ -2037,9 +2038,9 @@ function GetOption(options, property, type, values, fallback) {
     return fallback;
 }
 function GetNumberOption(options, property, minimum, maximum, fallback) {
-                                                          ;
-                                                          ;
-                                                                                                     ;
+    ;
+    ;
+    ;
     var value = options[property];
     if (value !== undefined) {
         value = ToNumber(value);
@@ -2054,7 +2055,7 @@ function defineProperty(o, p, v) {
 }
 var internalsMap = new WeakMap();
 function initializeIntlObject(obj) {
-                                                                      ;
+    ;
     var internals = std_Object_create(null);
     internals.type = "partial";
     internals.lazyData = null;
@@ -2064,46 +2065,46 @@ function initializeIntlObject(obj) {
 }
 function setLazyData(internals, type, lazyData)
 {
-                                                                                          ;
-                                                                                                  ;
-                                                      ;
+    ;
+    ;
+    ;
     internals.lazyData = lazyData;
     internals.type = type;
 }
 function setInternalProperties(internals, internalProps)
 {
-                                                                                           ;
-                                                                        ;
-                                                                                 ;
+    ;
+    ;
+    ;
     internals.internalProps = internalProps;
     internals.lazyData = null;
 }
 function maybeInternalProperties(internals)
 {
-                                                                               ;
-                                                                                                                                 ;
+    ;
+    ;
     var lazyData = internals.lazyData;
     if (lazyData)
         return null;
-                                                                                         ;
+    ;
     return internals.internalProps;
 }
 function isInitializedIntlObject(obj) {
     return callFunction(std_WeakMap_has, internalsMap, obj);
 }
 function getIntlObjectInternals(obj, className, methodName) {
-                                                                                     ;
+    ;
     var internals = callFunction(std_WeakMap_get, internalsMap, obj);
-                                                                                                  ;
+    ;
     if (internals === undefined || internals.type !== className)
         ThrowError(305, className, methodName, className);
     return internals;
 }
 function getInternals(obj)
 {
-                                                                                   ;
+    ;
     var internals = callFunction(std_WeakMap_get, internalsMap, obj);
-                                                                                   ;
+    ;
     var lazyData = internals.lazyData;
     if (!lazyData)
         return internals.internalProps;
@@ -2124,7 +2125,7 @@ var collatorKeyMappings = {
 };
 function resolveCollatorInternals(lazyCollatorData)
 {
-                                                                  ;
+    ;
     var internalProps = std_Object_create(null);
     internalProps.usage = lazyCollatorData.usage;
     var Collator = collatorInternalProperties;
@@ -2173,7 +2174,7 @@ function resolveCollatorInternals(lazyCollatorData)
 }
 function getCollatorInternals(obj, methodName) {
     var internals = getIntlObjectInternals(obj, "Collator", methodName);
-                                                                                    ;
+    ;
     var internalProps = maybeInternalProperties(internals);
     if (internalProps)
         return internalProps;
@@ -2182,7 +2183,7 @@ function getCollatorInternals(obj, methodName) {
     return internalProps;
 }
 function InitializeCollator(collator, locales, options) {
-                                                    ;
+    ;
     if (isInitializedIntlObject(collator))
         ThrowError(306);
     var internals = initializeIntlObject(collator);
@@ -2291,7 +2292,7 @@ var numberFormatInternalProperties = {
     relevantExtensionKeys: ["nu"]
 };
 function resolveNumberFormatInternals(lazyNumberFormatData) {
-                                                                      ;
+    ;
     var internalProps = std_Object_create(null);
     var requestedLocales = lazyNumberFormatData.requestedLocales;
     var opt = lazyNumberFormatData.opt;
@@ -2314,7 +2315,7 @@ function resolveNumberFormatInternals(lazyNumberFormatData) {
     internalProps.minimumFractionDigits = lazyNumberFormatData.minimumFractionDigits;
     internalProps.maximumFractionDigits = lazyNumberFormatData.maximumFractionDigits;
     if ("minimumSignificantDigits" in lazyNumberFormatData) {
-                                                                                                 ;
+        ;
         internalProps.minimumSignificantDigits = lazyNumberFormatData.minimumSignificantDigits;
         internalProps.maximumSignificantDigits = lazyNumberFormatData.maximumSignificantDigits;
     }
@@ -2324,7 +2325,7 @@ function resolveNumberFormatInternals(lazyNumberFormatData) {
 }
 function getNumberFormatInternals(obj, methodName) {
     var internals = getIntlObjectInternals(obj, "NumberFormat", methodName);
-                                                                                        ;
+    ;
     var internalProps = maybeInternalProperties(internals);
     if (internalProps)
         return internalProps;
@@ -2333,7 +2334,7 @@ function getNumberFormatInternals(obj, methodName) {
     return internalProps;
 }
 function InitializeNumberFormat(numberFormat, locales, options) {
-                                                            ;
+    ;
     if (isInitializedIntlObject(numberFormat))
         ThrowError(306);
     var internals = initializeIntlObject(numberFormat);
@@ -2419,8 +2420,8 @@ var currencyDigits = {
     XPF: 0
 };
 function CurrencyDigits(currency) {
-                                                          ;
-                                                                            ;
+    ;
+    ;
     if (callFunction(std_Object_hasOwnProperty, currencyDigits, currency))
         return currencyDigits[currency];
     return 2;
@@ -2485,7 +2486,7 @@ function Intl_NumberFormat_resolvedOptions() {
     return result;
 }
 function resolveDateTimeFormatInternals(lazyDateTimeFormatData) {
-                                                                        ;
+    ;
     var internalProps = std_Object_create(null);
     var DateTimeFormat = dateTimeFormatInternalProperties;
     var localeData = DateTimeFormat.localeData;
@@ -2507,7 +2508,7 @@ function resolveDateTimeFormatInternals(lazyDateTimeFormatData) {
 }
 function getDateTimeFormatInternals(obj, methodName) {
     var internals = getIntlObjectInternals(obj, "DateTimeFormat", methodName);
-                                                                                          ;
+    ;
     var internalProps = maybeInternalProperties(internals);
     if (internalProps)
         return internalProps;
@@ -2528,7 +2529,7 @@ var dateTimeComponentValues = {
 };
 var dateTimeComponents = std_Object_getOwnPropertyNames(dateTimeComponentValues);
 function InitializeDateTimeFormat(dateTimeFormat, locales, options) {
-                                                                ;
+    ;
     if (isInitializedIntlObject(dateTimeFormat))
         ThrowError(306);
     var internals = initializeIntlObject(dateTimeFormat);
@@ -2663,8 +2664,8 @@ function toBestICUPattern(locale, options) {
     return intl_patternForSkeleton(locale, skeleton);
 }
 function ToDateTimeOptions(options, required, defaults) {
-                                                             ;
-                                                             ;
+    ;
+    ;
     if (options === undefined)
         options = null;
     else
@@ -2816,7 +2817,7 @@ var icuPatternCharToComponent = {
     V: "timeZoneName"
 };
 function resolveICUPattern(pattern, result) {
-                                                 ;
+    ;
     var i = 0;
     while (i < pattern.length) {
         var c = pattern[i++];
