@@ -29,6 +29,7 @@ import gyp
 import gyp.common
 import gyp.xcode_emulation
 from gyp.common import GetEnvironFallback
+from gyp.common import GypError
 
 generator_default_variables = {
   'EXECUTABLE_PREFIX': '',
@@ -63,9 +64,8 @@ generator_filelist_paths = None
 def CalculateVariables(default_variables, params):
   """Calculate additional variables for use in the build (called by gyp)."""
   flavor = gyp.common.GetFlavor(params)
-  if flavor == 'mac' or flavor == 'ios':
-    default_variables.setdefault('OS', flavor)
-    
+  if flavor == 'mac':
+    default_variables.setdefault('OS', 'mac')
     default_variables.setdefault('SHARED_LIB_SUFFIX', '.dylib')
     default_variables.setdefault('SHARED_LIB_DIR',
                                  generator_default_variables['PRODUCT_DIR'])
@@ -211,10 +211,10 @@ cmd_solink_module_host = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(T
 
 LINK_COMMANDS_AIX = """\
 quiet_cmd_alink = AR($(TOOLSET)) $@
-cmd_alink = rm -f $@ && $(AR.$(TOOLSET)) crs $@ $(filter %.o,$^)
+cmd_alink = rm -f $@ && $(AR.$(TOOLSET)) -X32_64 crs $@ $(filter %.o,$^)
 
 quiet_cmd_alink_thin = AR($(TOOLSET)) $@
-cmd_alink_thin = rm -f $@ && $(AR.$(TOOLSET)) crs $@ $(filter %.o,$^)
+cmd_alink_thin = rm -f $@ && $(AR.$(TOOLSET)) -X32_64 crs $@ $(filter %.o,$^)
 
 quiet_cmd_link = LINK($(TOOLSET)) $@
 cmd_link = $(LINK.$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o $@ $(LD_INPUTS) $(LIBS)
@@ -273,30 +273,22 @@ all_deps :=
 %(make_global_settings)s
 
 CC.target ?= %(CC.target)s
-CFLAGS.target ?= $(CFLAGS)
+CFLAGS.target ?= $(CPPFLAGS) $(CFLAGS)
 CXX.target ?= %(CXX.target)s
-CXXFLAGS.target ?= $(CXXFLAGS)
+CXXFLAGS.target ?= $(CPPFLAGS) $(CXXFLAGS)
 LINK.target ?= %(LINK.target)s
 LDFLAGS.target ?= $(LDFLAGS)
 AR.target ?= $(AR)
 
 # C++ apps need to be linked with g++.
-#
-# Note: flock is used to seralize linking. Linking is a memory-intensive
-# process so running parallel links can often lead to thrashing.  To disable
-# the serialization, override LINK via an envrionment variable as follows:
-#
-#   export LINK=g++
-#
-# This will allow make to invoke N linker processes as specified in -jN.
-LINK ?= %(flock)s $(builddir)/linker.lock $(CXX.target)
+LINK ?= $(CXX.target)
 
 # TODO(evan): move all cross-compilation logic to gyp-time so we don't need
 # to replicate this environment fallback in make as well.
 CC.host ?= %(CC.host)s
-CFLAGS.host ?=
+CFLAGS.host ?= $(CPPFLAGS_host) $(CFLAGS_host)
 CXX.host ?= %(CXX.host)s
-CXXFLAGS.host ?=
+CXXFLAGS.host ?= $(CPPFLAGS_host) $(CXXFLAGS_host)
 LINK.host ?= %(LINK.host)s
 LDFLAGS.host ?=
 AR.host ?= %(AR.host)s
@@ -373,7 +365,7 @@ cmd_touch = touch $@
 
 quiet_cmd_copy = COPY $@
 # send stderr to /dev/null to ignore messages when linking directories.
-cmd_copy = ln -f "$<" "$@" 2>/dev/null || (rm -rf "$@" && cp -af "$<" "$@")
+cmd_copy = ln -f "$<" "$@" 2>/dev/null || (rm -rf "$@" && cp %(copy_archive_args)s "$<" "$@")
 
 %(link_commands)s
 """
@@ -632,6 +624,38 @@ def QuoteSpaces(s, quote=r'\ '):
   return s.replace(' ', quote)
 
 
+# TODO: Avoid code duplication with _ValidateSourcesForMSVSProject in msvs.py.
+def _ValidateSourcesForOSX(spec, all_sources):
+  """Makes sure if duplicate basenames are not specified in the source list.
+
+  Arguments:
+    spec: The target dictionary containing the properties of the target.
+  """
+  if spec.get('type', None) != 'static_library':
+    return
+
+  basenames = {}
+  for source in all_sources:
+    name, ext = os.path.splitext(source)
+    is_compiled_file = ext in [
+        '.c', '.cc', '.cpp', '.cxx', '.m', '.mm', '.s', '.S']
+    if not is_compiled_file:
+      continue
+    basename = os.path.basename(name)  # Don't include extension.
+    basenames.setdefault(basename, []).append(source)
+
+  error = ''
+  for basename, files in basenames.iteritems():
+    if len(files) > 1:
+      error += '  %s: %s\n' % (basename, ' '.join(files))
+
+  if error:
+    print('static library %s has several files with the same basename:\n' %
+          spec['target_name'] + error + 'libtool on OS X will generate' +
+          ' warnings for them.')
+    raise GypError('Duplicate basenames in sources section, see list above')
+
+
 # Map from qualified target to path to output.
 target_outputs = {}
 # Map from qualified target to any linkable output.  A subset
@@ -641,7 +665,7 @@ target_outputs = {}
 target_link_deps = {}
 
 
-class MakefileWriter:
+class MakefileWriter(object):
   """MakefileWriter packages up the writing of one target-specific foobar.mk.
 
   Its only real entry point is Write(), and is mostly used for namespacing.
@@ -699,7 +723,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     self.toolset = spec['toolset']
 
     self.is_mac_bundle = gyp.xcode_emulation.IsMacBundle(self.flavor, spec)
-    if self.flavor == 'mac' or self.flavor == 'ios':
+    if self.flavor == 'mac':
       self.xcode_settings = gyp.xcode_emulation.XcodeSettings(spec)
     else:
       self.xcode_settings = None
@@ -759,6 +783,10 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     # Sources.
     all_sources = spec.get('sources', []) + extra_sources
     if all_sources:
+      if self.flavor == 'mac':
+        # libtool on OS X generates warnings for duplicate basenames in the same
+        # target.
+        _ValidateSourcesForOSX(spec, all_sources)
       self.WriteSources(
           configs, deps, all_sources, extra_outputs,
           extra_link_deps, part_of_all,
@@ -863,7 +891,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
 
       # Write the actual command.
       action_commands = action['action']
-      if self.flavor == 'mac' or self.flavor == 'ios':
+      if self.flavor == 'mac':
         action_commands = [gyp.xcode_emulation.ExpandEnvVars(command, env)
                           for command in action_commands]
       command = gyp.common.EncodePOSIXShellList(action_commands)
@@ -991,7 +1019,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         # accidentally writing duplicate dummy rules for those outputs.
         self.WriteLn('%s: obj := $(abs_obj)' % outputs[0])
         self.WriteLn('%s: builddir := $(abs_builddir)' % outputs[0])
-        self.WriteMakeRule(outputs, inputs + ['FORCE_DO_CMD'], actions)
+        self.WriteMakeRule(outputs, inputs, actions,
+                           command="%s_%d" % (name, count))
         # Spaces in rule filenames are not supported, but rule variables have
         # spaces in them (e.g. RULE_INPUT_PATH expands to '$(abspath $<)').
         # The spaces within the variables are valid, so remove the variables
@@ -1014,7 +1043,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         # action, cd_action, and mkdirs get written to a toplevel variable
         # called cmd_foo. Toplevel variables can't handle things that change
         # per makefile like $(TARGET), so hardcode the target.
-        if self.flavor == 'mac' or self.flavor == 'ios':
+        if self.flavor == 'mac':
           action = [gyp.xcode_emulation.ExpandEnvVars(command, env)
                     for command in action]
         action = gyp.common.EncodePOSIXShellList(action)
@@ -1102,9 +1131,12 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     for output, res in gyp.xcode_emulation.GetMacBundleResources(
         generator_default_variables['PRODUCT_DIR'], self.xcode_settings,
         map(Sourceify, map(self.Absolutify, resources))):
-      self.WriteDoCmd([output], [res], 'mac_tool,,,copy-bundle-resource',
-                      part_of_all=True)
-      bundle_deps.append(output)
+      _, ext = os.path.splitext(output)
+      if ext != '.xcassets':
+        # Make does not supports '.xcassets' emulation.
+        self.WriteDoCmd([output], [res], 'mac_tool,,,copy-bundle-resource',
+                        part_of_all=True)
+        bundle_deps.append(output)
 
 
   def WriteMacInfoPlist(self, bundle_deps):
@@ -1154,7 +1186,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       self.WriteList(config.get('defines'), 'DEFS_%s' % configname, prefix='-D',
           quoter=EscapeCppDefine)
 
-      if self.flavor == 'mac' or self.flavor == 'ios':
+      if self.flavor == 'mac':
         cflags = self.xcode_settings.GetCflags(configname)
         cflags_c = self.xcode_settings.GetCflagsC(configname)
         cflags_cc = self.xcode_settings.GetCflagsCC(configname)
@@ -1171,7 +1203,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       self.WriteList(cflags_c, 'CFLAGS_C_%s' % configname)
       self.WriteLn("# Flags passed to only C++ files.");
       self.WriteList(cflags_cc, 'CFLAGS_CC_%s' % configname)
-      if self.flavor == 'mac' or self.flavor == 'ios':
+      if self.flavor == 'mac':
         self.WriteLn("# Flags passed to only ObjC files.");
         self.WriteList(cflags_objc, 'CFLAGS_OBJC_%s' % configname)
         self.WriteLn("# Flags passed to only ObjC++ files.");
@@ -1234,7 +1266,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
                    "%s " % precompiled_header.GetInclude('cc') +
                    "$(CFLAGS_$(BUILDTYPE)) "
                    "$(CFLAGS_CC_$(BUILDTYPE))")
-      if self.flavor == 'mac' or self.flavor == 'ios':
+      if self.flavor == 'mac':
         self.WriteLn("$(OBJS): GYP_OBJCFLAGS := "
                      "$(DEFS_$(BUILDTYPE)) "
                      "$(INCS_$(BUILDTYPE)) "
@@ -1299,7 +1331,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     """
     assert not self.is_mac_bundle
 
-    if self.flavor in ('mac', 'ios', 'ios_sim') and self.type in (
+    if self.flavor == 'mac' and self.type in (
         'static_library', 'executable', 'shared_library', 'loadable_module'):
       return self.xcode_settings.GetExecutablePath()
 
@@ -1332,7 +1364,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
 
 
   def _InstallImmediately(self):
-    return self.toolset == 'target' and self.flavor in ('mac', 'ios') and self.type in (
+    return self.toolset == 'target' and self.flavor == 'mac' and self.type in (
           'static_library', 'executable', 'shared_library', 'loadable_module')
 
 
@@ -1415,7 +1447,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     if self.type != 'none':
       for configname in sorted(configs.keys()):
         config = configs[configname]
-        if self.flavor == 'mac' or self.flavor == 'ios':
+        if self.flavor == 'mac':
           ldflags = self.xcode_settings.GetLdflags(configname,
               generator_default_variables['PRODUCT_DIR'],
               lambda p: Sourceify(self.Absolutify(p)))
@@ -1442,28 +1474,28 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         library_dirs = config.get('library_dirs', [])
         ldflags += [('-L%s' % library_dir) for library_dir in library_dirs]
         self.WriteList(ldflags, 'LDFLAGS_%s' % configname)
-        if self.flavor == 'mac' or self.flavor == 'ios':
+        if self.flavor == 'mac':
           self.WriteList(self.xcode_settings.GetLibtoolflags(configname),
                          'LIBTOOLFLAGS_%s' % configname)
       libraries = spec.get('libraries')
       if libraries:
         # Remove duplicate entries
         libraries = gyp.common.uniquer(libraries)
-        if self.flavor == 'mac' or self.flavor == 'ios':
+        if self.flavor == 'mac':
           libraries = self.xcode_settings.AdjustLibraries(libraries)
       self.WriteList(libraries, 'LIBS')
       self.WriteLn('%s: GYP_LDFLAGS := $(LDFLAGS_$(BUILDTYPE))' %
           QuoteSpaces(self.output_binary))
       self.WriteLn('%s: LIBS := $(LIBS)' % QuoteSpaces(self.output_binary))
 
-      if self.flavor == 'mac' or self.flavor == 'ios':
+      if self.flavor == 'mac':
         self.WriteLn('%s: GYP_LIBTOOLFLAGS := $(LIBTOOLFLAGS_$(BUILDTYPE))' %
             QuoteSpaces(self.output_binary))
 
     # Postbuild actions. Like actions, but implicitly depend on the target's
     # output.
     postbuilds = []
-    if self.flavor == 'mac' or self.flavor == 'ios':
+    if self.flavor == 'mac':
       if target_postbuilds:
         postbuilds.append('$(TARGET_POSTBUILDS_$(BUILDTYPE))')
       postbuilds.extend(
@@ -1547,7 +1579,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       for link_dep in link_deps:
         assert ' ' not in link_dep, (
             "Spaces in alink input filenames not supported (%s)"  % link_dep)
-      if (self.flavor not in ('mac', 'ios', 'openbsd', 'win') and not
+      if (self.flavor not in ('mac', 'openbsd', 'netbsd', 'win') and not
           self.is_standalone_static_library):
         self.WriteDoCmd([self.output_binary], link_deps, 'alink_thin',
                         part_of_all, postbuilds=postbuilds)
@@ -1606,9 +1638,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       if (self.flavor == 'mac' and not 'product_dir' in spec and
           self.toolset == 'target'):
         # On mac, products are created in install_path immediately.
-        install_path = self.output
-        #assert install_path == self.output, '%s != %s' % (
-        #    install_path, self.output)
+        assert install_path == self.output, '%s != %s' % (
+            install_path, self.output)
 
       # Point the target alias to the final binary output.
       self.WriteMakeRule([self.target], [install_path],
@@ -1658,6 +1689,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     self.WriteMakeRule(outputs, inputs,
                        actions = ['$(call do_cmd,%s%s)' % (command, suffix)],
                        comment = comment,
+                       command = command,
                        force = True)
     # Add our outputs to the list of targets we read depfiles from.
     # all_deps is only used for deps file reading, and for deps files we replace
@@ -1668,7 +1700,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
 
 
   def WriteMakeRule(self, outputs, inputs, actions=None, comment=None,
-                    order_only=False, force=False, phony=False):
+                    order_only=False, force=False, phony=False, command=None):
     """Write a Makefile rule, with some extra tricks.
 
     outputs: a list of outputs for the rule (note: this is not directly
@@ -1681,6 +1713,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     force: if true, include FORCE_DO_CMD as an order-only dep
     phony: if true, the rule does not actually generate the named output, the
            output is just a name to run the rule
+    command: (optional) command name to generate unambiguous labels
     """
     outputs = map(QuoteSpaces, outputs)
     inputs = map(QuoteSpaces, inputs)
@@ -1689,44 +1722,38 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       self.WriteLn('# ' + comment)
     if phony:
       self.WriteLn('.PHONY: ' + ' '.join(outputs))
-    # TODO(evanm): just make order_only a list of deps instead of these hacks.
-    if order_only:
-      order_insert = '| '
-      pick_output = ' '.join(outputs)
-    else:
-      order_insert = ''
-      pick_output = outputs[0]
-    if force:
-      force_append = ' FORCE_DO_CMD'
-    else:
-      force_append = ''
     if actions:
       self.WriteLn("%s: TOOLSET := $(TOOLSET)" % outputs[0])
-    self.WriteLn('%s: %s%s%s' % (pick_output, order_insert, ' '.join(inputs),
-                                 force_append))
+    force_append = ' FORCE_DO_CMD' if force else ''
+
+    if order_only:
+      # Order only rule: Just write a simple rule.
+      # TODO(evanm): just make order_only a list of deps instead of this hack.
+      self.WriteLn('%s: | %s%s' %
+                   (' '.join(outputs), ' '.join(inputs), force_append))
+    elif len(outputs) == 1:
+      # Regular rule, one output: Just write a simple rule.
+      self.WriteLn('%s: %s%s' % (outputs[0], ' '.join(inputs), force_append))
+    else:
+      # Regular rule, more than one output: Multiple outputs are tricky in
+      # make. We will write three rules:
+      # - All outputs depend on an intermediate file.
+      # - Make .INTERMEDIATE depend on the intermediate.
+      # - The intermediate file depends on the inputs and executes the
+      #   actual command.
+      # - The intermediate recipe will 'touch' the intermediate file.
+      # - The multi-output rule will have an do-nothing recipe.
+      intermediate = "%s.intermediate" % (command if command else self.target)
+      self.WriteLn('%s: %s' % (' '.join(outputs), intermediate))
+      self.WriteLn('\t%s' % '@:');
+      self.WriteLn('%s: %s' % ('.INTERMEDIATE', intermediate))
+      self.WriteLn('%s: %s%s' %
+                   (intermediate, ' '.join(inputs), force_append))
+      actions.insert(0, '$(call do_cmd,touch)')
+
     if actions:
       for action in actions:
         self.WriteLn('\t%s' % action)
-    if not order_only and len(outputs) > 1:
-      # If we have more than one output, a rule like
-      #   foo bar: baz
-      # that for *each* output we must run the action, potentially
-      # in parallel.  That is not what we're trying to write -- what
-      # we want is that we run the action once and it generates all
-      # the files.
-      # http://www.gnu.org/software/hello/manual/automake/Multiple-Outputs.html
-      # discusses this problem and has this solution:
-      # 1) Write the naive rule that would produce parallel runs of
-      # the action.
-      # 2) Make the outputs seralized on each other, so we won't start
-      # a parallel run until the first run finishes, at which point
-      # we'll have generated all the outputs and we're done.
-      self.WriteLn('%s: %s' % (' '.join(outputs[1:]), outputs[0]))
-      # Add a dummy command to the "extra outputs" rule, otherwise make seems to
-      # think these outputs haven't (couldn't have?) changed, and thus doesn't
-      # flag them as changed (i.e. include in '$?') when evaluating dependent
-      # rules, which in turn causes do_cmd() to skip running dependent commands.
-      self.WriteLn('%s: ;' % (' '.join(outputs[1:])))
     self.WriteLn()
 
 
@@ -1891,7 +1918,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     # Xcode puts shared_library results into PRODUCT_DIR, and some gyp files
     # rely on this. Emulate this behavior for mac.
     if (self.type == 'shared_library' and
-        (self.flavor != 'ios' or self.flavor != 'mac' or self.toolset != 'target')):
+        (self.flavor != 'mac' or self.toolset != 'target')):
       # Install all shared libs into a common directory (per toolset) for
       # convenient access with LD_LIBRARY_PATH.
       return '$(builddir)/lib.%s/%s' % (self.toolset, self.alias)
@@ -1983,6 +2010,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     srcdir_prefix = '$(srcdir)/'
 
   flock_command= 'flock'
+  copy_archive_arguments = '-af'
   header_params = {
       'default_target': default_target,
       'builddir': builddir_name,
@@ -1992,8 +2020,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
       'link_commands': LINK_COMMANDS_LINUX,
       'extra_commands': '',
       'srcdir': srcdir,
+      'copy_archive_args': copy_archive_arguments,
     }
-  if flavor == 'mac' or flavor == 'ios':
+  if flavor == 'mac':
     flock_command = './gyp-mac-tool flock'
     header_params.update({
         'flock': flock_command,
@@ -2015,8 +2044,15 @@ def GenerateOutput(target_list, target_dicts, data, params):
     header_params.update({
         'flock': 'lockf',
     })
-  elif flavor == 'aix':
+  elif flavor == 'openbsd':
+    copy_archive_arguments = '-pPRf'
     header_params.update({
+        'copy_archive_args': copy_archive_arguments,
+    })
+  elif flavor == 'aix':
+    copy_archive_arguments = '-pPRf'
+    header_params.update({
+        'copy_archive_args': copy_archive_arguments,
         'link_commands': LINK_COMMANDS_AIX,
         'flock': './gyp-flock-tool flock',
         'flock_index': 2,
@@ -2036,7 +2072,6 @@ def GenerateOutput(target_list, target_dicts, data, params):
   build_file, _, _ = gyp.common.ParseQualifiedTarget(target_list[0])
   make_global_settings_array = data[build_file].get('make_global_settings', [])
   wrappers = {}
-  wrappers['LINK'] = '%s $(builddir)/linker.lock' % flock_command
   for key, value in make_global_settings_array:
     if key.endswith('_wrapper'):
       wrappers[key[:-len('_wrapper')]] = '$(abspath %s)' % value
@@ -2125,7 +2160,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     spec = target_dicts[qualified_target]
     configs = spec['configurations']
 
-    if flavor == 'mac' or flavor == 'ios':
+    if flavor == 'mac':
       gyp.xcode_emulation.MergeGlobalXcodeSettingsToSpec(data[build_file], spec)
 
     writer = MakefileWriter(generator_flags, flavor)

@@ -29,7 +29,7 @@ B<openssl> B<ocsp>
 [B<-path>]
 [B<-CApath dir>]
 [B<-CAfile file>]
-[B<-no_alt_chains>]]
+[B<-no_alt_chains>]
 [B<-VAfile file>]
 [B<-validity_period n>]
 [B<-status_age n>]
@@ -387,6 +387,6 @@ second file.
 
 =head1 HISTORY
 
-The -no_alt_chains options was first added to OpenSSL 1.0.1n and 1.0.2b.
+The -no_alt_chains options was first added to OpenSSL 1.0.2b.
 
 =cut

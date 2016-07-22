@@ -41,6 +41,11 @@
         'OBJ_DIR': '<(PRODUCT_DIR)/obj.target',
         'V8_BASE': '<(PRODUCT_DIR)/obj.target/deps/v8/tools/gyp/libv8_base.a',
       }],
+      ['openssl_fips != ""', {
+        'OPENSSL_PRODUCT': 'libcrypto.a',
+      }, {
+        'OPENSSL_PRODUCT': 'libopenssl.a',
+      }],
       # A flag for BSD platforms
       ['OS=="freebsd" or OS=="openbsd"', {
         'os_bsd%': 1,

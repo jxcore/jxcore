@@ -18,7 +18,7 @@ ERROR_ABORT() {
   if [[ $? != 0 ]]
   then
     LOG $RED_COLOR "compilation aborted\n"
-    exit  
+    exit
   fi
 }
 
@@ -28,7 +28,7 @@ ERROR_ABORT_MOVE() {
   then
     $($1)
     LOG $RED_COLOR "compilation aborted for $2 target\n"
-    exit  
+    exit
   fi
 }
 
@@ -46,7 +46,7 @@ ARM7=out_android/arm
 INTEL64=out_android/x64
 INTEL32=out_android/ia32
 FATBIN=out_android/android
-    
+
 MAKE_INSTALL() {
   TARGET_DIR="out_$1_droid"
   PREFIX_DIR="out_android/$1"
@@ -57,7 +57,7 @@ MAKE_INSTALL() {
   make install
   ERROR_ABORT_MOVE "mv out $TARGET_DIR" $1
   mv out $TARGET_DIR
-  
+
   mv $PREFIX_DIR/bin/libcares.a "$PREFIX_DIR/bin/libcares_$1.a"
   mv $PREFIX_DIR/bin/libchrome_zlib.a "$PREFIX_DIR/bin/libchrome_zlib_$1.a"
   mv $PREFIX_DIR/bin/libhttp_parser.a "$PREFIX_DIR/bin/libhttp_parser_$1.a"

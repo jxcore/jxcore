@@ -229,6 +229,10 @@ static int check_pem(const char *nm, const char *name)
         }
         return 0;
     }
+    /* If reading DH parameters handle X9.42 DH format too */
+    if (!strcmp(nm, PEM_STRING_DHXPARAMS) &&
+        !strcmp(name, PEM_STRING_DHPARAMS))
+        return 1;
 
     /* Permit older strings */
 
@@ -344,7 +348,7 @@ int PEM_ASN1_write_bio(i2d_of_void *i2d, const char *name, BIO *bp,
 
     if (enc != NULL) {
         objstr = OBJ_nid2sn(EVP_CIPHER_nid(enc));
-        if (objstr == NULL) {
+        if (objstr == NULL || EVP_CIPHER_iv_length(enc) == 0) {
             PEMerr(PEM_F_PEM_ASN1_WRITE_BIO, PEM_R_UNSUPPORTED_CIPHER);
             goto err;
         }
@@ -472,8 +476,9 @@ int PEM_do_header(EVP_CIPHER_INFO *cipher, unsigned char *data, long *plen,
     EVP_CIPHER_CTX_cleanup(&ctx);
     OPENSSL_cleanse((char *)buf, sizeof(buf));
     OPENSSL_cleanse((char *)key, sizeof(key));
-    j += i;
-    if (!o) {
+    if (o)
+        j += i;
+    else {
         PEMerr(PEM_F_PEM_DO_HEADER, PEM_R_BAD_DECRYPT);
         return (0);
     }
@@ -574,8 +579,8 @@ static int load_iv(char **fromp, unsigned char *to, int num)
 }
 
 #ifndef OPENSSL_NO_FP_API
-int PEM_write(FILE *fp, char *name, char *header, unsigned char *data,
-              long len)
+int PEM_write(FILE *fp, const char *name, const char *header,
+              const unsigned char *data, long len)
 {
     BIO *b;
     int ret;
@@ -591,8 +596,8 @@ int PEM_write(FILE *fp, char *name, char *header, unsigned char *data,
 }
 #endif
 
-int PEM_write_bio(BIO *bp, const char *name, char *header,
-                  unsigned char *data, long len)
+int PEM_write_bio(BIO *bp, const char *name, const char *header,
+                  const unsigned char *data, long len)
 {
     int nlen, n, i, j, outl;
     unsigned char *buf = NULL;

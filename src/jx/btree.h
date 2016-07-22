@@ -110,26 +110,14 @@
 #include <iterator>
 #include <limits>
 #include <ciso646>  // detect std::lib
-
-#if defined(_LIBCPP_VERSION) || defined(_WIN32)
-// using libc++
 #include <type_traits>
-#define is_same std::is_same
-#define remove_const std::remove_const
-#define is_floating_point std::is_floating_point
-#define is_integral std::is_integral
-#define false_type std::false_type
-#define is_convertible std::is_convertible
-#else
-// using libstdc++
-#include <tr1/type_traits>
-#define is_same std::tr1::is_same
-#define remove_const std::tr1::remove_const
-#define is_floating_point std::tr1::is_floating_point
-#define is_integral std::tr1::is_integral
-#define false_type std::tr1::false_type
-#define is_convertible std::tr1::is_convertible
-#endif
+
+using std::is_same;
+using std::remove_const;
+using std::is_floating_point;
+using std::is_integral;
+using std::false_type;
+using std::is_convertible;
 
 #include <new>
 #include <ostream>
