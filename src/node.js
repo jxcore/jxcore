@@ -22,24 +22,24 @@
     _stackProto.prototype.getFileName = function() {
       return this._fileName;
     };
-    
+
     _stackProto.prototype.getColumnNumber = function() {
       return this._columnNumber;
     };
-    
+
     _stackProto.prototype.getLineNumber = function() {
       return this._lineNumber;
     };
-    
+
     _stackProto.prototype.toString = function() {
       return this._msg;
     };
-    
+
     _stackProto.prototype.isEval = function() {
       // TODO(obastemur) fix this!
       return false;
     };
-    
+
     _stackProto.prototype.getFunctionName = function() {
       return this._functionName;
     };
@@ -54,7 +54,7 @@
         clone__(new Error(''), err);
 
         if (!err.stack)
-          err.stack = new Error('').stack; 
+          err.stack = new Error('').stack;
           // silly but we don't want it to throw here no matter what
 
         if (err.stack.split) {
@@ -84,7 +84,7 @@
             arr = st[i].split(':');
             msg = '    at ' + st[i];
           }
-          
+
           if (arr.length == 3) {
             err.stack[i] = new _stackProto(msg, arr[0], arr[1], arr[2]);
           } else {
@@ -113,7 +113,7 @@
         }
       }
     };
-    
+
     function clone__(s, t) {
       Object.getOwnPropertyNames(s).forEach(function(name) {
         try {
@@ -144,21 +144,21 @@
         err.fileName = err.stack[3]._fileName;
         err.lineNumber = err.stack[3]._lineNumber;
         err.columnNumber = err.stack[3]._columnNumber;
-        
+
         err.stack = err.stack.slice(3).join('\n').replace(/    at /g, '');
         return err;
       }
-      
+
       tmp.prototype = cons.prototype;
       return new tmp();
     }
-    
+
     [ Error, RangeError, SyntaxError, TypeError ].forEach(function(err) {
       var newError = function() {
         var obj = New_Error(err, arguments);
         obj.stack_ = obj.stack;
         obj.stack_reached_ = false;
-        
+
         Object.defineProperty(obj, 'stack', {
           enumerable : true,
           configurable : true,
@@ -166,7 +166,7 @@
             if (!this.stack_reached_) {
               if (Error.prepareStackTrace) {
                 var tmp = { message: this.message, stack: this.stack_ };
-                
+
                 try {
                   origError.captureStackTrace(tmp);
                   var newStack = Error.prepareStackTrace(this, tmp.stack);
@@ -184,26 +184,26 @@
             this.stack_ = value;
           }
         });
-        
+
         Object.keys(obj).forEach(function(key) {
           Object.defineProperty(obj, key, {
             enumerable : false
           });
         });
-        
+
         return obj;
       };
-      
+
       clone__(err, newError);
-      
+
       newError.toString = function() {
         return err.toString();
       };
-      
+
       err.prototype.toString = function() {
         if (!this.message)
           return this.name;
-        
+
         return this.name + ": " + this.message;
       };
 
@@ -248,7 +248,7 @@
 
     if (process.argv[1] !== '--debug-agent')
       startup.processChannel();
-    
+
     startup.processRawDebug();
 
     startup.resolveArgv0();
@@ -817,15 +817,11 @@
     var depth = 2;
 
     // needs to be accessible from cc land
-    process._currentTickHandler = _nextTick;
-    process._nextDomainTick = _nextDomainTick;
     process._tickCallback = _tickCallback;
     process._tickDomainCallback = _tickDomainCallback;
     process._tickFromSpinner = _tickFromSpinner;
 
-    process.nextTick = function nextTick(cb) {
-      process._currentTickHandler(cb);
-    };
+    process.nextTick = nextTick;
 
     // the maximum number of times it'll process something like
     // nextTick(function f(){nextTick(f)})
@@ -894,7 +890,7 @@
     // run callbacks that have no domain
     // using domains will cause this to be overridden
     function _tickCallback() {
-      var callback, nextTickLength, threw;
+      var callback, nextTickLength, args;
 
       if (inTick)
         return;
@@ -911,20 +907,29 @@
           return tickDone(0);
 
         while (infoBox[index] < nextTickLength) {
-          callback = nextTickQueue[infoBox[index]++].callback;
-          // threw = true;
-          try {
-            callback();
-            // threw = false;
-          }
-          // JIT doesn't support try/finally!
-          // finally {
-          // if (threw)
-          // tickDone(infoBox[depth]);
-          // }
-          catch (ee) {
-            tickDone(infoBox[depth]);
-            throw ee;
+          tock = nextTickQueue[infoBox[index]++];
+          callback = tock.callback;
+          args = tock.args;
+          // Using separate callback execution functions helps to limit the
+          // scope of DEOPTs caused by using try blocks and allows direct
+          // callback invocation with small numbers of arguments to avoid the
+          // performance hit associated with using `fn.apply()`
+          if (args === undefined) {
+            nextTickCallbackWith0Args(callback);
+          } else {
+            switch (args.length) {
+              case 1:
+                nextTickCallbackWith1Arg(callback, args[0]);
+                break;
+              case 2:
+                nextTickCallbackWith2Args(callback, args[0], args[1]);
+                break;
+              case 3:
+                nextTickCallbackWith3Args(callback, args[0], args[1], args[2]);
+                break;
+              default:
+                nextTickCallbackWithManyArgs(callback, args);
+            }
           }
         }
       }
@@ -933,7 +938,7 @@
     }
 
     function _tickDomainCallback() {
-      var nextTickLength, tock, callback, threw;
+      var nextTickLength, tock, callback, args;
 
       // if you add a nextTick in a domain's error handler, then
       // it's possible to cycle indefinitely. Normally, the tickDone
@@ -966,15 +971,27 @@
               continue;
             tock.domain.enter();
           }
-          threw = true;
-          try {
-            callback();
-            threw = false;
-          } finally {
-            // finally blocks fire before the error hits the top level,
-            // so we can't clear the depth at this point.
-            if (threw)
-              tickDone(infoBox[depth]);
+          args = tock.args;
+          // Using separate callback execution functions helps to limit the
+          // scope of DEOPTs caused by using try blocks and allows direct
+          // callback invocation with small numbers of arguments to avoid the
+          // performance hit associated with using `fn.apply()`
+          if (args === undefined) {
+            nextTickCallbackWith0Args(callback);
+          } else {
+            switch (args.length) {
+              case 1:
+                nextTickCallbackWith1Arg(callback, args[0]);
+                break;
+              case 2:
+                nextTickCallbackWith2Args(callback, args[0], args[1]);
+                break;
+              case 3:
+                nextTickCallbackWith3Args(callback, args[0], args[1], args[2]);
+                break;
+              default:
+                nextTickCallbackWithManyArgs(callback, args);
+            }
           }
           if (tock.domain) {
             tock.domain.exit();
@@ -985,7 +1002,13 @@
       tickDone(0);
     }
 
-    function _nextTick(callback) {
+    function TickObject(c, args) {
+      this.callback = c;
+      this.domain = process.domain || null;
+      this.args = args;
+    }
+
+    function nextTick(callback) {
       // on the way out, don't bother. it won't get fired anyway.
       if (process._exiting)
         return;
@@ -993,10 +1016,14 @@
         maxTickWarn();
       }
 
-      var obj = {
-        callback: callback,
-        domain: null
-      };
+      var args;
+      if (arguments.length > 1) {
+        args = [];
+        for (var i = 1; i < arguments.length; i++)
+          args.push(arguments[i]);
+      }
+
+      var obj = new TickObject(callback, args);
 
       nextTickQueue.push(obj);
       infoBox[length]++;
@@ -1007,25 +1034,58 @@
       }
     }
 
-    function _nextDomainTick(callback) {
-      // on the way out, don't bother. it won't get fired anyway.
-      if (process._exiting)
-        return;
+    function nextTickCallbackWith0Args(callback) {
+      var threw = true;
+      try {
+        callback();
+        threw = false;
+      } finally {
+        if (threw)
+          tickDone();
+      }
+    }
 
-      if (infoBox[depth] >= process.maxTickDepth)
-        maxTickWarn();
+    function nextTickCallbackWith1Arg(callback, arg1) {
+      var threw = true;
+      try {
+        callback(arg1);
+        threw = false;
+      } finally {
+        if (threw)
+          tickDone();
+      }
+    }
 
-      var obj = {
-        callback: callback,
-        domain: process.domain
-      };
+    function nextTickCallbackWith2Args(callback, arg1, arg2) {
+      var threw = true;
+      try {
+        callback(arg1, arg2);
+        threw = false;
+      } finally {
+        if (threw)
+          tickDone();
+      }
+    }
 
-      nextTickQueue.push(obj);
-      infoBox[length]++;
+    function nextTickCallbackWith3Args(callback, arg1, arg2, arg3) {
+      var threw = true;
+      try {
+        callback(arg1, arg2, arg3);
+        threw = false;
+      } finally {
+        if (threw)
+          tickDone();
+      }
+    }
 
-      if (needSpinner) {
-        _needTickCallback();
-        needSpinner = false;
+    function nextTickCallbackWithManyArgs(callback, args) {
+      var threw = true;
+      try {
+        callback.apply(null, args);
+        threw = false;
+      } finally {
+        if (threw)
+          tickDone();
       }
     }
   };
@@ -1129,7 +1189,7 @@
 
     return stream;
   }
-  
+
   startup.processRawDebug = function() {
     var format = NativeModule.require('util').format;
     var rawDebug = process._rawDebug;
@@ -1164,7 +1224,7 @@
       fake_stdout.write = fake_stdout._write = function(bf) {
         $tw.print(bf + '');
       };
-      
+
       fake_stdin = new StdLogCatOut();
       fake_stdin.read = fake_stdin._read = function(bf) {
         return new Buffer("");
@@ -1228,7 +1288,7 @@
       } else {
         var tty_wrap = process.binding('tty_wrap');
         var fd = 0;
-  
+
         switch (tty_wrap.guessHandleType(fd)) {
           case 'TTY':
             var tty = NativeModule.require('tty');
@@ -1238,7 +1298,7 @@
               writable: false
             });
             break;
-  
+
           case 'FILE':
             var fs = NativeModule.require('fs');
             stdin = new fs.ReadStream(null, {
@@ -1246,7 +1306,7 @@
               autoClose: false
             });
             break;
-  
+
           case 'PIPE':
           case 'TCP':
             var net = NativeModule.require('net');
@@ -1414,7 +1474,7 @@
           'Please revisit the folder and make sure you have an access.');
       process.exit(1);
     }
-    
+
     var isWindows;
     if (process.platform === 'winrt') {
       isWindows = true;

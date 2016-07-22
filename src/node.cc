@@ -190,26 +190,16 @@ JS_LOCAL_METHOD(UsingDomains) {
   com->using_domains = true;
   JS_HANDLE_OBJECT process = com->getProcess();
   __JS_LOCAL_STRING tdc_str = JS_STRING_ID("_tickDomainCallback");
-  __JS_LOCAL_STRING ndt_str = JS_STRING_ID("_nextDomainTick");
   JS_LOCAL_VALUE tdc_v = JS_GET_NAME(process, tdc_str);
-  JS_LOCAL_VALUE ndt_v = JS_GET_NAME(process, ndt_str);
 
   if (!JS_IS_FUNCTION(tdc_v)) {
     fprintf(stderr, "process._tickDomainCallback assigned to non-function\n");
     abort();
   }
 
-  if (!JS_IS_FUNCTION(ndt_v)) {
-    fprintf(stderr, "process._nextDomainTick assigned to non-function\n");
-    abort();
-  }
-
   JS_LOCAL_FUNCTION tdc = JS_TYPE_AS_FUNCTION(tdc_v);
-  JS_LOCAL_FUNCTION ndt = JS_TYPE_AS_FUNCTION(ndt_v);
   __JS_LOCAL_STRING tc_str = JS_STRING_ID("_tickCallback");
-  __JS_LOCAL_STRING cth_str = JS_STRING_ID("_currentTickHandler");
   JS_NAME_SET(process, tc_str, tdc);
-  JS_NAME_SET(process, cth_str, ndt);
 
   JS_CLEAR_PERSISTENT(com->process_tickCallback);
   JS_NEW_PERSISTENT_FUNCTION(com->process_tickCallback, tdc);
