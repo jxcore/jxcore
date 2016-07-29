@@ -25,7 +25,7 @@ ERROR_ABORT() {
   if [[ $? != 0 ]]
   then
     LOG $RED_COLOR "compilation aborted\n"
-    exit	
+    exit
   fi
 }
 
@@ -35,7 +35,7 @@ ERROR_ABORT_MOVE() {
   then
     $($1)
     LOG $RED_COLOR "compilation aborted for $2 target\n"
-	exit	
+	exit
   fi
 }
 
@@ -63,13 +63,13 @@ MAKE_INSTALL() {
   TARGET_DIR="out_$1_ios"
   PREFIX_DIR="out_ios/$1"
   mv $TARGET_DIR out
-  ./configure --prefix=$PREFIX_DIR --static-library --dest-os=ios --dest-cpu=$1 --engine-mozilla --compress-internals $CONF_EXTRAS
+  ./configure --prefix=$PREFIX_DIR --static-library --dest-os=ios --dest-cpu=$1 --engine-mozilla $CONF_EXTRAS
   ERROR_ABORT_MOVE "mv out $TARGET_DIR" $1
   rm -rf $PREFIX_DIR/bin
   make -j 2 install
   ERROR_ABORT_MOVE "mv out $TARGET_DIR" $1
   mv out $TARGET_DIR
-	
+
   mv $PREFIX_DIR/bin/libcares.a "$PREFIX_DIR/bin/libcares_$1.a"
   mv $PREFIX_DIR/bin/libchrome_zlib.a "$PREFIX_DIR/bin/libchrome_zlib_$1.a"
   mv $PREFIX_DIR/bin/libhttp_parser.a "$PREFIX_DIR/bin/libhttp_parser_$1.a"
@@ -78,7 +78,7 @@ MAKE_INSTALL() {
   mv $PREFIX_DIR/bin/libopenssl.a "$PREFIX_DIR/bin/libopenssl_$1.a"
   mv $PREFIX_DIR/bin/libuv.a "$PREFIX_DIR/bin/libuv_$1.a"
   mv $PREFIX_DIR/bin/libsqlite3.a "$PREFIX_DIR/bin/libsqlite3_$1.a"
-  
+
   if [ "$CONF_EXTRAS" == "--embed-leveldown" ]
   then
     mv $TARGET_DIR/Release/libleveldown.a "$PREFIX_DIR/bin/libleveldown_$1.a"
@@ -98,7 +98,7 @@ MAKE_FAT() {
     strip -x "$INTEL64/bin/$1_x64.a"
     strip -x "$INTEL32/bin/$1_ia32.a"
   fi
-  
+
   lipo -create "$ARM64/bin/$1_arm64.a" "$ARM7/bin/$1_arm.a" "$ARM7s/bin/$1_armv7s.a" "$INTEL64/bin/$1_x64.a" "$INTEL32/bin/$1_ia32.a" -output "$FATBIN/bin/$1.a"
   ERROR_ABORT
 }
@@ -127,7 +127,7 @@ MAKE_INSTALL arm64
 
 LOG $GREEN_COLOR "Compiling IOS INTEL64\n"
 MAKE_INSTALL x64
- 
+
 
 LOG $GREEN_COLOR "Preparing FAT binaries\n"
 rm -rf $FATBIN
