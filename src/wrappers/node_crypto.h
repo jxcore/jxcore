@@ -25,7 +25,6 @@
 
 namespace node {
 
-extern bool SSL2_ENABLE;
 extern bool SSL3_ENABLE;
 
 namespace crypto {
