@@ -128,25 +128,59 @@ OUTPUTS	= \
 	x64-win32-masm/modes/ghash-x86_64.asm \
 	x64-win32-masm/x86_64cpuid.asm \
 
+SHA512  = sha512-x86_64.s
+SHA512_ASM = sha512-x86_64.asm
+
+IF_PERL_ELF = \
+	if [ $(@F) = $(SHA512) ]; then \
+	$(PERL) $< elf $@ ; \
+	else \
+	$(PERL) $< elf > $@ ; \
+	fi; \
+
+IF_PERL_MACOSX = \
+	if [ $(@F) = $(SHA512) ]; then \
+	$(PERL) $< macosx $@ ; \
+	else \
+	$(PERL) $< macosx > $@ ; \
+	fi; \
+
+
+IF_PERL_WIN32_64 = \
+	if [ $(@F) = $(SHA512_ASM) ]; then \
+	$(PERL) $< masm $@ ; \
+	else \
+	$(PERL) $< masm > $@ ; \
+	fi; \
+
+MKDIR = \
+	@(if [ ! -d $(@D) ]; then \
+	mkdir -p $(@D); \
+	fi;) \
+
 arm-elf-gas/%.S x64-elf-gas/%.s x86-elf-gas/%.s:
-	$(PERL) $< elf > $@
+	$(MKDIR)
+	$(IF_PERL_ELF)
 
 x64-macosx-gas/%.s x86-macosx-gas/%.s:
-	$(PERL) $< macosx > $@
-
-x64-macosx-gas/%.s x86-macosx-gas/%.s:
-	$(PERL) $< macosx > $@
+	$(MKDIR)
+	$(IF_PERL_MACOSX)
 
 x64-win32-masm/%.asm:
-	$(PERL) $< masm > $@
+	$(MKDIR)
+	$(IF_PERL_WIN32_64)
 
 x86-win32-masm/%.asm:
+	$(MKDIR)
 	$(PERL) $< win32 > $@
 
 .PHONY:	all
 all:	$(OUTPUTS)
 	# strip trailing whitespace and final blank newline
 	$(SED) -sri -e 's/\s+$$/\n/' -e '$$ { /^$$/d }' $^
+
+distclean:
+	rm -rf *asm *gas
 
 clean:
 	find . -iname '*.asm' -exec rm "{}" \;
@@ -167,7 +201,7 @@ x64-elf-gas/rc4/rc4-x86_64.s: ../openssl/crypto/rc4/asm/rc4-x86_64.pl
 x64-elf-gas/rc4/rc4-md5-x86_64.s: ../openssl/crypto/rc4/asm/rc4-md5-x86_64.pl
 x64-elf-gas/sha/sha1-x86_64.s: ../openssl/crypto/sha/asm/sha1-x86_64.pl
 x64-elf-gas/sha/sha512-x86_64.s: ../openssl/crypto/sha/asm/sha512-x86_64.pl
-x64-elf-gas/sha/sha256-x86_64.s: ../openssl/crypto/sha/asm/sha256-x86_64.pl
+x64-elf-gas/sha/sha256-x86_64.s: ../openssl/crypto/sha/asm/sha512-x86_64.pl
 x64-elf-gas/whrlpool/wp-x86_64.s: ../openssl/crypto/whrlpool/asm/wp-x86_64.pl
 x64-elf-gas/modes/ghash-x86_64.s: ../openssl/crypto/modes/asm/ghash-x86_64.pl
 x64-elf-gas/x86_64cpuid.s: ../openssl/crypto/x86_64cpuid.pl
@@ -185,7 +219,7 @@ x64-macosx-gas/md5/md5-x86_64.s: ../openssl/crypto/md5/asm/md5-x86_64.pl
 x64-macosx-gas/rc4/rc4-x86_64.s: ../openssl/crypto/rc4/asm/rc4-x86_64.pl
 x64-macosx-gas/rc4/rc4-md5-x86_64.s: ../openssl/crypto/rc4/asm/rc4-md5-x86_64.pl
 x64-macosx-gas/sha/sha1-x86_64.s: ../openssl/crypto/sha/asm/sha1-x86_64.pl
-x64-macosx-gas/sha/sha256-x86_64.s: ../openssl/crypto/sha/asm/sha256-x86_64.pl
+x64-macosx-gas/sha/sha256-x86_64.s: ../openssl/crypto/sha/asm/sha512-x86_64.pl
 x64-macosx-gas/sha/sha512-x86_64.s: ../openssl/crypto/sha/asm/sha512-x86_64.pl
 x64-macosx-gas/whrlpool/wp-x86_64.s: ../openssl/crypto/whrlpool/asm/wp-x86_64.pl
 x64-macosx-gas/modes/ghash-x86_64.s: ../openssl/crypto/modes/asm/ghash-x86_64.pl
@@ -204,7 +238,7 @@ x64-win32-masm/md5/md5-x86_64.asm: ../openssl/crypto/md5/asm/md5-x86_64.pl
 x64-win32-masm/rc4/rc4-x86_64.asm: ../openssl/crypto/rc4/asm/rc4-x86_64.pl
 x64-win32-masm/rc4/rc4-md5-x86_64.asm: ../openssl/crypto/rc4/asm/rc4-md5-x86_64.pl
 x64-win32-masm/sha/sha1-x86_64.asm: ../openssl/crypto/sha/asm/sha1-x86_64.pl
-x64-win32-masm/sha/sha256-x86_64.asm: ../openssl/crypto/sha/asm/sha256-x86_64.pl
+x64-win32-masm/sha/sha256-x86_64.asm: ../openssl/crypto/sha/asm/sha512-x86_64.pl
 x64-win32-masm/sha/sha512-x86_64.asm: ../openssl/crypto/sha/asm/sha512-x86_64.pl
 x64-win32-masm/whrlpool/wp-x86_64.asm: ../openssl/crypto/whrlpool/asm/wp-x86_64.pl
 x64-win32-masm/modes/ghash-x86_64.asm: ../openssl/crypto/modes/asm/ghash-x86_64.pl
