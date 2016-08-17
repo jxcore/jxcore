@@ -41,7 +41,7 @@ export TOOLCHAIN_INTEL=$PWD/android-toolchain-intel
 rm -rf $TOOLCHAIN_INTEL
 mkdir -p $TOOLCHAIN_INTEL
 $1/build/tools/make-standalone-toolchain.sh \
-    --toolchain=x86-4.8 \
+    --toolchain=x86-4.9 \
     --arch=x86 \
     --install-dir=$TOOLCHAIN_INTEL \
     --platform=$ANDROID_TARGET
