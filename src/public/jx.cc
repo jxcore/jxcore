@@ -6,8 +6,8 @@
 #include "jx.h"
 
 using namespace jxcore;
-char *argv = NULL;
-char *app_args[2];
+static char *argv = NULL;
+static char *app_args[2];
 
 // allocates one extra JXResult memory at the end of the array
 // Uses that one for a return value
