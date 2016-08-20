@@ -42,9 +42,9 @@ var serverOptions = {
     if (id in users) {
       return users[id];
     }
-  },
-  key: loadPEM('agent2-key'),
-  cert: loadPEM('agent2-cert')
+  }
+  //key: loadPEM('agent2-key'),
+  //cert: loadPEM('agent2-cert')
   //SNICallback: function (servername, cb) {
     
   //  return true;
