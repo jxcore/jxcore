@@ -45,7 +45,6 @@ const char* root_certs[] = {
 #include "node_root_certs.h"  // NOLINT(build/include_order)
     NULL};
 
-bool SSL2_ENABLE = false;
 bool SSL3_ENABLE = false;
 
 namespace crypto {
@@ -177,23 +176,11 @@ JS_METHOD(SecureContext, Init) {
     args.GetString(0, &sslmethod);
 
     if (strcmp(*sslmethod, "SSLv2_method") == 0) {
-#ifndef OPENSSL_NO_SSL2
-      method = SSLv2_method();
-#else
       THROW_EXCEPTION("SSLv2 methods disabled");
-#endif
     } else if (strcmp(*sslmethod, "SSLv2_server_method") == 0) {
-#ifndef OPENSSL_NO_SSL2
-      method = SSLv2_server_method();
-#else
       THROW_EXCEPTION("SSLv2 methods disabled");
-#endif
     } else if (strcmp(*sslmethod, "SSLv2_client_method") == 0) {
-#ifndef OPENSSL_NO_SSL2
-      method = SSLv2_client_method();
-#else
       THROW_EXCEPTION("SSLv2 methods disabled");
-#endif
     } else if (strcmp(*sslmethod, "SSLv3_method") == 0) {
 #ifndef OPENSSL_NO_SSL3
       method = SSLv3_method();
@@ -4473,7 +4460,6 @@ DECLARE_CLASS_INITIALIZER(InitCrypto) {
   JS_METHOD_SET(target, "privateDecrypt", PublicKeyCipher::PrivateDecrypt);
 
   JS_NAME_SET(target, JS_STRING_ID("SSL3_ENABLE"), STD_TO_BOOLEAN(SSL3_ENABLE));
-  JS_NAME_SET(target, JS_STRING_ID("SSL2_ENABLE"), STD_TO_BOOLEAN(SSL2_ENABLE));
 }
 
 }  // namespace crypto

@@ -307,6 +307,7 @@ SSL *SSL_new(SSL_CTX *ctx)
     s->options = ctx->options;
     s->mode = ctx->mode;
     s->max_cert_list = ctx->max_cert_list;
+    s->references = 1;
 
     if (ctx->cert != NULL) {
         /*
@@ -375,7 +376,6 @@ SSL *SSL_new(SSL_CTX *ctx)
     if (!s->method->ssl_new(s))
         goto err;
 
-    s->references = 1;
     s->server = (ctx->method->ssl_accept == ssl_undefined_function) ? 0 : 1;
 
     SSL_clear(s);
@@ -1896,6 +1896,13 @@ SSL_CTX *SSL_CTX_new(const SSL_METHOD *meth)
      */
     ret->options |= SSL_OP_LEGACY_SERVER_CONNECT;
 
+    /*
+     * Disable SSLv2 by default, callers that want to enable SSLv2 will have to
+     * explicitly clear this option via either of SSL_CTX_clear_options() or
+     * SSL_clear_options().
+     */
+    ret->options |= SSL_OP_NO_SSLv2;
+
     return (ret);
  err:
     SSLerr(SSL_F_SSL_CTX_NEW, ERR_R_MALLOC_FAILURE);
@@ -3283,8 +3290,11 @@ EVP_MD_CTX *ssl_replace_hash(EVP_MD_CTX **hash, const EVP_MD *md)
 {
     ssl_clear_hash_ctx(hash);
     *hash = EVP_MD_CTX_create();
-    if (md)
-        EVP_DigestInit_ex(*hash, md, NULL);
+    if (*hash == NULL || (md && EVP_DigestInit_ex(*hash, md, NULL) <= 0)) {
+        EVP_MD_CTX_destroy(*hash);
+        *hash = NULL;
+        return NULL;
+    }
     return *hash;
 }
 

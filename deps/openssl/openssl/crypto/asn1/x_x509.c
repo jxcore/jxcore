@@ -180,16 +180,15 @@ X509 *d2i_X509_AUX(X509 **a, const unsigned char **pp, long length)
     if (!a || *a == NULL) {
         freeret = 1;
     }
-    ret = d2i_X509(a, pp, length);
+    ret = d2i_X509(a, &q, length);
     /* If certificate unreadable then forget it */
     if (!ret)
         return NULL;
     /* update length */
-    length -= *pp - q;
-    if (!length)
-        return ret;
-    if (!d2i_X509_CERT_AUX(&ret->aux, pp, length))
+    length -= q - *pp;
+    if (length > 0 && !d2i_X509_CERT_AUX(&ret->aux, &q, length))
         goto err;
+    *pp = q;
     return ret;
  err:
     if (freeret) {
@@ -202,9 +201,19 @@ X509 *d2i_X509_AUX(X509 **a, const unsigned char **pp, long length)
 
 int i2d_X509_AUX(X509 *a, unsigned char **pp)
 {
-    int length;
+    int length, tmplen;
+    unsigned char *start = pp != NULL ? *pp : NULL;
     length = i2d_X509(a, pp);
-    if (a)
-        length += i2d_X509_CERT_AUX(a->aux, pp);
+    if (length < 0 || a == NULL)
+        return length;
+
+    tmplen = i2d_X509_CERT_AUX(a->aux, pp);
+    if (tmplen < 0) {
+        if (start != NULL)
+            *pp = start;
+        return tmplen;
+    }
+    length += tmplen;
+
     return length;
 }
