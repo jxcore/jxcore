@@ -1,16 +1,15 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
+// TODO: Have some way to make this work on windows.
+if (process.platform === 'win32') {
+  console.error('Skipping: no /dev/stdin on Windows.');
+  process.exit(0);
+}
 
 var common = require('../common');
 var assert = require('assert');
 
 // simulate `cat readfile.js | node readfile.js`
-
-// TODO: Have some way to make this work on windows.
-if (process.platform === 'win32') {
-  console.error('No /dev/stdin on windows.  Skipping test.');
-  process.exit();
-}
 
 var fs = require('fs');
 

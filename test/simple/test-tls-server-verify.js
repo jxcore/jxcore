@@ -1,12 +1,10 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
-
-  process.exit(0);
-
+console.error('Skipping: not supported on any platform.');
+process.exit(0);
 
 if (!process.versions.openssl) {
-  console.error('Skipping because node compiled without OpenSSL.');
+  console.error('Skipping: node compiled without OpenSSL.');
   process.exit(0);
 }
 

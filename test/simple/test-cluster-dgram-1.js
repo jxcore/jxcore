@@ -1,5 +1,9 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
+if (process.platform === 'win32') {
+  console.error('Skipping: dgram clustering is currently not supported on Windows.');
+  process.exit(0);
+}
 
 var NUM_WORKERS = 4;
 var PACKETS_PER_WORKER = 10;
@@ -9,17 +13,10 @@ var cluster = require('cluster');
 var common = require('../common');
 var dgram = require('dgram');
 
-
-if (process.platform === 'win32') {
-  console.warn("dgram clustering is currently not supported on windows.");
-  process.exit(0);
-}
-
 if (cluster.isMaster)
   master();
 else
   worker();
-
 
 function master() {
   var listening = 0;
@@ -75,7 +72,6 @@ function master() {
     });
   }
 }
-
 
 function worker() {
   var received = 0;

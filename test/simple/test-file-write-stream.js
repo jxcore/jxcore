@@ -1,6 +1,5 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
 var common = require('../common');
 var assert = require('assert');
 
@@ -26,8 +25,8 @@ file
       assert.equal('number', typeof fd);
     })
   .on('error', function(err) {
-      throw err;
       console.error('error!', err.stack);
+      throw err;
     })
   .on('drain', function() {
       console.error('drain!', callbacks.drain);

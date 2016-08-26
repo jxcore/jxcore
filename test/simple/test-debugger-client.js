@@ -1,8 +1,7 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
-
-return;
+console.error('Skipping: not supported on any platform.');
+process.exit(0);
 
 process.env.NODE_DEBUGGER_TIMEOUT = 2000;
 var common = require('../common');

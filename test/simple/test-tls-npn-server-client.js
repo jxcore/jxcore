@@ -1,8 +1,7 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
 if (!process.features.tls_npn) {
-  console.error('Skipping because node compiled without OpenSSL or ' +
+  console.error('Skipping: node compiled without OpenSSL or ' +
                 'with old OpenSSL version.');
   process.exit(0);
 }

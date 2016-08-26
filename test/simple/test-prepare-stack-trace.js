@@ -6,7 +6,10 @@ var util = require('util');
 
 // test the custom implementation on SM
 // See https://github.com/jxcore/jxcore/issues/728
-if (!process.versions.sm) return;
+if (!process.versions.sm) {
+  console.error('Skipping: test for SpiderMonkey only.');
+  process.exit(0);
+}
 
 function getCallerFile() {
   var oldPrepareStackTrace = Error.prepareStackTrace;

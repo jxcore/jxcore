@@ -1,10 +1,9 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
-var is_windows = process.platform === 'win32';
-
-if(!is_windows){
-
+if (process.platform === 'win32') {
+  console.error('Skipping: platform is Windows.');
+  process.exit(0);
+}
 
 var common = require('../common');
 var assert = require('assert');
@@ -30,5 +29,3 @@ exec(cmd, function(err, stdout, stderr) {
 process.on('exit', function() {
   assert.ok(finished);
 });
-
-}

@@ -1,8 +1,8 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
 // It is not possible to send pipe handles over the IPC pipe on Windows.
 if (process.platform === 'win32') {
+  console.error("Skipping: can't send pipe handles over the IPC pipe on Windows.");
   process.exit(0);
 }
 

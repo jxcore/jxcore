@@ -1,12 +1,15 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
+console.error('Skipping: not supported on any platform.');
+process.exit(0);
 
-return;
-var is_windows = process.platform === 'win32';
+if (process.platform === 'win32') {
+  console.error('Skipping: platform is Windows.');
+  process.exit(0);
+}
 
-if(!is_windows){
 if (!process.versions.openssl) {
-  console.error('Skipping because node compiled without OpenSSL.');
+  console.error('Skipping: node compiled without OpenSSL.');
   process.exit(0);
 }
 
@@ -73,4 +76,3 @@ process.on('exit', function() {
       'E8CE66E82D128A71E915809FCF44E8DE774067F1DE5D70B9C03687');
   assert.equal(exponent, '10001');
 });
-}

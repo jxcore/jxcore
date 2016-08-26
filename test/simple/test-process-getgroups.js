@@ -1,13 +1,12 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
 var common = require('../common');
 var assert = require('assert');
 var exec = require('child_process').exec;
 
 if (process.platform === 'darwin') {
-  console.log('Skipping. Output of `id -G` is unreliable on Darwin.');
-  return;
+  console.log('Skipping: Output of `id -G` is unreliable on Darwin.');
+  process.exit(0);
 }
 
 if (typeof process.getgroups === 'function') {

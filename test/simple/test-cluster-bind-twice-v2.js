@@ -1,5 +1,9 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
+if (process.platform === 'win32') {
+  console.error('Skipping: platform is Windows.');
+  process.exit(0);
+}
 
 // This test starts two clustered HTTP servers on the same port. It expects the
 // first cluster to succeed and the second cluster to fail with EADDRINUSE.
@@ -20,9 +24,6 @@
 //
 // See https://github.com/joyent/node/issues/2721 for more details.
 
-var is_windows = process.platform === 'win32';
-
-if(!is_windows){
 var common = require('../common');
 var assert = require('assert');
 var cluster = require('cluster');
@@ -109,5 +110,3 @@ else if (id === 'two') {
 else {
   assert(0); // bad command line argument
 }
-
-} // !is_windows

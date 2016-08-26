@@ -9,8 +9,8 @@ var PORT = common.PORT;
 var spawn = require('child_process').spawn;
 
 if (process.platform === 'win32') {
-  console.error('This test is disabled on windows.');
-  return;
+  console.error('Skipping: platform is Windows.');
+  process.exit(0);
 }
 
 switch (process.argv[2]) {

@@ -1,8 +1,7 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
-
-return;
+console.error('Skipping: not supported on any platform.');
+process.exit(0);
 
 var common = require('../common');
 var assert = require('assert');
@@ -11,8 +10,8 @@ try {
   var crypto = require('crypto');
   var tls = require('tls');
 } catch (e) {
-  console.log('Not compiled with OPENSSL support.');
-  process.exit();
+  console.error('Skipping: Not compiled with OpenSSL support.');
+  process.exit(0);
 }
 
 crypto.DEFAULT_ENCODING = 'buffer';

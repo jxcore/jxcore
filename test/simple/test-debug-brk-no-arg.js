@@ -1,11 +1,12 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
+console.error('Skipping: not supported on any platform.');
+process.exit(0);
 
 var common = require('../common');
 var assert = require('assert');
 var spawn = require('child_process').spawn;
 
-return; 
 var child = spawn(process.execPath, ['--debug-brk=' + common.PORT]);
 child.stderr.once('data', function(c) {
   console.error('%j', c.toString());

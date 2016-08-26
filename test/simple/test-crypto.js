@@ -1,17 +1,20 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
+// this test file is not compatible to Windows
+if (process.platform === 'win32') {
+  console.error('Skipping: platform is Windows.');
+  process.exit(0);
+}
+
 var common = require('../common');
 var assert = require('assert');
 var constants = require('constants');
 
-// this test file is not compatible to Windows
-if (process.platform === 'win32') return;
-
 try {
   var crypto = require('crypto');
 } catch (e) {
-  console.log('Not compiled with OPENSSL support.');
-  process.exit();
+  console.error('Skipping: Not compiled with OpenSSL support.');
+  process.exit(0);
 }
 
 crypto.DEFAULT_ENCODING = 'buffer';

@@ -1,12 +1,11 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
 // Create an ssl server.  First connection, validate that not resume.
 // Cache session and close connection.  Use session on second connection.
 // ASSERT resumption.
 
 if (!process.versions.openssl) {
-  console.error('Skipping because node compiled without OpenSSL.');
+  console.error('Skipping: node compiled without OpenSSL.');
   process.exit(0);
 }
 

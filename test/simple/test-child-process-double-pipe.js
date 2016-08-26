@@ -1,9 +1,12 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
+if (process.platform === 'win32') {
+  console.error('Skipping: platform is Windows.');
+  process.exit(0);
+}
 
 var is_windows = process.platform === 'win32';
 
-if(!is_windows){
 var common = require('../common');
 var assert = require('assert'),
     util = require('util'),
@@ -34,8 +37,6 @@ if (is_windows) {
  * explained above.
  */
 
-
-
 // pipe echo | grep
 echo.stdout.on('data', function(data) {
   console.error('grep stdin write ' + data.length);
@@ -65,8 +66,6 @@ sed.on('exit', function() {
   console.error('sed exit');
 });
 
-
-
 // pipe grep | sed
 grep.stdout.on('data', function(data) {
   console.error('grep stdout ' + data.length);
@@ -85,8 +84,6 @@ grep.stdout.on('end', function(code) {
   sed.stdin.end();
 });
 
-
-
 var result = '';
 
 // print sed's output
@@ -98,4 +95,3 @@ sed.stdout.on('data', function(data) {
 sed.stdout.on('end', function(code) {
   assert.equal(result, 'hellO\nnOde\nwOrld\n');
 });
-}

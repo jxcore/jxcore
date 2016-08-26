@@ -1,5 +1,9 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
+if (process.versions.sm) {
+    console.error('Skipping: engine is SpiderMonkey.');
+    process.exit(0);
+}
 
 var common = require('../common');
 var assert = require('assert');
@@ -8,10 +12,6 @@ var assert = require('assert');
 // it verifies that process.nextTick will *always* come before other
 // events, up to the limit of the process.maxTickDepth value.
 
-if(process.versions.sm)
-{
-  return;
-}
 // WARNING: unsafe!
 process.maxTickDepth = Infinity;
 

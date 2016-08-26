@@ -1,11 +1,10 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
 try {
   var crypto = require('crypto');
 } catch (e) {
-  console.log('Not compiled with OPENSSL support.');
-  process.exit();
+  console.error('Skipping: Not compiled with OpenSSL support.');
+  process.exit(0);
 }
 
 // the missing var keyword is intentional
