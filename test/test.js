@@ -31,6 +31,7 @@ var allFiles = [], cwd = process.cwd() + path.sep, dir = cwd + "test"
   percent : 0,
   passed : 0,
   failed : 0,
+  skipped : 0,
   time_started : null,
   minutes_ellapsed : null,
   seconds_ellapsed : null
@@ -91,10 +92,11 @@ var writeStats = function(obj) {
   var percent = jxcore.utils.console.setColor("%% %s", "blue");
   var success = jxcore.utils.console.setColor("+ %s", "green");
   var failures = jxcore.utils.console.setColor("- %s", "red");
-  var s = util.format("[" + [ time, percent, success, failures ].join("|")
+  var skipped = jxcore.utils.console.setColor("- %s", "yellow");
+  var s = util.format("[" + [ time, percent, success, failures, skipped ].join("|")
       + "] " + fname.replace(cwd, ""), pad(stats.minutes_ellapsed, 2, '0'),
       pad(stats.seconds_ellapsed, 2, '0'), pad(stats.percent, 3, ' '), pad(
-          stats.passed, 3, ' '), pad(stats.failed, 3, ' '));
+          stats.passed, 3, ' '), pad(stats.failed, 3, ' '), pad(stats.skipped, 3, ' '));
 
   console.log(cursorUp + clearLine + s);
 };
@@ -110,9 +112,12 @@ var addStat = function(ret) {
     jxcore.utils.console.log(ret.out.toString().trim());
     jxcore.utils.console.log("Command:", ret.cmd, "yellow");
     jxcore.utils.console.log("\n");
+  } else if (ret.err.indexOf("Skipping:",0) > -1) {
+      stats.skipped++;
   } else {
-    stats.passed++;
+      stats.passed++;
   }
+}
 
   var seconds_delta = (Date.now() - stats.time_started) / 1000;
   stats.minutes_ellapsed = Math.floor(seconds_delta / 60);
