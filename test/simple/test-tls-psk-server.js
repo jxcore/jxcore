@@ -1,12 +1,12 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
 if (!process.versions.openssl) {
-  console.error("Skipping because node compiled without OpenSSL.");
+  console.error("Skipping: node compiled without OpenSSL.");
   process.exit(0);
 }
+
 if (parseInt(process.versions.openssl[0]) < 1) {
-  console.error("Skipping because node compiled with old OpenSSL version.");
+  console.error("Skipping: node compiled with old OpenSSL version.");
   process.exit(0);
 }
 
@@ -38,8 +38,8 @@ function checkOpenSSL() {
   });
 }
 
-if (! checkOpenSSL()){
-  console.error("Skipping because OpenSSL version < 1.0.0.");
+if (!checkOpenSSL()){
+  console.error("Skipping: OpenSSL version < 1.0.0.");
   process.exit(0)
 }
 

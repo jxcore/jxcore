@@ -5,7 +5,7 @@ var unsupported = jxcore.utils.OSInfo().isMobile || jxcore.utils.OSInfo().isWind
 if(!unsupported){
 
 if (!process.versions.openssl) {
-  console.error('Skipping because node compiled without OpenSSL.');
+  console.error('Skipping: node compiled without OpenSSL.');
   process.exit(0);
 }
 

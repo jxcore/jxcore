@@ -1,13 +1,13 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
 if (!process.versions.openssl) {
-  console.error('Skipping because node compiled without OpenSSL.');
+  console.error('Skipping: node compiled without OpenSSL.');
   process.exit(0);
 }
+
 require('child_process').exec('openssl version', function(err) {
   if (err !== null) {
-    console.error('Skipping because openssl command is not available.');
+    console.error('Skipping: openssl command is not available.');
     process.exit(0);
   }
   doTest();

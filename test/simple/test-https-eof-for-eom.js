@@ -1,6 +1,5 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
 // I hate HTTP. One way of terminating an HTTP response is to not send
 // a content-length header, not send a transfer-encoding: chunked header,
 // and simply terminate the TCP connection. That is identity
@@ -8,8 +7,9 @@
 //
 // This test is to be sure that the https client is handling this case
 // correctly.
+
 if (!process.versions.openssl) {
-  console.error('Skipping because node compiled without OpenSSL.');
+  console.error('Skipping: node compiled without OpenSSL.');
   process.exit(0);
 }
 

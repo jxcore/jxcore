@@ -1,14 +1,13 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
+if (['linux', 'win32'].indexOf(process.platform) == -1) {
+  console.error('Skipping: platform-specific test.');
+  process.exit(0);
+}
 
 var common = require('../common');
 var http = require('http'),
     assert = require('assert');
-
-if (['linux', 'win32'].indexOf(process.platform) == -1) {
-  console.log('Skipping platform-specific test.');
-  process.exit();
-}
 
 var server = http.createServer(function (req, res) {
   console.log("Connect from: " + req.connection.remoteAddress);

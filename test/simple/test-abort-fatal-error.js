@@ -1,16 +1,22 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
+if (process.platform === 'win32') {
+  console.error('Skipping: platform is Windows.');
+  process.exit(0);
+}
 
-if (process.versions.sm) { return; }
-if (process.versions.v8 && parseFloat(process.versions.v8) > 3.15) { return; }
+if (process.versions.sm) {
+    console.error('Skipping: engine is SpiderMonkey.');
+    process.exit(0);
+}
+
+if (process.versions.v8 && parseFloat(process.versions.v8) > 3.15) {
+    console.error('Skipping: engine V8 > 3.15.');
+    process.exit(0);
+}
 
 var assert = require('assert');
 var common = require('../common');
-
-if (process.platform === 'win32') {
-  console.log('skipping test on windows');
-  process.exit(0);
-}
 
 var exec = require('child_process').exec;
 

@@ -1,8 +1,10 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
 // disable this test on travis [timeouts etc]
-if (process.cwd().indexOf('travis/')>0)
-  return;
+if (process.cwd().indexOf('travis/')>0) {
+  console.error('Skipping: running on Travis.');
+  process.exit(0);
+}
 
 var reset = true;
 var counter = 0;

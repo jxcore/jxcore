@@ -1,8 +1,10 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-var is_windows = process.platform === 'win32';
+if (process.platform === 'win32') {
+  console.error('Skipping: platform is Windows.');
+  process.exit(0);
+}
 
-if(!is_windows){
 var common = require('../common');
 var assert = require('assert');
 var fs = require('fs');
@@ -94,4 +96,3 @@ process.on('exit', function() {
   assert.equal(1024 * 10240, count);
   assert.ok(clientReqComplete);
 });
-}

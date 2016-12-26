@@ -1,7 +1,8 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
+console.error('Skipping: not supported on any platform.');
+process.exit(0);
 
-return;
 var repl = require('./helper-debugger-repl.js');
 
 repl.startDebugger('breakpoints.js');

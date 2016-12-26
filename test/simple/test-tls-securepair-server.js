@@ -1,10 +1,13 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
 // this test file is not compatible to Windows
-if (process.platform === 'win32') return;
+if (process.platform === 'win32') {
+  console.error('Skipping: platform is Windows.');
+  process.exit(0);
+}
 
 if (!process.versions.openssl) {
-  console.error('Skipping because node compiled without OpenSSL.');
+  console.error('Skipping: node compiled without OpenSSL.');
   process.exit(0);
 }
 

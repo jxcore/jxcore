@@ -1,8 +1,10 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-var is_windows = process.platform === 'win32';
+if (process.platform === 'win32') {
+  console.error('Skipping: platform is Windows.');
+  process.exit(0);
+}
 
-if(!is_windows){
 var common = require('../common');
 var assert = require('assert');
 
@@ -25,5 +27,4 @@ try {
   require('../fixtures/module-loading-error.node');
 } catch (e) {
   assert.notEqual(e.toString().indexOf(dlerror_msg), -1);
-}
 }

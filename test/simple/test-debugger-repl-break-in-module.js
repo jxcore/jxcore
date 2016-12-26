@@ -1,7 +1,7 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
-return;
+console.error('Skipping: not supported on any platform.');
+process.exit(0);
 
 var repl = require('./helper-debugger-repl.js');
 

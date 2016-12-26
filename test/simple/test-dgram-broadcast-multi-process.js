@@ -1,8 +1,8 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
 if (process.env.CITEST) {
-  console.error('Skipping test due to CITEST environmental variable.');
-  process.exit();
+  console.error('Skipping: due to CITEST environmental variable.');
+  process.exit(0);
 }
 
 var common = require('../common'),

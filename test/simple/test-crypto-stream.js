@@ -1,6 +1,5 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
 var common = require('../common');
 var assert = require('assert');
 var stream = require('stream');
@@ -9,8 +8,8 @@ var util = require('util');
 try {
   var crypto = require('crypto');
 } catch (e) {
-  console.log('Not compiled with OPENSSL support.');
-  process.exit();
+  console.error('Skipping: Not compiled with OpenSSL support.');
+  process.exit(0);
 }
 
 // Small stream to buffer converter

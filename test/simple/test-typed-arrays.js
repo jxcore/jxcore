@@ -1,16 +1,22 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
 /*
  * Test to verify we are using Typed Arrays
  * (http://www.khronos.org/registry/typedarray/specs/latest/) correctly Test to
  * verify Buffer can used in Typed Arrays
  */
  
-// SpiderMonkey, V8 3.28+ implementation has native TypedArray support
+// SpiderMonkey, V8 > 3.14 implementation has native TypedArray support
 var ver = process.versions;
-if (ver.sm || ver.ch) return; 
-if (parseFloat(ver.v8) > 3.15) return;
+if (ver.sm || ver.ch) {
+  console.error('Skipping: SpiderMonkey and Chakra have native TypedArray support.');
+  process.exit(0);
+} 
+
+if (parseFloat(ver.v8) > 3.14) {
+  console.error('Skipping: V8 > 3.14 has native TypedArray support.');
+  process.exit(0);
+}
 
 var common = require('../common');
 var assert = require('assert');

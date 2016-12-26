@@ -1,11 +1,9 @@
 // Copyright & License details are available under JXCORE_LICENSE file
 
-
 var common = require('../common');
 var assert = require('assert');
 
 var dns = require('dns');
-
 
 // Try resolution without callback
 
@@ -37,4 +35,6 @@ if (process.platform != 'win32') {
     if (error) throw error;
     assert.ok(Array.isArray(domains));
   });
+} else {
+  console.error('Skipping: test-step skipped because platform is Windows.');
 }

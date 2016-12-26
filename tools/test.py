@@ -68,6 +68,7 @@ class ProgressIndicator(object):
     self.total = len(cases)
     self.failed = [ ]
     self.crashed = 0
+    self.skipped = [ ]
     self.terminate = False
     self.lock = threading.Lock()
 
@@ -131,6 +132,8 @@ class ProgressIndicator(object):
         self.failed.append(output)
         if output.HasCrashed():
           self.crashed += 1
+      elif output.HasSkipped():
+        self.skipped.append(output)
       else:
         self.succeeded += 1
       self.remaining -= 1
@@ -170,6 +173,16 @@ class SimpleProgressIndicator(ProgressIndicator):
         print "--- CRASHED ---"
       if failed.HasTimedOut():
         print "--- TIMEOUT ---"
+
+    for skipped in self.skipped:
+      self.PrintFailureHeader(skipped.test)
+      if skipped.output.stderr:
+        print "--- stderr ---"
+        print skipped.output.stderr.strip()
+      if skipped.output.stdout:
+        print "--- stdout ---"
+        print skipped.output.stdout.strip()
+
     if len(self.failed) == 0:
       print "==="
       print "=== All tests succeeded"
@@ -180,6 +193,7 @@ class SimpleProgressIndicator(ProgressIndicator):
       print "=== %i tests failed" % len(self.failed)
       if self.crashed > 0:
         print "=== %i tests CRASHED" % self.crashed
+      print "=== %i tests skipped" % len(self.skipped)
       print "==="
 
 
@@ -195,6 +209,8 @@ class VerboseProgressIndicator(SimpleProgressIndicator):
         outcome = 'CRASH'
       else:
         outcome = 'FAIL'
+    elif output.HasSkipped():
+        outcome = 'skipped'
     else:
       outcome = 'pass'
     print 'Done running %s: %s' % (output.test.GetLabel(), outcome)
@@ -206,7 +222,7 @@ class DotsProgressIndicator(SimpleProgressIndicator):
     pass
 
   def HasRun(self, output):
-    total = self.succeeded + len(self.failed)
+    total = self.succeeded + len(self.failed) + len(self.skipped)
     if (total > 1) and (total % 50 == 1):
       sys.stdout.write('\n')
     if output.UnexpectedOutput():
@@ -219,6 +235,8 @@ class DotsProgressIndicator(SimpleProgressIndicator):
       else:
         sys.stdout.write('F')
         sys.stdout.flush()
+    elif output.HasSkipped():
+      sys.stdout.write('S')
     else:
       sys.stdout.write('.')
       sys.stdout.flush()
@@ -241,6 +259,10 @@ class TapProgressIndicator(SimpleProgressIndicator):
       for l in output.output.stderr.splitlines():
         print '#' + l
       for l in output.output.stdout.splitlines():
+        print '#' + l
+    elif output.HasSkipped():
+      print 'skipped %i - %s' % (self._done, command)
+      for l in output.output.stderr.splitlines():
         print '#' + l
     else:
       print 'ok %i - %s' % (self._done, command)
@@ -305,6 +327,7 @@ class CompactProgressIndicator(ProgressIndicator):
       'passed': self.succeeded,
       'remaining': (((self.total - self.remaining) * 100) // self.total),
       'failed': len(self.failed),
+      'skipped': len(self.skipped),
       'test': name,
       'mins': int(elapsed) / 60,
       'secs': int(elapsed) % 60
@@ -320,7 +343,7 @@ class ColorProgressIndicator(CompactProgressIndicator):
 
   def __init__(self, cases):
     templates = {
-      'status_line': "[%(mins)02i:%(secs)02i|\033[34m%%%(remaining) 4d\033[0m|\033[32m+%(passed) 4d\033[0m|\033[31m-%(failed) 4d\033[0m]: %(test)s",
+      'status_line': "[%(mins)02i:%(secs)02i|\033[34m%%%(remaining) 4d\033[0m|\033[32m+%(passed) 4d\033[0m|\033[31m-%(failed) 4d\033[0m|\033[37m-%(skipped) 4d\033[0m]: %(test)s",
       'stdout': "\033[1m%s\033[0m",
       'stderr': "\033[31m%s\033[0m",
     }
@@ -334,7 +357,7 @@ class MonochromeProgressIndicator(CompactProgressIndicator):
 
   def __init__(self, cases):
     templates = {
-      'status_line': "[%(mins)02i:%(secs)02i|%%%(remaining) 4d|+%(passed) 4d|-%(failed) 4d]: %(test)s",
+      'status_line': "[%(mins)02i:%(secs)02i|%%%(remaining) 4d|+%(passed) 4d|-%(failed) 4d|-%(skipped) 4d]: %(test)s",
       'stdout': '%s',
       'stderr': '%s',
       'clear': lambda last_line_length: ("\r" + (" " * last_line_length) + "\r"),
@@ -475,6 +498,9 @@ class TestOutput(object):
       return not execution_failed
     else:
       return execution_failed
+
+  def HasSkipped(self):
+    return ((self.output.exit_code == 0) and (self.output.stderr.startswith('Skipping:')));
 
 
 def KillProcessWithID(pid):

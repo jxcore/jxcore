@@ -6,8 +6,8 @@ var assert = require('assert');
 try {
   var crypto = require('crypto');
 } catch (e) {
-    console.log('1..0 # Skipped: missing crypto');
-    return;
+    console.error('Skipping: missing crypto.');
+    process.exit(0);
 }
 
 var methods = ['SSLv2_method', 'SSLv2_client_method', 'SSLv2_server_method'];
