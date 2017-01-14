@@ -490,6 +490,7 @@ commons::commons(const int tid) {
     threadPing = NULL;
   } else {
     loop = uv_loop_new();
+    loop->loopId = threadId;
     uv_setThreadLoop(threadId - 1, loop);
     loop->loopId = threadId;
 
