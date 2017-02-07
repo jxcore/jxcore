@@ -63,7 +63,7 @@
 void ENGINE_load_builtin_engines(void)
 {
     /* Some ENGINEs need this */
-    OPENSSL_cpuid_setup();
+    /*OPENSSL_cpuid_setup();*/
 #if 0
     /*
      * There's no longer any need for an "openssl" ENGINE unless, one day, it

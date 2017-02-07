@@ -9,7 +9,7 @@ then
   exit
 fi
 
-ANDROID_TARGET=android-9
+ANDROID_TARGET=android-21
 if [ $# -gt 1 ]
 then
   ANDROID_TARGET="android-$2"

@@ -58,7 +58,7 @@ FATBIN=out_android/android
 MAKE_INSTALL() {
   TARGET_DIR="out_$1_droid"
   mv $TARGET_DIR out
-  ./configure --static-library --dest-os=android --dest-cpu=$1 --engine-mozilla --compress-internals $CONF_EXTRAS
+  ./configure --static-library --dest-os=android --dest-cpu=$1 --engine-mozilla --compress-internals --openssl-no-asm $CONF_EXTRAS
   ERROR_ABORT_MOVE "mv out $TARGET_DIR" $1
   make -j 2
   ERROR_ABORT_MOVE "mv out $TARGET_DIR" $1
@@ -141,8 +141,8 @@ then
   export TOOLCHAIN=$PWD/android-toolchain-mipsel
   export PATH=$TOOLCHAIN/bin:$OLD_PATH
   export AR=mipsel-linux-android-ar
-  export CC=mipsel-linux-android-gcc
-  export CXX=mipsel-linux-android-g++
+  export CC="mipsel-linux-android-gcc -fPIC"
+  export CXX="mipsel-linux-android-g++ -fPIC"
   export LINK=mipsel-linux-android-g++
   export STRIP=mipsel-linux-android-strip
 
@@ -155,8 +155,8 @@ then
   export TOOLCHAIN=$PWD/android-toolchain-arm64
   export PATH=$TOOLCHAIN/bin:$OLD_PATH
   export AR=aarch64-linux-android-ar
-  export CC=aarch64-linux-android-gcc
-  export CXX=aarch64-linux-android-g++
+  export CC="aarch64-linux-android-gcc -fPIC"
+  export CXX="aarch64-linux-android-g++ -fPIC"
   export LINK=aarch64-linux-android-g++
   export STRIP=aarch64-linux-android-strip
 
@@ -167,8 +167,8 @@ fi
 export TOOLCHAIN=$PWD/android-toolchain-arm
 export PATH=$TOOLCHAIN/bin:$OLD_PATH
 export AR=arm-linux-androideabi-ar
-export CC=arm-linux-androideabi-gcc
-export CXX=arm-linux-androideabi-g++
+export CC="arm-linux-androideabi-gcc -fPIC"
+export CXX="arm-linux-androideabi-g++ -fPIC"
 export LINK=arm-linux-androideabi-g++
 #export STRIP=arm-linux-androideabi-strip
 export STRIP=true
@@ -179,8 +179,8 @@ MAKE_INSTALL arm
 export TOOLCHAIN=$PWD/android-toolchain-intelx64
 export PATH=$TOOLCHAIN/bin:$OLD_PATH
 export AR=x86_64-linux-android-ar
-export CC=x86_64-linux-android-gcc
-export CXX=x86_64-linux-android-g++
+export CC="x86_64-linux-android-gcc -fPIC"
+export CXX="x86_64-linux-android-g++ -fPIC"
 export LINK=x86_64-linux-android-g++
 #export STRIP=x86_64-linux-android-strip
 export STRIP=true
@@ -191,8 +191,8 @@ MAKE_INSTALL x64
 export TOOLCHAIN=$PWD/android-toolchain-intel
 export PATH=$TOOLCHAIN/bin:$OLD_PATH
 export AR=i686-linux-android-ar
-export CC=i686-linux-android-gcc
-export CXX=i686-linux-android-g++
+export CC="i686-linux-android-gcc -fPIC"
+export CXX="i686-linux-android-g++ -fPIC"
 export LINK=i686-linux-android-g++
 #export STRIP=i686-linux-android-strip
 export STRIP=true
