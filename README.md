@@ -8,6 +8,8 @@ Master build status: [![Build Status](https://travis-ci.org/jxcore/jxcore.svg?br
 #### Important Notice:
 [Nubisa halting active development on JXcore platform](http://www.nubisa.com/nubisa-halting-active-development-on-jxcore-platform/)
 
+You may alternatively try https://github.com/janeasystems/nodejs-mobile
+
 ### Features include
 
   - Support for core Node.JS features
