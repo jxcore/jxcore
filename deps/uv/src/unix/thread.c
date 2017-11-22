@@ -237,7 +237,7 @@ int uv_cond_init(uv_cond_t* cond) {
 
   if (pthread_condattr_init(&attr)) return -1;
 
-#if !defined(__ANDROID__)
+#if !(defined(__ANDROID__) && defined(HAVE_PTHREAD_COND_TIMEDWAIT_MONOTONIC))
   if (pthread_condattr_setclock(&attr, CLOCK_MONOTONIC)) goto error2;
 #endif
 
@@ -284,7 +284,7 @@ int uv_cond_timedwait(uv_cond_t* cond, uv_mutex_t* mutex, uint64_t timeout) {
   timeout += uv__hrtime();
   ts.tv_sec = timeout / NANOSEC;
   ts.tv_nsec = timeout % NANOSEC;
-#if defined(__ANDROID__)
+#if defined(__ANDROID__) && defined(HAVE_PTHREAD_COND_TIMEDWAIT_MONOTONIC)
   r = pthread_cond_timedwait_monotonic_np(cond, mutex, &ts);
 #else
   r = pthread_cond_timedwait(cond, mutex, &ts);
