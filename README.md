@@ -8,7 +8,7 @@ Master build status: [![Build Status](https://travis-ci.org/jxcore/jxcore.svg?br
 #### Important Notice:
 [Nubisa halting active development on JXcore platform](http://www.nubisa.com/nubisa-halting-active-development-on-jxcore-platform/)
 
-You may alternatively try https://github.com/janeasystems/nodejs-mobile
+You may alternatively try https://github.com/janeasystems/nodejs-mobile or https://github.com/mozilla/spidernode
 
 ### Features include
 
