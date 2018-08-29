@@ -1,4 +1,4 @@
-JXcore (http://jxcore.io)
+﻿JXcore (http://jxcore.io)
 
 ----JXcore 3.1.2 -- Active
 
@@ -567,3 +567,6 @@ Feature Updates
 Changes
 - jxcore.env.setThreadCount moved to jxcore.tasks.setThreadCount
 - jx package now creates the jx file under the active path
+
+only test by gd .
+you needn't merge .
